@@ -10,9 +10,9 @@
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/LOGO.png" 
+            <ImageBrush ImageSource="/Assets/logo2.png" 
                         Stretch="UniformToFill" 
-                        Opacity="0.4">
+                        Opacity="0.9">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>

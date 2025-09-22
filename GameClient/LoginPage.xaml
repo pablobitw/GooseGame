@@ -14,7 +14,7 @@
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/LOGO.png"
+            <ImageBrush ImageSource="/Assets/logo2.png"
                         Stretch="UniformToFill">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
@@ -29,17 +29,16 @@
 
         <Image Grid.Row="0"
                Source="/Assets/LOGO.png" 
-               Height="160" 
+               Height="200" 
                Margin="0,25,0,0"/>
 
-        <Border Grid.Row="1"
+        <Border
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Margin="0,15,0,0"
                 MaxWidth="360"
                 Background="#D8FFFFFF" 
                 CornerRadius="20"
-                Effect="{StaticResource PanelShadow}">
+                Effect="{StaticResource PanelShadow}" Width="334" Margin="0,209,0,0" Grid.RowSpan="2">
 
             <StackPanel Margin="25,20">
                 <TextBlock Text="{x:Static props:Strings.LoginPageTitle}"
@@ -57,16 +56,18 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Image Source="/Assets/Icons/user_icon.png" Height="20" Width="20" Margin="0,0,10,0" VerticalAlignment="Center" Grid.Column="0"/>
+
                         <TextBox x:Name="UsernameTextBox" 
                                  Grid.Column="1"
-                                 Text="{x:Static props:Strings.UsernameLabel}"
                                  FontFamily="/Assets/Fonts/#Dosis" 
                                  FontSize="16" 
                                  Padding="5,0"
                                  VerticalContentAlignment="Center"
                                  BorderThickness="0"
                                  Background="Transparent"
-                                 Foreground="#666666"/>
+                                 Foreground="#666666"
+                                 GotFocus="TextBox_GotFocus"
+                                 LostFocus="TextBox_LostFocus"/>
                     </Grid>
                 </Border>
 
@@ -77,16 +78,18 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Image Source="/Assets/Icons/password_icon.png" Height="20" Width="20" Margin="0,0,10,0" VerticalAlignment="Center" Grid.Column="0"/>
+
                         <PasswordBox x:Name="PasswordBox"
                                      Grid.Column="1"
-                                     d:Password="{x:Static props:Strings.PasswordLabel}" 
                                      FontFamily="/Assets/Fonts/#Dosis" 
                                      FontSize="16" 
                                      Padding="5,0"
                                      VerticalContentAlignment="Center"
                                      BorderThickness="0"
                                      Background="Transparent"
-                                     Foreground="#666666"/>
+                                     Foreground="#666666"
+                                     GotFocus="PasswordBox_GotFocus"
+                                     LostFocus="PasswordBox_LostFocus"/>
                     </Grid>
                 </Border>
 

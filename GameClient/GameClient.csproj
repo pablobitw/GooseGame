@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>LOGO.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\LOGO.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -145,11 +145,14 @@
     <Resource Include="Assets\Icons\LOGO.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="LOGO.ico" />
+    <Resource Include="Assets\LOGO.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\password_icon.png" />
     <Resource Include="Assets\Icons\user_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\logo2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
