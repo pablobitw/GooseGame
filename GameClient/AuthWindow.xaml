@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         Title="GooseGame" Height="550" Width="450"
         WindowStartupLocation="CenterScreen">
+
     <Window.Resources>
         <Style x:Key="AuthButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#0078D4"/>
@@ -44,8 +45,8 @@
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/LOGO.png" 
-                Stretch="UniformToFill" 
-                Opacity="0.4">
+                        Stretch="UniformToFill" 
+                        Opacity="0.4">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>
@@ -60,36 +61,101 @@
                 Background="#D8FFFFFF" 
                 CornerRadius="20"
                 Padding="30" Height="234" Width="343">
-
             <Border.Effect>
                 <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="15" ShadowDepth="1"/>
             </Border.Effect>
             <StackPanel x:Name="AuthButtonsPanel">
-
-                <Button Content="{x:Static props:Strings.LoginButtonText}"
-                        Style="{StaticResource AuthButtonStyle}" 
+                <Button Style="{StaticResource AuthButtonStyle}" 
                         Margin="0,5"
-                        Click="LoginButton_Click" 
-                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+                        Click="LoginButton_Click">
+                    <Button.Content>
+                        <Grid>
+                            <Image Source="/Assets/Icons/Login.png" 
+                                   Height="28"
+                                   HorizontalAlignment="Left" 
+                                   VerticalAlignment="Center">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="-35" Y="-8" />
+                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
+                                        <RotateTransform Angle="0" />
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
+                            <TextBlock Text="{x:Static props:Strings.LoginButtonText}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       FontFamily="/Assets/Fonts/#Dosis" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
 
-                <Button Content="{x:Static props:Strings.RegisterButtonText}" 
-                        Style="{StaticResource RegisterButtonStyle}" 
-                        Margin="0,5"
-                        Click="RegisterButton_Click"
-                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+                <Button Style="{StaticResource RegisterButtonStyle}" 
+        Margin="0,5"
+        Click="RegisterButton_Click">
+                    <Button.Content>
+                        <Grid>
+                            <Image Source="/Assets/Icons/Register.png" 
+                   Height="28"
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="-35" Y="-8" />
+                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
+                                        <RotateTransform Angle="0" />
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
 
-                <Button Content="{x:Static props:Strings.AsGuestButtonText}" 
-                        Style="{StaticResource GuestButtonStyle}" 
-                        Margin="0,5"
-                        Click="AsGuestButton_Click"
-                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+                            <TextBlock Text="{x:Static props:Strings.RegisterButtonText}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontFamily="/Assets/Fonts/#Dosis" 
+                       FontSize="18" 
+                       FontWeight="Bold"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+
+                <Button Style="{StaticResource GuestButtonStyle}" 
+        Margin="0,5"
+        Click="AsGuestButton_Click">
+                    <Button.Content>
+                        <Grid>
+                            <Image Source="/Assets/Icons/Guest.png" 
+                   Height="28"
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="-25" Y="-8" />
+                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
+                                        <RotateTransform Angle="0" />
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
+
+                            <TextBlock Text="{x:Static props:Strings.AsGuestButtonText}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontFamily="/Assets/Fonts/#Dosis" 
+                       FontSize="18" 
+                       FontWeight="Bold"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
             </StackPanel>
         </Border>
+
         <Image Source="/Assets/LOGO.png" 
-           Height="180" 
-           VerticalAlignment="Top"
-           HorizontalAlignment="Center"
-           Margin="0,45,0,0" RenderTransformOrigin="0.472,0.257" />
+               Height="180" 
+               VerticalAlignment="Top"
+               HorizontalAlignment="Center"
+               Margin="0,45,0,0" RenderTransformOrigin="0.472,0.257" />
+
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
     </Grid>
 </Window>
