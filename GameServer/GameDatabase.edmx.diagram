@@ -4,8 +4,29 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="1bf8cbb6b80e4e16b254e225ded684d9" Name="Diagram1" >
-        <EntityTypeShape EntityType="GameDatabase.Board" Width="2.375" PointX="4.375" PointY="2.125" />
+      <Diagram DiagramId="1bf8cbb6b80e4e16b254e225ded684d9" Name="Diagram1" ZoomLevel="66" >
+        <EntityTypeShape EntityType="GameDatabase.Board" Width="2.375" PointX="14.875" PointY="1.875" />
+        <EntityTypeShape EntityType="GameDatabase.Account" Width="1.5" PointX="5.25" PointY="2.875" />
+        <EntityTypeShape EntityType="GameDatabase.Player" Width="1.5" PointX="8.25" PointY="5.125" />
+        <AssociationConnector Association="GameDatabase.PlayerAccount" />
+        <EntityTypeShape EntityType="GameDatabase.PlayerStat" Width="1.5" PointX="8" PointY="9.75" />
+        <AssociationConnector Association="GameDatabase.PlayerStatPlayer" />
+        <EntityTypeShape EntityType="GameDatabase.Friendship" Width="1.5" PointX="16" PointY="5.625" />
+        <EntityTypeShape EntityType="GameDatabase.Sanction" Width="1.5" PointX="9" PointY="1.625" />
+        <EntityTypeShape EntityType="GameDatabase.Game" Width="1.5" PointX="12.25" PointY="1.375" />
+        <AssociationConnector Association="GameDatabase.IdAccount" />
+        <AssociationConnector Association="GameDatabase.idGame" />
+        <EntityTypeShape EntityType="GameDatabase.Item" Width="1.5" PointX="13.875" PointY="6.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameDatabase.PlayerInventory" Width="1.5" PointX="10.75" PointY="6.875" />
+        <AssociationConnector Association="GameDatabase.idPlayer" />
+        <AssociationConnector Association="GameDatabase.idItem" />
+        <EntityTypeShape EntityType="GameDatabase.Tile" Width="1.5" PointX="19" PointY="2.625" />
+        <AssociationConnector Association="GameDatabase.idBoard" />
+        <AssociationConnector Association="GameDatabase.GameBoard" />
+        <EntityTypeShape EntityType="GameDatabase.ChatMessage" Width="1.5" PointX="12.125" PointY="4.625" />
+        <EntityTypeShape EntityType="GameDatabase.MoveRecord" Width="1.5" PointX="11.75" PointY="9.5" />
+        <AssociationConnector Association="GameDatabase.ChatMessagePlayer" />
+        <AssociationConnector Association="GameDatabase.ChatMessageGame" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
