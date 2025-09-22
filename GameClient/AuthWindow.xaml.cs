@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using GameClient.Views;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace GameClient
@@ -12,7 +13,8 @@ namespace GameClient
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            AuthButtonsPanel.Visibility = Visibility.Collapsed;
+            MainPanel.Visibility = Visibility.Collapsed;
+
             MainFrame.Navigate(new LoginPage());
         }
 
@@ -29,7 +31,7 @@ namespace GameClient
 
         public void ShowAuthButtons()
         {
-            MainFrame.Content = null;
+            MainFrame.Content = null; 
             AuthButtonsPanel.Visibility = Visibility.Visible;
         }
     }

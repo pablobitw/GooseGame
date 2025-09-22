@@ -8,40 +8,6 @@
         mc:Ignorable="d"
         Title="GooseGame" Height="550" Width="450"
         WindowStartupLocation="CenterScreen">
-
-    <Window.Resources>
-        <Style x:Key="AuthButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Height" Value="45"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" CornerRadius="22.5" Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="RegisterButtonStyle" TargetType="Button" BasedOn="{StaticResource AuthButtonStyle}">
-            <Setter Property="Background" Value="#F25C05"/>
-        </Style>
-
-        <Style x:Key="GuestButtonStyle" TargetType="Button" BasedOn="{StaticResource AuthButtonStyle}">
-            <Setter Property="Background" Value="#228B22"/>
-        </Style>
-    </Window.Resources>
-
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/LOGO.png" 
@@ -151,10 +117,10 @@
         </Border>
 
         <Image Source="/Assets/LOGO.png" 
-               Height="180" 
+               Height="216" 
                VerticalAlignment="Top"
                HorizontalAlignment="Center"
-               Margin="0,45,0,0" RenderTransformOrigin="0.472,0.257" />
+               Margin="0,15,0,0" RenderTransformOrigin="0.472,0.257" />
 
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
     </Grid>
