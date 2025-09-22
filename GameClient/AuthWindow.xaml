@@ -1,0 +1,95 @@
+﻿<Window x:Class="GameClient.AuthWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:props="clr-namespace:GameClient.Resources"
+        xmlns:local="clr-namespace:GameClient"
+        mc:Ignorable="d"
+        Title="GooseGame" Height="550" Width="450"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="AuthButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" CornerRadius="22.5" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RegisterButtonStyle" TargetType="Button" BasedOn="{StaticResource AuthButtonStyle}">
+            <Setter Property="Background" Value="#F25C05"/>
+        </Style>
+
+        <Style x:Key="GuestButtonStyle" TargetType="Button" BasedOn="{StaticResource AuthButtonStyle}">
+            <Setter Property="Background" Value="#228B22"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/LOGO.png" 
+                Stretch="UniformToFill" 
+                Opacity="0.4">
+                <ImageBrush.Viewbox>
+                    <Rect>0.2, 0.2, 0.6, 0.6</Rect>
+                </ImageBrush.Viewbox>
+            </ImageBrush>
+        </Grid.Background>
+
+        <Border x:Name="MainPanel"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center"
+                Margin="0,150,0,0" 
+                MaxWidth="350"
+                Background="#D8FFFFFF" 
+                CornerRadius="20"
+                Padding="30" Height="234" Width="343">
+
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="15" ShadowDepth="1"/>
+            </Border.Effect>
+            <StackPanel x:Name="AuthButtonsPanel">
+
+                <Button Content="{x:Static props:Strings.LoginButtonText}"
+                        Style="{StaticResource AuthButtonStyle}" 
+                        Margin="0,5"
+                        Click="LoginButton_Click" 
+                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+
+                <Button Content="{x:Static props:Strings.RegisterButtonText}" 
+                        Style="{StaticResource RegisterButtonStyle}" 
+                        Margin="0,5"
+                        Click="RegisterButton_Click"
+                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+
+                <Button Content="{x:Static props:Strings.AsGuestButtonText}" 
+                        Style="{StaticResource GuestButtonStyle}" 
+                        Margin="0,5"
+                        Click="AsGuestButton_Click"
+                        FontFamily="/Assets/Fonts/#Dosis" FontSize="18" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+        <Image Source="/Assets/LOGO.png" 
+           Height="180" 
+           VerticalAlignment="Top"
+           HorizontalAlignment="Center"
+           Margin="0,45,0,0" RenderTransformOrigin="0.472,0.257" />
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+    </Grid>
+</Window>
