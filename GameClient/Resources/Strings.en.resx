@@ -121,7 +121,7 @@
     <value>Play As Guest</value>
   </data>
   <data name="ForgotPassText" xml:space="preserve">
-    <value />
+    <value>Forgot password?</value>
   </data>
   <data name="LoginButtonText" xml:space="preserve">
     <value>Log In</value>

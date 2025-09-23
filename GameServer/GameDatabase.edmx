@@ -85,7 +85,7 @@
           <Property Name="Email" Type="String" Nullable="false" cg:GetterAccess="Private" cg:SetterAccess="Private" FixedLength="false" MaxLength="255" />
           <Property Name="PasswordHash" Type="String" Nullable="false" cg:GetterAccess="Private" cg:SetterAccess="Private" MaxLength="255" />
           <Property Name="RegisterDate" Type="DateTime" Nullable="false" cg:SetterAccess="Private" cg:GetterAccess="Private" />
-          <Property Name="Status" Type="String" Nullable="false" MaxLength="20" />
+          <Property Name="StatusEnum" Type="String" Nullable="false" MaxLength="20" />
         </EntityType>
         <EntityType Name="Player">
           <Key>
@@ -125,7 +125,7 @@
             <PropertyRef Name="IdFriendship" />
           </Key>
           <Property Name="IdFriendship" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Status" Type="String" Nullable="false" />
+          <Property Name="StatusEnum" Type="String" Nullable="false" />
           <Property Name="RequestDate" Type="DateTime" Nullable="false" />
         </EntityType>
         <EntityType Name="Sanction">
