@@ -33,7 +33,7 @@
             <StackPanel x:Name="AuthButtonsPanel">
                 <Button Style="{StaticResource AuthButtonStyle}" 
                         Margin="0,5"
-                        Click="LoginButton_Click">
+                        Click="LoginButton">
                     <Button.Content>
                         <Grid>
                             <Image Source="/Assets/Icons/Login.png" 
@@ -60,7 +60,7 @@
 
                 <Button Style="{StaticResource RegisterButtonStyle}" 
         Margin="0,5"
-        Click="RegisterButton_Click">
+        Click="RegisterButton">
                     <Button.Content>
                         <Grid>
                             <Image Source="/Assets/Icons/Register.png" 
@@ -88,7 +88,7 @@
 
                 <Button Style="{StaticResource GuestButtonStyle}" 
         Margin="0,5"
-        Click="AsGuestButton_Click">
+        Click="AsGuestButton">
                     <Button.Content>
                         <Grid>
                             <Image Source="/Assets/Icons/Guest.png" 

@@ -11,20 +11,20 @@ namespace GameClient
             InitializeComponent();
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void LoginButton (object sender, RoutedEventArgs e)
         {
             MainPanel.Visibility = Visibility.Collapsed;
 
             MainFrame.Navigate(new LoginPage());
         }
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private void RegisterButton (object sender, RoutedEventArgs e)
         {
             AuthButtonsPanel.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new RegisterPage());
         }
 
-        private void AsGuestButton_Click(object sender, RoutedEventArgs e)
+        private void AsGuestButton (object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Iniciando como invitado...");
         }
