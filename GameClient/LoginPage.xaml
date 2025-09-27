@@ -66,8 +66,8 @@
                                  BorderThickness="0"
                                  Background="Transparent"
                                  Foreground="#666666"
-                                 GotFocus="TextBox_GotFocus"
-                                 LostFocus="TextBox_LostFocus"/>
+                                 GotFocus="RemoveUsernamePlaceholder"
+                                 LostFocus="RestoreUsernamePlaceholder"/>
                     </Grid>
                 </Border>
 
@@ -88,8 +88,8 @@
                                      BorderThickness="0"
                                      Background="Transparent"
                                      Foreground="#666666"
-                                     GotFocus="PasswordBox_GotFocus"
-                                     LostFocus="PasswordBox_LostFocus"/>
+                                     GotFocus="RemovePasswordPlaceholder"
+                                     LostFocus="RestorePasswordPlaceholder"/>
                     </Grid>
                 </Border>
 

@@ -117,13 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AsGuestButtonText" xml:space="preserve">
+  <data name="AceptButton" xml:space="preserve">
+    <value>Acept</value>
+  </data>
+  <data name="AsGuestButton" xml:space="preserve">
     <value>Play As Guest</value>
   </data>
-  <data name="ForgotPassText" xml:space="preserve">
+  <data name="BackButton" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="EmailLabel" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="ForgotPassLabel" xml:space="preserve">
     <value>Forgot password?</value>
   </data>
-  <data name="LoginButtonText" xml:space="preserve">
+  <data name="LoginButton" xml:space="preserve">
     <value>Log In</value>
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
@@ -132,8 +141,17 @@
   <data name="PasswordLabel" xml:space="preserve">
     <value>Password:</value>
   </data>
-  <data name="RegisterButtonText" xml:space="preserve">
+  <data name="RegisterButton" xml:space="preserve">
     <value>Register</value>
+  </data>
+  <data name="RegisterPageTitle" xml:space="preserve">
+    <value>Register Account</value>
+  </data>
+  <data name="RepeatEmailLabel" xml:space="preserve">
+    <value>Repeat e-mail</value>
+  </data>
+  <data name="RepeatPasswordLabel" xml:space="preserve">
+    <value>Repeat password</value>
   </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Username:</value>

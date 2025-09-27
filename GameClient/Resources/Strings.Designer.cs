@@ -61,11 +61,38 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Aceptar.
+        /// </summary>
+        public static string AceptButton {
+            get {
+                return ResourceManager.GetString("AceptButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Jugar como invitado.
         /// </summary>
         public static string AsGuestButtonText {
             get {
                 return ResourceManager.GetString("AsGuestButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Volver.
+        /// </summary>
+        public static string BackButton {
+            get {
+                return ResourceManager.GetString("BackButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Correo Electronico.
+        /// </summary>
+        public static string EmailLabel {
+            get {
+                return ResourceManager.GetString("EmailLabel", resourceCulture);
             }
         }
         
@@ -111,6 +138,33 @@ namespace GameClient.Resources {
         public static string RegisterButtonText {
             get {
                 return ResourceManager.GetString("RegisterButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Registrarse.
+        /// </summary>
+        public static string RegisterPageTitle {
+            get {
+                return ResourceManager.GetString("RegisterPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Repetir correo.
+        /// </summary>
+        public static string RepeatEmailLabel {
+            get {
+                return ResourceManager.GetString("RepeatEmailLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Repetir contraseña.
+        /// </summary>
+        public static string RepeatPassLabel {
+            get {
+                return ResourceManager.GetString("RepeatPassLabel", resourceCulture);
             }
         }
         

@@ -38,7 +38,7 @@ namespace GameClient.Views
             this.NavigationService.Navigate(new ForgotPassPage());
             
         }
-        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void RemoveUsernamePlaceholder(object sender, RoutedEventArgs e)
         {
             if (UsernameTextBox.Text == _usernamePlaceholder)
             {
@@ -47,7 +47,7 @@ namespace GameClient.Views
             }
         }
 
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void RestoreUsernamePlaceholder(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
@@ -56,7 +56,7 @@ namespace GameClient.Views
             }
         }
 
-        private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
+        private void RemovePasswordPlaceholder(object sender, RoutedEventArgs e)
         {
             if (PasswordBox.Password == _passwordPlaceholder)
             {
@@ -65,7 +65,7 @@ namespace GameClient.Views
             }
         }
 
-        private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
+        private void RestorePasswordPlaceholder(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(PasswordBox.Password))
             {

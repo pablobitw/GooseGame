@@ -5,10 +5,21 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="550" d:DesignWidth="450"
       Title="ForgotPassPage">
 
     <Grid>
-        
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/logo2.png"
+                        Stretch="UniformToFill">
+                <ImageBrush.Viewbox>
+                    <Rect>0.2, 0.2, 0.6, 0.6</Rect>
+                </ImageBrush.Viewbox>
+            </ImageBrush>
+        </Grid.Background>
+        <TextBox x:Name="Email" HorizontalAlignment="Center" Margin="0,309,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="160" Height="29" TextChanged="TextBox_TextChanged"/>
+        <TextBox x:Name="RepeatEmail" HorizontalAlignment="Center" Margin="0,365,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="160" Height="29"/>
+        <Button Content="Button" HorizontalAlignment="Center" Margin="0,441,0,0" VerticalAlignment="Top" Height="33" Width="80"/>
+
     </Grid>
 </Page>
