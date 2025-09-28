@@ -4,22 +4,55 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient"
+      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
       d:DesignHeight="550" d:DesignWidth="450"
       Title="ForgotPassPage">
 
-    <Grid>
-        <Grid.Background>
-            <ImageBrush ImageSource="/Assets/logo2.png"
-                        Stretch="UniformToFill">
-                <ImageBrush.Viewbox>
-                    <Rect>0.2, 0.2, 0.6, 0.6</Rect>
-                </ImageBrush.Viewbox>
-            </ImageBrush>
-        </Grid.Background>
-        <TextBox x:Name="Email" HorizontalAlignment="Center" Margin="0,309,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="160" Height="29" TextChanged="TextBox_TextChanged"/>
-        <TextBox x:Name="RepeatEmail" HorizontalAlignment="Center" Margin="0,365,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="160" Height="29"/>
-        <Button Content="Button" HorizontalAlignment="Center" Margin="0,441,0,0" VerticalAlignment="Top" Height="33" Width="80"/>
+    <Page.Resources>
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder" CornerRadius="20" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
 
+    <Grid>
+        <Button Content="{x:Static props:Strings.BackButton}" 
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" 
+                Background="Transparent" BorderBrush="Transparent" Foreground="Gray"
+                Click="BackButton"/>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="350"
+                Background="#D8FFFFFF" CornerRadius="20" Padding="30">
+            <StackPanel>
+                <TextBlock Text="{x:Static props:Strings.ForgotPassLabel}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                <Grid Margin="0,5">
+                    <TextBox x:Name="EmailTextBox" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
+                </Grid>
+                <Grid Margin="0,5">
+                    <TextBox x:Name="RepeatEmailTextBox" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
+                </Grid>
+
+                <Button x:Name="SendButton" Content="{x:Static props:Strings.AceptButton}" 
+                        HorizontalAlignment="Center" Margin="0,20,0,0"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="OnSendButtonClick"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Page>

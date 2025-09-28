@@ -120,11 +120,17 @@
   <data name="AceptButton" xml:space="preserve">
     <value>Acept</value>
   </data>
+  <data name="AlreadyHaveAccountText" xml:space="preserve">
+    <value>Already have an acccount? Click Here</value>
+  </data>
   <data name="AsGuestButton" xml:space="preserve">
     <value>Play As Guest</value>
   </data>
   <data name="BackButton" xml:space="preserve">
     <value>Back</value>
+  </data>
+  <data name="CreateAccountButton" xml:space="preserve">
+    <value>Create Account</value>
   </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Email</value>
@@ -152,6 +158,9 @@
   </data>
   <data name="RepeatPasswordLabel" xml:space="preserve">
     <value>Repeat password</value>
+  </data>
+  <data name="SendButton" xml:space="preserve">
+    <value>Send</value>
   </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Username:</value>

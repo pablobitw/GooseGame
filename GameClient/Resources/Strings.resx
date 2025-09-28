@@ -120,19 +120,25 @@
   <data name="AceptButton" xml:space="preserve">
     <value>Aceptar</value>
   </data>
-  <data name="AsGuestButtonText" xml:space="preserve">
+  <data name="AlreadyHaveAccountText" xml:space="preserve">
+    <value>Ya tienes una cuenta? Click aqui</value>
+  </data>
+  <data name="AsGuestButton" xml:space="preserve">
     <value>Jugar como invitado</value>
   </data>
   <data name="BackButton" xml:space="preserve">
     <value>Volver</value>
   </data>
+  <data name="CreateAccountButton" xml:space="preserve">
+    <value>Crear cuenta</value>
+  </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Correo Electronico</value>
   </data>
-  <data name="ForgotPass" xml:space="preserve">
+  <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
   </data>
-  <data name="LoginButtonText" xml:space="preserve">
+  <data name="LoginButton" xml:space="preserve">
     <value>Iniciar Sesion</value>
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
@@ -150,8 +156,11 @@
   <data name="RepeatEmailLabel" xml:space="preserve">
     <value>Repetir correo</value>
   </data>
-  <data name="RepeatPassLabel" xml:space="preserve">
+  <data name="RepeatPasswordLabel" xml:space="preserve">
     <value>Repetir contraseña</value>
+  </data>
+  <data name="SendButton" xml:space="preserve">
+    <value>Enviar</value>
   </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Usuario:</value>

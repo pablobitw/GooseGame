@@ -5,127 +5,66 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
-      d:DesignHeight="550" d:DesignWidth="450"
+      d:DesignHeight="650" d:DesignWidth="450"
       Title="LoginPage">
-
-    <Page.Resources>
-        <DropShadowEffect x:Key="PanelShadow" Color="Black" Opacity="0.2" BlurRadius="20" ShadowDepth="1"/>
-    </Page.Resources>
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/logo2.png"
-                        Stretch="UniformToFill">
+            <ImageBrush ImageSource="/Assets/logo2.png" 
+                Stretch="UniformToFill" 
+                Opacity="0.9">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>
             </ImageBrush>
         </Grid.Background>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
 
-        <Image Grid.Row="0"
-               Source="/Assets/LOGO.png" 
-               Height="200" 
-               Margin="0,25,0,0"/>
+            <Image Source="/Assets/LOGO.png" Height="180" Margin="0,0,0,20"/>
 
-        <Border
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                MaxWidth="360"
-                Background="#D8FFFFFF" 
-                CornerRadius="20"
-                Effect="{StaticResource PanelShadow}" Width="334" Margin="0,209,0,0" Grid.RowSpan="2">
+            <Border Background="#D8FFFFFF" CornerRadius="20" MaxWidth="360" Padding="25,20" Width="336">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="20" ShadowDepth="1"/>
+                </Border.Effect>
 
-            <StackPanel Margin="25,20">
-                <TextBlock Text="{x:Static props:Strings.LoginPageTitle}"
-                           FontFamily="/Assets/Fonts/#Dosis" 
-                           FontSize="28" 
-                           FontWeight="Bold"
-                           Foreground="#333333"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,15"/>
+                <StackPanel>
+                    <TextBlock Text="{x:Static props:Strings.LoginPageTitle}" 
+                               FontFamily="/Assets/Fonts/#Dosis" FontSize="28" FontWeight="Bold" 
+                               Foreground="#333333" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5">
-                    <Grid VerticalAlignment="Center" Margin="10,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Source="/Assets/Icons/user_icon.png" Height="20" Width="20" Margin="0,0,10,0" VerticalAlignment="Center" Grid.Column="0"/>
-
-                        <TextBox x:Name="UsernameTextBox" 
-                                 Grid.Column="1"
-                                 FontFamily="/Assets/Fonts/#Dosis" 
-                                 FontSize="16" 
-                                 Padding="5,0"
-                                 VerticalContentAlignment="Center"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="#666666"
-                                 GotFocus="RemoveUsernamePlaceholder"
-                                 LostFocus="RestoreUsernamePlaceholder"/>
-                    </Grid>
-                </Border>
-
-                <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,10">
-                    <Grid VerticalAlignment="Center" Margin="10,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Source="/Assets/Icons/password_icon.png" Height="20" Width="20" Margin="0,0,10,0" VerticalAlignment="Center" Grid.Column="0"/>
-
-                        <PasswordBox x:Name="PasswordBox"
-                                     Grid.Column="1"
-                                     FontFamily="/Assets/Fonts/#Dosis" 
-                                     FontSize="16" 
-                                     Padding="5,0"
-                                     VerticalContentAlignment="Center"
-                                     BorderThickness="0"
-                                     Background="Transparent"
-                                     Foreground="#666666"
-                                     GotFocus="RemovePasswordPlaceholder"
-                                     LostFocus="RestorePasswordPlaceholder"/>
-                    </Grid>
-                </Border>
-
-                <Button Style="{StaticResource AuthButtonStyle}" 
-                        Margin="0,15,0,5"
-                        Click="BtnLogin">
-                    <Button.Content>
+                    <!-- Username -->
+                    <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
                         <Grid>
-                            <Image Source="/Assets/Icons/Login.png" 
-                                   Height="28"
-                                   HorizontalAlignment="Center" 
-                                   VerticalAlignment="Center">
-                                <Image.RenderTransform>
-                                    <TransformGroup>
-                                        <TranslateTransform X="-35" Y="-8" />
-                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
-                                        <RotateTransform Angle="0" />
-                                    </TransformGroup>
-                                </Image.RenderTransform>
-                            </Image>
-                            <TextBlock Text="{x:Static props:Strings.LoginButtonText}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       FontFamily="/Assets/Fonts/#Dosis" 
-                                       FontSize="18" 
-                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
+                                       Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                            <TextBox x:Name="UsernameTextBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
+                                     TextChanged="OnUsernameTextChanged"/>
                         </Grid>
-                    </Button.Content>
-                </Button>
+                    </Border>
 
-                <Button Content="{x:Static props:Strings.ForgotPass}"
-                        Style="{StaticResource LinkButtonStyle}" 
-                        Margin="0,5,0,0"
-                        HorizontalAlignment="Center"
-                        Click="BtnForgotPass"/>
-            </StackPanel>
-        </Border>
+                    <!-- Password -->
+                    <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
+                        <Grid>
+                            <TextBlock x:Name="PasswordPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
+                                       Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                            <PasswordBox x:Name="PasswordBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
+                                         PasswordChanged="OnPasswordChanged"/>
+                        </Grid>
+                    </Border>
+
+                    <Button Content="{x:Static props:Strings.LoginButton}" 
+                            Style="{StaticResource PrimaryButtonStyle}" 
+                            Margin="0,15,0,5"
+                            Click="Login"/>
+
+                    <Button Content="{x:Static props:Strings.ForgotPassLabel}" 
+                            Style="{StaticResource LinkButtonStyle}" 
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Center"
+                            Click="ForgotPass"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Page>

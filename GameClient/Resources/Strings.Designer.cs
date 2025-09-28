@@ -70,11 +70,20 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Ya tienes una cuenta? Click aqui.
+        /// </summary>
+        public static string AlreadyHaveAccountText {
+            get {
+                return ResourceManager.GetString("AlreadyHaveAccountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Jugar como invitado.
         /// </summary>
-        public static string AsGuestButtonText {
+        public static string AsGuestButton {
             get {
-                return ResourceManager.GetString("AsGuestButtonText", resourceCulture);
+                return ResourceManager.GetString("AsGuestButton", resourceCulture);
             }
         }
         
@@ -84,6 +93,15 @@ namespace GameClient.Resources {
         public static string BackButton {
             get {
                 return ResourceManager.GetString("BackButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Crear cuenta.
+        /// </summary>
+        public static string CreateAccountButton {
+            get {
+                return ResourceManager.GetString("CreateAccountButton", resourceCulture);
             }
         }
         
@@ -99,18 +117,18 @@ namespace GameClient.Resources {
         /// <summary>
         ///   Busca una cadena traducida similar a Olvidaste tu contraseña?.
         /// </summary>
-        public static string ForgotPass {
+        public static string ForgotPassLabel {
             get {
-                return ResourceManager.GetString("ForgotPass", resourceCulture);
+                return ResourceManager.GetString("ForgotPassLabel", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Busca una cadena traducida similar a Iniciar Sesion.
         /// </summary>
-        public static string LoginButtonText {
+        public static string LoginButton {
             get {
-                return ResourceManager.GetString("LoginButtonText", resourceCulture);
+                return ResourceManager.GetString("LoginButton", resourceCulture);
             }
         }
         
@@ -162,9 +180,18 @@ namespace GameClient.Resources {
         /// <summary>
         ///   Busca una cadena traducida similar a Repetir contraseña.
         /// </summary>
-        public static string RepeatPassLabel {
+        public static string RepeatPasswordLabel {
             get {
-                return ResourceManager.GetString("RepeatPassLabel", resourceCulture);
+                return ResourceManager.GetString("RepeatPasswordLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Enviar.
+        /// </summary>
+        public static string SendButton {
+            get {
+                return ResourceManager.GetString("SendButton", resourceCulture);
             }
         }
         

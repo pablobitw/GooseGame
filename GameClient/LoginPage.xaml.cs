@@ -1,77 +1,50 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using System.Windows.Navigation;
 
 namespace GameClient.Views
 {
     public partial class LoginPage : Page
     {
-        private readonly string _usernamePlaceholder;
-        private readonly string _passwordPlaceholder;
-
         public LoginPage()
         {
             InitializeComponent();
-
-            _usernamePlaceholder = GameClient.Resources.Strings.UsernameLabel;
-            _passwordPlaceholder = GameClient.Resources.Strings.PasswordLabel;
-
-            SetupPlaceholders();
         }
 
-        private void SetupPlaceholders()
+        private void Login(object sender, RoutedEventArgs e)
         {
-            UsernameTextBox.Text = _usernamePlaceholder;
-            UsernameTextBox.Foreground = Brushes.Gray;
+            string username = UsernameTextBox.Text;
+            string password = PasswordBox.Password;
 
-            PasswordBox.Password = _passwordPlaceholder;
-            PasswordBox.Foreground = Brushes.Gray;
-        }
-
-        private void BtnLogin(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Botón de Login presionado!");
-        }
-
-        private void BtnForgotPass(object sender, RoutedEventArgs e)
-        {
-            this.NavigationService.Navigate(new ForgotPassPage());
-            
-        }
-        private void RemoveUsernamePlaceholder(object sender, RoutedEventArgs e)
-        {
-            if (UsernameTextBox.Text == _usernamePlaceholder)
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                UsernameTextBox.Text = "";
-                UsernameTextBox.Foreground = Brushes.Black;
+                MessageBox.Show("Por favor, ingresa tu usuario y contraseña.", "Campos Vacíos");
+                return;
+            }
+
+            MessageBox.Show($"Intentando iniciar sesión con el usuario: {username}", "Lógica Pendiente");
+        }
+
+        private void ForgotPass(object sender, RoutedEventArgs e)
+        {
+            if (this.NavigationService != null)
+            {
+                this.NavigationService.Navigate(new ForgotPassPage());
             }
         }
 
-        private void RestoreUsernamePlaceholder(object sender, RoutedEventArgs e)
+        private void OnUsernameTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
-            {
-                UsernameTextBox.Text = _usernamePlaceholder;
-                UsernameTextBox.Foreground = Brushes.Gray;
-            }
+            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UsernameTextBox.Text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
-        private void RemovePasswordPlaceholder(object sender, RoutedEventArgs e)
+        private void OnPasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (PasswordBox.Password == _passwordPlaceholder)
-            {
-                PasswordBox.Password = "";
-                PasswordBox.Foreground = Brushes.Black;
-            }
-        }
-
-        private void RestorePasswordPlaceholder(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(PasswordBox.Password))
-            {
-                PasswordBox.Password = _passwordPlaceholder;
-                PasswordBox.Foreground = Brushes.Gray;
-            }
+            PasswordPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }

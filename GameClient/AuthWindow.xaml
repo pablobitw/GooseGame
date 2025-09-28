@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         Title="GooseGame" Height="550" Width="450"
         WindowStartupLocation="CenterScreen">
+
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/logo2.png" 
@@ -31,7 +32,8 @@
                 <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="15" ShadowDepth="1"/>
             </Border.Effect>
             <StackPanel x:Name="AuthButtonsPanel">
-                <Button Style="{StaticResource AuthButtonStyle}" 
+
+                <Button Style="{StaticResource PrimaryButtonStyle}" 
                         Margin="0,5"
                         Click="LoginButton">
                     <Button.Content>
@@ -44,11 +46,10 @@
                                     <TransformGroup>
                                         <TranslateTransform X="-35" Y="-8" />
                                         <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
-                                        <RotateTransform Angle="0" />
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-                            <TextBlock Text="{x:Static props:Strings.LoginButtonText}"
+                            <TextBlock Text="{x:Static props:Strings.LoginPageTitle}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        FontFamily="/Assets/Fonts/#Dosis" 
@@ -58,58 +59,54 @@
                     </Button.Content>
                 </Button>
 
-                <Button Style="{StaticResource RegisterButtonStyle}" 
-        Margin="0,5"
-        Click="RegisterButton">
+                <Button Style="{StaticResource OrangeButtonStyle}" 
+                        Margin="0,5"
+                        Click="RegisterButton">
                     <Button.Content>
                         <Grid>
                             <Image Source="/Assets/Icons/Register.png" 
-                   Height="28"
-                   HorizontalAlignment="Left" 
-                   VerticalAlignment="Center">
+                                   Height="28"
+                                   HorizontalAlignment="Left" 
+                                   VerticalAlignment="Center">
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform X="-35" Y="-8" />
                                         <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
-                                        <RotateTransform Angle="0" />
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-
-                            <TextBlock Text="{x:Static props:Strings.RegisterButtonText}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       FontFamily="/Assets/Fonts/#Dosis" 
-                       FontSize="18" 
-                       FontWeight="Bold"/>
+                            <TextBlock Text="{x:Static props:Strings.RegisterPageTitle}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       FontFamily="/Assets/Fonts/#Dosis" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"/>
                         </Grid>
                     </Button.Content>
                 </Button>
 
-                <Button Style="{StaticResource GuestButtonStyle}" 
-        Margin="0,5"
-        Click="AsGuestButton">
+                <Button Style="{StaticResource GreenButtonStyle}" 
+                        Margin="0,5"
+                        Click="AsGuestButton">
                     <Button.Content>
                         <Grid>
                             <Image Source="/Assets/Icons/Guest.png" 
-                   Height="28"
-                   HorizontalAlignment="Left" 
-                   VerticalAlignment="Center">
+                                   Height="28"
+                                   HorizontalAlignment="Left" 
+                                   VerticalAlignment="Center">
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform X="-25" Y="-8" />
                                         <ScaleTransform ScaleX="2.5" ScaleY="2.5" />
-                                        <RotateTransform Angle="0" />
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-
-                            <TextBlock Text="{x:Static props:Strings.AsGuestButtonText}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       FontFamily="/Assets/Fonts/#Dosis" 
-                       FontSize="18" 
-                       FontWeight="Bold"/>
+                            <TextBlock Text="{x:Static props:Strings.AsGuestButton}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       FontFamily="/Assets/Fonts/#Dosis" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"/>
                         </Grid>
                     </Button.Content>
                 </Button>
@@ -120,7 +117,7 @@
                Height="216" 
                VerticalAlignment="Top"
                HorizontalAlignment="Center"
-               Margin="0,15,0,0" RenderTransformOrigin="0.472,0.257" />
+               Margin="0,15,0,0" />
 
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
     </Grid>

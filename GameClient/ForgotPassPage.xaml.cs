@@ -1,23 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GameClient
 {
-    /// <summary>
-    /// Lógica de interacción para ForgotPassPage.xaml
-    /// </summary>
     public partial class ForgotPassPage : Page
     {
         public ForgotPassPage()
@@ -25,9 +11,27 @@ namespace GameClient
             InitializeComponent();
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void BackButton(object sender, RoutedEventArgs e)
         {
+            if (NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
+        }
 
+        private void OnSendButtonClick(object sender, RoutedEventArgs e)
+        {
+            string email = EmailTextBox.Text;
+            string repeatEmail = RepeatEmailTextBox.Text;
+
+            if (email != repeatEmail)
+            {
+                MessageBox.Show("Los correos electrónicos no coinciden.", "Error");
+                return;
+            }
+
+            // TODO: Lógica para llamar al servidor y recuperar la contraseña
+            MessageBox.Show($"Se enviaría un correo de recuperación a: {email}", "Lógica Pendiente");
         }
     }
 }
