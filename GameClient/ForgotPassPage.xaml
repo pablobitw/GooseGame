@@ -31,13 +31,16 @@
     </Page.Resources>
 
     <Grid>
-        <Button Content="{x:Static props:Strings.BackButton}" 
-                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" 
-                Background="Transparent" BorderBrush="Transparent" Foreground="Gray"
-                Click="BackButton"/>
+        <Button Content="Volver"
+    Style="{StaticResource PrimaryButtonStyle}"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Top"
+    Margin="10,21,0,0"
+    Width="78"
+    Click="BackButton" Height="35" Cursor="Hand"/>
 
-        <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="350"
-                Background="#D8FFFFFF" CornerRadius="20" Padding="30">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Top" MaxWidth="350"
+                Background="#D8FFFFFF" CornerRadius="20" Padding="30" Margin="0,188,0,0">
             <StackPanel>
                 <TextBlock Text="{x:Static props:Strings.ForgotPassLabel}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 

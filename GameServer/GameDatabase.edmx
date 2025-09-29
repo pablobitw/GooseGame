@@ -85,7 +85,7 @@
           <Property Name="Email" Type="String" Nullable="false" cg:GetterAccess="Private" cg:SetterAccess="Private" FixedLength="false" MaxLength="255" />
           <Property Name="PasswordHash" Type="String" Nullable="false" cg:GetterAccess="Private" cg:SetterAccess="Private" MaxLength="255" />
           <Property Name="RegisterDate" Type="DateTime" Nullable="false" cg:SetterAccess="Private" cg:GetterAccess="Private" />
-          <Property Name="StatusEnum" Type="String" Nullable="false" MaxLength="20" />
+          <Property Name="AccountStatus" Type="GameDatabase.AccountStatus" Nullable="false" />
         </EntityType>
         <EntityType Name="Player">
           <Key>
@@ -125,7 +125,7 @@
             <PropertyRef Name="IdFriendship" />
           </Key>
           <Property Name="IdFriendship" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="StatusEnum" Type="String" Nullable="false" />
+          <Property Name="FriendshipStatus" Type="GameDatabase.FriendshipStatus" Nullable="false" />
           <Property Name="RequestDate" Type="DateTime" Nullable="false" />
         </EntityType>
         <EntityType Name="Sanction">
@@ -135,7 +135,7 @@
           <Property Name="IdSanction" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <NavigationProperty Name="Account" Relationship="GameDatabase.IdAccount" FromRole="Sanction" ToRole="Account" />
           <NavigationProperty Name="Game" Relationship="GameDatabase.idGame" FromRole="Sanction" ToRole="Game" />
-          <Property Name="TypeEnum" Type="String" Nullable="false" />
+          <Property Name="SanctionType" Type="GameDatabase.SanctionType" Nullable="false" />
           <Property Name="Reason" Type="String" Nullable="false" />
           <Property Name="StartDate" Type="DateTime" Nullable="false" />
           <Property Name="EndDate" Type="DateTime" Nullable="false" />
@@ -146,7 +146,7 @@
           </Key>
           <Property Name="IdGame" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <NavigationProperty Name="Board" Relationship="GameDatabase.GameBoard" FromRole="Game" ToRole="Board" />
-          <Property Name="StatusEnum" Type="String" Nullable="false" />
+          <Property Name="GameStatus" Type="GameDatabase.GameStatus" Nullable="false" />
           <Property Name="StartTime" Type="DateTime" Nullable="false" />
           <Property Name="EndTime" Type="DateTime" Nullable="false" />
           <Property Name="HostPlayerID" Type="String" Nullable="false" />
@@ -169,7 +169,7 @@
           <Property Name="Name" Type="String" Nullable="false" />
           <Property Name="Description" Type="String" Nullable="false" />
           <Property Name="ItemTypeEnum" Type="String" Nullable="false" />
-          <Property Name="RarityEnum" Type="String" Nullable="false" />
+          <Property Name="ItemRarity" Type="GameDatabase.ItemRarity" Nullable="false" />
           <Property Name="Cost" Type="Int16" Nullable="false" />
           <NavigationProperty Name="PlayerInventory" Relationship="GameDatabase.idItem" FromRole="Item" ToRole="PlayerInventory" />
           <Property Name="PlayerInventoryIdPlayerInventory" Type="Int32" Nullable="false" />
@@ -213,7 +213,7 @@
           <Property Name="IdTile" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <NavigationProperty Name="Board" Relationship="GameDatabase.idBoard" FromRole="Tile" ToRole="Board" />
           <Property Name="TileNumber" Type="Int32" Nullable="false" />
-          <Property Name="TileTypeEnum" Type="String" Nullable="false" />
+          <Property Name="TileTypeE" Type="String" Nullable="false" />
         </EntityType>
         <Association Name="idBoard">
           <End Type="GameDatabase.Tile" Role="Tile" Multiplicity="*" />
@@ -260,6 +260,35 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EnumType Name="SanctionType">
+          <Member Name="Kick" />
+          <Member Name="TemporaryBan" />
+          <Member Name="PermanentBan" />
+          <Member Name="Mute" />
+        </EnumType>
+        <EnumType Name="AccountStatus">
+          <Member Name="Active" />
+          <Member Name="Suspended" />
+          <Member Name="Banned" />
+          <Member Name="PendingVerification" />
+          <Member Name="Deleted" />
+        </EnumType>
+        <EnumType Name="ItemRarity">
+          <Member Name="Common" />
+          <Member Name="Epic" />
+          <Member Name="Legendary" />
+        </EnumType>
+        <EnumType Name="FriendshipStatus">
+          <Member Name="Pending" />
+          <Member Name="Accepted" />
+          <Member Name="Blocked" />
+        </EnumType>
+        <EnumType Name="GameStatus">
+          <Member Name="WaitingForPlayers" />
+          <Member Name="InProgress" />
+          <Member Name="Finished" />
+          <Member Name="Cancelled" />
+        </EnumType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->

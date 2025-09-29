@@ -61,6 +61,9 @@
     <Compile Include="ForgotPassPage.xaml.cs">
       <DependentUpon>ForgotPassPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GameMainWindow.xaml.cs">
+      <DependentUpon>GameMainWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
@@ -90,6 +93,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ForgotPassPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameMainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

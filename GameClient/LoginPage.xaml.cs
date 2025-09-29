@@ -16,13 +16,23 @@ namespace GameClient.Views
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (username == "admin" && password == "1234")
             {
-                MessageBox.Show("Por favor, ingresa tu usuario y contraseña.", "Campos Vacíos");
-                return;
-            }
+                // Se crea una instancia de la nueva ventana del juego
+                GameMainWindow gameMenu = new GameMainWindow();
 
-            MessageBox.Show($"Intentando iniciar sesión con el usuario: {username}", "Lógica Pendiente");
+                //  Se muestra la nueva ventana
+                gameMenu.Show();
+
+                // Busca la ventana de autenticación actual y ciérrala
+                Window authWindow = Window.GetWindow(this);
+                authWindow.Close();
+            }
+            else
+            {
+                // Si las credenciales son incorrectas, muestra un error
+                MessageBox.Show("Usuario o contraseña incorrectos.", "Error de Acceso");
+            }
         }
 
         private void ForgotPass(object sender, RoutedEventArgs e)
@@ -45,6 +55,14 @@ namespace GameClient.Views
             PasswordPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+        }
+        private void OnBackButton(object sender, RoutedEventArgs e)
+        {
+            // Llamamos al método de la ventana padre
+            if (Window.GetWindow(this) is AuthWindow authWindow)
+            {
+                authWindow.ShowAuthButtons(); // esto limpia el Frame y muestra los botones
+            }
         }
     }
 }

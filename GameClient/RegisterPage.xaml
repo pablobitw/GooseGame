@@ -19,10 +19,14 @@
             </ImageBrush>
         </Grid.Background>
 
-        <Button Content="{x:Static props:Strings.BackButton}" 
-                HorizontalAlignment="Left" VerticalAlignment="Top" 
-                Margin="10" Background="Transparent" BorderBrush="Transparent" Foreground="Gray" 
-                Click="OnBackButton"/>
+        <Button Content="Volver"
+        Style="{StaticResource PrimaryButtonStyle}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="10,21,0,0"
+        Width="78"
+        Click="OnBackButton" Height="35"/>
+
 
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <Border Background="White" CornerRadius="20" MaxWidth="360" Padding="25,20" Width="364">
@@ -37,69 +41,43 @@
 
                     <!-- Email -->
                     <Grid Margin="0,5">
-                        <TextBox x:Name="EmailTextBox" Style="{StaticResource InputTextBoxStyle}"/>
-                        <TextBlock Text="{x:Static props:Strings.EmailLabel}" 
-                                   Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=EmailTextBox}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Text, ElementName=EmailTextBox}">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        <TextBox x:Name="EmailBox" Style="{StaticResource InputTextBoxStyle}" TextChanged="EmailBoxTextChanged"/>
+                        <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" 
+                                   Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <!-- Username -->
                     <Grid Margin="0,5">
-                        <TextBox x:Name="UsernameTextBox" Style="{StaticResource InputTextBoxStyle}"/>
-                        <TextBlock Text="{x:Static props:Strings.UsernameLabel}" 
-                                   Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=UsernameTextBox}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Text, ElementName=UsernameTextBox}">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        <TextBox x:Name="UserBox" Style="{StaticResource InputTextBoxStyle}" TextChanged="UserBoxTextChanged"/>
+                        <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
+                                   Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <!-- Password -->
                     <Grid Margin="0,5">
-                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource InputPasswordBoxStyle}" PasswordChanged="OnPasswordChanged"/>
-                        <TextBlock x:Name="PasswordPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
+                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource InputPasswordBoxStyle}" 
+                                     GotFocus="PassBoxFocus" LostFocus="PassBoxLost" PasswordChanged="PassBoxChanged"/>
+                        <TextBlock x:Name="PassPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <!-- Repeat Password -->
                     <Grid Margin="0,5">
-                        <PasswordBox x:Name="RepeatPasswordBox" Style="{StaticResource InputPasswordBoxStyle}" PasswordChanged="OnRepeatPasswordChanged"/>
-                        <TextBlock x:Name="RepeatPasswordPlaceholder" Text="{x:Static props:Strings.RepeatPasswordLabel}" 
+                        <PasswordBox x:Name="RepeatBox" Style="{StaticResource InputPasswordBoxStyle}" 
+                                     GotFocus="RepeatBoxFocus" LostFocus="RepeatBoxLost" PasswordChanged="RepeatBoxChanged"/>
+                        <TextBlock x:Name="RepeatPlaceholder" Text="{x:Static props:Strings.RepeatPasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <Button Content="{x:Static props:Strings.CreateAccountButton}" 
                             Style="{StaticResource OrangeButtonStyle}" 
                             Margin="0,15,0,5" 
-                            Click="OnCreateAccount"/>
+                            Click="CreateAccount"/>
                     <Button Content="{x:Static props:Strings.AlreadyHaveAccountText}" 
                             Style="{StaticResource LinkButtonStyle}" 
                             Margin="0,5,0,0" 
                             HorizontalAlignment="Center" 
-                            Click="OnGoToLogin"/>
+                            Click="GoToLogin"/>
                 </StackPanel>
             </Border>
         </StackPanel>

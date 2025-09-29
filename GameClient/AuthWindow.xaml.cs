@@ -13,8 +13,7 @@ namespace GameClient
 
         private void LoginButton (object sender, RoutedEventArgs e)
         {
-            MainPanel.Visibility = Visibility.Collapsed;
-
+            AuthButtonsPanel.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new LoginPage());
         }
 

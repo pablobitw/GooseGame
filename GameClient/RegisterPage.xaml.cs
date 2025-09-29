@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
+using System.Windows.Media;
 
 namespace GameClient.Views
 {
@@ -9,80 +9,82 @@ namespace GameClient.Views
         public RegisterPage()
         {
             InitializeComponent();
-
-            // Inicializar placeholders
-            PasswordPlaceholder.Visibility = Visibility.Visible;
-            RepeatPasswordPlaceholder.Visibility = Visibility.Visible;
-
-            EmailTextBox.Text = "Correo electrónico";
-            UsernameTextBox.Text = "Usuario";
         }
 
-        private void OnCreateAccount(object sender, RoutedEventArgs e)
+        // --- Email ---
+        private void EmailBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            string email = EmailTextBox.Text;
-            string username = UsernameTextBox.Text;
-            string password = PasswordBox.Password;
-            string repeatPassword = RepeatPasswordBox.Password;
-
-            if (password != repeatPassword)
-            {
-                MessageBox.Show("Las contraseñas no coinciden.", "Error de Validación");
-                return;
-            }
-
-            MessageBox.Show("Lógica de registro aquí...", "TODO");
-        }
-
-        private void OnPasswordChanged(object sender, RoutedEventArgs e)
-        {
-            PasswordPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
+            EmailPlaceholder.Visibility = string.IsNullOrEmpty(EmailBox.Text)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
-        private void OnRepeatPasswordChanged(object sender, RoutedEventArgs e)
+        // --- Username ---
+        private void UserBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            RepeatPasswordPlaceholder.Visibility = string.IsNullOrEmpty(RepeatPasswordBox.Password)
+            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UserBox.Text)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
-        private void OnBackButton(object sender, RoutedEventArgs e)
+        // --- Password ---
+        private void PassBoxFocus(object sender, RoutedEventArgs e)
+        {
+            PassPlaceholder.Visibility = Visibility.Collapsed;
+        }
+
+        private void PassBoxLost(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(PasswordBox.Password))
+                PassPlaceholder.Visibility = Visibility.Visible;
+        }
+
+        private void PassBoxChanged(object sender, RoutedEventArgs e)
+        {
+            PassPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        // --- Repeat Password ---
+        private void RepeatBoxFocus(object sender, RoutedEventArgs e)
+        {
+            RepeatPlaceholder.Visibility = Visibility.Collapsed;
+        }
+
+        private void RepeatBoxLost(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(RepeatBox.Password))
+                RepeatPlaceholder.Visibility = Visibility.Visible;
+        }
+
+        private void RepeatBoxChanged(object sender, RoutedEventArgs e)
+        {
+            RepeatPlaceholder.Visibility = string.IsNullOrEmpty(RepeatBox.Password)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        // --- Botones ---
+        private void CreateAccount(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Cuenta creada (ejemplo).");
+        }
+
+        private void GoToLogin(object sender, RoutedEventArgs e)
         {
             if (NavigationService.CanGoBack)
                 NavigationService.GoBack();
         }
 
-        private void OnGoToLogin(object sender, RoutedEventArgs e)
+        private void OnBackButton(object sender, RoutedEventArgs e)
         {
-            // NavigationService.Navigate(new LoginPage());
-        }
-
-        // Para los TextBox: placeholder de Email y Username
-        private void RemoveText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && (tb.Text == "Correo electrónico" || tb.Text == "Usuario"))
+            // Llamamos al método de la ventana padre
+            if (Window.GetWindow(this) is AuthWindow authWindow)
             {
-                tb.Text = "";
-                tb.Foreground = System.Windows.Media.Brushes.Black;
+                authWindow.ShowAuthButtons();
             }
         }
 
-        private void AddText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && string.IsNullOrWhiteSpace(tb.Text))
-            {
-                if (tb.Name == "EmailTextBox")
-                {
-                    tb.Text = "Correo electrónico";
-                }
-                else if (tb.Name == "UsernameTextBox")
-                {
-                    tb.Text = "Usuario";
-                }
-                tb.Foreground = System.Windows.Media.Brushes.Gray;
-            }
-        }
     }
 }
