@@ -39,16 +39,20 @@
     Width="78"
     Click="BackButton" Height="35" Cursor="Hand"/>
 
-        <Border HorizontalAlignment="Center" VerticalAlignment="Top" MaxWidth="350"
-                Background="#D8FFFFFF" CornerRadius="20" Padding="30" Margin="0,188,0,0">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="350"
+                Background="#D8FFFFFF" CornerRadius="20" Padding="30">
             <StackPanel>
                 <TextBlock Text="{x:Static props:Strings.ForgotPassLabel}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
                 <Grid Margin="0,5">
-                    <TextBox x:Name="EmailTextBox" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
+                    <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" Foreground="Gray"
+                               VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                    <TextBox x:Name="EmailTextBox" Background="Transparent" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
                 </Grid>
                 <Grid Margin="0,5">
-                    <TextBox x:Name="RepeatEmailTextBox" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
+                    <TextBlock x:Name="RepeatEmailPlaceholder" Text="{x:Static props:Strings.RepeatEmailLabel}" Foreground="Gray"
+                               VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                    <TextBox x:Name="RepeatEmailTextBox" Background="Transparent" Height="35" VerticalContentAlignment="Center" Padding="8,0"/>
                 </Grid>
 
                 <Button x:Name="SendButton" Content="{x:Static props:Strings.AceptButton}" 
