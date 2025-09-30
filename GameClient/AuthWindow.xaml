@@ -75,7 +75,7 @@
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-                            <TextBlock Text="{x:Static props:Strings.RegisterPageTitle}"
+                            <TextBlock Text="{x:Static props:Strings.RegisterButtonText}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        FontFamily="/Assets/Fonts/#Dosis" 
