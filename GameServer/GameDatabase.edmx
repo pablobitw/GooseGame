@@ -4,11 +4,301 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl" Namespace="GameDatabase.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2005">
-        <EntityContainer Name="GameDatabaseTargetContainer" >
-        </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+    <Schema Namespace="GameDatabase.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityContainer Name="GameDatabaseStoreContainer">
+    <EntitySet Name="BoardSet" EntityType="GameDatabase.Store.BoardSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Accounts" EntityType="GameDatabase.Store.Accounts" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Players" EntityType="GameDatabase.Store.Players" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="PlayerStats" EntityType="GameDatabase.Store.PlayerStats" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Friendships" EntityType="GameDatabase.Store.Friendships" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Sanctions" EntityType="GameDatabase.Store.Sanctions" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Games" EntityType="GameDatabase.Store.Games" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Items" EntityType="GameDatabase.Store.Items" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="PlayerInventories" EntityType="GameDatabase.Store.PlayerInventories" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Tiles" EntityType="GameDatabase.Store.Tiles" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="ChatMessages" EntityType="GameDatabase.Store.ChatMessages" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MoveRecords" EntityType="GameDatabase.Store.MoveRecords" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="PlayerAccount" Association="GameDatabase.Store.PlayerAccount">
+      <End Role="Player" EntitySet="Players" />
+      <End Role="Account" EntitySet="Accounts" />
+    </AssociationSet>
+    <AssociationSet Name="PlayerStatPlayer" Association="GameDatabase.Store.PlayerStatPlayer">
+      <End Role="PlayerStat" EntitySet="PlayerStats" />
+      <End Role="Player" EntitySet="Players" />
+    </AssociationSet>
+    <AssociationSet Name="IdAccount" Association="GameDatabase.Store.IdAccount">
+      <End Role="Sanction" EntitySet="Sanctions" />
+      <End Role="Account" EntitySet="Accounts" />
+    </AssociationSet>
+    <AssociationSet Name="idGame" Association="GameDatabase.Store.idGame">
+      <End Role="Sanction" EntitySet="Sanctions" />
+      <End Role="Game" EntitySet="Games" />
+    </AssociationSet>
+    <AssociationSet Name="idPlayer" Association="GameDatabase.Store.idPlayer">
+      <End Role="PlayerInventory" EntitySet="PlayerInventories" />
+      <End Role="Player" EntitySet="Players" />
+    </AssociationSet>
+    <AssociationSet Name="idItem" Association="GameDatabase.Store.idItem">
+      <End Role="PlayerInventory" EntitySet="PlayerInventories" />
+      <End Role="Item" EntitySet="Items" />
+    </AssociationSet>
+    <AssociationSet Name="idBoard" Association="GameDatabase.Store.idBoard">
+      <End Role="Tile" EntitySet="Tiles" />
+      <End Role="Board" EntitySet="BoardSet" />
+    </AssociationSet>
+    <AssociationSet Name="GameBoard" Association="GameDatabase.Store.GameBoard">
+      <End Role="Game" EntitySet="Games" />
+      <End Role="Board" EntitySet="BoardSet" />
+    </AssociationSet>
+    <AssociationSet Name="ChatMessagePlayer" Association="GameDatabase.Store.ChatMessagePlayer">
+      <End Role="ChatMessage" EntitySet="ChatMessages" />
+      <End Role="Player" EntitySet="Players" />
+    </AssociationSet>
+    <AssociationSet Name="ChatMessageGame" Association="GameDatabase.Store.ChatMessageGame">
+      <End Role="ChatMessage" EntitySet="ChatMessages" />
+      <End Role="Game" EntitySet="Games" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="BoardSet">
+    <Key>
+      <PropertyRef Name="idBoard" />
+    </Key>
+    <Property Name="idBoard" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="TileCount" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Accounts">
+    <Key>
+      <PropertyRef Name="IdAccount" />
+    </Key>
+    <Property Name="IdAccount" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Email" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="PasswordHash" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="RegisterDate" Type="datetime" Nullable="false" />
+    <Property Name="AccountStatus" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Players">
+    <Key>
+      <PropertyRef Name="IdPlayer" />
+    </Key>
+    <Property Name="IdPlayer" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Coins" Type="int" Nullable="false" />
+    <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
+    <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="PlayerStats">
+    <Key>
+      <PropertyRef Name="IdPlayers" />
+    </Key>
+    <Property Name="IdPlayers" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="MatchesPlayed" Type="int" Nullable="false" />
+    <Property Name="MatchesWon" Type="int" Nullable="false" />
+    <Property Name="MatchesLost" Type="int" Nullable="false" />
+    <Property Name="LuckyBoxOpened" Type="int" Nullable="false" />
+    <Property Name="IdPlayer_IdPlayer" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Friendships">
+    <Key>
+      <PropertyRef Name="IdFriendship" />
+    </Key>
+    <Property Name="IdFriendship" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="FriendshipStatus" Type="int" Nullable="false" />
+    <Property Name="RequestDate" Type="datetime" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Sanctions">
+    <Key>
+      <PropertyRef Name="IdSanction" />
+    </Key>
+    <Property Name="IdSanction" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="SanctionType" Type="int" Nullable="false" />
+    <Property Name="Reason" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="StartDate" Type="datetime" Nullable="false" />
+    <Property Name="EndDate" Type="datetime" Nullable="false" />
+    <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+    <Property Name="Game_IdGame" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Games">
+    <Key>
+      <PropertyRef Name="IdGame" />
+    </Key>
+    <Property Name="IdGame" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="GameStatus" Type="int" Nullable="false" />
+    <Property Name="StartTime" Type="datetime" Nullable="false" />
+    <Property Name="EndTime" Type="datetime" Nullable="false" />
+    <Property Name="HostPlayerID" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="ChatMessageIdChatMessage" Type="int" Nullable="false" />
+    <Property Name="Board_idBoard" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Items">
+    <Key>
+      <PropertyRef Name="IdItem" />
+    </Key>
+    <Property Name="IdItem" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="ItemType" Type="int" Nullable="false" />
+    <Property Name="RarityType" Type="int" Nullable="false" />
+    <Property Name="Cost" Type="smallint" Nullable="false" />
+    <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="PlayerInventories">
+    <Key>
+      <PropertyRef Name="IdPlayerInventory" />
+    </Key>
+    <Property Name="IdPlayerInventory" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Tiles">
+    <Key>
+      <PropertyRef Name="IdTile" />
+    </Key>
+    <Property Name="IdTile" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="TileNumber" Type="int" Nullable="false" />
+    <Property Name="Board_idBoard" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="ChatMessages">
+    <Key>
+      <PropertyRef Name="IdChatMessage" />
+    </Key>
+    <Property Name="IdChatMessage" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="MessageText" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Player_IdPlayer" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="MoveRecords">
+    <Key>
+      <PropertyRef Name="IdMoveRecord" />
+    </Key>
+    <Property Name="IdMoveRecord" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="TurnNumber" Type="int" Nullable="false" />
+    <Property Name="DiceOne" Type="int" Nullable="false" />
+    <Property Name="DiceTwo" Type="int" Nullable="false" />
+    <Property Name="StartPosition" Type="int" Nullable="false" />
+    <Property Name="FinalPosition" Type="int" Nullable="false" />
+    <Property Name="ActionDescription" Type="nvarchar(max)" Nullable="false" />
+  </EntityType>
+  <Association Name="PlayerAccount">
+    <End Role="Player" Type="GameDatabase.Store.Players" Multiplicity="*" />
+    <End Role="Account" Type="GameDatabase.Store.Accounts" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Account">
+        <PropertyRef Name="IdAccount" />
+      </Principal>
+      <Dependent Role="Player">
+        <PropertyRef Name="Account_IdAccount" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="PlayerStatPlayer">
+    <End Role="PlayerStat" Type="GameDatabase.Store.PlayerStats" Multiplicity="*" />
+    <End Role="Player" Type="GameDatabase.Store.Players" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Player">
+        <PropertyRef Name="IdPlayer" />
+      </Principal>
+      <Dependent Role="PlayerStat">
+        <PropertyRef Name="IdPlayer_IdPlayer" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="IdAccount">
+    <End Role="Sanction" Type="GameDatabase.Store.Sanctions" Multiplicity="*" />
+    <End Role="Account" Type="GameDatabase.Store.Accounts" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Account">
+        <PropertyRef Name="IdAccount" />
+      </Principal>
+      <Dependent Role="Sanction">
+        <PropertyRef Name="Account_IdAccount" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="idGame">
+    <End Role="Sanction" Type="GameDatabase.Store.Sanctions" Multiplicity="*" />
+    <End Role="Game" Type="GameDatabase.Store.Games" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Game">
+        <PropertyRef Name="IdGame" />
+      </Principal>
+      <Dependent Role="Sanction">
+        <PropertyRef Name="Game_IdGame" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="idPlayer">
+    <End Role="PlayerInventory" Type="GameDatabase.Store.PlayerInventories" Multiplicity="1" />
+    <End Role="Player" Type="GameDatabase.Store.Players" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="PlayerInventory">
+        <PropertyRef Name="IdPlayerInventory" />
+      </Principal>
+      <Dependent Role="Player">
+        <PropertyRef Name="PlayerInventoryIdPlayerInventory" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="idItem">
+    <End Role="PlayerInventory" Type="GameDatabase.Store.PlayerInventories" Multiplicity="1" />
+    <End Role="Item" Type="GameDatabase.Store.Items" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="PlayerInventory">
+        <PropertyRef Name="IdPlayerInventory" />
+      </Principal>
+      <Dependent Role="Item">
+        <PropertyRef Name="PlayerInventoryIdPlayerInventory" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="idBoard">
+    <End Role="Tile" Type="GameDatabase.Store.Tiles" Multiplicity="*" />
+    <End Role="Board" Type="GameDatabase.Store.BoardSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Board">
+        <PropertyRef Name="idBoard" />
+      </Principal>
+      <Dependent Role="Tile">
+        <PropertyRef Name="Board_idBoard" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="GameBoard">
+    <End Role="Game" Type="GameDatabase.Store.Games" Multiplicity="*" />
+    <End Role="Board" Type="GameDatabase.Store.BoardSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Board">
+        <PropertyRef Name="idBoard" />
+      </Principal>
+      <Dependent Role="Game">
+        <PropertyRef Name="Board_idBoard" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="ChatMessagePlayer">
+    <End Role="ChatMessage" Type="GameDatabase.Store.ChatMessages" Multiplicity="*" />
+    <End Role="Player" Type="GameDatabase.Store.Players" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Player">
+        <PropertyRef Name="IdPlayer" />
+      </Principal>
+      <Dependent Role="ChatMessage">
+        <PropertyRef Name="Player_IdPlayer" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="ChatMessageGame">
+    <End Role="ChatMessage" Type="GameDatabase.Store.ChatMessages" Multiplicity="1" />
+    <End Role="Game" Type="GameDatabase.Store.Games" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="ChatMessage">
+        <PropertyRef Name="IdChatMessage" />
+      </Principal>
+      <Dependent Role="Game">
+        <PropertyRef Name="ChatMessageIdChatMessage" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="GameDatabase" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
@@ -294,13 +584,190 @@
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
-      <Mapping xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs" Space="C-S">
-        <Alias Key="Model" Value="GameDatabase" />
-        <Alias Key="Target" Value="GameDatabase.Store" />
-        <EntityContainerMapping CdmEntityContainer="GameDatabaseContainer" StorageEntityContainer="GameDatabaseTargetContainer">
-        </EntityContainerMapping>
-      </Mapping>
-    </edmx:Mappings>
+    <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="GameDatabaseStoreContainer" CdmEntityContainer="GameDatabaseContainer">
+    <EntitySetMapping Name="BoardSet">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Board)">
+        <MappingFragment StoreEntitySet="BoardSet">
+          <ScalarProperty Name="idBoard" ColumnName="idBoard" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="TileCount" ColumnName="TileCount" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Accounts">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Account)">
+        <MappingFragment StoreEntitySet="Accounts">
+          <ScalarProperty Name="IdAccount" ColumnName="IdAccount" />
+          <ScalarProperty Name="Email" ColumnName="Email" />
+          <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
+          <ScalarProperty Name="RegisterDate" ColumnName="RegisterDate" />
+          <ScalarProperty Name="AccountStatus" ColumnName="AccountStatus" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Players">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Player)">
+        <MappingFragment StoreEntitySet="Players">
+          <ScalarProperty Name="IdPlayer" ColumnName="IdPlayer" />
+          <ScalarProperty Name="Username" ColumnName="Username" />
+          <ScalarProperty Name="Coins" ColumnName="Coins" />
+          <ScalarProperty Name="Avatar" ColumnName="Avatar" />
+          <ScalarProperty Name="PlayerInventoryIdPlayerInventory" ColumnName="PlayerInventoryIdPlayerInventory" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="PlayerStats">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.PlayerStat)">
+        <MappingFragment StoreEntitySet="PlayerStats">
+          <ScalarProperty Name="IdPlayers" ColumnName="IdPlayers" />
+          <ScalarProperty Name="MatchesPlayed" ColumnName="MatchesPlayed" />
+          <ScalarProperty Name="MatchesWon" ColumnName="MatchesWon" />
+          <ScalarProperty Name="MatchesLost" ColumnName="MatchesLost" />
+          <ScalarProperty Name="LuckyBoxOpened" ColumnName="LuckyBoxOpened" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Friendships">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Friendship)">
+        <MappingFragment StoreEntitySet="Friendships">
+          <ScalarProperty Name="IdFriendship" ColumnName="IdFriendship" />
+          <ScalarProperty Name="FriendshipStatus" ColumnName="FriendshipStatus" />
+          <ScalarProperty Name="RequestDate" ColumnName="RequestDate" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Sanctions">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Sanction)">
+        <MappingFragment StoreEntitySet="Sanctions">
+          <ScalarProperty Name="IdSanction" ColumnName="IdSanction" />
+          <ScalarProperty Name="SanctionType" ColumnName="SanctionType" />
+          <ScalarProperty Name="Reason" ColumnName="Reason" />
+          <ScalarProperty Name="StartDate" ColumnName="StartDate" />
+          <ScalarProperty Name="EndDate" ColumnName="EndDate" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Games">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Game)">
+        <MappingFragment StoreEntitySet="Games">
+          <ScalarProperty Name="IdGame" ColumnName="IdGame" />
+          <ScalarProperty Name="GameStatus" ColumnName="GameStatus" />
+          <ScalarProperty Name="StartTime" ColumnName="StartTime" />
+          <ScalarProperty Name="EndTime" ColumnName="EndTime" />
+          <ScalarProperty Name="HostPlayerID" ColumnName="HostPlayerID" />
+          <ScalarProperty Name="ChatMessageIdChatMessage" ColumnName="ChatMessageIdChatMessage" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Items">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Item)">
+        <MappingFragment StoreEntitySet="Items">
+          <ScalarProperty Name="IdItem" ColumnName="IdItem" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="ItemType" ColumnName="ItemType" />
+          <ScalarProperty Name="RarityType" ColumnName="RarityType" />
+          <ScalarProperty Name="Cost" ColumnName="Cost" />
+          <ScalarProperty Name="PlayerInventoryIdPlayerInventory" ColumnName="PlayerInventoryIdPlayerInventory" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="PlayerInventories">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.PlayerInventory)">
+        <MappingFragment StoreEntitySet="PlayerInventories">
+          <ScalarProperty Name="IdPlayerInventory" ColumnName="IdPlayerInventory" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Tiles">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.Tile)">
+        <MappingFragment StoreEntitySet="Tiles">
+          <ScalarProperty Name="IdTile" ColumnName="IdTile" />
+          <ScalarProperty Name="TileNumber" ColumnName="TileNumber" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="ChatMessages">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.ChatMessage)">
+        <MappingFragment StoreEntitySet="ChatMessages">
+          <ScalarProperty Name="IdChatMessage" ColumnName="IdChatMessage" />
+          <ScalarProperty Name="MessageText" ColumnName="MessageText" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="MoveRecords">
+      <EntityTypeMapping TypeName="IsTypeOf(GameDatabase.MoveRecord)">
+        <MappingFragment StoreEntitySet="MoveRecords">
+          <ScalarProperty Name="IdMoveRecord" ColumnName="IdMoveRecord" />
+          <ScalarProperty Name="TurnNumber" ColumnName="TurnNumber" />
+          <ScalarProperty Name="DiceOne" ColumnName="DiceOne" />
+          <ScalarProperty Name="DiceTwo" ColumnName="DiceTwo" />
+          <ScalarProperty Name="StartPosition" ColumnName="StartPosition" />
+          <ScalarProperty Name="FinalPosition" ColumnName="FinalPosition" />
+          <ScalarProperty Name="ActionDescription" ColumnName="ActionDescription" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <AssociationSetMapping Name="PlayerAccount" TypeName="GameDatabase.PlayerAccount" StoreEntitySet="Players">
+      <EndProperty Name="Account">
+        <ScalarProperty Name="IdAccount" ColumnName="Account_IdAccount" />
+      </EndProperty>
+      <EndProperty Name="Player">
+        <ScalarProperty Name="IdPlayer" ColumnName="IdPlayer" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="PlayerStatPlayer" TypeName="GameDatabase.PlayerStatPlayer" StoreEntitySet="PlayerStats">
+      <EndProperty Name="Player">
+        <ScalarProperty Name="IdPlayer" ColumnName="IdPlayer_IdPlayer" />
+      </EndProperty>
+      <EndProperty Name="PlayerStat">
+        <ScalarProperty Name="IdPlayers" ColumnName="IdPlayers" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="IdAccount" TypeName="GameDatabase.IdAccount" StoreEntitySet="Sanctions">
+      <EndProperty Name="Account">
+        <ScalarProperty Name="IdAccount" ColumnName="Account_IdAccount" />
+      </EndProperty>
+      <EndProperty Name="Sanction">
+        <ScalarProperty Name="IdSanction" ColumnName="IdSanction" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="idGame" TypeName="GameDatabase.idGame" StoreEntitySet="Sanctions">
+      <EndProperty Name="Game">
+        <ScalarProperty Name="IdGame" ColumnName="Game_IdGame" />
+      </EndProperty>
+      <EndProperty Name="Sanction">
+        <ScalarProperty Name="IdSanction" ColumnName="IdSanction" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="idBoard" TypeName="GameDatabase.idBoard" StoreEntitySet="Tiles">
+      <EndProperty Name="Board">
+        <ScalarProperty Name="idBoard" ColumnName="Board_idBoard" />
+      </EndProperty>
+      <EndProperty Name="Tile">
+        <ScalarProperty Name="IdTile" ColumnName="IdTile" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="GameBoard" TypeName="GameDatabase.GameBoard" StoreEntitySet="Games">
+      <EndProperty Name="Board">
+        <ScalarProperty Name="idBoard" ColumnName="Board_idBoard" />
+      </EndProperty>
+      <EndProperty Name="Game">
+        <ScalarProperty Name="IdGame" ColumnName="IdGame" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="ChatMessagePlayer" TypeName="GameDatabase.ChatMessagePlayer" StoreEntitySet="ChatMessages">
+      <EndProperty Name="Player">
+        <ScalarProperty Name="IdPlayer" ColumnName="Player_IdPlayer" />
+      </EndProperty>
+      <EndProperty Name="ChatMessage">
+        <ScalarProperty Name="IdChatMessage" ColumnName="IdChatMessage" />
+      </EndProperty>
+    </AssociationSetMapping>
+  </EntityContainerMapping>
+</Mapping></edmx:Mappings>
   </edmx:Runtime>
   <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
@@ -314,6 +781,7 @@
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="False" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="Ninguno" />
+        <DesignerProperty Name="UseLegacyProvider" Value="False" />
       </DesignerInfoPropertySet>
     </edmx:Options>
     <!-- Diagram content (shape and connector positions) -->
