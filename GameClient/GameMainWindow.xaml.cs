@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameClient.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,9 +16,6 @@ using System.Windows.Shapes;
 
 namespace GameClient
 {
-    /// <summary>
-    /// Lógica de interacción para GameMainWindow.xaml
-    /// </summary>
     public partial class GameMainWindow : Window
     {
         public GameMainWindow()
@@ -45,6 +43,20 @@ namespace GameClient
         private void QuitButton_Click(Object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ProfileButton_Click(Object sender, RoutedEventArgs e)
+        {
+            PauseButton.Visibility = Visibility.Collapsed;
+            ProfileButton.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new ModifyProfilePage());
+        }
+
+        public void ShowMainMenu()
+        {
+            MainFrame.Content = null;
+            PauseButton.Visibility = Visibility.Visible;
+            ProfileButton.Visibility = Visibility.Visible;
         }
     }
 }

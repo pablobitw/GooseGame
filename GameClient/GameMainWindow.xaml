@@ -40,8 +40,45 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="0">
                             <Image Source="Assets/Icons/pause_icon.png"
-                                   Stretch="Uniform"
-                                   Height="60" Width="60"/>
+                                   Stretch="Uniform"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Opacity" Value="1"/>
+
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <!-- Botón de Perfil-->
+            <Button x:Name="ProfileButton"
+                    Height="60" Width="60"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="10"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="ProfileButton_Click">
+
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0">
+                            <Image Source="Assets/Icons/user_icon2.png"
+                                   Stretch="Uniform"/>
                         </Border>
                     </ControlTemplate>
                 </Button.Template>
@@ -68,12 +105,12 @@
             <Border Background="#FF1E1E1E"
                     CornerRadius="15"
                     Padding="20"
-                    Width="300"
+                    Height="300" Width="360"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Opacity="0.95">
 
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="224" Width="300">
 
                     <TextBlock Text="Paused"
                                Foreground="White"
@@ -84,33 +121,36 @@
                                Margin="0,0,0,10"/>
 
                     <Button x:Name="ResumeButton"
+                            Style="{StaticResource WhiteButtonStyle}"
                             Content="Resume"
                             FontFamily="/Assets/Fonts/#Dosis"
                             FontSize="18"
-                            Width="180"
                             Padding="10"
                             Margin="0,5"
+                            IsCancel="True"
                             Click="ResumeButton_Click"/>
 
                     <Button x:Name="OptionsButton"
+                            Style="{StaticResource WhiteButtonStyle}"
                             Content="Options"
                             FontFamily="/Assets/Fonts/#Dosis"
                             FontSize="18"
-                            Width="180"
                             Padding="10"
                             Margin="0,5"
                             Click="OptionsButton_Click"/>
 
                     <Button x:Name="QuitButton"
+                            Style="{StaticResource WhiteButtonStyle}"
                             Content="Quit"
                             FontFamily="/Assets/Fonts/#Dosis"
                             FontSize="18"
-                            Width="180"
                             Padding="10"
                             Margin="0,5"
                             Click="QuitButton_Click"/>
                 </StackPanel>
             </Border>
         </Grid>
+
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
     </Grid>
 </Window>

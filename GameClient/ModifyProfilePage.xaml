@@ -1,0 +1,77 @@
+﻿<Page x:Class="GameClient.ModifyProfilePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:GameClient"
+      mc:Ignorable="d" 
+      d:DesignHeight="720" d:DesignWidth="1280"
+      Title="ModifyProfilePage">
+
+    <Grid Background="#1E1E1E">
+        <!-- Fondo oscuro tipo juego -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="50" Width="500" HorizontalAlignment="Center">
+
+                <!-- Título -->
+                <TextBlock Text="Modificar Perfil" FontFamily="/Assets/Fonts/#Dosis" FontSize="30" FontWeight="Bold" Foreground="White" Margin="0,0,0,20" TextAlignment="Center"/>
+
+                <!-- Username -->
+                <TextBlock Text="Username" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <TextBox x:Name="txtUsername" Margin="0,5,0,10" Height="30"/>
+
+                <!-- Correo -->
+                <TextBlock Text="Correo electrónico" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <TextBox x:Name="txtEmail" Margin="0,5,0,10" Height="30"/>
+
+                <!-- Número de teléfono -->
+                <TextBlock Text="Número de teléfono" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <TextBox x:Name="txtPhone" Margin="0,5,0,10" Height="30"/>
+
+                <!-- Fecha de nacimiento -->
+                <TextBlock Text="Fecha de nacimiento" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <DatePicker x:Name="dpBirthDate" Margin="0,5,0,10"/>
+
+                <!-- Género -->
+                <TextBlock Text="Género" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <ComboBox x:Name="cbGender" Margin="0,5,0,10" Height="30">
+                    <ComboBoxItem>Masculino</ComboBoxItem>
+                    <ComboBoxItem>Femenino</ComboBoxItem>
+                    <ComboBoxItem>Otro</ComboBoxItem>
+                </ComboBox>
+
+                <!-- Contraseña -->
+                <TextBlock Text="Contraseña actual" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <PasswordBox x:Name="pbCurrentPassword" Margin="0,5,0,10" Height="30"/>
+                <TextBlock Text="Nueva contraseña" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <PasswordBox x:Name="pbNewPassword" Margin="0,5,0,10" Height="30"/>
+                <TextBlock Text="Confirmar nueva contraseña" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <PasswordBox x:Name="pbConfirmPassword" Margin="0,5,0,10" Height="30"/>
+
+                <!-- Idioma -->
+                <TextBlock Text="Idioma" FontFamily="/Assets/Fonts/#Dosis" Foreground="White"/>
+                <ComboBox x:Name="cbLanguage" Margin="0,5,0,20" Height="30">
+                    <ComboBoxItem>Español</ComboBoxItem>
+                    <ComboBoxItem>Inglés</ComboBoxItem>
+                </ComboBox>
+
+                <!-- Botones -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Cancelar"
+                            Style="{StaticResource WhiteButtonStyle}"
+                            FontFamily="/Assets/Fonts/#Dosis"
+                            Width="150"
+                            Margin="0,0,10,0"
+                            Click="CancelButton_Click"/>
+                    <Button Content="Guardar cambios"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            FontFamily="/Assets/Fonts/#Dosis"
+                            Width="150"
+                            Click="SaveChangesButton_Click">
+                    </Button>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

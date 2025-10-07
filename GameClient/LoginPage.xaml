@@ -62,7 +62,7 @@
 
                     <Button Content="{x:Static props:Strings.LoginButton}" 
                             Style="{StaticResource PrimaryButtonStyle}" 
-                            Margin="0,15,0,5"
+                            Margin="1, 15,0,5"
                             Click="Login"/>
 
                     <Button Content="{x:Static props:Strings.ForgotPassLabel}" 
