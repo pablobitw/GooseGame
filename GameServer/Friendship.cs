@@ -17,5 +17,10 @@ namespace GameServer
         public int IdFriendship { get; set; }
         public FriendshipStatus FriendshipStatus { get; set; }
         public System.DateTime RequestDate { get; set; }
+        public int PlayerIdPlayer { get; set; }
+        public int PlayerIdPlayer1 { get; set; }
+    
+        public virtual Player Player { get; set; }
+        public virtual Player Player1 { get; set; }
     }
 }

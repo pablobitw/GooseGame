@@ -14,6 +14,12 @@ namespace GameServer
     
     public partial class Item
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Item()
+        {
+            this.PlayerInventory = new HashSet<PlayerInventory>();
+        }
+    
         public int IdItem { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -22,6 +28,7 @@ namespace GameServer
         public short Cost { get; set; }
         public int PlayerInventoryIdPlayerInventory { get; set; }
     
-        public virtual PlayerInventory PlayerInventory { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PlayerInventory> PlayerInventory { get; set; }
     }
 }

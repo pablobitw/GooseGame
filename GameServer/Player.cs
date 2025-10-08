@@ -14,6 +14,15 @@ namespace GameServer
     
     public partial class Player
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Player()
+        {
+            this.Friendship = new HashSet<Friendship>();
+            this.Friendship1 = new HashSet<Friendship>();
+            this.MoveRecord = new HashSet<MoveRecord>();
+            this.PlayerInventory = new HashSet<PlayerInventory>();
+        }
+    
         public int IdPlayer { get; set; }
         public string Username { get; set; }
         public int Coins { get; set; }
@@ -21,7 +30,14 @@ namespace GameServer
         public int PlayerInventoryIdPlayerInventory { get; set; }
     
         public virtual Account Account { get; set; }
-        public virtual PlayerInventory PlayerInventory { get; set; }
         public virtual ChatMessage ChatMessage { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Friendship> Friendship { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Friendship> Friendship1 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<MoveRecord> MoveRecord { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PlayerInventory> PlayerInventory { get; set; }
     }
 }

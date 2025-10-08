@@ -2,8 +2,8 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 09/29/2025 17:54:39
--- Generated from EDMX file: C:\Users\Pablo Silva\source\repos\GooseGame\GameServer\GameDatabase.edmx
+-- Date Created: 10/08/2025 05:24:03
+-- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
 SET QUOTED_IDENTIFIER OFF;
@@ -17,11 +17,89 @@ GO
 -- Dropping existing FOREIGN KEY constraints
 -- --------------------------------------------------
 
+IF OBJECT_ID(N'[dbo].[FK_PlayerAccount]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerAccount];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerStatPlayer]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[PlayerStats] DROP CONSTRAINT [FK_PlayerStatPlayer];
+GO
+IF OBJECT_ID(N'[dbo].[FK_IdAccount]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_IdAccount];
+GO
+IF OBJECT_ID(N'[dbo].[FK_idGame]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_idGame];
+GO
+IF OBJECT_ID(N'[dbo].[FK_idBoard]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Tiles] DROP CONSTRAINT [FK_idBoard];
+GO
+IF OBJECT_ID(N'[dbo].[FK_GameBoard]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Games] DROP CONSTRAINT [FK_GameBoard];
+GO
+IF OBJECT_ID(N'[dbo].[FK_ChatMessagePlayer]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[ChatMessages] DROP CONSTRAINT [FK_ChatMessagePlayer];
+GO
+IF OBJECT_ID(N'[dbo].[FK_ChatMessageGame]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Games] DROP CONSTRAINT [FK_ChatMessageGame];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerInventory]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[PlayerInventories] DROP CONSTRAINT [FK_PlayerPlayerInventory];
+GO
+IF OBJECT_ID(N'[dbo].[FK_ItemPlayerInventory]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[PlayerInventories] DROP CONSTRAINT [FK_ItemPlayerInventory];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerFriendship]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Friendships] DROP CONSTRAINT [FK_PlayerFriendship];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerFriendship1]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Friendships] DROP CONSTRAINT [FK_PlayerFriendship1];
+GO
+IF OBJECT_ID(N'[dbo].[FK_GameMoveRecord]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MoveRecords] DROP CONSTRAINT [FK_GameMoveRecord];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerMoveRecord]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MoveRecords] DROP CONSTRAINT [FK_PlayerMoveRecord];
+GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
 -- --------------------------------------------------
 
+IF OBJECT_ID(N'[dbo].[BoardSet]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BoardSet];
+GO
+IF OBJECT_ID(N'[dbo].[Accounts]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Accounts];
+GO
+IF OBJECT_ID(N'[dbo].[Players]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Players];
+GO
+IF OBJECT_ID(N'[dbo].[PlayerStats]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[PlayerStats];
+GO
+IF OBJECT_ID(N'[dbo].[Friendships]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Friendships];
+GO
+IF OBJECT_ID(N'[dbo].[Sanctions]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Sanctions];
+GO
+IF OBJECT_ID(N'[dbo].[Games]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Games];
+GO
+IF OBJECT_ID(N'[dbo].[Items]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Items];
+GO
+IF OBJECT_ID(N'[dbo].[PlayerInventories]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[PlayerInventories];
+GO
+IF OBJECT_ID(N'[dbo].[Tiles]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Tiles];
+GO
+IF OBJECT_ID(N'[dbo].[ChatMessages]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[ChatMessages];
+GO
+IF OBJECT_ID(N'[dbo].[MoveRecords]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[MoveRecords];
+GO
 
 -- --------------------------------------------------
 -- Creating all tables
@@ -72,7 +150,10 @@ GO
 CREATE TABLE [dbo].[Friendships] (
     [IdFriendship] int IDENTITY(1,1) NOT NULL,
     [FriendshipStatus] int  NOT NULL,
-    [RequestDate] datetime  NOT NULL
+    [RequestDate] datetime  NOT NULL,
+    [PlayerIdPlayer] int  NOT NULL,
+    [PlayerIdPlayer1] int  NOT NULL,
+    [Player1_IdPlayer] int  NOT NULL
 );
 GO
 
@@ -114,7 +195,9 @@ GO
 
 -- Creating table 'PlayerInventories'
 CREATE TABLE [dbo].[PlayerInventories] (
-    [IdPlayerInventory] int IDENTITY(1,1) NOT NULL
+    [IdPlayerInventory] int IDENTITY(1,1) NOT NULL,
+    [ItemIdItem] int  NOT NULL,
+    [PlayerIdPlayer] int  NOT NULL
 );
 GO
 
@@ -142,7 +225,9 @@ CREATE TABLE [dbo].[MoveRecords] (
     [DiceTwo] int  NOT NULL,
     [StartPosition] int  NOT NULL,
     [FinalPosition] int  NOT NULL,
-    [ActionDescription] nvarchar(max)  NOT NULL
+    [ActionDescription] nvarchar(max)  NOT NULL,
+    [PlayerIdPlayer] int  NOT NULL,
+    [GameIdGame] int  NOT NULL
 );
 GO
 
@@ -286,36 +371,6 @@ ON [dbo].[Sanctions]
     ([Game_IdGame]);
 GO
 
--- Creating foreign key on [PlayerInventoryIdPlayerInventory] in table 'Players'
-ALTER TABLE [dbo].[Players]
-ADD CONSTRAINT [FK_idPlayer]
-    FOREIGN KEY ([PlayerInventoryIdPlayerInventory])
-    REFERENCES [dbo].[PlayerInventories]
-        ([IdPlayerInventory])
-    ON DELETE NO ACTION ON UPDATE NO ACTION;
-GO
-
--- Creating non-clustered index for FOREIGN KEY 'FK_idPlayer'
-CREATE INDEX [IX_FK_idPlayer]
-ON [dbo].[Players]
-    ([PlayerInventoryIdPlayerInventory]);
-GO
-
--- Creating foreign key on [PlayerInventoryIdPlayerInventory] in table 'Items'
-ALTER TABLE [dbo].[Items]
-ADD CONSTRAINT [FK_idItem]
-    FOREIGN KEY ([PlayerInventoryIdPlayerInventory])
-    REFERENCES [dbo].[PlayerInventories]
-        ([IdPlayerInventory])
-    ON DELETE NO ACTION ON UPDATE NO ACTION;
-GO
-
--- Creating non-clustered index for FOREIGN KEY 'FK_idItem'
-CREATE INDEX [IX_FK_idItem]
-ON [dbo].[Items]
-    ([PlayerInventoryIdPlayerInventory]);
-GO
-
 -- Creating foreign key on [Board_idBoard] in table 'Tiles'
 ALTER TABLE [dbo].[Tiles]
 ADD CONSTRAINT [FK_idBoard]
@@ -374,6 +429,96 @@ GO
 CREATE INDEX [IX_FK_ChatMessageGame]
 ON [dbo].[Games]
     ([ChatMessageIdChatMessage]);
+GO
+
+-- Creating foreign key on [PlayerIdPlayer] in table 'Friendships'
+ALTER TABLE [dbo].[Friendships]
+ADD CONSTRAINT [FK_PlayerFriendship]
+    FOREIGN KEY ([PlayerIdPlayer])
+    REFERENCES [dbo].[Players]
+        ([IdPlayer])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_PlayerFriendship'
+CREATE INDEX [IX_FK_PlayerFriendship]
+ON [dbo].[Friendships]
+    ([PlayerIdPlayer]);
+GO
+
+-- Creating foreign key on [Player1_IdPlayer] in table 'Friendships'
+ALTER TABLE [dbo].[Friendships]
+ADD CONSTRAINT [FK_PlayerFriendship1]
+    FOREIGN KEY ([Player1_IdPlayer])
+    REFERENCES [dbo].[Players]
+        ([IdPlayer])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_PlayerFriendship1'
+CREATE INDEX [IX_FK_PlayerFriendship1]
+ON [dbo].[Friendships]
+    ([Player1_IdPlayer]);
+GO
+
+-- Creating foreign key on [PlayerIdPlayer] in table 'MoveRecords'
+ALTER TABLE [dbo].[MoveRecords]
+ADD CONSTRAINT [FK_PlayerMoveRecord]
+    FOREIGN KEY ([PlayerIdPlayer])
+    REFERENCES [dbo].[Players]
+        ([IdPlayer])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_PlayerMoveRecord'
+CREATE INDEX [IX_FK_PlayerMoveRecord]
+ON [dbo].[MoveRecords]
+    ([PlayerIdPlayer]);
+GO
+
+-- Creating foreign key on [GameIdGame] in table 'MoveRecords'
+ALTER TABLE [dbo].[MoveRecords]
+ADD CONSTRAINT [FK_GameMoveRecord]
+    FOREIGN KEY ([GameIdGame])
+    REFERENCES [dbo].[Games]
+        ([IdGame])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_GameMoveRecord'
+CREATE INDEX [IX_FK_GameMoveRecord]
+ON [dbo].[MoveRecords]
+    ([GameIdGame]);
+GO
+
+-- Creating foreign key on [ItemIdItem] in table 'PlayerInventories'
+ALTER TABLE [dbo].[PlayerInventories]
+ADD CONSTRAINT [FK_ItemPlayerInventory]
+    FOREIGN KEY ([ItemIdItem])
+    REFERENCES [dbo].[Items]
+        ([IdItem])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_ItemPlayerInventory'
+CREATE INDEX [IX_FK_ItemPlayerInventory]
+ON [dbo].[PlayerInventories]
+    ([ItemIdItem]);
+GO
+
+-- Creating foreign key on [PlayerIdPlayer] in table 'PlayerInventories'
+ALTER TABLE [dbo].[PlayerInventories]
+ADD CONSTRAINT [FK_PlayerPlayerInventory]
+    FOREIGN KEY ([PlayerIdPlayer])
+    REFERENCES [dbo].[Players]
+        ([IdPlayer])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_PlayerPlayerInventory'
+CREATE INDEX [IX_FK_PlayerPlayerInventory]
+ON [dbo].[PlayerInventories]
+    ([PlayerIdPlayer]);
 GO
 
 -- --------------------------------------------------

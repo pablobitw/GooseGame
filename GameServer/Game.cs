@@ -14,6 +14,12 @@ namespace GameServer
     
     public partial class Game
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Game()
+        {
+            this.MoveRecord = new HashSet<MoveRecord>();
+        }
+    
         public int IdGame { get; set; }
         public GameStatus GameStatus { get; set; }
         public System.DateTime StartTime { get; set; }
@@ -23,5 +29,7 @@ namespace GameServer
     
         public virtual Board Board { get; set; }
         public virtual ChatMessage ChatMessage { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<MoveRecord> MoveRecord { get; set; }
     }
 }

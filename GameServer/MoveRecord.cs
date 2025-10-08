@@ -21,5 +21,10 @@ namespace GameServer
         public int StartPosition { get; set; }
         public int FinalPosition { get; set; }
         public string ActionDescription { get; set; }
+        public int PlayerIdPlayer { get; set; }
+        public int GameIdGame { get; set; }
+    
+        public virtual Player Player { get; set; }
+        public virtual Game Game { get; set; }
     }
 }

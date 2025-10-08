@@ -14,18 +14,11 @@ namespace GameServer
     
     public partial class PlayerInventory
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public PlayerInventory()
-        {
-            this.Player = new HashSet<Player>();
-            this.Item = new HashSet<Item>();
-        }
-    
         public int IdPlayerInventory { get; set; }
+        public int ItemIdItem { get; set; }
+        public int PlayerIdPlayer { get; set; }
     
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Player> Player { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Item> Item { get; set; }
+        public virtual Item Item { get; set; }
+        public virtual Player Player { get; set; }
     }
 }
