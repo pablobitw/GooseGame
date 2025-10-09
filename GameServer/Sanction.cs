@@ -15,10 +15,12 @@ namespace GameServer
     public partial class Sanction
     {
         public int IdSanction { get; set; }
-        public SanctionType SanctionType { get; set; }
+        public int SanctionType { get; set; }
         public string Reason { get; set; }
         public System.DateTime StartDate { get; set; }
         public System.DateTime EndDate { get; set; }
+        public int Account_IdAccount { get; set; }
+        public int Game_IdGame { get; set; }
     
         public virtual Account Account { get; set; }
         public virtual Game Game { get; set; }

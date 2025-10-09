@@ -13,10 +13,10 @@ namespace GameServer
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class GameDatabaseContainer : DbContext
+    public partial class GameDatabase_Container : DbContext
     {
-        public GameDatabaseContainer()
-            : base("name=GameDatabaseContainer")
+        public GameDatabase_Container()
+            : base("name=GameDatabase_Container")
         {
         }
     
@@ -25,17 +25,17 @@ namespace GameServer
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Board> BoardSet { get; set; }
         public virtual DbSet<Account> Accounts { get; set; }
-        public virtual DbSet<Player> Players { get; set; }
-        public virtual DbSet<PlayerStat> PlayerStats { get; set; }
+        public virtual DbSet<BoardSet> BoardSets { get; set; }
+        public virtual DbSet<ChatMessage> ChatMessages { get; set; }
         public virtual DbSet<Friendship> Friendships { get; set; }
-        public virtual DbSet<Sanction> Sanctions { get; set; }
         public virtual DbSet<Game> Games { get; set; }
         public virtual DbSet<Item> Items { get; set; }
-        public virtual DbSet<PlayerInventory> PlayerInventories { get; set; }
-        public virtual DbSet<Tile> Tiles { get; set; }
-        public virtual DbSet<ChatMessage> ChatMessages { get; set; }
         public virtual DbSet<MoveRecord> MoveRecords { get; set; }
+        public virtual DbSet<PlayerInventory> PlayerInventories { get; set; }
+        public virtual DbSet<Player> Players { get; set; }
+        public virtual DbSet<PlayerStat> PlayerStats { get; set; }
+        public virtual DbSet<Sanction> Sanctions { get; set; }
+        public virtual DbSet<Tile> Tiles { get; set; }
     }
 }

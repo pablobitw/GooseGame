@@ -17,18 +17,18 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Item()
         {
-            this.PlayerInventory = new HashSet<PlayerInventory>();
+            this.PlayerInventories = new HashSet<PlayerInventory>();
         }
     
         public int IdItem { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public ItemType ItemType { get; set; }
-        public RarityType RarityType { get; set; }
+        public int ItemType { get; set; }
+        public int RarityType { get; set; }
         public short Cost { get; set; }
         public int PlayerInventoryIdPlayerInventory { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<PlayerInventory> PlayerInventory { get; set; }
+        public virtual ICollection<PlayerInventory> PlayerInventories { get; set; }
     }
 }

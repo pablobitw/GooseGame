@@ -17,10 +17,11 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Player()
         {
-            this.Friendship = new HashSet<Friendship>();
-            this.Friendship1 = new HashSet<Friendship>();
-            this.MoveRecord = new HashSet<MoveRecord>();
-            this.PlayerInventory = new HashSet<PlayerInventory>();
+            this.ChatMessages = new HashSet<ChatMessage>();
+            this.Friendships = new HashSet<Friendship>();
+            this.Friendships1 = new HashSet<Friendship>();
+            this.MoveRecords = new HashSet<MoveRecord>();
+            this.PlayerInventories = new HashSet<PlayerInventory>();
         }
     
         public int IdPlayer { get; set; }
@@ -28,16 +29,19 @@ namespace GameServer
         public int Coins { get; set; }
         public string Avatar { get; set; }
         public int PlayerInventoryIdPlayerInventory { get; set; }
+        public int Account_IdAccount { get; set; }
     
         public virtual Account Account { get; set; }
-        public virtual ChatMessage ChatMessage { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Friendship> Friendship { get; set; }
+        public virtual ICollection<ChatMessage> ChatMessages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Friendship> Friendship1 { get; set; }
+        public virtual ICollection<Friendship> Friendships { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<MoveRecord> MoveRecord { get; set; }
+        public virtual ICollection<Friendship> Friendships1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<PlayerInventory> PlayerInventory { get; set; }
+        public virtual ICollection<MoveRecord> MoveRecords { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PlayerInventory> PlayerInventories { get; set; }
+        public virtual PlayerStat PlayerStat { get; set; }
     }
 }

@@ -17,14 +17,15 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public ChatMessage()
         {
-            this.Game = new HashSet<Game>();
+            this.Games = new HashSet<Game>();
         }
     
         public int IdChatMessage { get; set; }
         public string MessageText { get; set; }
+        public int Player_IdPlayer { get; set; }
     
-        public virtual Player Player { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Game> Game { get; set; }
+        public virtual ICollection<Game> Games { get; set; }
+        public virtual Player Player { get; set; }
     }
 }

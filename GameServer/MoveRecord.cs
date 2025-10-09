@@ -24,7 +24,7 @@ namespace GameServer
         public int PlayerIdPlayer { get; set; }
         public int GameIdGame { get; set; }
     
-        public virtual Player Player { get; set; }
         public virtual Game Game { get; set; }
+        public virtual Player Player { get; set; }
     }
 }

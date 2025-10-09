@@ -16,7 +16,8 @@ namespace GameServer
     {
         public int IdTile { get; set; }
         public int TileNumber { get; set; }
+        public int Board_idBoard { get; set; }
     
-        public virtual Board Board { get; set; }
+        public virtual BoardSet BoardSet { get; set; }
     }
 }

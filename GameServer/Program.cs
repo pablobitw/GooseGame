@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ServiceModel; // Importante: Añade esta referencia para WCF
 
 namespace GameServer
 {
@@ -12,14 +9,24 @@ namespace GameServer
         {
             Console.Title = "Goose Game Server";
 
-            Console.WriteLine("Iniciando servidor del Juego de la Oca...");
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine("El servidor está en espera.");
+            // 'using' se asegura de que el servicio se cierre correctamente al final
+            using (ServiceHost host = new ServiceHost(typeof(GameService)))
+            {
+                try
+                {
+                    // Esta línea inicia el servicio y lo pone a escuchar
+                    host.Open();
 
-            // aquí irá el código para iniciar el servicio WCF
-
-            Console.WriteLine("Presiona <Enter> para detener el servidor.");
-            Console.ReadLine(); // aqui se detiene el programa
+                    Console.WriteLine("Servidor del Juego de la Oca iniciado y en línea.");
+                    Console.WriteLine("Presiona <Enter> para detener el servidor.");
+                    Console.ReadLine();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Ocurrió un error al iniciar el servidor: " + ex.Message);
+                    Console.ReadLine();
+                }
+            }
 
             Console.WriteLine("Cerrando servidor...");
         }

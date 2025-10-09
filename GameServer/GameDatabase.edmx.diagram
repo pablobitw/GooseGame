@@ -4,33 +4,33 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="1bf8cbb6b80e4e16b254e225ded684d9" Name="Diagram1" ZoomLevel="80" >
-        <EntityTypeShape EntityType="GameDatabase.Board" Width="2.375" PointX="14.875" PointY="1.875" />
-        <EntityTypeShape EntityType="GameDatabase.Account" Width="1.5" PointX="3.5" PointY="6.125" />
-        <EntityTypeShape EntityType="GameDatabase.Player" Width="1.5" PointX="7.5" PointY="7.125" />
-        <AssociationConnector Association="GameDatabase.PlayerAccount" />
-        <EntityTypeShape EntityType="GameDatabase.PlayerStat" Width="1.5" PointX="6.25" PointY="11.5" />
-        <AssociationConnector Association="GameDatabase.PlayerStatPlayer" />
-        <EntityTypeShape EntityType="GameDatabase.Friendship" Width="1.5" PointX="10.25" PointY="6.75" />
-        <EntityTypeShape EntityType="GameDatabase.Sanction" Width="1.5" PointX="4.25" PointY="0.75" />
-        <EntityTypeShape EntityType="GameDatabase.Game" Width="1.5" PointX="12.25" PointY="0.5" />
-        <AssociationConnector Association="GameDatabase.IdAccount" />
-        <AssociationConnector Association="GameDatabase.idGame" />
-        <EntityTypeShape EntityType="GameDatabase.Item" Width="1.5" PointX="13.75" PointY="10" IsExpanded="true" />
-        <EntityTypeShape EntityType="GameDatabase.PlayerInventory" Width="1.5" PointX="11" PointY="11.125" />
-        <EntityTypeShape EntityType="GameDatabase.Tile" Width="1.5" PointX="19" PointY="2.625" />
-        <AssociationConnector Association="GameDatabase.idBoard" />
-        <AssociationConnector Association="GameDatabase.GameBoard" />
-        <EntityTypeShape EntityType="GameDatabase.ChatMessage" Width="1.5" PointX="12.125" PointY="4.625" />
-        <EntityTypeShape EntityType="GameDatabase.MoveRecord" Width="1.5" PointX="7.125" PointY="2.5" />
-        <AssociationConnector Association="GameDatabase.ChatMessagePlayer" />
-        <AssociationConnector Association="GameDatabase.ChatMessageGame" />
-        <AssociationConnector Association="GameDatabase.PlayerFriendship" />
-        <AssociationConnector Association="GameDatabase.PlayerFriendship1" />
-        <AssociationConnector Association="GameDatabase.PlayerMoveRecord" />
-        <AssociationConnector Association="GameDatabase.GameMoveRecord" />
-        <AssociationConnector Association="GameDatabase.ItemPlayerInventory" />
-        <AssociationConnector Association="GameDatabase.PlayerPlayerInventory" />
+      <Diagram DiagramId="2d30fdb44e4d4b92b90a1366e42e9833" Name="Diagram1" ZoomLevel="74">
+        <EntityTypeShape EntityType="GameServer.Account" Width="1.5" PointX="11.5" PointY="4.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.BoardSet" Width="1.5" PointX="7.625" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.ChatMessage" Width="1.5" PointX="1.5" PointY="3.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Friendship" Width="1.5" PointX="4.5" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Game" Width="1.5" PointX="6.625" PointY="3.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Item" Width="1.5" PointX="13.5" PointY="3.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.MoveRecord" Width="1.5" PointX="9.125" PointY="4.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.PlayerInventory" Width="1.5" PointX="13.375" PointY="9.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Player" Width="1.5" PointX="4.5" PointY="6.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.PlayerStat" Width="1.5" PointX="0.5" PointY="8.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Sanction" Width="1.5" PointX="11.625" PointY="1.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="GameServer.Tile" Width="1.5" PointX="4.875" PointY="1.25" IsExpanded="true" />
+        <AssociationConnector Association="GameServer.FK_IdAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_PlayerAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_GameBoard" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_idBoard" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_ChatMessageGame" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_ChatMessagePlayer" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_PlayerFriendship" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_PlayerFriendship1" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_GameMoveRecord" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_idGame" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_ItemPlayerInventory" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_PlayerMoveRecord" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.FK_PlayerPlayerInventory" ManuallyRouted="false" />
+        <AssociationConnector Association="GameServer.PlayerPlayerStat" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

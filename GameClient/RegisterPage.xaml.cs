@@ -1,6 +1,10 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Navigation;
+using GameClient.GameServiceReference; 
+using System.ServiceModel;          
 
 namespace GameClient.Views
 {
@@ -11,23 +15,17 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-        // --- Email ---
+        //  metodos de Placeholders 
         private void EmailBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            EmailPlaceholder.Visibility = string.IsNullOrEmpty(EmailBox.Text)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            EmailPlaceholder.Visibility = string.IsNullOrEmpty(EmailBox.Text) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // --- Username ---
         private void UserBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UserBox.Text)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UserBox.Text) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // --- Password ---
         private void PassBoxFocus(object sender, RoutedEventArgs e)
         {
             PassPlaceholder.Visibility = Visibility.Collapsed;
@@ -41,12 +39,9 @@ namespace GameClient.Views
 
         private void PassBoxChanged(object sender, RoutedEventArgs e)
         {
-            PassPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            PassPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // --- Repeat Password ---
         private void RepeatBoxFocus(object sender, RoutedEventArgs e)
         {
             RepeatPlaceholder.Visibility = Visibility.Collapsed;
@@ -60,15 +55,55 @@ namespace GameClient.Views
 
         private void RepeatBoxChanged(object sender, RoutedEventArgs e)
         {
-            RepeatPlaceholder.Visibility = string.IsNullOrEmpty(RepeatBox.Password)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            RepeatPlaceholder.Visibility = string.IsNullOrEmpty(RepeatBox.Password) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // --- Botones ---
+        // la logica de los botones (conexion al servidor agregada) 
         private void CreateAccount(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Cuenta creada (ejemplo).");
+            // rcoger datos de la interfaz
+            string email = EmailBox.Text;
+            string username = UserBox.Text;
+            string password = PasswordBox.Password;
+            string repeatPassword = RepeatBox.Password;
+
+            //  validaciones en el cliente
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show("Por favor, completa todos los campos.");
+                return;
+            }
+
+            if (password != repeatPassword)
+            {
+                MessageBox.Show("Las contraseñas no coinciden.");
+                return;
+            }
+
+            //  llamada al servidor
+            GameServiceClient serviceClient = new GameServiceClient();
+            try
+            {
+                bool registroExitoso = serviceClient.RegistrarUsuario(username, email, password);
+
+                if (registroExitoso)
+                {
+                    MessageBox.Show("¡Registro exitoso! Ahora puedes iniciar sesión.", "Éxito");
+                    GoToLogin(null, null); 
+                }
+                else
+                {
+                    MessageBox.Show("El nombre de usuario o correo ya está en uso.", "Error de Registro");
+                }
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+            }
         }
 
         private void GoToLogin(object sender, RoutedEventArgs e)
@@ -79,12 +114,10 @@ namespace GameClient.Views
 
         private void OnBackButton(object sender, RoutedEventArgs e)
         {
-            // Llamamos al método de la ventana padre
             if (Window.GetWindow(this) is AuthWindow authWindow)
             {
                 authWindow.ShowAuthButtons();
             }
         }
-
     }
 }

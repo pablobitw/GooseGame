@@ -14,10 +14,22 @@ namespace GameServer
     
     public partial class Account
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Account()
+        {
+            this.Sanctions = new HashSet<Sanction>();
+            this.Players = new HashSet<Player>();
+        }
+    
         public int IdAccount { get; set; }
-        private string Email { get; set; }
-        private string PasswordHash { get; set; }
-        private System.DateTime RegisterDate { get; set; }
-        public AccountStatus AccountStatus { get; set; }
+        public string Email { get; set; }
+        public string PasswordHash { get; set; }
+        public System.DateTime RegisterDate { get; set; }
+        public int AccountStatus { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Sanction> Sanctions { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Player> Players { get; set; }
     }
 }

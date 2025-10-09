@@ -15,10 +15,11 @@ namespace GameServer
     public partial class Friendship
     {
         public int IdFriendship { get; set; }
-        public FriendshipStatus FriendshipStatus { get; set; }
+        public int FriendshipStatus { get; set; }
         public System.DateTime RequestDate { get; set; }
         public int PlayerIdPlayer { get; set; }
         public int PlayerIdPlayer1 { get; set; }
+        public int Player1_IdPlayer { get; set; }
     
         public virtual Player Player { get; set; }
         public virtual Player Player1 { get; set; }

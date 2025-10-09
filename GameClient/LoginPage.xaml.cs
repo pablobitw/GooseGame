@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using GameClient.GameServiceReference;
+using System;
+using System.ServiceModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 
@@ -13,25 +16,44 @@ namespace GameClient.Views
 
         private void Login(object sender, RoutedEventArgs e)
         {
+            // recoger datos
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            if (username == "admin" && password == "1234")
+            // validar que los campos no estén vacíos
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                // Se crea una instancia de la nueva ventana del juego
-                GameMainWindow gameMenu = new GameMainWindow();
-
-                //  Se muestra la nueva ventana
-                gameMenu.Show();
-
-                // Busca la ventana de autenticación actual y ciérrala
-                Window authWindow = Window.GetWindow(this);
-                authWindow.Close();
+                MessageBox.Show("Por favor, ingresa tu usuario y contraseña.", "Campos Vacíos");
+                return;
             }
-            else
+
+            //llamar al servidor para iniciar sesión
+            GameServiceClient serviceClient = new GameServiceClient();
+            try
             {
-                // Si las credenciales son incorrectas, muestra un error
-                MessageBox.Show("Usuario o contraseña incorrectos.", "Error de Acceso");
+                bool loginExitoso = serviceClient.IniciarSesion(username, password);
+
+                if (loginExitoso)
+                {
+                    // si el login es exitoso, se abre la ventana principal del juego
+                    GameMainWindow gameMenu = new GameMainWindow();
+                    gameMenu.Show();
+
+                    // y cierra la ventana de autenticación actual
+                    Window.GetWindow(this).Close();
+                }
+                else
+                {
+                    MessageBox.Show("Usuario o contraseña incorrectos.", "Error de Acceso");
+                }
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
             }
         }
 
@@ -61,7 +83,7 @@ namespace GameClient.Views
             // Llamamos al método de la ventana padre
             if (Window.GetWindow(this) is AuthWindow authWindow)
             {
-                authWindow.ShowAuthButtons(); // esto limpia el Frame y muestra los botones
+                authWindow.ShowAuthButtons(); // esto limpia el frame y muestra los botones
             }
         }
     }

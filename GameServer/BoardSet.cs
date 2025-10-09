@@ -12,12 +12,13 @@ namespace GameServer
     using System;
     using System.Collections.Generic;
     
-    public partial class Board
+    public partial class BoardSet
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Board()
+        public BoardSet()
         {
-            this.Tile = new HashSet<Tile>();
+            this.Games = new HashSet<Game>();
+            this.Tiles = new HashSet<Tile>();
         }
     
         public int idBoard { get; set; }
@@ -26,7 +27,8 @@ namespace GameServer
         public int TileCount { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Tile> Tile { get; set; }
-        public virtual Game Game { get; set; }
+        public virtual ICollection<Game> Games { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Tile> Tiles { get; set; }
     }
 }

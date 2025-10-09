@@ -17,19 +17,23 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Game()
         {
-            this.MoveRecord = new HashSet<MoveRecord>();
+            this.MoveRecords = new HashSet<MoveRecord>();
+            this.Sanctions = new HashSet<Sanction>();
         }
     
         public int IdGame { get; set; }
-        public GameStatus GameStatus { get; set; }
+        public int GameStatus { get; set; }
         public System.DateTime StartTime { get; set; }
         public System.DateTime EndTime { get; set; }
         public string HostPlayerID { get; set; }
         public int ChatMessageIdChatMessage { get; set; }
+        public int Board_idBoard { get; set; }
     
-        public virtual Board Board { get; set; }
+        public virtual BoardSet BoardSet { get; set; }
         public virtual ChatMessage ChatMessage { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<MoveRecord> MoveRecord { get; set; }
+        public virtual ICollection<MoveRecord> MoveRecords { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Sanction> Sanctions { get; set; }
     }
 }

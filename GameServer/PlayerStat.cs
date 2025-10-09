@@ -19,7 +19,8 @@ namespace GameServer
         public int MatchesWon { get; set; }
         public int MatchesLost { get; set; }
         public int LuckyBoxOpened { get; set; }
+        public int IdPlayer_IdPlayer { get; set; }
     
-        public virtual Player IdPlayer { get; set; }
+        public virtual Player Player { get; set; }
     }
 }
