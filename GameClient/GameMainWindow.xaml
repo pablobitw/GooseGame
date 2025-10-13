@@ -4,25 +4,45 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameClient"
+        xmlns:props="clr-namespace:GameClient.Resources"
         mc:Ignorable="d"
-        Title="GameMainWindow" Height="720" Width="1280">
-    
+        Title="GameMainWindow" Height="720" Width="1280"
+        WindowState="Maximized" WindowStyle="None">
+
     <Grid>
-        <!-- Menú Principal-->
         <Grid x:Name="MainMenuGrid">
             <Grid.Background>
                 <ImageBrush ImageSource="/Assets/logo2.png" 
-                            Stretch="UniformToFill" 
-                            Opacity="0.9">
+                 Stretch="UniformToFill" 
+                 Opacity="0.9">
                     <ImageBrush.Viewbox>
                         <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                     </ImageBrush.Viewbox>
                 </ImageBrush>
             </Grid.Background>
 
-            <Image Source="/Assets/LOGO.png" HorizontalAlignment="Left" Height="304" Margin="488,-27,0,0" VerticalAlignment="Top" Width="426"/>
+            <Image Source="/Assets/LOGO.png" HorizontalAlignment="Center" Height="250" Margin="0,50,0,0" VerticalAlignment="Top"/>
 
-            <!-- Botón de Pausa-->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+
+                <Button x:Name="PlayButton"
+                        Content="{x:Static props:Strings.PlayButton}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="0,10"
+                        Click="PlayButtonClick"/>
+
+                <Button x:Name="OptionsButton"
+                        Content="{x:Static props:Strings.OptionsButton}"
+                        Style="{StaticResource OrangeButtonStyle}"
+                        Margin="0,10"
+                        Click="OptionsButtonClick"/>
+
+                <Button x:Name="QuitButton"
+                        Content="{x:Static props:Strings.QuitButton}"
+                        Style="{StaticResource GreenButtonStyle}"
+                        Margin="0,10"
+                        Click="QuitButtonClick"/>
+            </StackPanel>
             <Button x:Name="PauseButton"
                     Height="60" Width="60"
                     HorizontalAlignment="Left"
@@ -31,9 +51,7 @@
                     Background="Transparent"
                     BorderThickness="0"
                     Cursor="Hand"
-                    IsCancel="True"
-                    Click="PauseButton_Click">
-
+                    Click="PauseButtonClick">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
@@ -44,11 +62,9 @@
                         </Border>
                     </ControlTemplate>
                 </Button.Template>
-
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Opacity" Value="1"/>
-
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Opacity" Value="0.7"/>
@@ -61,7 +77,6 @@
                 </Button.Style>
             </Button>
 
-            <!-- Botón de Perfil-->
             <Button x:Name="ProfileButton"
                     Height="60" Width="60"
                     HorizontalAlignment="Right"
@@ -70,8 +85,7 @@
                     Background="Transparent"
                     BorderThickness="0"
                     Cursor="Hand"
-                    Click="ProfileButton_Click">
-
+                    Click="ProfileButtonClick">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
@@ -82,11 +96,9 @@
                         </Border>
                     </ControlTemplate>
                 </Button.Template>
-
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Opacity" Value="1"/>
-
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Opacity" Value="0.7"/>
@@ -100,55 +112,7 @@
             </Button>
         </Grid>
 
-        <!-- Menú de Pausa -->
         <Grid x:Name="PauseMenuGrid" Visibility="Collapsed" Background="#80000000">
-            <Border Background="#FF1E1E1E"
-                    CornerRadius="15"
-                    Padding="20"
-                    Height="300" Width="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Opacity="0.95">
-
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="224" Width="300">
-
-                    <TextBlock Text="Paused"
-                               Foreground="White"
-                               FontFamily="/Assets/Fonts/#Dosis"
-                               FontSize="32"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,10"/>
-
-                    <Button x:Name="ResumeButton"
-                            Style="{StaticResource WhiteButtonStyle}"
-                            Content="Resume"
-                            FontFamily="/Assets/Fonts/#Dosis"
-                            FontSize="18"
-                            Padding="10"
-                            Margin="0,5"
-                            IsCancel="True"
-                            Click="ResumeButton_Click"/>
-
-                    <Button x:Name="OptionsButton"
-                            Style="{StaticResource WhiteButtonStyle}"
-                            Content="Options"
-                            FontFamily="/Assets/Fonts/#Dosis"
-                            FontSize="18"
-                            Padding="10"
-                            Margin="0,5"
-                            Click="OptionsButton_Click"/>
-
-                    <Button x:Name="QuitButton"
-                            Style="{StaticResource WhiteButtonStyle}"
-                            Content="Quit"
-                            FontFamily="/Assets/Fonts/#Dosis"
-                            FontSize="18"
-                            Padding="10"
-                            Margin="0,5"
-                            Click="QuitButton_Click"/>
-                </StackPanel>
-            </Border>
         </Grid>
 
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>

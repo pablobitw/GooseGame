@@ -144,8 +144,17 @@
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
   </data>
+  <data name="OptionsButton" xml:space="preserve">
+    <value>Opciones</value>
+  </data>
   <data name="PasswordLabel" xml:space="preserve">
     <value>Contraseña:</value>
+  </data>
+  <data name="PlayButton" xml:space="preserve">
+    <value>Jugar</value>
+  </data>
+  <data name="QuitButton" xml:space="preserve">
+    <value>Salir</value>
   </data>
   <data name="RegisterButtonText" xml:space="preserve">
     <value>Registrarse</value>
