@@ -26,8 +26,18 @@ namespace GameClient
 
         private void QuitButtonClick(object sender, RoutedEventArgs e)
         {
-           
-          
+            string confirmationMessage = GameClient.Resources.Strings.ConfirmExitLabel;
+            string yesButtonText = GameClient.Resources.Strings.YesLabel;
+            string noButtonText = GameClient.Resources.Strings.NoLabel;
+
+            var confirmationDialog = new CustomMessageBox(confirmationMessage, yesButtonText, noButtonText);
+
+            bool? result = confirmationDialog.ShowDialog();
+            if (result == true)
+            {
+                Application.Current.Shutdown();
+
+            }
         }
 
         private void ProfileButtonClick(object sender, RoutedEventArgs e)

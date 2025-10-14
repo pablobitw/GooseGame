@@ -129,6 +129,12 @@
   <data name="BackButton" xml:space="preserve">
     <value>Volver</value>
   </data>
+  <data name="ConfirmExitLabel" xml:space="preserve">
+    <value>¿Seguro que quieres salir?</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Confirmar</value>
+  </data>
   <data name="CreateAccountButton" xml:space="preserve">
     <value>Crear cuenta</value>
   </data>
@@ -143,6 +149,9 @@
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
+  </data>
+  <data name="NoLabel" xml:space="preserve">
+    <value>No</value>
   </data>
   <data name="OptionsButton" xml:space="preserve">
     <value>Opciones</value>
@@ -173,5 +182,8 @@
   </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Usuario:</value>
+  </data>
+  <data name="YesLabel" xml:space="preserve">
+    <value>Si</value>
   </data>
 </root>

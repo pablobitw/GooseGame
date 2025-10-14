@@ -6,115 +6,79 @@
         xmlns:local="clr-namespace:GameClient"
         xmlns:props="clr-namespace:GameClient.Resources"
         mc:Ignorable="d"
-        Title="GameMainWindow" Height="720" Width="1280"
+        Title="GameMainWindow"
         WindowState="Maximized" WindowStyle="None">
 
-    <Grid>
-        <Grid x:Name="MainMenuGrid">
-            <Grid.Background>
-                <ImageBrush ImageSource="/Assets/logo2.png" 
-                 Stretch="UniformToFill" 
-                 Opacity="0.9">
-                    <ImageBrush.Viewbox>
-                        <Rect>0.2, 0.2, 0.6, 0.6</Rect>
-                    </ImageBrush.Viewbox>
-                </ImageBrush>
-            </Grid.Background>
+    <Viewbox>
+        <Grid Width="1920" Height="1080">
+            <Grid x:Name="MainMenuGrid">
+                <Grid.Background>
+                    <ImageBrush ImageSource="/Assets/logo2.png" 
+                                Stretch="UniformToFill" 
+                                Opacity="0.9">
+                        <ImageBrush.Viewbox>
+                            <Rect>0.2, 0.2, 0.6, 0.6</Rect>
+                        </ImageBrush.Viewbox>
+                    </ImageBrush>
+                </Grid.Background>
 
-            <Image Source="/Assets/LOGO.png" HorizontalAlignment="Center" Height="250" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                <Image Source="/Assets/LOGO.png" HorizontalAlignment="Center" Height="320" Margin="0,150,0,0" VerticalAlignment="Top"/>
 
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,200,0,0">
+                    <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="PlayButtonClick" Width="514" Height="71"/>
+                    <Button x:Name="OptionsButton" Content="{x:Static props:Strings.OptionsButton}" Style="{StaticResource OrangeButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="OptionsButtonClick" Width="514" Height="71"/>
+                    <Button x:Name="QuitButton" Content="{x:Static props:Strings.QuitButton}" Style="{StaticResource GreenButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="QuitButtonClick" Width="514" Height="71"/>
+                </StackPanel>
 
-                <Button x:Name="PlayButton"
-                        Content="{x:Static props:Strings.PlayButton}"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Margin="0,10"
-                        Click="PlayButtonClick"/>
+                <Button x:Name="PauseButton" Height="80" Width="80" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="PauseButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                                <Image Source="Assets/Icons/pause_icon.png" Stretch="Uniform"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
-                <Button x:Name="OptionsButton"
-                        Content="{x:Static props:Strings.OptionsButton}"
-                        Style="{StaticResource OrangeButtonStyle}"
-                        Margin="0,10"
-                        Click="OptionsButtonClick"/>
+                <Button x:Name="ProfileButton" Height="80" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="ProfileButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                                <Image Source="Assets/Icons/user_icon2.png" Stretch="Uniform"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
 
-                <Button x:Name="QuitButton"
-                        Content="{x:Static props:Strings.QuitButton}"
-                        Style="{StaticResource GreenButtonStyle}"
-                        Margin="0,10"
-                        Click="QuitButtonClick"/>
-            </StackPanel>
-            <Button x:Name="PauseButton"
-                    Height="60" Width="60"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Margin="10"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="PauseButtonClick">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="0">
-                            <Image Source="Assets/Icons/pause_icon.png"
-                                   Stretch="Uniform"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Opacity" Value="1"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-
-            <Button x:Name="ProfileButton"
-                    Height="60" Width="60"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="10"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="ProfileButtonClick">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="0">
-                            <Image Source="Assets/Icons/user_icon2.png"
-                                   Stretch="Uniform"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Opacity" Value="1"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+            <Grid x:Name="PauseMenuGrid" Visibility="Collapsed" Background="#80000000" />
+            <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
         </Grid>
-
-        <Grid x:Name="PauseMenuGrid" Visibility="Collapsed" Background="#80000000">
-        </Grid>
-
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
-    </Grid>
+    </Viewbox>
 </Window>
