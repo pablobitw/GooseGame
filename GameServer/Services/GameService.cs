@@ -1,12 +1,15 @@
-﻿using System;
+﻿using BCrypt.Net;
+using GameServer.Helpers;
+using System;
 using System.Linq;
 using System.ServiceModel;
-using BCrypt.Net;
+using System.Threading.Tasks;
+
 namespace GameServer
 {
     public class GameService : IGameService
     {
-        public bool RegistrarUsuario(string username, string email, string password)
+        public async Task<bool> RegisterUser(string username, string email, string password)
         {
             try
             {
@@ -17,19 +20,19 @@ namespace GameServer
                         return false;
                     }
 
+                    string verifyCode = new Random().Next(100000, 999999).ToString();
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
-                    var nuevaCuenta = new Account
+                    var newAccount = new Account
                     {
                         Email = email,
                         PasswordHash = hashedPassword,
                         RegisterDate = DateTime.Now,
-                        AccountStatus = (int)AccountStatus.Active
-
+                        AccountStatus = (int)AccountStatus.Pending,
+                        VerificationCode = verifyCode
                     };
 
-                    // creamos la entidad de estadísticas con valores iniciales
-                    var nuevasEstadisticas = new PlayerStat
+                    var newStats = new PlayerStat
                     {
                         MatchesPlayed = 0,
                         MatchesWon = 0,
@@ -37,53 +40,87 @@ namespace GameServer
                         LuckyBoxOpened = 0
                     };
 
-                    // creamos al jugador y le ASOCIAMOS sus estadísticas
-                    var nuevoJugador = new Player
+                    var newPlayer = new Player
                     {
                         Username = username,
                         Coins = 0,
                         Avatar = "default_avatar.png",
-                        Account = nuevaCuenta,
-                        PlayerStat = nuevasEstadisticas 
+                        Account = newAccount,
+                        PlayerStat = newStats
                     };
 
-                    context.Players.Add(nuevoJugador);
+                    context.Players.Add(newPlayer);
                     context.SaveChanges();
 
-                    Console.WriteLine($"Usuario '{username}' registrado exitosamente.");
-                    return true;
+                    // 4. CORRECCIÓN: Llamamos al método asíncrono con 'await'
+                    bool emailSent = await EmailHelper.EnviarCorreoDeVerificacion(email, verifyCode);
+
+                    return emailSent;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error en RegistrarUsuario: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                }
                 return false;
             }
         }
 
-        public bool IniciarSesion(string username, string password)
+        public bool VerifyAccount(string email, string code)
         {
             try
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    var jugador = context.Players.FirstOrDefault(p => p.Username == username);
+                    var account = context.Accounts.FirstOrDefault(a => a.Email == email);
+                    if (account != null && account.VerificationCode == code)
+                    {
+                        account.AccountStatus = (int)AccountStatus.Active;
+                        account.VerificationCode = null; // se limpia el codigo porque ya no es necesario
+                        context.SaveChanges();
 
-                    if (jugador == null)
+                        Console.WriteLine($"Cuenta para {email} verificada exitosamente");
+                        return true;
+                    }
+                    Console.WriteLine($"Verificación fallida para {email} con el código {code}.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en VerificarCuenta: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool LogIn(string username, string password)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var player = context.Players.FirstOrDefault(p => p.Username == username);
+
+                    if (player == null)
                     {
                         return false;
                     }
 
-                    if (BCrypt.Net.BCrypt.Verify(password, jugador.Account.PasswordHash))
+                    if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
                     {
-                        return true;
+                        
+                        if (player.Account.AccountStatus == (int)AccountStatus.Active)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            
+                            return false;
+                        }
                     }
-                    else
+                    else 
                     {
+                       
                         return false;
                     }
                 }

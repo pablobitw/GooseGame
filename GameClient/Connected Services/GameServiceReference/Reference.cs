@@ -15,17 +15,23 @@ namespace GameClient.GameServiceReference {
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="GameServiceReference.IGameService")]
     public interface IGameService {
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegistrarUsuario", ReplyAction="http://tempuri.org/IGameService/RegistrarUsuarioResponse")]
-        bool RegistrarUsuario(string username, string email, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
+        bool RegisterUser(string username, string email, string password);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegistrarUsuario", ReplyAction="http://tempuri.org/IGameService/RegistrarUsuarioResponse")]
-        System.Threading.Tasks.Task<bool> RegistrarUsuarioAsync(string username, string email, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
+        System.Threading.Tasks.Task<bool> RegisterUserAsync(string username, string email, string password);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/IniciarSesion", ReplyAction="http://tempuri.org/IGameService/IniciarSesionResponse")]
-        bool IniciarSesion(string username, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
+        bool LogIn(string username, string password);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/IniciarSesion", ReplyAction="http://tempuri.org/IGameService/IniciarSesionResponse")]
-        System.Threading.Tasks.Task<bool> IniciarSesionAsync(string username, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
+        System.Threading.Tasks.Task<bool> LogInAsync(string username, string password);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
+        bool VerifyAccount(string email, string code);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
+        System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -55,20 +61,28 @@ namespace GameClient.GameServiceReference {
                 base(binding, remoteAddress) {
         }
         
-        public bool RegistrarUsuario(string username, string email, string password) {
-            return base.Channel.RegistrarUsuario(username, email, password);
+        public bool RegisterUser(string username, string email, string password) {
+            return base.Channel.RegisterUser(username, email, password);
         }
         
-        public System.Threading.Tasks.Task<bool> RegistrarUsuarioAsync(string username, string email, string password) {
-            return base.Channel.RegistrarUsuarioAsync(username, email, password);
+        public System.Threading.Tasks.Task<bool> RegisterUserAsync(string username, string email, string password) {
+            return base.Channel.RegisterUserAsync(username, email, password);
         }
         
-        public bool IniciarSesion(string username, string password) {
-            return base.Channel.IniciarSesion(username, password);
+        public bool LogIn(string username, string password) {
+            return base.Channel.LogIn(username, password);
         }
         
-        public System.Threading.Tasks.Task<bool> IniciarSesionAsync(string username, string password) {
-            return base.Channel.IniciarSesionAsync(username, password);
+        public System.Threading.Tasks.Task<bool> LogInAsync(string username, string password) {
+            return base.Channel.LogInAsync(username, password);
+        }
+        
+        public bool VerifyAccount(string email, string code) {
+            return base.Channel.VerifyAccount(email, code);
+        }
+        
+        public System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code) {
+            return base.Channel.VerifyAccountAsync(email, code);
         }
     }
 }

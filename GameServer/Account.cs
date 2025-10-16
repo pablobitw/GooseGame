@@ -26,6 +26,7 @@ namespace GameServer
         public string PasswordHash { get; set; }
         public System.DateTime RegisterDate { get; set; }
         public int AccountStatus { get; set; }
+        public string VerificationCode { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Sanction> Sanctions { get; set; }

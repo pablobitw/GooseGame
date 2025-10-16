@@ -177,11 +177,26 @@
   <data name="RepeatPasswordLabel" xml:space="preserve">
     <value>Repeat password</value>
   </data>
+  <data name="ResendCodeButton" xml:space="preserve">
+    <value>Resend Code</value>
+  </data>
   <data name="SendButton" xml:space="preserve">
     <value>Send</value>
   </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Username:</value>
+  </data>
+  <data name="VerificationCodeLabel" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="VerifyAccountInstructions" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+  <data name="VerifyAccountLabel" xml:space="preserve">
+    <value>Verify Account</value>
+  </data>
+  <data name="VerifyButton" xml:space="preserve">
+    <value>Verify</value>
   </data>
   <data name="YesLabel" xml:space="preserve">
     <value>Yes</value>

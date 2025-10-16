@@ -84,6 +84,7 @@
     <Property Name="PasswordHash" Type="nvarchar" Nullable="false" MaxLength="255" />
     <Property Name="RegisterDate" Type="datetime" Nullable="false" />
     <Property Name="AccountStatus" Type="int" Nullable="false" />
+    <Property Name="VerificationCode" Type="nvarchar(max)" Nullable="true" />
   </EntityType>
   <EntityType Name="BoardSets">
     <Key>
@@ -385,6 +386,7 @@
           <Property Name="AccountStatus" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Sanctions" Relationship="Self.FK_IdAccount" FromRole="Accounts" ToRole="Sanctions" />
           <NavigationProperty Name="Players" Relationship="Self.FK_PlayerAccount" FromRole="Accounts" ToRole="Players" />
+          <Property Name="VerificationCode" Type="String" Nullable="true" />
         </EntityType>
         <EntityType Name="BoardSet">
           <Key>
@@ -772,6 +774,7 @@
           <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
           <ScalarProperty Name="RegisterDate" ColumnName="RegisterDate" />
           <ScalarProperty Name="AccountStatus" ColumnName="AccountStatus" />
+          <ScalarProperty Name="VerificationCode" ColumnName="VerificationCode" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

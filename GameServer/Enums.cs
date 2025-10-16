@@ -8,6 +8,7 @@ namespace GameServer
 {
     public enum AccountStatus
     {
+        Pending,
         Active,
         Inactive,
         Banned

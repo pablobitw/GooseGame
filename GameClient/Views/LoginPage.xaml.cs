@@ -31,7 +31,7 @@ namespace GameClient.Views
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {
-                bool loginExitoso = serviceClient.IniciarSesion(username, password);
+                bool loginExitoso = serviceClient.LogIn(username, password);
 
                 if (loginExitoso)
                 {

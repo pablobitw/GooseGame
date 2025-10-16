@@ -241,6 +241,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Reenviar codigo.
+        /// </summary>
+        public static string ResendCodeButton {
+            get {
+                return ResourceManager.GetString("ResendCodeButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Enviar.
         /// </summary>
         public static string SendButton {
@@ -255,6 +264,42 @@ namespace GameClient.Resources {
         public static string UsernameLabel {
             get {
                 return ResourceManager.GetString("UsernameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Codigo.
+        /// </summary>
+        public static string VerificationCodeLabel {
+            get {
+                return ResourceManager.GetString("VerificationCodeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Instrucciones.
+        /// </summary>
+        public static string VerifyAccountInstructions {
+            get {
+                return ResourceManager.GetString("VerifyAccountInstructions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verificar cuenta.
+        /// </summary>
+        public static string VerifyAccountLabel {
+            get {
+                return ResourceManager.GetString("VerifyAccountLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verificar.
+        /// </summary>
+        public static string VerifyButton {
+            get {
+                return ResourceManager.GetString("VerifyButton", resourceCulture);
             }
         }
         

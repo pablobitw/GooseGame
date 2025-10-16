@@ -84,12 +84,12 @@ namespace GameClient.Views
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {
-                bool registroExitoso = serviceClient.RegistrarUsuario(username, email, password);
+                bool registerSuccesful = serviceClient.RegisterUser(username, email, password);
 
-                if (registroExitoso)
+                if (registerSuccesful)
                 {
-                    MessageBox.Show("¡Registro exitoso! Ahora puedes iniciar sesión.", "Éxito");
-                    GoToLogin(null, null); 
+                    MessageBox.Show("Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam).", "Revisa tu Correo");
+                    NavigationService.Navigate(new VerifyAccountPage(email));
                 }
                 else
                 {

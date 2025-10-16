@@ -35,33 +35,43 @@
       <xsd:import schemaLocation="http://localhost:8080/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
     </xsd:schema>
   </wsdl:types>
-  <wsdl:message name="IGameService_RegistrarUsuario_InputMessage">
-    <wsdl:part name="parameters" element="tns:RegistrarUsuario" />
+  <wsdl:message name="IGameService_RegisterUser_InputMessage">
+    <wsdl:part name="parameters" element="tns:RegisterUser" />
   </wsdl:message>
-  <wsdl:message name="IGameService_RegistrarUsuario_OutputMessage">
-    <wsdl:part name="parameters" element="tns:RegistrarUsuarioResponse" />
+  <wsdl:message name="IGameService_RegisterUser_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RegisterUserResponse" />
   </wsdl:message>
-  <wsdl:message name="IGameService_IniciarSesion_InputMessage">
-    <wsdl:part name="parameters" element="tns:IniciarSesion" />
+  <wsdl:message name="IGameService_LogIn_InputMessage">
+    <wsdl:part name="parameters" element="tns:LogIn" />
   </wsdl:message>
-  <wsdl:message name="IGameService_IniciarSesion_OutputMessage">
-    <wsdl:part name="parameters" element="tns:IniciarSesionResponse" />
+  <wsdl:message name="IGameService_LogIn_OutputMessage">
+    <wsdl:part name="parameters" element="tns:LogInResponse" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_VerifyAccount_InputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyAccount" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_VerifyAccount_OutputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyAccountResponse" />
   </wsdl:message>
   <wsdl:portType name="IGameService">
-    <wsdl:operation name="RegistrarUsuario">
-      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RegistrarUsuario" message="tns:IGameService_RegistrarUsuario_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/RegistrarUsuarioResponse" message="tns:IGameService_RegistrarUsuario_OutputMessage" />
+    <wsdl:operation name="RegisterUser">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RegisterUser" message="tns:IGameService_RegisterUser_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/RegisterUserResponse" message="tns:IGameService_RegisterUser_OutputMessage" />
     </wsdl:operation>
-    <wsdl:operation name="IniciarSesion">
-      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/IniciarSesion" message="tns:IGameService_IniciarSesion_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/IniciarSesionResponse" message="tns:IGameService_IniciarSesion_OutputMessage" />
+    <wsdl:operation name="LogIn">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/LogIn" message="tns:IGameService_LogIn_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/LogInResponse" message="tns:IGameService_LogIn_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="VerifyAccount">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/VerifyAccount" message="tns:IGameService_VerifyAccount_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/VerifyAccountResponse" message="tns:IGameService_VerifyAccount_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IGameService" type="tns:IGameService">
     <wsp:PolicyReference URI="#NetTcpBinding_IGameService_policy" />
     <soap12:binding transport="http://schemas.microsoft.com/soap/tcp" />
-    <wsdl:operation name="RegistrarUsuario">
-      <soap12:operation soapAction="http://tempuri.org/IGameService/RegistrarUsuario" style="document" />
+    <wsdl:operation name="RegisterUser">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/RegisterUser" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -69,8 +79,17 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="IniciarSesion">
-      <soap12:operation soapAction="http://tempuri.org/IGameService/IniciarSesion" style="document" />
+    <wsdl:operation name="LogIn">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/LogIn" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="VerifyAccount">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/VerifyAccount" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

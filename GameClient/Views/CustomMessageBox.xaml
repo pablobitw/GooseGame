@@ -3,13 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Confirmación" 
         
-        Height="800" Width="1000"
+        Height="1000" Width="1200"
         
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
     <Viewbox>
-        <Border Width="1100" Height="900">
+        <Border Width="1200" Height="1000">
             <Border.Effect>
                 <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="25" ShadowDepth="0"/>
             </Border.Effect>

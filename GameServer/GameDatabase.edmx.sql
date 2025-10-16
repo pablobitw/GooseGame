@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 10/08/2025 22:40:01
+-- Date Created: 10/16/2025 02:38:36
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -17,32 +17,23 @@ GO
 -- Dropping existing FOREIGN KEY constraints
 -- --------------------------------------------------
 
+IF OBJECT_ID(N'[dbo].[FK_IdAccount]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_IdAccount];
+GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerAccount]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerAccount];
+GO
+IF OBJECT_ID(N'[dbo].[FK_GameBoard]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Games] DROP CONSTRAINT [FK_GameBoard];
+GO
+IF OBJECT_ID(N'[dbo].[FK_idBoard]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Tiles] DROP CONSTRAINT [FK_idBoard];
+GO
 IF OBJECT_ID(N'[dbo].[FK_ChatMessageGame]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[Games] DROP CONSTRAINT [FK_ChatMessageGame];
 GO
 IF OBJECT_ID(N'[dbo].[FK_ChatMessagePlayer]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[ChatMessages] DROP CONSTRAINT [FK_ChatMessagePlayer];
-GO
-IF OBJECT_ID(N'[dbo].[FK_GameBoard]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Games] DROP CONSTRAINT [FK_GameBoard];
-GO
-IF OBJECT_ID(N'[dbo].[FK_GameMoveRecord]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[MoveRecords] DROP CONSTRAINT [FK_GameMoveRecord];
-GO
-IF OBJECT_ID(N'[dbo].[FK_IdAccount]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_IdAccount];
-GO
-IF OBJECT_ID(N'[dbo].[FK_idBoard]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Tiles] DROP CONSTRAINT [FK_idBoard];
-GO
-IF OBJECT_ID(N'[dbo].[FK_idGame]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_idGame];
-GO
-IF OBJECT_ID(N'[dbo].[FK_ItemPlayerInventory]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[PlayerInventories] DROP CONSTRAINT [FK_ItemPlayerInventory];
-GO
-IF OBJECT_ID(N'[dbo].[FK_PlayerAccount]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerAccount];
 GO
 IF OBJECT_ID(N'[dbo].[FK_PlayerFriendship]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[Friendships] DROP CONSTRAINT [FK_PlayerFriendship];
@@ -50,14 +41,23 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_PlayerFriendship1]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[Friendships] DROP CONSTRAINT [FK_PlayerFriendship1];
 GO
+IF OBJECT_ID(N'[dbo].[FK_GameMoveRecord]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MoveRecords] DROP CONSTRAINT [FK_GameMoveRecord];
+GO
+IF OBJECT_ID(N'[dbo].[FK_idGame]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Sanctions] DROP CONSTRAINT [FK_idGame];
+GO
+IF OBJECT_ID(N'[dbo].[FK_ItemPlayerInventory]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[PlayerInventories] DROP CONSTRAINT [FK_ItemPlayerInventory];
+GO
 IF OBJECT_ID(N'[dbo].[FK_PlayerMoveRecord]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[MoveRecords] DROP CONSTRAINT [FK_PlayerMoveRecord];
 GO
 IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerInventory]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[PlayerInventories] DROP CONSTRAINT [FK_PlayerPlayerInventory];
 GO
-IF OBJECT_ID(N'[dbo].[FK_PlayerStatPlayer]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[PlayerStats] DROP CONSTRAINT [FK_PlayerStatPlayer];
+IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerStat]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerPlayerStat];
 GO
 
 -- --------------------------------------------------
@@ -67,8 +67,8 @@ GO
 IF OBJECT_ID(N'[dbo].[Accounts]', 'U') IS NOT NULL
     DROP TABLE [dbo].[Accounts];
 GO
-IF OBJECT_ID(N'[dbo].[BoardSet]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BoardSet];
+IF OBJECT_ID(N'[dbo].[BoardSets]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BoardSets];
 GO
 IF OBJECT_ID(N'[dbo].[ChatMessages]', 'U') IS NOT NULL
     DROP TABLE [dbo].[ChatMessages];
@@ -111,7 +111,8 @@ CREATE TABLE [dbo].[Accounts] (
     [Email] nvarchar(255)  NOT NULL,
     [PasswordHash] nvarchar(255)  NOT NULL,
     [RegisterDate] datetime  NOT NULL,
-    [AccountStatus] int  NOT NULL
+    [AccountStatus] int  NOT NULL,
+    [VerificationCode] nvarchar(max)  NULL
 );
 GO
 

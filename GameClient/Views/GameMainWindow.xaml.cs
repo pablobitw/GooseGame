@@ -12,7 +12,7 @@ namespace GameClient
         {
             InitializeComponent();
         }
-
+        
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {

@@ -1,4 +1,5 @@
-﻿using System.ServiceModel; 
+﻿using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace GameServer
 {
@@ -6,11 +7,15 @@ namespace GameServer
     [ServiceContract]
     public interface IGameService
     {
-        // [OperationContract] marca cada método como una operación que un cliente puede llamar.
         [OperationContract]
-        bool RegistrarUsuario(string username, string email, string password);
+        Task<bool> RegisterUser(string username, string email, string password); 
+        // hacemos el método asíncrono para que no congele el servidor mientras espera operaciones lentas,
+   // como enviar un corre devuelve una promesa de que en el futuro entregara un `bool
 
         [OperationContract]
-        bool IniciarSesion(string username, string password);
+        bool LogIn(string username, string password);
+
+        [OperationContract]
+        bool VerifyAccount(string email, string code);
     }
 }
