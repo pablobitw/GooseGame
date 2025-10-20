@@ -1,5 +1,7 @@
 ﻿using System;
-using System.ServiceModel; // Importante: Añade esta referencia para WCF
+using System.ServiceModel;
+using GameServer.Services;
+
 
 namespace GameServer
 {
@@ -9,26 +11,35 @@ namespace GameServer
         {
             Console.Title = "Goose Game Server";
 
-            // 'using' se asegura de que el servicio se cierre correctamente al final
-            using (ServiceHost host = new ServiceHost(typeof(GameService)))
-            {
-                try
-                {
-                    // Esta línea inicia el servicio y lo pone a escuchar
-                    host.Open();
+            ServiceHost gameHost = new ServiceHost(typeof(GameService));
 
-                    Console.WriteLine("Servidor del Juego de la Oca iniciado y en línea.");
-                    Console.WriteLine("Presiona <Enter> para detener el servidor.");
-                    Console.ReadLine();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Ocurrió un error al iniciar el servidor: " + ex.Message);
-                    Console.ReadLine();
-                }
+            ServiceHost chatHost = new ServiceHost(typeof(ChatService));
+
+            try
+            {
+                gameHost.Open();
+                chatHost.Open();
+
+                Console.WriteLine("GooseGame Server is running.");
+                Console.WriteLine("Chat service is online.");
+                Console.WriteLine("Press <Enter> to stop both services.");
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Something is wrong: " + ex.Message);
+                Console.ReadLine();
+            }
+            finally
+            {
+                if (gameHost.State == CommunicationState.Opened)
+                    gameHost.Close();
+
+                if (chatHost.State == CommunicationState.Opened)
+                    chatHost.Close();
             }
 
-            Console.WriteLine("Cerrando servidor...");
+            Console.WriteLine("Closing server...");
         }
     }
 }

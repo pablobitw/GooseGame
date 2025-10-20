@@ -10,7 +10,7 @@ namespace GameServer
         [OperationContract]
         Task<bool> RegisterUser(string username, string email, string password); 
         // hacemos el método asíncrono para que no congele el servidor mientras espera operaciones lentas,
-   // como enviar un corre devuelve una promesa de que en el futuro entregara un `bool
+         // como enviar un corre devuelve una promesa de que en el futuro entregara un `bool
 
         [OperationContract]
         bool LogIn(string username, string password);

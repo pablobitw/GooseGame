@@ -16,44 +16,39 @@ namespace GameClient.Views
 
         private void Login(object sender, RoutedEventArgs e)
         {
-            // recoger datos
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            // validar que los campos no estén vacíos
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Por favor, ingresa tu usuario y contraseña.", "Campos Vacíos");
+                MessageBox.Show("Please enter both username and password.", "Empty Fields");
                 return;
             }
 
-            //llamar al servidor para iniciar sesión
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {
-                bool loginExitoso = serviceClient.LogIn(username, password);
+                bool loginSuccessful = serviceClient.LogIn(username, password);
 
-                if (loginExitoso)
+                if (loginSuccessful)
                 {
-                    // si el login es exitoso, se abre la ventana principal del juego
-                    GameMainWindow gameMenu = new GameMainWindow();
+                    GameMainWindow gameMenu = new GameMainWindow(username);
                     gameMenu.Show();
 
-                    // y cierra la ventana de autenticación actual
                     Window.GetWindow(this).Close();
                 }
                 else
                 {
-                    MessageBox.Show("Usuario o contraseña incorrectos.", "Error de Acceso");
+                    MessageBox.Show("Invalid username or password.", "Login Failed");
                 }
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                MessageBox.Show("Could not connect to the server. Please ensure the server is running.", "Connection Error");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+                MessageBox.Show("An unexpected error occurred: " + ex.Message, "Error");
             }
         }
 
@@ -80,7 +75,6 @@ namespace GameClient.Views
         }
         private void OnBackButton(object sender, RoutedEventArgs e)
         {
-            // Llamamos al método de la ventana padre
             if (Window.GetWindow(this) is AuthWindow authWindow)
             {
                 authWindow.ShowAuthButtons(); // esto limpia el frame y muestra los botones

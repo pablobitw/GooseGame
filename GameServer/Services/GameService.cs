@@ -52,7 +52,7 @@ namespace GameServer
                     context.Players.Add(newPlayer);
                     context.SaveChanges();
 
-                    // 4. CORRECCIÓN: Llamamos al método asíncrono con 'await'
+           
                     bool emailSent = await EmailHelper.EnviarCorreoDeVerificacion(email, verifyCode);
 
                     return emailSent;
@@ -75,7 +75,7 @@ namespace GameServer
                     if (account != null && account.VerificationCode == code)
                     {
                         account.AccountStatus = (int)AccountStatus.Active;
-                        account.VerificationCode = null; // se limpia el codigo porque ya no es necesario
+                        account.VerificationCode = null; 
                         context.SaveChanges();
 
                         Console.WriteLine($"Cuenta para {email} verificada exitosamente");

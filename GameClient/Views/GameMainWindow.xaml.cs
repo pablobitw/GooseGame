@@ -8,11 +8,19 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
-        public GameMainWindow()
+ 
+        private string _username;
+
+        
+        private ChatWindow _chatWindowInstance;
+
+        
+        public GameMainWindow(string loggedInUsername)
         {
             InitializeComponent();
+
+            _username = loggedInUsername;
         }
-        
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {
@@ -36,7 +44,6 @@ namespace GameClient
             if (result == true)
             {
                 Application.Current.Shutdown();
-
             }
         }
 
@@ -45,7 +52,6 @@ namespace GameClient
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new ModifyProfilePage());
         }
-
 
         private void PauseButtonClick(object sender, RoutedEventArgs e)
         {
@@ -59,11 +65,26 @@ namespace GameClient
             MainMenuGrid.IsEnabled = true;
         }
 
+        private void ChatButton_Click(object sender, RoutedEventArgs e)
+        {
+          
+            if (_chatWindowInstance != null && _chatWindowInstance.IsVisible)
+            {
+            
+                _chatWindowInstance.Activate();
+            }
+            else
+            {
+                
+                _chatWindowInstance = new ChatWindow(_username);
+                _chatWindowInstance.Show();
+            }
+        }
 
         public void ShowMainMenu()
         {
-            MainFrame.Content = null; // Limpia el Frame.
-            MainMenuGrid.Visibility = Visibility.Visible; // Muestra el menú principal de nuevo.
+            MainFrame.Content = null;
+            MainMenuGrid.Visibility = Visibility.Visible; 
         }
     }
 }
