@@ -19,8 +19,6 @@ namespace GameServer.Services
             _clients.AddOrUpdate(username, callback, (key, oldValue) => callback);
             Console.WriteLine($"{username} joined the chat.");
         }
-
-        // --- ADD THIS METHOD ---
         public void Leave(string username)
         {
             if (_clients.TryRemove(username, out _))

@@ -82,11 +82,20 @@
     <Compile Include="Views\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CreateOrJoinMatch.xaml.cs">
+      <DependentUpon>CreateOrJoinMatch.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ForgotPassPage.xaml.cs">
       <DependentUpon>ForgotPassPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GameMainWindow.xaml.cs">
       <DependentUpon>GameMainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ListMatches.xaml.cs">
+      <DependentUpon>ListMatches.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LobbyPage.xaml.cs">
+      <DependentUpon>LobbyPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -129,11 +138,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CreateOrJoinMatch.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ForgotPassPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GameMainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ListMatches.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LobbyPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -274,6 +295,9 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\chat_icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

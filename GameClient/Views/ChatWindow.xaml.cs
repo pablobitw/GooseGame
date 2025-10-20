@@ -24,7 +24,7 @@ namespace GameClient.Views
             _playerName = username;
             this.Title = $"Chat - Connected as: {_playerName}";
             ConnectToChat();
-            this.Closing += ChatWindow_Closing; // asegura la desconexión
+            this.Closing += ChatWindow_Closing; // asegurar la desconexión
         }
 
         private void ConnectToChat()
@@ -34,8 +34,7 @@ namespace GameClient.Views
                 InstanceContext context = new InstanceContext(this);
                 _chatClient = new ChatServiceClient(context);
 
-                //  
-                _chatClient.JoinChat(_playerName);
+                             _chatClient.JoinChat(_playerName);
             }
             catch (Exception ex)
             {
