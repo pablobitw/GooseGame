@@ -7,7 +7,7 @@
         xmlns:props="clr-namespace:GameClient.Resources"
         mc:Ignorable="d"
         Title="GameMainWindow"
-        WindowState="Maximized" WindowStyle="None">
+        WindowStyle="None">
 
     <Viewbox>
         <Grid Width="1920" Height="1080">
