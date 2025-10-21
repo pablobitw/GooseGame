@@ -53,18 +53,6 @@ namespace GameClient
             MainFrame.Navigate(new ModifyProfilePage());
         }
 
-        private void PauseButtonClick(object sender, RoutedEventArgs e)
-        {
-            PauseMenuGrid.Visibility = Visibility.Visible;
-            MainMenuGrid.IsEnabled = false;
-        }
-
-        private void ResumeButtonClick(object sender, RoutedEventArgs e)
-        {
-            PauseMenuGrid.Visibility = Visibility.Collapsed;
-            MainMenuGrid.IsEnabled = true;
-        }
-
         private void ChatButton_Click(object sender, RoutedEventArgs e)
         {
           

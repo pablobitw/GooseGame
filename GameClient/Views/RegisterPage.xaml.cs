@@ -4,7 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using GameClient.GameServiceReference; 
-using System.ServiceModel;          
+using System.ServiceModel;
+using System.Net.Mail;
 
 namespace GameClient.Views
 {
@@ -58,29 +59,20 @@ namespace GameClient.Views
             RepeatPlaceholder.Visibility = string.IsNullOrEmpty(RepeatBox.Password) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // la logica de los botones (conexion al servidor agregada) 
         private void CreateAccount(object sender, RoutedEventArgs e)
         {
-            // rcoger datos de la interfaz
+            // validar el formulario ANTES de llamar al servidor
+            if (!IsFormValid())
+            {
+                return; // detiene la ejecución si hay errores de validación
+            }
+
+            // si es válido, recoger datos
             string email = EmailBox.Text;
             string username = UserBox.Text;
             string password = PasswordBox.Password;
-            string repeatPassword = RepeatBox.Password;
 
-            //  validaciones en el cliente
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                MessageBox.Show("Por favor, completa todos los campos.");
-                return;
-            }
-
-            if (password != repeatPassword)
-            {
-                MessageBox.Show("Las contraseñas no coinciden.");
-                return;
-            }
-
-            //  llamada al servidor
+            // llamar al servidor
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {
@@ -93,7 +85,8 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    MessageBox.Show("El nombre de usuario o correo ya está en uso.", "Error de Registro");
+                    ShowError(EmailBox, "El correo ya está en uso.");
+                    ShowError(UserBox, "El nombre de usuario ya está en uso.");
                 }
             }
             catch (EndpointNotFoundException)
@@ -105,12 +98,95 @@ namespace GameClient.Views
                 MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
             }
         }
+        private bool IsFormValid()
+        {
+            ClearAllErrors();
+            bool isValid = true;
+
+            string email = EmailBox.Text;
+            string username = UserBox.Text;
+            string password = PasswordBox.Password;
+            string repeatPassword = RepeatBox.Password;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ShowError(EmailBox, "El correo no puede estar vacio");
+                isValid = false;
+            }
+            else if (!IsValidEmail(email))
+            {
+                ShowError(EmailBox, "El formato del correo no es valido");
+                isValid = false;
+            }
+            if(string.IsNullOrWhiteSpace(username))
+            {
+                ShowError(UserBox, "El nombre de usuario no puede estar vacio");
+                isValid = false;
+            }
+            if(string.IsNullOrWhiteSpace (password))
+            {
+                ShowError(PasswordBox, "La contraseña no puede estar vacia");
+                isValid = false;
+                    
+            }
+            if (string.IsNullOrWhiteSpace(repeatPassword))
+            {
+                ShowError(RepeatBox, "Debes repetir la contraseña");
+                isValid = false;
+            }
+            else if (password != repeatPassword)
+            {
+                ShowError(PasswordBox, "Las contraseñas no coinciden");
+                ShowError(RepeatBox, "Las contraseñas no coinciden");
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        private void ShowError(Control field, string errorMessage)
+        {
+            field.BorderBrush = new SolidColorBrush(Colors.Red);
+            field.ToolTip = new ToolTip { Content = errorMessage };
+        }
+        private void ClearAllErrors()
+        {
+            EmailBox.ClearValue(Border.BorderBrushProperty);
+            EmailBox.ToolTip = null;
+
+            UserBox.ClearValue(Border.BorderBrushProperty);
+            UserBox.ToolTip = null;
+
+            PasswordBox.ClearValue(Border.BorderBrushProperty);
+            PasswordBox.ToolTip = null;
+
+            RepeatBox.ClearValue(Border.BorderBrushProperty);
+            RepeatBox.ToolTip = null;
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }                  
+            try
+                {
+                    var addr = new MailAddress(email);
+                    return addr.Address == email;
+                }
+                catch
+                {
+                    return false; 
+            }
+        }
+
+
 
         private void GoToLogin(object sender, RoutedEventArgs e)
-        {
-            if (NavigationService.CanGoBack)
-                NavigationService.GoBack();
-        }
+                    {
+                        if (NavigationService.CanGoBack)
+                            NavigationService.GoBack();
+                    }
 
         private void OnBackButton(object sender, RoutedEventArgs e)
         {

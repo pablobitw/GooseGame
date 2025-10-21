@@ -39,21 +39,18 @@
                                FontSize="28" FontWeight="Bold" Foreground="#333333" 
                                HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                    <!-- Email -->
                     <Grid Margin="0,5">
                         <TextBox x:Name="EmailBox" Style="{StaticResource InputTextBoxStyle}" TextChanged="EmailBoxTextChanged"/>
                         <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
-                    <!-- Username -->
                     <Grid Margin="0,5">
                         <TextBox x:Name="UserBox" Style="{StaticResource InputTextBoxStyle}" TextChanged="UserBoxTextChanged"/>
                         <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
-                    <!-- Password -->
                     <Grid Margin="0,5">
                         <PasswordBox x:Name="PasswordBox" Style="{StaticResource InputPasswordBoxStyle}" 
                                      GotFocus="PassBoxFocus" LostFocus="PassBoxLost" PasswordChanged="PassBoxChanged"/>
@@ -61,7 +58,6 @@
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
-                    <!-- Repeat Password -->
                     <Grid Margin="0,5">
                         <PasswordBox x:Name="RepeatBox" Style="{StaticResource InputPasswordBoxStyle}" 
                                      GotFocus="RepeatBoxFocus" LostFocus="RepeatBoxLost" PasswordChanged="RepeatBoxChanged"/>
