@@ -24,10 +24,10 @@
 
                 <Image Source="/Assets/LOGO.png" HorizontalAlignment="Center" Height="320" Margin="0,150,0,0" VerticalAlignment="Top"/>
 
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,200,0,0">
-                    <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="PlayButtonClick" Width="514" Height="71"/>
-                    <Button x:Name="OptionsButton" Content="{x:Static props:Strings.OptionsButton}" Style="{StaticResource OrangeButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="OptionsButtonClick" Width="514" Height="71"/>
-                    <Button x:Name="QuitButton" Content="{x:Static props:Strings.QuitButton}" Style="{StaticResource GreenButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="40" FontWeight="Bold" Click="QuitButtonClick" Width="514" Height="71"/>
+                <StackPanel HorizontalAlignment="Center" Margin="0,518,0,0">
+                    <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" Click="PlayButtonClick" Width="514" Height="135"/>
+                    <Button x:Name="OptionsButton" Content="{x:Static props:Strings.OptionsButton}" Style="{StaticResource OrangeButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" Click="OptionsButtonClick" Width="514" Height="135"/>
+                    <Button x:Name="QuitButton" Content="{x:Static props:Strings.QuitButton}" Style="{StaticResource GreenButtonStyle}" Margin="0,10" FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" Click="QuitButtonClick" Width="514" Height="135"/>
                 </StackPanel>
 
                 <Button x:Name="ProfileButton" Height="80" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="ProfileButtonClick">

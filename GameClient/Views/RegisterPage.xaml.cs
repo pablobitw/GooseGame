@@ -16,50 +16,61 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-        //  metodos de Placeholders 
-        private void EmailBoxTextChanged(object sender, TextChangedEventArgs e)
+        // es un detector de movimiento para el texto
+        private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
         {
-            EmailPlaceholder.Visibility = string.IsNullOrEmpty(EmailBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            var textBox = sender as TextBox;
+    
+            // obtenemos el TextBlock (placeholder) que enlazamos en el 'Tag'
+            var placeholder = textBox.Tag as TextBlock;
+
+             if (placeholder != null)
+            {
+                placeholder.Visibility = string.IsNullOrEmpty(textBox.Text) 
+                 ? Visibility.Visible 
+                 : Visibility.Collapsed;
+            }
         }
 
-        private void UserBoxTextChanged(object sender, TextChangedEventArgs e)
+        // Se dispara en el instante en que el usuario hace click dentro de un control
+        private void OnGenericPasswordFocus(object sender, RoutedEventArgs e)
         {
-            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UserBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            var passwordBox = sender as PasswordBox;
+            var placeholder = passwordBox.Tag as TextBlock;
+            if (placeholder != null)
+            {
+                      placeholder.Visibility = Visibility.Collapsed;
+            }
         }
 
-        private void PassBoxFocus(object sender, RoutedEventArgs e)
+        // se dispara en el instante en que el usuario hace clic fuera de ese control
+        private void OnGenericPasswordLost(object sender, RoutedEventArgs e)
         {
-            PassPlaceholder.Visibility = Visibility.Collapsed;
+            var passwordBox = sender as PasswordBox;
+            var placeholder = passwordBox.Tag as TextBlock;
+            if (placeholder != null)
+            {
+                if (string.IsNullOrWhiteSpace(passwordBox.Password))
+                {
+                    placeholder.Visibility = Visibility.Visible;
+                }
+            }
         }
 
-        private void PassBoxLost(object sender, RoutedEventArgs e)
+        // es un detector de movimiento para el texto.
+        private void OnGenericPasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(PasswordBox.Password))
-                PassPlaceholder.Visibility = Visibility.Visible;
+            var passwordBox = sender as PasswordBox;
+            var placeholder = passwordBox.Tag as TextBlock;
+            if (placeholder != null)
+            {
+                placeholder.Visibility = string.IsNullOrEmpty(passwordBox.Password) 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
         }
 
-        private void PassBoxChanged(object sender, RoutedEventArgs e)
-        {
-            PassPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password) ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void RepeatBoxFocus(object sender, RoutedEventArgs e)
-        {
-            RepeatPlaceholder.Visibility = Visibility.Collapsed;
-        }
-
-        private void RepeatBoxLost(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(RepeatBox.Password))
-                RepeatPlaceholder.Visibility = Visibility.Visible;
-        }
-
-        private void RepeatBoxChanged(object sender, RoutedEventArgs e)
-        {
-            RepeatPlaceholder.Visibility = string.IsNullOrEmpty(RepeatBox.Password) ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void CreateAccount(object sender, RoutedEventArgs e)
+        private async void CreateAccount(object sender, RoutedEventArgs e)
         {
             // validar el formulario ANTES de llamar al servidor
             if (!IsFormValid())
@@ -76,7 +87,7 @@ namespace GameClient.Views
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {
-                bool registerSuccesful = serviceClient.RegisterUser(username, email, password);
+                bool registerSuccesful = await serviceClient.RegisterUserAsync(username, email, password);
 
                 if (registerSuccesful)
                 {
@@ -183,10 +194,12 @@ namespace GameClient.Views
 
 
         private void GoToLogin(object sender, RoutedEventArgs e)
-                    {
-                        if (NavigationService.CanGoBack)
-                            NavigationService.GoBack();
-                    }
+        {
+            if (NavigationService != null)
+            {
+                NavigationService.Navigate(new LoginPage());
+            }
+        }
 
         private void OnBackButton(object sender, RoutedEventArgs e)
         {

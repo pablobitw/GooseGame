@@ -52,8 +52,9 @@ namespace GameServer
                     context.Players.Add(newPlayer);
                     context.SaveChanges();
 
-           
-                    bool emailSent = await EmailHelper.EnviarCorreoDeVerificacion(email, verifyCode);
+
+                    bool emailSent = await EmailHelper.EnviarCorreoDeVerificacion(email, verifyCode)
+                                                      .ConfigureAwait(false);
 
                     return emailSent;
                 }
