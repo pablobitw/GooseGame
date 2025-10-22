@@ -122,8 +122,14 @@
     <Compile Include="Views\CustomMessageBox.xaml.cs">
       <DependentUpon>CustomMessageBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ResetPasswordPage.xaml.cs">
+      <DependentUpon>ResetPasswordPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\VerifyAccountPage.xaml.cs">
       <DependentUpon>VerifyAccountPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\VerifyRecoveryCodePage.xaml.cs">
+      <DependentUpon>VerifyRecoveryCodePage.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\AuthWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -181,7 +187,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ResetPasswordPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\VerifyAccountPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\VerifyRecoveryCodePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

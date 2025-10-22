@@ -129,6 +129,12 @@
   <data name="BackButton" xml:space="preserve">
     <value>Back</value>
   </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ConfirmButton" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
   <data name="ConfirmExitLabel" xml:space="preserve">
     <value>Are you sure you want to quit?</value>
   </data>
@@ -141,6 +147,9 @@
   <data name="EmailLabel" xml:space="preserve">
     <value>Email</value>
   </data>
+  <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
+    <value>Please type the code</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Forgot password?</value>
   </data>
@@ -149,6 +158,9 @@
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Log In</value>
+  </data>
+  <data name="NewPasswordLabel" xml:space="preserve">
+    <value>New Password</value>
   </data>
   <data name="NoLabel" xml:space="preserve">
     <value>No</value>
@@ -174,11 +186,20 @@
   <data name="RepeatEmailLabel" xml:space="preserve">
     <value>Repeat e-mail</value>
   </data>
+  <data name="RepeatNewPasswordLabel" xml:space="preserve">
+    <value>Repeat Password</value>
+  </data>
   <data name="RepeatPasswordLabel" xml:space="preserve">
     <value>Repeat password</value>
   </data>
   <data name="ResendCodeButton" xml:space="preserve">
     <value>Resend Code</value>
+  </data>
+  <data name="ResetPasswordInstruction" xml:space="preserve">
+    <value>Reset Password</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Reset Password</value>
   </data>
   <data name="SendButton" xml:space="preserve">
     <value>Send</value>
@@ -197,6 +218,9 @@
   </data>
   <data name="VerifyButton" xml:space="preserve">
     <value>Verify</value>
+  </data>
+  <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
+    <value>Recovery</value>
   </data>
   <data name="YesLabel" xml:space="preserve">
     <value>Yes</value>

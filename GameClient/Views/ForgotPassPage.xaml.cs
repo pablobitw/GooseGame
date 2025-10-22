@@ -1,10 +1,12 @@
-﻿using GameClient.Views; // Para LoginPage
-using System.Net.Mail;  // Para MailAddress
+﻿using GameClient.GameServiceReference;
+using GameClient.Views; 
+using System;
+using System.Net.Mail;  
+using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;  // Para SolidColorBrush
+using System.Windows.Media;  
 using System.Windows.Navigation;
-// (Añade 'using GameClient.GameServiceReference;' cuando vayas a llamar al servidor)
 
 namespace GameClient
 {
@@ -15,22 +17,59 @@ namespace GameClient
             InitializeComponent();
         }
 
-        private void OnSendButtonClick(object sender, RoutedEventArgs e)
-        {
 
+        private async void OnSendButtonClick(object sender, RoutedEventArgs e)
+        {
             if (!IsFormValid())
             {
-                return; 
+                return; // detiene si hay errores
             }
-
             string email = EmailTextBox.Text;
 
-            MessageBox.Show($"Se enviaría un correo de recuperación a: {email}", "Lógica Pendiente");
+            // llamar al servidor 
+            var client = new GameServiceClient();
+            bool requestSent = false;
+            try
+            {
+
+                requestSent = await client.RequestPasswordResetAsync(email);
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error conectando al servidor: " + ex.Message, "Error");
+                return;
+            }
+            finally
+            {
+                // siempre cierra el cliente 
+                if (client.State == System.ServiceModel.CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+            }
+
+            // analizar la respuesta del servidor
+            if (requestSent)
+            {
+                // el servidor envió el correo (o fingió hacerlo)
+                MessageBox.Show("Si tu correo está registrado, recibirás un código de verificación.", "Revisa tu Correo");
 
 
+                NavigationService.Navigate(new VerifyRecoveryCodePage(email));
+            }
+            else
+            {
+                // El servidor devolvió 'false' (un error inesperado en el servidor)
+                ShowError(EmailTextBox, "Hubo un error al procesar tu solicitud. Intenta más tarde.");
+            }
         }
 
-              private void OnBackButtonClick(object sender, RoutedEventArgs e)
+        private void OnBackButtonClick(object sender, RoutedEventArgs e)
         {
             if (NavigationService != null)
             {

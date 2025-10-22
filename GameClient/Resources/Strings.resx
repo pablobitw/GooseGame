@@ -129,6 +129,12 @@
   <data name="BackButton" xml:space="preserve">
     <value>Volver</value>
   </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="ConfirmButton" xml:space="preserve">
+    <value>Confirmar</value>
+  </data>
   <data name="ConfirmExitLabel" xml:space="preserve">
     <value>¿Seguro que quieres salir?</value>
   </data>
@@ -141,6 +147,9 @@
   <data name="EmailLabel" xml:space="preserve">
     <value>Correo Electronico</value>
   </data>
+  <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
+    <value>Instrucciones:</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
   </data>
@@ -149,6 +158,9 @@
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
+  </data>
+  <data name="NewPasswordLabel" xml:space="preserve">
+    <value>Nueva contraseña</value>
   </data>
   <data name="NoLabel" xml:space="preserve">
     <value>No</value>
@@ -174,11 +186,20 @@
   <data name="RepeatEmailLabel" xml:space="preserve">
     <value>Repetir correo</value>
   </data>
+  <data name="RepeatNewPasswordLabel" xml:space="preserve">
+    <value>Repitir contraseña</value>
+  </data>
   <data name="RepeatPasswordLabel" xml:space="preserve">
     <value>Repetir contraseña</value>
   </data>
   <data name="ResendCodeButton" xml:space="preserve">
     <value>Reenviar codigo</value>
+  </data>
+  <data name="ResetPasswordInstruction" xml:space="preserve">
+    <value>Restablece tu contraseña:</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Restablecer contraseña</value>
   </data>
   <data name="SendButton" xml:space="preserve">
     <value>Enviar</value>
@@ -197,6 +218,9 @@
   </data>
   <data name="VerifyButton" xml:space="preserve">
     <value>Verificar</value>
+  </data>
+  <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
+    <value>Recuperacion</value>
   </data>
   <data name="YesLabel" xml:space="preserve">
     <value>Si</value>

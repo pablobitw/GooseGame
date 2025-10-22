@@ -32,6 +32,24 @@ namespace GameClient.GameServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
         System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RequestPasswordReset", ReplyAction="http://tempuri.org/IGameService/RequestPasswordResetResponse")]
+        bool RequestPasswordReset(string email);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RequestPasswordReset", ReplyAction="http://tempuri.org/IGameService/RequestPasswordResetResponse")]
+        System.Threading.Tasks.Task<bool> RequestPasswordResetAsync(string email);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IGameService/VerifyRecoveryCodeResponse")]
+        bool VerifyRecoveryCode(string email, string code);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IGameService/VerifyRecoveryCodeResponse")]
+        System.Threading.Tasks.Task<bool> VerifyRecoveryCodeAsync(string email, string code);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/UpdatePassword", ReplyAction="http://tempuri.org/IGameService/UpdatePasswordResponse")]
+        bool UpdatePassword(string email, string newPassword);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/UpdatePassword", ReplyAction="http://tempuri.org/IGameService/UpdatePasswordResponse")]
+        System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -83,6 +101,30 @@ namespace GameClient.GameServiceReference {
         
         public System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code) {
             return base.Channel.VerifyAccountAsync(email, code);
+        }
+        
+        public bool RequestPasswordReset(string email) {
+            return base.Channel.RequestPasswordReset(email);
+        }
+        
+        public System.Threading.Tasks.Task<bool> RequestPasswordResetAsync(string email) {
+            return base.Channel.RequestPasswordResetAsync(email);
+        }
+        
+        public bool VerifyRecoveryCode(string email, string code) {
+            return base.Channel.VerifyRecoveryCode(email, code);
+        }
+        
+        public System.Threading.Tasks.Task<bool> VerifyRecoveryCodeAsync(string email, string code) {
+            return base.Channel.VerifyRecoveryCodeAsync(email, code);
+        }
+        
+        public bool UpdatePassword(string email, string newPassword) {
+            return base.Channel.UpdatePassword(email, newPassword);
+        }
+        
+        public System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword) {
+            return base.Channel.UpdatePasswordAsync(email, newPassword);
         }
     }
 }

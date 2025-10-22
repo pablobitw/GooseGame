@@ -4,11 +4,13 @@ using System;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using log4net;
 
 namespace GameServer
 {
     public class GameService : IGameService
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(GameService));
         public async Task<bool> RegisterUser(string username, string email, string password)
         {
             try
@@ -133,9 +135,104 @@ namespace GameServer
             }
         }
 
-        public bool CambiarContrasena(string username, string oldPassword, string newPassword)
+        public async Task<bool> RequestPasswordReset(string email)
         {
-            throw new NotImplementedException();
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var account = context.Accounts.FirstOrDefault(a => a.Email == email);
+
+                    if (account == null)
+                    {
+                        
+                        Log.Warn($"Password reset requested for non-existent email: {email}");
+                        return true; // Finge que funcionó
+                    }
+
+                    // generar y guardar un nuevo código de verificacion
+                    string verifyCode = new Random().Next(100000, 999999).ToString();
+                    account.VerificationCode = verifyCode; 
+                    context.SaveChanges();
+
+                    bool emailSent = await EmailHelper.EnviarCorreoDeRecuperacion(email, verifyCode)
+                                                      .ConfigureAwait(false); // evita el deadlock
+
+                    Log.Info($"Password reset code sent to: {email}");
+                    return emailSent;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error in RequestPasswordReset for {email}", ex);
+                return false;
+            }
         }
+
+              public bool VerifyRecoveryCode(string email, string code)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    // Comprobamos que el email y el código coincidan Y que el código no esté vacío
+                    bool isValid = context.Accounts.Any(a =>
+                        a.Email == email &&
+                        a.VerificationCode == code &&
+                        a.VerificationCode != null);
+
+                    if (isValid) Log.Info($"Recovery code verified for: {email}");
+                    else Log.Warn($"Failed recovery code attempt for: {email}");
+
+                    return isValid;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error in VerifyRecoveryCode for {email}", ex);
+                Console.WriteLine($"Error en VerifyRecoveryCode: {ex.Message}");
+                return false;
+            }
+        }
+        public bool UpdatePassword(string email, string newPassword)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var account = context.Accounts.FirstOrDefault(a => a.Email == email);
+                    if (account == null)
+                    {
+                        Log.Error($"Intento de actualizar contraseña para cuenta no existente: {email}");
+                        return false;
+                    }
+                    // comprobamos si la nueva contraseña es igual a la antigua.
+                    if (BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
+                    {
+                        // si la contraseña es la misma Rechaza el cambio
+                        Log.Warn($"Usuario '{email}' intentó reusar su contraseña anterior.");
+                        return false;
+                        // NOTA: En el cliente, esto devolverá 'false'.
+                    }
+
+                    // Si la contraseña es diferente, continuamos...
+                    string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+                    account.PasswordHash = newHashedPassword;
+                    account.VerificationCode = null; // limpiamos el código
+
+                    context.SaveChanges();
+
+                    Log.Info($"Contraseña reseteada exitosamente para: {email}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en UpdatePassword for {email}", ex);
+                return false;
+            }
+        }
+
     }
 }

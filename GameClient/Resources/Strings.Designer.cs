@@ -97,6 +97,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Cancelar.
+        /// </summary>
+        public static string CancelButton {
+            get {
+                return ResourceManager.GetString("CancelButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Confirmar.
+        /// </summary>
+        public static string ConfirmButton {
+            get {
+                return ResourceManager.GetString("ConfirmButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a ¿Seguro que quieres salir?.
         /// </summary>
         public static string ConfirmExitLabel {
@@ -133,6 +151,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Instrucciones:.
+        /// </summary>
+        public static string EnterRecoveryCodeInstruction {
+            get {
+                return ResourceManager.GetString("EnterRecoveryCodeInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Olvidaste tu contraseña?.
         /// </summary>
         public static string ForgotPassLabel {
@@ -156,6 +183,15 @@ namespace GameClient.Resources {
         public static string LoginPageTitle {
             get {
                 return ResourceManager.GetString("LoginPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nueva contraseña.
+        /// </summary>
+        public static string NewPasswordLabel {
+            get {
+                return ResourceManager.GetString("NewPasswordLabel", resourceCulture);
             }
         }
         
@@ -232,6 +268,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Repitir contraseña.
+        /// </summary>
+        public static string RepeatNewPasswordLabel {
+            get {
+                return ResourceManager.GetString("RepeatNewPasswordLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Repetir contraseña.
         /// </summary>
         public static string RepeatPasswordLabel {
@@ -246,6 +291,24 @@ namespace GameClient.Resources {
         public static string ResendCodeButton {
             get {
                 return ResourceManager.GetString("ResendCodeButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Restablece tu contraseña:.
+        /// </summary>
+        public static string ResetPasswordInstruction {
+            get {
+                return ResourceManager.GetString("ResetPasswordInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Restablecer contraseña.
+        /// </summary>
+        public static string ResetPasswordTitle {
+            get {
+                return ResourceManager.GetString("ResetPasswordTitle", resourceCulture);
             }
         }
         
@@ -300,6 +363,15 @@ namespace GameClient.Resources {
         public static string VerifyButton {
             get {
                 return ResourceManager.GetString("VerifyButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Recuperacion.
+        /// </summary>
+        public static string VerifyRecoveryCodeLabel {
+            get {
+                return ResourceManager.GetString("VerifyRecoveryCodeLabel", resourceCulture);
             }
         }
         

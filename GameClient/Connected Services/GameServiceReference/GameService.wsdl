@@ -53,6 +53,24 @@
   <wsdl:message name="IGameService_VerifyAccount_OutputMessage">
     <wsdl:part name="parameters" element="tns:VerifyAccountResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameService_RequestPasswordReset_InputMessage">
+    <wsdl:part name="parameters" element="tns:RequestPasswordReset" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_RequestPasswordReset_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RequestPasswordResetResponse" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_VerifyRecoveryCode_InputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyRecoveryCode" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_VerifyRecoveryCode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyRecoveryCodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_UpdatePassword_InputMessage">
+    <wsdl:part name="parameters" element="tns:UpdatePassword" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_UpdatePassword_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UpdatePasswordResponse" />
+  </wsdl:message>
   <wsdl:portType name="IGameService">
     <wsdl:operation name="RegisterUser">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RegisterUser" message="tns:IGameService_RegisterUser_InputMessage" />
@@ -65,6 +83,18 @@
     <wsdl:operation name="VerifyAccount">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/VerifyAccount" message="tns:IGameService_VerifyAccount_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameService/VerifyAccountResponse" message="tns:IGameService_VerifyAccount_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RequestPasswordReset">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RequestPasswordReset" message="tns:IGameService_RequestPasswordReset_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/RequestPasswordResetResponse" message="tns:IGameService_RequestPasswordReset_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="VerifyRecoveryCode">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/VerifyRecoveryCode" message="tns:IGameService_VerifyRecoveryCode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/VerifyRecoveryCodeResponse" message="tns:IGameService_VerifyRecoveryCode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdatePassword">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/UpdatePassword" message="tns:IGameService_UpdatePassword_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/UpdatePasswordResponse" message="tns:IGameService_UpdatePassword_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IGameService" type="tns:IGameService">
@@ -90,6 +120,33 @@
     </wsdl:operation>
     <wsdl:operation name="VerifyAccount">
       <soap12:operation soapAction="http://tempuri.org/IGameService/VerifyAccount" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RequestPasswordReset">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/RequestPasswordReset" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="VerifyRecoveryCode">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/VerifyRecoveryCode" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdatePassword">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/UpdatePassword" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
