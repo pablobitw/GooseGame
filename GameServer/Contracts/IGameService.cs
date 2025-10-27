@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 namespace GameServer
 {
-    // [ServiceContract] le dice a WCF que esta interfaz define un servicio público.
     [ServiceContract]
     public interface IGameService
     {
