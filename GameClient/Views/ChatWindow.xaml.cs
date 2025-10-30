@@ -42,8 +42,15 @@ namespace GameClient.Views
             }
         }
 
-        private void SendButton_Click(object sender, RoutedEventArgs e) { SendMessage(); }
-        private void MessageBoxTextBox_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) SendMessage(); }
+        private void SendButton_Click(object sender, RoutedEventArgs e) 
+        { 
+            SendMessage(); 
+        }
+        private void MessageBoxTextBox_KeyDown(object sender, KeyEventArgs e) 
+        { 
+            if (e.Key == Key.Enter) 
+                SendMessage();
+        }
 
         private void SendMessage()
         {

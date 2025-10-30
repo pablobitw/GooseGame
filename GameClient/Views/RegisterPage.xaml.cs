@@ -3,9 +3,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using GameClient.GameServiceReference; 
+using GameClient.GameServiceReference;
 using System.ServiceModel;
 using System.Net.Mail;
+using GameClient.Views;
 
 namespace GameClient.Views
 {
@@ -16,22 +17,18 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-
         private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
-    
-
             var placeholder = textBox.Tag as TextBlock;
 
-             if (placeholder != null)
+            if (placeholder != null)
             {
-                placeholder.Visibility = string.IsNullOrEmpty(textBox.Text) 
-                 ? Visibility.Visible 
-                 : Visibility.Collapsed;
+                placeholder.Visibility = string.IsNullOrEmpty(textBox.Text)
+                  ? Visibility.Visible
+                  : Visibility.Collapsed;
             }
         }
-
 
         private void OnGenericPasswordFocus(object sender, RoutedEventArgs e)
         {
@@ -39,10 +36,9 @@ namespace GameClient.Views
             var placeholder = passwordBox.Tag as TextBlock;
             if (placeholder != null)
             {
-                      placeholder.Visibility = Visibility.Collapsed;
+                placeholder.Visibility = Visibility.Collapsed;
             }
         }
-
 
         private void OnGenericPasswordLost(object sender, RoutedEventArgs e)
         {
@@ -57,58 +53,56 @@ namespace GameClient.Views
             }
         }
 
-
         private void OnGenericPasswordChanged(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
             if (placeholder != null)
             {
-                placeholder.Visibility = string.IsNullOrEmpty(passwordBox.Password) 
-                    ? Visibility.Visible 
+                placeholder.Visibility = string.IsNullOrEmpty(passwordBox.Password)
+                    ? Visibility.Visible
                     : Visibility.Collapsed;
             }
+
+            passwordBox.ClearValue(Border.BorderBrushProperty);
+            passwordBox.ToolTip = null;
         }
 
         private async void CreateAccount(object sender, RoutedEventArgs e)
         {
-
-            if (!IsFormValid())
+            if (IsFormValid())
             {
-                return;
-            }
+                string email = EmailBox.Text;
+                string username = UserBox.Text;
+                string password = PasswordBox.Password;
 
-
-            string email = EmailBox.Text;
-            string username = UserBox.Text;
-            string password = PasswordBox.Password;
-
-
-            GameServiceClient serviceClient = new GameServiceClient();
-            try
-            {
-                bool registerSuccesful = await serviceClient.RegisterUserAsync(username, email, password);
-
-                if (registerSuccesful)
+                GameServiceClient serviceClient = new GameServiceClient();
+                try
                 {
-                    MessageBox.Show("Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam).", "Revisa tu Correo");
-                    NavigationService.Navigate(new VerifyAccountPage(email));
+                    bool registerSuccesful = await serviceClient.RegisterUserAsync(username, email, password);
+
+                    if (registerSuccesful)
+                    {
+                        MessageBox.Show("Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam).", "Revisa tu Correo");
+                        NavigationService.Navigate(new VerifyAccountPage(email));
+                    }
+                    else
+                    {
+                        ShowError(EmailBox, "El correo ya está en uso.");
+                        ShowError(UserBox, "El nombre de usuario ya está en uso.");
+                    }
                 }
-                else
+                catch (EndpointNotFoundException)
                 {
-                    ShowError(EmailBox, "El correo ya está en uso.");
-                    ShowError(UserBox, "El nombre de usuario ya está en uso.");
+                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
                 }
-            }
-            catch (EndpointNotFoundException)
-            {
-                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+                }
             }
         }
+
         private bool IsFormValid()
         {
             ClearAllErrors();
@@ -129,17 +123,19 @@ namespace GameClient.Views
                 ShowError(EmailBox, "El formato del correo no es valido");
                 isValid = false;
             }
-            if(string.IsNullOrWhiteSpace(username))
+
+            if (string.IsNullOrWhiteSpace(username))
             {
                 ShowError(UserBox, "El nombre de usuario no puede estar vacio");
                 isValid = false;
             }
-            if(string.IsNullOrWhiteSpace (password))
+
+            if (string.IsNullOrWhiteSpace(password))
             {
                 ShowError(PasswordBox, "La contraseña no puede estar vacia");
                 isValid = false;
-                    
             }
+
             if (string.IsNullOrWhiteSpace(repeatPassword))
             {
                 ShowError(RepeatBox, "Debes repetir la contraseña");
@@ -151,6 +147,7 @@ namespace GameClient.Views
                 ShowError(RepeatBox, "Las contraseñas no coinciden");
                 isValid = false;
             }
+
             return isValid;
         }
 
@@ -159,6 +156,7 @@ namespace GameClient.Views
             field.BorderBrush = new SolidColorBrush(Colors.Red);
             field.ToolTip = new ToolTip { Content = errorMessage };
         }
+
         private void ClearAllErrors()
         {
             EmailBox.ClearValue(Border.BorderBrushProperty);
@@ -176,22 +174,20 @@ namespace GameClient.Views
 
         private bool IsValidEmail(string email)
         {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return false;
-            }                  
+            bool isValid = false;
+
             try
-                {
-                    var addr = new MailAddress(email);
-                    return addr.Address == email;
-                }
-                catch
-                {
-                    return false; 
+            {
+                var addr = new MailAddress(email);
+                isValid = (addr.Address == email);
             }
+            catch
+            {
+                // isValid remains false
+            }
+
+            return isValid;
         }
-
-
 
         private void GoToLogin(object sender, RoutedEventArgs e)
         {

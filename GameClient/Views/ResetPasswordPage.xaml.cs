@@ -1,6 +1,7 @@
 ﻿using GameClient.GameServiceReference;
 using GameClient.Views;
 using System;
+using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -22,36 +23,43 @@ namespace GameClient.Views
 
         private async void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
-            if (!IsFormValid())
+            if (IsFormValid())
             {
-                return;
-            }
+                string newPassword = NewPasswordBox.Password;
+                var client = new GameServiceClient();
+                bool updateSuccess = false;
+                bool connectionError = false;
 
-          
-            string newPassword = NewPasswordBox.Password;
+                try
+                {
+                    updateSuccess = await client.UpdatePasswordAsync(_userEmail, newPassword);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error conectando al servidor: {ex.Message}", "Error");
+                    connectionError = true;
+                }
+                finally
+                {
+                    if (client.State == CommunicationState.Opened)
+                    {
+                        client.Close();
+                    }
+                }
 
-            var client = new GameServiceClient();
-            bool updateSuccess = false;
-            try
-            {
-                updateSuccess = await client.UpdatePasswordAsync(_userEmail, newPassword);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error conectando al servidor: {ex.Message}", "Error");
-                return;
-            }
-
-            if (updateSuccess)
-            {
-                MessageBox.Show("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "Éxito");
-                NavigationService.Navigate(new LoginPage());
-            }
-            else
-            {
-               
-                ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
-                ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
+                if (!connectionError)
+                {
+                    if (updateSuccess)
+                    {
+                        MessageBox.Show("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "Éxito");
+                        NavigationService.Navigate(new LoginPage());
+                    }
+                    else
+                    {
+                        ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
+                        ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
+                    }
+                }
             }
         }
 
@@ -68,11 +76,9 @@ namespace GameClient.Views
             ClearAllErrors();
             bool isValid = true;
 
-            
             string newPass = NewPasswordBox.Password;
-            string repeatPass = RepeatNewPasswordBox.Password; 
+            string repeatPass = RepeatNewPasswordBox.Password;
 
-            
             if (string.IsNullOrWhiteSpace(newPass))
             {
                 ShowError(NewPasswordBox, "La contraseña no puede estar vacía.");
@@ -109,7 +115,7 @@ namespace GameClient.Views
             RepeatNewPasswordBox.ToolTip = null;
         }
 
-       
+
         private void OnGenericPasswordFocus(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;

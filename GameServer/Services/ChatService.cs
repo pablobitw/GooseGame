@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using log4net; 
+using log4net;
 
 namespace GameServer.Services
 {
@@ -13,29 +13,28 @@ namespace GameServer.Services
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
 
-        
+
         private readonly ConcurrentDictionary<string, IChatCallback> _clients
             = new ConcurrentDictionary<string, IChatCallback>();
 
-      
+
         public void JoinChat(string username)
         {
             if (string.IsNullOrEmpty(username))
             {
                 Log.Warn("A user tried to join with an empty username.");
-                return;
             }
+            else
+            {
+                IChatCallback callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
 
-            IChatCallback callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
+                _clients.AddOrUpdate(username, callback, (key, oldCallback) => {
+                    Log.Warn($"User '{username}' already existed. Updating callback channel.");
+                    return callback;
+                });
 
-           
-            _clients.AddOrUpdate(username, callback, (key, oldCallback) => {
-                Log.Warn($"User '{username}' already existed. Updating callback channel.");
-                return callback;
-            });
-
-          
-            Log.Info($"User '{username}' joined the chat. Total clients: {_clients.Count}");
+                Log.Info($"User '{username}' joined the chat. Total clients: {_clients.Count}");
+            }
         }
 
         public void Leave(string username)
@@ -43,55 +42,56 @@ namespace GameServer.Services
             if (string.IsNullOrEmpty(username))
             {
                 Log.Warn("A user tried to leave with an empty username.");
-                return;
-            }
-
-            if (_clients.TryRemove(username, out _))
-            {
-               
-                Log.Info($"User '{username}' left the chat. Total clients: {_clients.Count}");
             }
             else
             {
-                Log.Warn($"User '{username}' tried to leave but was not found in the list.");
+                if (_clients.TryRemove(username, out _))
+                {
+                    Log.Info($"User '{username}' left the chat. Total clients: {_clients.Count}");
+                }
+                else
+                {
+                    Log.Warn($"User '{username}' tried to leave but was not found in the list.");
+                }
             }
         }
 
         public void SendMessage(string username, string message)
         {
             var formattedMessage = message.Trim();
+
             if (string.IsNullOrEmpty(formattedMessage))
             {
                 Log.Warn($"User '{username}' sent an empty message.");
-                return;
             }
-
-            Log.Debug($"Received message from '{username}': {formattedMessage}");
-            
-            var clientsToRemove = new List<string>();
-
-            
-            foreach (var client in _clients.ToList())
+            else
             {
-                if (client.Key == username)
+                Log.Debug($"Received message from '{username}': {formattedMessage}");
+
+                var clientsToRemove = new List<string>();
+
+                foreach (var client in _clients.ToList())
                 {
-                    continue; 
+                    if (client.Key == username)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        client.Value.ReceiveMessage(username, formattedMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Failed to send message to '{client.Key}'. Marking for removal.", ex);
+                        clientsToRemove.Add(client.Key);
+                    }
                 }
 
-                try
+                foreach (var clientKeyToRemove in clientsToRemove)
                 {
-                    client.Value.ReceiveMessage(username, formattedMessage);
+                    Leave(clientKeyToRemove);
                 }
-                catch (Exception ex)
-                {
-                                       Log.Error($"Failed to send message to '{client.Key}'. Marking for removal.", ex);
-                    clientsToRemove.Add(client.Key);
-                }
-            }
-            
-            foreach (var clientKeyToRemove in clientsToRemove)
-            {
-                Leave(clientKeyToRemove); 
             }
         }
     }

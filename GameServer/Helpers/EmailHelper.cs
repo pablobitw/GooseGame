@@ -10,6 +10,8 @@ namespace GameServer.Helpers
     {
         public static async Task<bool> EnviarCorreoDeVerificacion(string destinatarioEmail, string codigoVerificacion)
         {
+            bool isSuccess = false;
+
             try
             {
                 var apiKey = ConfigurationManager.AppSettings["SendGridApiKey"];
@@ -23,29 +25,30 @@ namespace GameServer.Helpers
 
                 var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
-                
                 var response = await client.SendEmailAsync(msg);
 
                 if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Correo de verificación enviado a {destinatarioEmail}.");
-                    return true;
+                    isSuccess = true;
                 }
                 else
                 {
                     Console.WriteLine($"Error al enviar correo: SendGrid devolvió el código {response.StatusCode}");
-                    return false;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al enviar correo: {ex.Message}");
-                return false;
             }
+
+            return isSuccess;
         }
 
-        public static async Task<bool> EnviarCorreoDeRecuperacion (string destinatarioEmail, string codigoVerificacion)
+        public static async Task<bool> EnviarCorreoDeRecuperacion(string destinatarioEmail, string codigoVerificacion)
         {
+            bool isSuccess = false;
+
             try
             {
                 var apiKey = ConfigurationManager.AppSettings["SendGridApiKey"];
@@ -53,7 +56,7 @@ namespace GameServer.Helpers
 
                 var from = new EmailAddress("dagoosegame@gmail.com", "Goose Game");
                 var to = new EmailAddress(destinatarioEmail);
-                var subject = "Código de Verificación para Goose Game";
+                var subject = "Código de Recuperacion para Goose Game"; 
                 var plainTextContent = $"Tu código de verificación es: {codigoVerificacion}";
                 var htmlContent = $"<strong>¡Estas a punto de cambiar tu contraseña!</strong><p>Tu código de verificación es: <strong>{codigoVerificacion}</strong></p>";
 
@@ -64,19 +67,19 @@ namespace GameServer.Helpers
                 if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Correo de verificación enviado a {destinatarioEmail}.");
-                    return true;
+                    isSuccess = true;
                 }
                 else
                 {
                     Console.WriteLine($"Error al enviar correo: SendGrid devolvió el código {response.StatusCode}");
-                    return false;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al enviar correo: {ex.Message}");
-                return false;
             }
+
+            return isSuccess;
         }
     }
 }
