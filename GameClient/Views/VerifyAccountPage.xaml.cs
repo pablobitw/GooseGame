@@ -10,7 +10,7 @@ namespace GameClient
 {
     public partial class VerifyAccountPage : Page
     {
-        private string userEmail; // para guardar el email del usuario
+        private string userEmail;
 
         public VerifyAccountPage(string email)
         {
@@ -23,7 +23,7 @@ namespace GameClient
             InitializeComponent();
         }
 
-        private void VerifyButtonClick(object sender, RoutedEventArgs e)
+        private void VerifyButton(object sender, RoutedEventArgs e)
         {
             string codeTyped = CodeTextBox.Text.Trim();
 
@@ -55,14 +55,14 @@ namespace GameClient
             }
         }
 
-        private void ResendCodeButtonClick(object sender, RoutedEventArgs e)
+        private void ResendCodeButton(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Funcionalidad para reenviar el código no implementada.", "Información");
         }
 
-        private void BackButtonClick(object sender, RoutedEventArgs e)
+        private void BackButton(object sender, RoutedEventArgs e)
         {
-            // si el usuario vuelve, lo enviamos al Login para que no se quede atascado
+            
             NavigationService.Navigate(new LoginPage());
         }
     }

@@ -15,9 +15,7 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-    /// <summary>
-    /// Lógica de interacción para CreateOrJoinMatch.xaml
-    /// </summary>
+
     public partial class CreateOrJoinMatch : Page
     {
         public CreateOrJoinMatch()

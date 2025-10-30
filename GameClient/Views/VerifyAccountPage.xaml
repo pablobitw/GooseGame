@@ -37,7 +37,7 @@
                 VerticalAlignment="Top"
                 Margin="10,21,0,0"
                 Width="78"
-                Click="BackButtonClick" Height="35" Cursor="Hand"/>
+                Click="BackButton" Height="35" Cursor="Hand"/>
 
         <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="350"
                 Background="#D8FFFFFF" CornerRadius="20" Padding="30">
@@ -55,13 +55,13 @@
                 <Button x:Name="VerifyButton" Content="{x:Static props:Strings.VerifyButton}" 
                         HorizontalAlignment="Center" Margin="0,20,0,0"
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Click="VerifyButtonClick"/>
+                        Click="VerifyButton"/>
 
                 <Button x:Name="ResendCodeButton" Content="{x:Static props:Strings.ResendCodeButton}"
                         HorizontalAlignment="Center" Margin="0,10,0,0"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Background="Gray"
-                        Click="ResendCodeButtonClick"/>
+                        Click="ResendCodeButton"/>
 
             </StackPanel>
         </Border>

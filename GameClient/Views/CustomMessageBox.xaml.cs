@@ -19,7 +19,7 @@ namespace GameClient
                 for (int i = 0; i < buttonLabels.Length; i++)
                 {
                     string label = buttonLabels[i];
-                    bool isPositiveAction = (i == 0); //El primer boton con indice 0 siempre habrá una accion positiva
+                    bool isPositiveAction = (i == 0); 
 
 
                     string styleKey = isPositiveAction ? "OrangeButtonStyle" : "PrimaryButtonStyle";
@@ -31,7 +31,6 @@ namespace GameClient
 
         private void AddButton(string label, bool isDefault, bool result, string styleKey)
         {
-            // Busca el estilo en los recursos de la aplicación
             Style buttonStyle = (Style)Application.Current.FindResource(styleKey);
 
             var button = new Button

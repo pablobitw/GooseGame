@@ -59,7 +59,6 @@ namespace GameServer.Helpers
 
                 var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
-                // usamos 'await' en lugar de '.Result'
                 var response = await client.SendEmailAsync(msg);
 
                 if (response.IsSuccessStatusCode)

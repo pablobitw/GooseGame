@@ -16,12 +16,12 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-        // es un detector de movimiento para el texto
+
         private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
     
-            // obtenemos el TextBlock (placeholder) que enlazamos en el 'Tag'
+
             var placeholder = textBox.Tag as TextBlock;
 
              if (placeholder != null)
@@ -32,7 +32,7 @@ namespace GameClient.Views
             }
         }
 
-        // Se dispara en el instante en que el usuario hace click dentro de un control
+
         private void OnGenericPasswordFocus(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
@@ -43,7 +43,7 @@ namespace GameClient.Views
             }
         }
 
-        // se dispara en el instante en que el usuario hace clic fuera de ese control
+
         private void OnGenericPasswordLost(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
@@ -57,7 +57,7 @@ namespace GameClient.Views
             }
         }
 
-        // es un detector de movimiento para el texto.
+
         private void OnGenericPasswordChanged(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
@@ -72,18 +72,18 @@ namespace GameClient.Views
 
         private async void CreateAccount(object sender, RoutedEventArgs e)
         {
-            // validar el formulario ANTES de llamar al servidor
+
             if (!IsFormValid())
             {
-                return; // detiene la ejecución si hay errores de validación
+                return;
             }
 
-            // si es válido, recoger datos
+
             string email = EmailBox.Text;
             string username = UserBox.Text;
             string password = PasswordBox.Password;
 
-            // llamar al servidor
+
             GameServiceClient serviceClient = new GameServiceClient();
             try
             {

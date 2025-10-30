@@ -17,16 +17,15 @@ namespace GameClient
             InitializeComponent();
         }
 
-
         private async void OnSendButtonClick(object sender, RoutedEventArgs e)
         {
             if (!IsFormValid())
             {
-                return; // detiene si hay errores
+                return;
             }
             string email = EmailTextBox.Text;
 
-            // llamar al servidor 
+
             var client = new GameServiceClient();
             bool requestSent = false;
             try
@@ -46,17 +45,17 @@ namespace GameClient
             }
             finally
             {
-                // siempre cierra el cliente 
+               
                 if (client.State == System.ServiceModel.CommunicationState.Opened)
                 {
                     client.Close();
                 }
             }
 
-            // analizar la respuesta del servidor
+            
             if (requestSent)
             {
-                // el servidor envió el correo (o fingió hacerlo)
+                
                 MessageBox.Show("Si tu correo está registrado, recibirás un código de verificación.", "Revisa tu Correo");
 
 
@@ -64,7 +63,7 @@ namespace GameClient
             }
             else
             {
-                // El servidor devolvió 'false' (un error inesperado en el servidor)
+                
                 ShowError(EmailTextBox, "Hubo un error al procesar tu solicitud. Intenta más tarde.");
             }
         }
@@ -99,7 +98,7 @@ namespace GameClient
             string email = EmailTextBox.Text;
             string repeatEmail = RepeatEmailTextBox.Text;
 
-            // 1. Validar Email
+            
             if (string.IsNullOrWhiteSpace(email))
             {
                 ShowError(EmailTextBox, "El correo no puede estar vacío.");

@@ -77,7 +77,7 @@ namespace GameClient.Views
         {
             if (Window.GetWindow(this) is AuthWindow authWindow)
             {
-                authWindow.ShowAuthButtons(); // esto limpia el frame y muestra los botones
+                authWindow.ShowAuthButtons(); 
             }
         }
     }

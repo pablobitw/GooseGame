@@ -15,9 +15,7 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-    /// <summary>
-    /// Lógica de interacción para LobbyPage.xaml
-    /// </summary>
+
     public partial class LobbyPage : Page
     {
         public LobbyPage()

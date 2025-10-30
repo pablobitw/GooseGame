@@ -11,7 +11,6 @@ namespace GameServer.Services
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class ChatService : GameServer.Contracts.IChatService
     {
-        // se define el logger para buenas practicas
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
 
         
@@ -69,7 +68,6 @@ namespace GameServer.Services
 
             Log.Debug($"Received message from '{username}': {formattedMessage}");
             
-            // se crea una lista temporal de clientes que se desconectaron
             var clientsToRemove = new List<string>();
 
             
@@ -77,12 +75,11 @@ namespace GameServer.Services
             {
                 if (client.Key == username)
                 {
-                    continue; // evita el eco
+                    continue; 
                 }
 
                 try
                 {
-                    // llamamos al método en el cliente
                     client.Value.ReceiveMessage(username, formattedMessage);
                 }
                 catch (Exception ex)
@@ -91,8 +88,6 @@ namespace GameServer.Services
                     clientsToRemove.Add(client.Key);
                 }
             }
-
-            // forma segura para limpiar a los clientes "muertos"
             
             foreach (var clientKeyToRemove in clientsToRemove)
             {

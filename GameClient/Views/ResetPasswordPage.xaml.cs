@@ -27,7 +27,7 @@ namespace GameClient.Views
                 return;
             }
 
-            // ahora tomamos la contraseña del primer campo
+          
             string newPassword = NewPasswordBox.Password;
 
             var client = new GameServiceClient();
@@ -49,7 +49,7 @@ namespace GameClient.Views
             }
             else
             {
-                // el servidor devolvió 'false', probablemente porque se reusó la contraseña
+               
                 ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
                 ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
             }
@@ -68,11 +68,11 @@ namespace GameClient.Views
             ClearAllErrors();
             bool isValid = true;
 
-            // Obtenemos las dos contraseñas
+            
             string newPass = NewPasswordBox.Password;
             string repeatPass = RepeatNewPasswordBox.Password; 
 
-            // validación de Nueva Contraseña
+            
             if (string.IsNullOrWhiteSpace(newPass))
             {
                 ShowError(NewPasswordBox, "La contraseña no puede estar vacía.");
@@ -84,7 +84,7 @@ namespace GameClient.Views
                 ShowError(RepeatNewPasswordBox, "Debes repetir la contraseña.");
                 isValid = false;
             }
-            else if (newPass != repeatPass) // comprueba si no coinciden
+            else if (newPass != repeatPass)
             {
                 ShowError(NewPasswordBox, "Las contraseñas no coinciden.");
                 ShowError(RepeatNewPasswordBox, "Las contraseñas no coinciden.");

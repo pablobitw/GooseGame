@@ -15,9 +15,7 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-    /// <summary>
-    /// Lógica de interacción para ListMatches.xaml
-    /// </summary>
+   
     public partial class ListMatches : Page
     {
         public ListMatches()

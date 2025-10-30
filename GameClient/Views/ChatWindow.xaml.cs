@@ -51,10 +51,8 @@ namespace GameClient.Views
 
             try
             {
-                // envía el mensaje al servidor PRIMERO
                 _chatClient.SendMessage(_playerName, MessageBoxTextBox.Text);
 
-                // añade tu mensaje localmente
                 AddMessageToUI("Me:", MessageBoxTextBox.Text);
                 MessageBoxTextBox.Clear();
             }

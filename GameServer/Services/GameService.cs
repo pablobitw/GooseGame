@@ -147,16 +147,15 @@ namespace GameServer
                     {
                         
                         Log.Warn($"Password reset requested for non-existent email: {email}");
-                        return true; // Finge que funcionó
+                        return true; 
                     }
 
-                    // generar y guardar un nuevo código de verificacion
                     string verifyCode = new Random().Next(100000, 999999).ToString();
                     account.VerificationCode = verifyCode; 
                     context.SaveChanges();
 
                     bool emailSent = await EmailHelper.EnviarCorreoDeRecuperacion(email, verifyCode)
-                                                      .ConfigureAwait(false); // evita el deadlock
+                                                      .ConfigureAwait(false);
 
                     Log.Info($"Password reset code sent to: {email}");
                     return emailSent;
@@ -175,7 +174,6 @@ namespace GameServer
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    // Comprobamos que el email y el código coincidan Y que el código no esté vacío
                     bool isValid = context.Accounts.Any(a =>
                         a.Email == email &&
                         a.VerificationCode == code &&
@@ -206,20 +204,16 @@ namespace GameServer
                         Log.Error($"Intento de actualizar contraseña para cuenta no existente: {email}");
                         return false;
                     }
-                    // comprobamos si la nueva contraseña es igual a la antigua.
                     if (BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
                     {
-                        // si la contraseña es la misma Rechaza el cambio
                         Log.Warn($"Usuario '{email}' intentó reusar su contraseña anterior.");
                         return false;
-                        // NOTA: En el cliente, esto devolverá 'false'.
                     }
 
-                    // Si la contraseña es diferente, continuamos...
                     string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
                     account.PasswordHash = newHashedPassword;
-                    account.VerificationCode = null; // limpiamos el código
+                    account.VerificationCode = null;
 
                     context.SaveChanges();
 

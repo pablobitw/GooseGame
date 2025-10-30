@@ -15,9 +15,7 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-    /// <summary>
-    /// Lógica de interacción para OptionsPage.xaml
-    /// </summary>
+    
     public partial class OptionsPage : Page
     {
         public OptionsPage()
