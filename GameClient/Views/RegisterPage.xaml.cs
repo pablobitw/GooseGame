@@ -7,6 +7,8 @@ using GameClient.GameServiceReference;
 using System.ServiceModel;
 using System.Net.Mail;
 using GameClient.Views;
+using System.Linq;
+using System.Collections.Generic; 
 
 namespace GameClient.Views
 {
@@ -66,6 +68,9 @@ namespace GameClient.Views
 
             passwordBox.ClearValue(Border.BorderBrushProperty);
             passwordBox.ToolTip = null;
+
+            RepeatBox.ClearValue(Border.BorderBrushProperty);
+            RepeatBox.ToolTip = null;
         }
 
         private async void CreateAccount(object sender, RoutedEventArgs e)
@@ -107,6 +112,7 @@ namespace GameClient.Views
         {
             ClearAllErrors();
             bool isValid = true;
+            bool isPasswordStrengthValid = true;
 
             string email = EmailBox.Text;
             string username = UserBox.Text;
@@ -134,6 +140,23 @@ namespace GameClient.Views
             {
                 ShowError(PasswordBox, "La contraseña no puede estar vacia");
                 isValid = false;
+                isPasswordStrengthValid = false;
+            }
+            else
+            {
+                var errorMessages = new List<string>();
+                if (password.Length < 8) { errorMessages.Add("mínimo 8 caracteres"); }
+                if (password.Length > 50) { errorMessages.Add("máximo 50 caracteres"); }
+                if (!password.Any(char.IsUpper)) { errorMessages.Add("una mayúscula"); }
+                if (!password.Any(c => !char.IsLetterOrDigit(c))) { errorMessages.Add("un símbolo (ej. !#$)"); }
+
+                if (errorMessages.Count > 0)
+                {
+                    string fullErrorMessage = "La contraseña debe tener: " + string.Join(", ", errorMessages) + ".";
+                    ShowError(PasswordBox, fullErrorMessage);
+                    isValid = false;
+                    isPasswordStrengthValid = false;
+                }
             }
 
             if (string.IsNullOrWhiteSpace(repeatPassword))
@@ -141,11 +164,15 @@ namespace GameClient.Views
                 ShowError(RepeatBox, "Debes repetir la contraseña");
                 isValid = false;
             }
-            else if (password != repeatPassword)
+
+            if (isPasswordStrengthValid && !string.IsNullOrWhiteSpace(repeatPassword))
             {
-                ShowError(PasswordBox, "Las contraseñas no coinciden");
-                ShowError(RepeatBox, "Las contraseñas no coinciden");
-                isValid = false;
+                if (password != repeatPassword)
+                {
+                    ShowError(PasswordBox, "Las contraseñas no coinciden");
+                    ShowError(RepeatBox, "Las contraseñas no coinciden");
+                    isValid = false;
+                }
             }
 
             return isValid;
@@ -183,7 +210,6 @@ namespace GameClient.Views
             }
             catch
             {
-                // isValid remains false
             }
 
             return isValid;
