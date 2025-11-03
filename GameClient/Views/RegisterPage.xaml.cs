@@ -101,9 +101,24 @@ namespace GameClient.Views
                 {
                     MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
                 }
+                catch (TimeoutException)
+                {
+                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                }
+                catch (CommunicationException)
+                {
+                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+                }
+                finally
+                {
+                    if (serviceClient.State == CommunicationState.Opened)
+                    {
+                        serviceClient.Close();
+                    }
                 }
             }
         }

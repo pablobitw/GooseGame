@@ -34,9 +34,24 @@ namespace GameClient.Views
                 {
                     updateSuccess = await client.UpdatePasswordAsync(_userEmail, newPassword);
                 }
+                catch (EndpointNotFoundException)
+                {
+                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                    connectionError = true;
+                }
+                catch (TimeoutException)
+                {
+                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                    connectionError = true;
+                }
+                catch (CommunicationException)
+                {
+                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                    connectionError = true;
+                }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error conectando al servidor: {ex.Message}", "Error");
+                    MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
                     connectionError = true;
                 }
                 finally
@@ -114,7 +129,6 @@ namespace GameClient.Views
             RepeatNewPasswordBox.ClearValue(Border.BorderBrushProperty);
             RepeatNewPasswordBox.ToolTip = null;
         }
-
 
         private void OnGenericPasswordFocus(object sender, RoutedEventArgs e)
         {
