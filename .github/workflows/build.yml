@@ -40,9 +40,17 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: dotnet sonarscanner begin /k:"pablobitw_GooseGame" /o:"pablobitw" /d:sonar.host.url="https://sonarcloud.io"
 
+    # --- PASO NUEVO AÑADIDO ---
+    # Crea el archivo secrets.config en el servidor de build usando el Secreto de GitHub
+    - name: Create secrets.config
+      shell: powershell
+      run: |
+        Set-Content -Path "GameServer\secrets.config" -Value "${{ secrets.SECRETS_CONFIG }}"
+    # --- FIN DEL PASO NUEVO ---
+
     - name: Build Solution
       run: msbuild GooseGame.sln /t:Rebuild /p:Configuration=Release
-      
+    
     - name: End SonarCloud Analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
