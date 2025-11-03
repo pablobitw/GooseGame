@@ -5,6 +5,9 @@ using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using log4net;
+using System.Data.Entity.Validation;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 
 namespace GameServer
 {
@@ -57,7 +60,7 @@ namespace GameServer
                         context.Players.Add(newPlayer);
                         context.SaveChanges();
 
-                        bool emailSent = await EmailHelper.EnviarCorreoDeVerificacion(email, verifyCode)
+                        bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, verifyCode)
                                                           .ConfigureAwait(false);
 
                         if (emailSent) Log.Info($"Correo de verificación enviado a {email}.");
@@ -65,9 +68,21 @@ namespace GameServer
                     }
                 }
             }
+            catch (DbEntityValidationException ex)
+            {
+                Log.Warn($"Error de validación de entidad para {username}.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error($"Error de actualización de BD para {username}.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en RegisterUser. ¡Revisar conexión a BD!", ex);
+            }
             catch (Exception ex)
             {
-                Log.Error($"Error en RegistrarUsuario: {username}", ex);
+                Log.Error($"Error inesperado en RegisterUser para {username}.", ex);
             }
             return isSuccess;
         }
@@ -95,6 +110,18 @@ namespace GameServer
                         Log.Warn($"Verificación fallida para {email} (código incorrecto).");
                     }
                 }
+            }
+            catch (DbEntityValidationException ex)
+            {
+                Log.Warn($"Error de validación de entidad al verificar {email}.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error($"Error de actualización de BD al verificar {email}.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en VerifyAccount. ¡Revisar conexión a BD!", ex);
             }
             catch (Exception ex)
             {
@@ -137,6 +164,10 @@ namespace GameServer
                     }
                 }
             }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en LogIn. ¡Revisar conexión a BD!", ex);
+            }
             catch (Exception ex)
             {
                 Log.Error($"Error en IniciarSesion para '{username}'", ex);
@@ -164,13 +195,21 @@ namespace GameServer
                         account.VerificationCode = verifyCode;
                         context.SaveChanges();
 
-                        bool emailSent = await EmailHelper.EnviarCorreoDeRecuperacion(email, verifyCode)
+                        bool emailSent = await EmailHelper.SendRecoveryEmailAsync(email, verifyCode)
                                                           .ConfigureAwait(false);
 
                         Log.Info($"Correo de reseteo enviado a: {email}");
                         isSuccess = emailSent;
                     }
                 }
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error($"Error de actualización de BD en RequestPasswordReset para {email}.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en RequestPasswordReset. ¡Revisar conexión a BD!", ex);
             }
             catch (Exception ex)
             {
@@ -194,6 +233,10 @@ namespace GameServer
                     if (isValid) Log.Info($"Código de recuperación verificado para: {email}");
                     else Log.Warn($"Intento fallido de código de recuperación para: {email}");
                 }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en VerifyRecoveryCode. ¡Revisar conexión a BD!", ex);
             }
             catch (Exception ex)
             {
@@ -229,6 +272,14 @@ namespace GameServer
                     }
                 }
             }
+            catch (DbUpdateException ex)
+            {
+                Log.Error($"Error de actualización de BD en UpdatePassword para {email}.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error fatal de SQL en UpdatePassword. ¡Revisar conexión a BD!", ex);
+            }
             catch (Exception ex)
             {
                 Log.Error($"Error en UpdatePassword for {email}", ex);
@@ -236,9 +287,5 @@ namespace GameServer
             return isSuccess;
         }
 
-        public bool CambiarContrasena(string username, string oldPassword, string newPassword)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -7,14 +7,10 @@ namespace GameServer
 {
     internal class Program
     {
-        
         private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
 
         static void Main(string[] args)
         {
-            
-
-          
             Log.Info("========================================");
             Log.Info("Initializing GooseGame Server...");
             Log.Info("========================================");
@@ -24,7 +20,6 @@ namespace GameServer
                 using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
                 {
-                    // abrir el servicio de juego
                     gameServiceHost.Open();
                     Log.Info("GameService is running and listening on:");
                     foreach (var endpoint in gameServiceHost.Description.Endpoints)
@@ -32,7 +27,6 @@ namespace GameServer
                         Log.Info($"-> {endpoint.Address}");
                     }
 
-                    // abrir el servicio de chat
                     chatServiceHost.Open();
                     Log.Info("ChatService is running and listening on:");
                     foreach (var endpoint in chatServiceHost.Description.Endpoints)
@@ -41,18 +35,34 @@ namespace GameServer
                     }
 
                     Log.Info("========================================");
-                    Log.Warn("Server is fully operational. Press [Enter] to stop."); 
+                    Log.Warn("Server is fully operational. Press [Enter] to stop.");
                     Log.Info("========================================");
 
-                    Console.ReadLine(); // mantiene el servidor vivo
-
+                    Console.ReadLine();
                     Log.Info("Server shutdown requested.");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                Log.Fatal("A critical error occurred starting WCF services (InvalidOperationException). Check configuration.", ex);
+                Console.WriteLine("A fatal configuration error occurred. Press [Enter] to exit.");
+                Console.ReadLine();
+            }
+            catch (CommunicationException ex)
+            {
+                Log.Fatal($"A critical error occurred starting WCF services (CommunicationException). Is the port in use?", ex);
+                Console.WriteLine("A fatal communication error occurred. Press [Enter] to exit.");
+                Console.ReadLine();
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Fatal("A critical error occurred starting WCF services (TimeoutException).", ex);
+                Console.WriteLine("A fatal timeout error occurred. Press [Enter] to exit.");
+                Console.ReadLine();
+            }
             catch (Exception ex)
             {
-                // es para capturar errores fatales
-                Log.Fatal("A critical error occurred while starting the server.", ex);
+                Log.Fatal("An unexpected critical error occurred while starting the server.", ex);
                 Console.WriteLine("A fatal error occurred. Press [Enter] to exit.");
                 Console.ReadLine();
             }

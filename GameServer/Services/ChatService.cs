@@ -12,8 +12,6 @@ namespace GameServer.Services
     public class ChatService : GameServer.Contracts.IChatService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
-
-
         private readonly ConcurrentDictionary<string, IChatCallback> _clients
             = new ConcurrentDictionary<string, IChatCallback>();
 
@@ -29,7 +27,7 @@ namespace GameServer.Services
                 IChatCallback callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
 
                 _clients.AddOrUpdate(username, callback, (key, oldCallback) => {
-                    Log.Warn($"User '{username}' already existed. Updating callback channel.");
+                    Log.Warn($"User '{username}' already existed, Updating callback channel.");
                     return callback;
                 });
 
@@ -81,9 +79,19 @@ namespace GameServer.Services
                     {
                         client.Value.ReceiveMessage(username, formattedMessage);
                     }
+                    catch (TimeoutException ex)
+                    {
+                        Log.Warn($"Failed to send message to '{client.Key}' (Timeout). Marking for removal.", ex);
+                        clientsToRemove.Add(client.Key);
+                    }
+                    catch (CommunicationException ex)
+                    {
+                        Log.Error($"Failed to send message to '{client.Key}' (Communication Error). Marking for removal.", ex);
+                        clientsToRemove.Add(client.Key);
+                    }
                     catch (Exception ex)
                     {
-                        Log.Error($"Failed to send message to '{client.Key}'. Marking for removal.", ex);
+                        Log.Error($"Failed to send message to '{client.Key}' (General Error). Marking for removal.", ex);
                         clientsToRemove.Add(client.Key);
                     }
                 }

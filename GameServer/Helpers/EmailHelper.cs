@@ -3,12 +3,16 @@ using System.Configuration;
 using System.Threading.Tasks;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using log4net;
+using System.Net.Http;
 
 namespace GameServer.Helpers
 {
     public static class EmailHelper
     {
-        public static async Task<bool> EnviarCorreoDeVerificacion(string destinatarioEmail, string codigoVerificacion)
+        private static readonly ILog Log = LogManager.GetLogger(typeof(EmailHelper));
+
+        public static async Task<bool> SendVerificationEmailAsync(string recipientEmail, string verificationCode)
         {
             bool isSuccess = false;
 
@@ -18,10 +22,10 @@ namespace GameServer.Helpers
                 var client = new SendGridClient(apiKey);
 
                 var from = new EmailAddress("dagoosegame@gmail.com", "Goose Game");
-                var to = new EmailAddress(destinatarioEmail);
-                var subject = "Código de Verificación para Goose Game";
-                var plainTextContent = $"Tu código de verificación es: {codigoVerificacion}";
-                var htmlContent = $"<strong>¡Bienvenido a Goose Game!</strong><p>Tu código de verificación es: <strong>{codigoVerificacion}</strong></p>";
+                var to = new EmailAddress(recipientEmail);
+                var subject = "Goose Game Verification Code";
+                var plainTextContent = $"Your verification code is: {verificationCode}";
+                var htmlContent = $"<strong>Welcome to Goose Game!</strong><p>Your verification code is: <strong>{verificationCode}</strong></p>";
 
                 var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
@@ -29,23 +33,27 @@ namespace GameServer.Helpers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"Correo de verificación enviado a {destinatarioEmail}.");
+                    Log.Info($"Verification email sent to {recipientEmail}.");
                     isSuccess = true;
                 }
                 else
                 {
-                    Console.WriteLine($"Error al enviar correo: SendGrid devolvió el código {response.StatusCode}");
+                    Log.Warn($"Failed to send email: SendGrid returned code {response.StatusCode} for {recipientEmail}.");
                 }
+            }
+            catch (HttpRequestException ex)
+            {
+                Log.Error($"Network error sending email (HttpRequestException) to {recipientEmail}: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al enviar correo: {ex.Message}");
+                Log.Error($"General error sending email to {recipientEmail}: {ex.Message}", ex);
             }
 
             return isSuccess;
         }
 
-        public static async Task<bool> EnviarCorreoDeRecuperacion(string destinatarioEmail, string codigoVerificacion)
+        public static async Task<bool> SendRecoveryEmailAsync(string recipientEmail, string verificationCode)
         {
             bool isSuccess = false;
 
@@ -55,10 +63,10 @@ namespace GameServer.Helpers
                 var client = new SendGridClient(apiKey);
 
                 var from = new EmailAddress("dagoosegame@gmail.com", "Goose Game");
-                var to = new EmailAddress(destinatarioEmail);
-                var subject = "Código de Recuperacion para Goose Game"; 
-                var plainTextContent = $"Tu código de verificación es: {codigoVerificacion}";
-                var htmlContent = $"<strong>¡Estas a punto de cambiar tu contraseña!</strong><p>Tu código de verificación es: <strong>{codigoVerificacion}</strong></p>";
+                var to = new EmailAddress(recipientEmail);
+                var subject = "Goose Game Recovery Code";
+                var plainTextContent = $"Your recovery code is: {verificationCode}";
+                var htmlContent = $"<strong>You are about to change your password!</strong><p>Your recovery code is: <strong>{verificationCode}</strong></p>";
 
                 var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
@@ -66,17 +74,21 @@ namespace GameServer.Helpers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"Correo de verificación enviado a {destinatarioEmail}.");
+                    Log.Info($"Recovery email sent to {recipientEmail}.");
                     isSuccess = true;
                 }
                 else
                 {
-                    Console.WriteLine($"Error al enviar correo: SendGrid devolvió el código {response.StatusCode}");
+                    Log.Warn($"Failed to send email: SendGrid returned code {response.StatusCode} for {recipientEmail}.");
                 }
+            }
+            catch (HttpRequestException ex)
+            {
+                Log.Error($"Network error sending recovery email (HttpRequestException) to {recipientEmail}: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al enviar correo: {ex.Message}");
+                Log.Error($"General error sending recovery email to {recipientEmail}: {ex.Message}", ex);
             }
 
             return isSuccess;
