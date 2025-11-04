@@ -76,11 +76,11 @@ namespace GameClient.Views
             MessagesListBox.ScrollIntoView(newMessage);
         }
 
-        public void ReceiveMessage(string senderName, string message)
+        public void ReceiveMessage(string username, string message)
         {
             Dispatcher.Invoke(() =>
             {
-                AddMessageToUI(senderName + ":", message);
+                AddMessageToUI(username + ":", message);
             });
         }
 
