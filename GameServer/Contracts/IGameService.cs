@@ -7,11 +7,11 @@ namespace GameServer
     public interface IGameService
     {
         [OperationContract]
-        Task<bool> RegisterUser(string username, string email, string password); 
+        Task<bool> RegisterUser(string username, string email, string password);
 
 
         [OperationContract]
-        bool LogIn(string username, string password);
+        public async Task<bool> LogIn(string username, string password);
 
         [OperationContract]
         bool VerifyAccount(string email, string code);
