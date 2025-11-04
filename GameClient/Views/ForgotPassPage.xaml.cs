@@ -132,7 +132,7 @@ namespace GameClient
             RepeatEmailTextBox.ToolTip = null;
         }
 
-        private bool IsValidEmail(string email)
+        private static bool IsValidEmail(string email)
         {
             bool isValid = false;
 
