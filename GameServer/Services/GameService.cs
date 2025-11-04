@@ -135,37 +135,32 @@ namespace GameServer
             return isSuccess;
         }
 
-        public bool LogIn(string username, string password)
+        public async Task<bool> LogIn(string username, string password)
         {
             bool isSuccess = false;
             try
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    var player = context.Players.FirstOrDefault(p => p.Username == username);
+                    var player = context.Players
+                        .FirstOrDefault(p => p.Username == username);
 
-                    if (player == null)
+                    if (player != null &&
+                        BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
                     {
-                        Log.WarnFormat("Login fallido: Usuario '{0}' no encontrado.", username);
-                    }
-                    else
-                    {
-                        if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
+                        if (player.Account.AccountStatus == (int)AccountStatus.Active)
                         {
-                            if (player.Account.AccountStatus == (int)AccountStatus.Active)
-                            {
-                                Log.InfoFormat("Usuario '{0}' inició sesión exitosamente.", username);
-                                isSuccess = true;
-                            }
-                            else
-                            {
-                                Log.WarnFormat("Login fallido: Cuenta de '{0}' no está activa.", username);
-                            }
+                            Log.InfoFormat("Inicio de sesión exitoso para {0}", username);
+                            isSuccess = true;
                         }
                         else
                         {
-                            Log.WarnFormat("Login fallido: Contraseña incorrecta para '{0}'.", username);
+                            Log.WarnFormat("Intento de inicio con cuenta inactiva: {0}", username);
                         }
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Inicio fallido: credenciales incorrectas para {0}", username);
                     }
                 }
             }
@@ -175,10 +170,11 @@ namespace GameServer
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en IniciarSesion para '{username}'", ex);
+                Log.Error($"Error inesperado en LogIn para {username}.", ex);
             }
             return isSuccess;
         }
+
 
         public async Task<bool> RequestPasswordReset(string email)
         {
