@@ -11,7 +11,7 @@ namespace GameServer
 
 
         [OperationContract]
-        public async Task<bool> LogIn(string username, string password);
+        Task<bool> LogIn(string username, string password);
 
         [OperationContract]
         bool VerifyAccount(string email, string code);

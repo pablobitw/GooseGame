@@ -163,7 +163,7 @@ namespace GameClient.Views
                 if (password.Length < 8) { errorMessages.Add("mínimo 8 caracteres"); }
                 if (password.Length > 50) { errorMessages.Add("máximo 50 caracteres"); }
                 if (!password.Any(char.IsUpper)) { errorMessages.Add("una mayúscula"); }
-                if (!password.Any(c => !char.IsLetterOrDigit(c))) { errorMessages.Add("un símbolo (ej. !#$)"); }
+                if (!password.Any(c => !char.IsLetterOrDigit(c))) { errorMessages.Add("un símbolo (ejemplo: !#$)"); }
 
                 if (errorMessages.Count > 0)
                 {
