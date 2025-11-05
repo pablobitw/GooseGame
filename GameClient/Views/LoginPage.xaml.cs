@@ -69,8 +69,8 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        ShowError(UsernameTextBox, "Usuario o contraseña incorrectos.");
-                        ShowError(PasswordBox, "Usuario o contraseña incorrectos.");
+                        ShowError(UsernameBorder, "Usuario o contraseña incorrectos.");
+                        ShowError(PasswordBorder, "Usuario o contraseña incorrectos.");
                     }
                 }
             }
@@ -83,20 +83,20 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
-                ShowError(UsernameTextBox, "El nombre de usuario no puede estar vacío.");
+                ShowError(UsernameBorder, "El nombre de usuario no puede estar vacío.");
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
-                ShowError(PasswordBox, "La contraseña no puede estar vacía.");
+                ShowError(PasswordBorder, "La contraseña no puede estar vacía.");
                 isValid = false;
             }
 
             return isValid;
         }
 
-        private void ShowError(Control field, string errorMessage)
+        private void ShowError(Border field, string errorMessage)
         {
             field.BorderBrush = new SolidColorBrush(Colors.Red);
             field.ToolTip = new ToolTip { Content = errorMessage };
@@ -104,10 +104,10 @@ namespace GameClient.Views
 
         private void ClearAllErrors()
         {
-            UsernameTextBox.ClearValue(Border.BorderBrushProperty);
-            UsernameTextBox.ToolTip = null;
-            PasswordBox.ClearValue(Border.BorderBrushProperty);
-            PasswordBox.ToolTip = null;
+            UsernameBorder.ClearValue(Border.BorderBrushProperty);
+            UsernameBorder.ToolTip = null;
+            PasswordBorder.ClearValue(Border.BorderBrushProperty);
+            PasswordBorder.ToolTip = null;
         }
 
         private void ForgotPass(object sender, RoutedEventArgs e)
@@ -123,6 +123,9 @@ namespace GameClient.Views
             UsernamePlaceholder.Visibility = string.IsNullOrEmpty(UsernameTextBox.Text)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            UsernameBorder.ClearValue(Border.BorderBrushProperty);
+            UsernameBorder.ToolTip = null;
         }
 
         private void OnPasswordChanged(object sender, RoutedEventArgs e)
@@ -130,6 +133,9 @@ namespace GameClient.Views
             PasswordPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            PasswordBorder.ClearValue(Border.BorderBrushProperty);
+            PasswordBorder.ToolTip = null;
         }
 
         private void OnBackButton(object sender, RoutedEventArgs e)

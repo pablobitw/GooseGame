@@ -11,8 +11,8 @@
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/logo2.png" 
-                Stretch="UniformToFill" 
-                Opacity="0.9">
+                        Stretch="UniformToFill" 
+                        Opacity="0.9">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>
@@ -40,8 +40,7 @@
                                FontFamily="/Assets/Fonts/#Dosis" FontSize="28" FontWeight="Bold" 
                                Foreground="#333333" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                    <!-- Username -->
-                    <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
+                    <Border x:Name="UsernameBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
                         <Grid>
                             <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
                                        Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
@@ -50,8 +49,7 @@
                         </Grid>
                     </Border>
 
-                    <!-- Password -->
-                    <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
+                    <Border x:Name="PasswordBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
                         <Grid>
                             <TextBlock x:Name="PasswordPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
                                        Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
