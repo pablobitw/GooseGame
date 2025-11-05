@@ -46,12 +46,10 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
-            if (placeholder != null)
+
+            if (placeholder != null && string.IsNullOrWhiteSpace(passwordBox.Password))
             {
-                if (string.IsNullOrWhiteSpace(passwordBox.Password))
-                {
-                    placeholder.Visibility = Visibility.Visible;
-                }
+                placeholder.Visibility = Visibility.Visible;
             }
         }
 
@@ -214,17 +212,25 @@ namespace GameClient.Views
             RepeatBox.ToolTip = null;
         }
 
-        private bool IsValidEmail(string email)
+        private static bool IsValidEmail(string email)
         {
             bool isValid = false;
 
-            try
+            if (!string.IsNullOrWhiteSpace(email))
             {
-                var addr = new MailAddress(email);
-                isValid = (addr.Address == email);
-            }
-            catch
-            {
+                try
+                {
+                    var addr = new MailAddress(email);
+                    isValid = (addr.Address == email);
+                }
+                catch (ArgumentException)
+                {
+                    isValid = false;
+                }
+                catch (FormatException)
+                {
+                    isValid = false;
+                }
             }
 
             return isValid;

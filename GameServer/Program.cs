@@ -5,15 +5,16 @@ using log4net;
 
 namespace GameServer
 {
-    internal class Program
+    internal static class Program
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
+        private const string LogSeparator = "===============================";
 
         static void Main(string[] args)
         {
-            Log.Info("========================================");
+            Log.Info(LogSeparator);
             Log.Info("Initializing GooseGame Server...");
-            Log.Info("========================================");
+            Log.Info(LogSeparator);
 
             try
             {
@@ -34,9 +35,9 @@ namespace GameServer
                         Log.Info($"-> {endpoint.Address}");
                     }
 
-                    Log.Info("========================================");
+                    Log.Info(LogSeparator);
                     Log.Warn("Server is fully operational. Press [Enter] to stop.");
-                    Log.Info("========================================");
+                    Log.Info(LogSeparator);
 
                     Console.ReadLine();
                     Log.Info("Server shutdown requested.");

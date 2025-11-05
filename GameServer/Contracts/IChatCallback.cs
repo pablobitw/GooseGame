@@ -3,6 +3,7 @@
 namespace GameServer.Contracts
 
 {
+    [ServiceContract]
     public interface IChatCallback
     {
         [OperationContract(IsOneWay = true)]
