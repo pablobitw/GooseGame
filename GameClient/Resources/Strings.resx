@@ -129,6 +129,15 @@
   <data name="BackButton" xml:space="preserve">
     <value>Volver</value>
   </data>
+  <data name="BoardTypeLabel" xml:space="preserve">
+    <value>Tipo de tablero</value>
+  </data>
+  <data name="BoardTypeNormal" xml:space="preserve">
+    <value>Tablero Normal</value>
+  </data>
+  <data name="BoardTypeSpecial" xml:space="preserve">
+    <value>Tablero especial</value>
+  </data>
   <data name="CancelButton" xml:space="preserve">
     <value>Cancelar</value>
   </data>
@@ -144,6 +153,12 @@
   <data name="CreateAccountButton" xml:space="preserve">
     <value>Crear cuenta</value>
   </data>
+  <data name="CreateMatchButton" xml:space="preserve">
+    <value>Crear partida</value>
+  </data>
+  <data name="CreateMatchTitle" xml:space="preserve">
+    <value>Crear partida</value>
+  </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Correo Electronico</value>
   </data>
@@ -152,6 +167,9 @@
   </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
+  </data>
+  <data name="JoinMatchButton" xml:space="preserve">
+    <value>Unirse a partida</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Iniciar Sesion</value>
@@ -173,6 +191,9 @@
   </data>
   <data name="PlayButton" xml:space="preserve">
     <value>Jugar</value>
+  </data>
+  <data name="PlayerCountLabel" xml:space="preserve">
+    <value>Numero de jugadores</value>
   </data>
   <data name="QuitButton" xml:space="preserve">
     <value>Salir</value>
@@ -204,6 +225,9 @@
   <data name="SendButton" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="StartMatchButton" xml:space="preserve">
+    <value>Iniciar Partida</value>
+  </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Usuario:</value>
   </data>
@@ -221,6 +245,18 @@
   </data>
   <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
     <value>Recuperacion</value>
+  </data>
+  <data name="ViewMatchesButton" xml:space="preserve">
+    <value>Partidas existentes</value>
+  </data>
+  <data name="VisibilityLabel" xml:space="preserve">
+    <value>Visibilidad</value>
+  </data>
+  <data name="VisibilityPrivate" xml:space="preserve">
+    <value>Privada</value>
+  </data>
+  <data name="VisibilityPublic" xml:space="preserve">
+    <value>Publica</value>
   </data>
   <data name="YesLabel" xml:space="preserve">
     <value>Si</value>

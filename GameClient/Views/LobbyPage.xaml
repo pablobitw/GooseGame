@@ -4,11 +4,262 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient.Views"
+      xmlns:props="clr-namespace:GameClient.Resources"
+      xmlns:fa="http://schemas.fontawesome.io/winfx/2006/xaml"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="LobbyPage">
+      d:DesignHeight="1080" d:DesignWidth="1920"
+      Title="LobbyPage"
+      FontFamily="/Assets/Fonts/#Dosis">
+
+    <Page.Resources>
+        <!-- Estilo para botones de palanca ACTIVOS (ej. Con Casillas, Pública) -->
+        <Style x:Key="LobbyToggleActiveStyle" TargetType="Button" BasedOn="{StaticResource OrangeButtonStyle}">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="Height" Value="60"/>
+        </Style>
+
+        <!-- Estilo para botones de palanca INACTIVOS (ej. Normal, Privada) -->
+        <Style x:Key="LobbyToggleInactiveStyle" TargetType="Button" BasedOn="{StaticResource GreenButtonStyle}">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="Height" Value="60"/>
+            <!-- Hacemos que se vea "apagado" -->
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Background" Value="#FF6B8A7A"/>
+            <Setter Property="BorderBrush" Value="#FF4E645A"/>
+        </Style>
+
+        <!-- Estilo para los botones de +/- -->
+        <Style x:Key="LobbyCounterButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="60"/>
+        </Style>
+    </Page.Resources>
 
     <Grid>
-        
+        <!-- Contenedor principal (el popup) -->
+        <Border x:Name="LobbyContainerBorder"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center"
+                Width="1400" Height="800"
+                Background="#E6FFFFFF" 
+                BorderBrush="#FFB0B0B0" 
+                BorderThickness="3" 
+                CornerRadius="20">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#80000000" Opacity="0.5"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Fila para el Título -->
+                    <RowDefinition Height="*"/>
+                    <!-- Fila para el Contenido Principal -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Fila para el Botón Iniciar -->
+                </Grid.RowDefinitions>
+
+                <!-- TÍTULO -->
+                <TextBlock x:Name="TitleBlock"
+                           Grid.Row="0"
+                           Text="{x:Static props:Strings.CreateMatchTitle}"
+                           FontSize="48" 
+                           FontWeight="Bold" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,30,0,20"/>
+
+                <!-- CONTENIDO PRINCIPAL (dividido en 2 columnas) -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <!-- Columna de Opciones -->
+                        <ColumnDefinition Width="*"/>
+                        <!-- Columna de Jugadores/Chat -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- === COLUMNA 1: OPCIONES === -->
+                    <StackPanel Grid.Column="0" Margin="40,10,40,10" VerticalAlignment="Top">
+
+                        <!-- TIPO DE TABLERO -->
+                        <TextBlock Text="{x:Static props:Strings.BoardTypeLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="BoardTypeSpecialButton" 
+                                    Content="{x:Static props:Strings.BoardTypeSpecial}" 
+                                    Style="{StaticResource LobbyToggleActiveStyle}" 
+                                    Margin="5"
+                                    Click="BoardTypeSpecialButton_Click"/>
+                            <Button x:Name="BoardTypeNormalButton" 
+                                    Content="{x:Static props:Strings.BoardTypeNormal}" 
+                                    Style="{StaticResource LobbyToggleInactiveStyle}" 
+                                    Margin="5"
+                                    Click="BoardTypeNormalButton_Click"/>
+                        </StackPanel>
+
+                        <!-- NÚMERO DE JUGADORES -->
+                        <TextBlock Text="{x:Static props:Strings.PlayerCountLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="DecreasePlayersButton" 
+                                    Content="-" 
+                                    Style="{StaticResource LobbyCounterButtonStyle}" 
+                                    Click="DecreasePlayersButton_Click"/>
+
+                            <TextBlock x:Name="PlayerCountBlock" Text="4" FontSize="48" FontWeight="Bold" Margin="40,0" VerticalAlignment="Center"/>
+
+                            <Button x:Name="IncreasePlayersButton" 
+                                    Content="+" 
+                                    Style="{StaticResource LobbyCounterButtonStyle}" 
+                                    Click="IncreasePlayersButton_Click"/>
+                        </StackPanel>
+                        <TextBlock Text="2-6" HorizontalAlignment="Center" FontSize="18" Opacity="0.7"/>
+
+
+                        <!-- VISIBILIDAD -->
+                        <TextBlock Text="{x:Static props:Strings.VisibilityLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="VisibilityPublicButton" 
+                                    Content="{x:Static props:Strings.VisibilityPublic}" 
+                                    Style="{StaticResource LobbyToggleActiveStyle}" 
+                                    Margin="5"
+                                    Click="VisibilityPublicButton_Click"/>
+                            <Button x:Name="VisibilityPrivateButton" 
+                                    Style="{StaticResource LobbyToggleInactiveStyle}" 
+                                    Margin="5"
+                                    Click="VisibilityPrivateButton_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:FontAwesome Icon="Lock" Foreground="White" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static props:Strings.VisibilityPrivate}"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- === COLUMNA 2: JUGADORES / CHAT === -->
+                    <Grid Grid.Column="1" Margin="20,10,40,10">
+                        <TabControl x:Name="LobbyTabControl" Background="Transparent" BorderThickness="0">
+                            <!-- PESTAÑA DE JUGADORES -->
+                            <TabItem>
+                                <TabItem.Header>
+                                    <TextBlock x:Name="PlayersTabHeader" Text="JUGADORES (1/4)" FontSize="18" FontWeight="Bold"/>
+                                </TabItem.Header>
+                                <ListBox x:Name="PlayerList" Margin="0,10,0,0" Background="#19000000" BorderThickness="0">
+                                    <!-- 
+                                    Esto se llenará dinámicamente, pero aquí hay placeholders
+                                    basados en la imagen.
+                                    -->
+                                    <ListBoxItem Padding="10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <fa:FontAwesome Icon="UserCircle" Foreground="#FF348AC7" Height="30" Width="30" Margin="0,0,15,0"/>
+                                            <TextBlock Text="Host (Tú)" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Padding="10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <fa:FontAwesome Icon="HourglassStart" Foreground="#808080" Height="30" Width="30" Margin="0,0,15,0"/>
+                                            <TextBlock Text="Slot Vacío" FontSize="22" VerticalAlignment="Center" Opacity="0.7"/>
+                                            <fa:FontAwesome Icon="Lock" Foreground="#808080" Height="20" Margin="20,0,0,0" VerticalAlignment="Center" Opacity="0.7"/>
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Padding="10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <fa:FontAwesome Icon="HourglassStart" Foreground="#808080" Height="30" Width="30" Margin="0,0,15,0"/>
+                                            <TextBlock Text="Slot Vacío" FontSize="22" VerticalAlignment="Center" Opacity="0.7"/>
+                                            <fa:FontAwesome Icon="Lock" Foreground="#808080" Height="20" Margin="20,0,0,0" VerticalAlignment="Center" Opacity="0.7"/>
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+                            </TabItem>
+
+                            <!-- PESTAÑA DE CHAT -->
+                            <TabItem>
+                                <TabItem.Header>
+                                    <TextBlock Text="CHAT" FontSize="18" FontWeight="Bold"/>
+                                </TabItem.Header>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <ListBox x:Name="ChatMessagesList" Grid.Row="0" Margin="0,10,0,0" Background="#19000000" BorderThickness="0">
+                                        <!-- Placeholder de mensaje de sistema -->
+                                        <ListBoxItem>
+                                            <TextBlock FontStyle="Italic" Opacity="0.7" TextWrapping="Wrap">
+                                                [Sistema]: ¡Bienvenido a la partida!
+                                            </TextBlock>
+                                        </ListBoxItem>
+                                    </ListBox>
+
+                                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="ChatMessageTextBox" Grid.Column="0" FontSize="18" Padding="10" VerticalContentAlignment="Center"/>
+                                        <Button x:Name="SendChatMessageButton" Grid.Column="1" Style="{StaticResource PrimaryButtonStyle}" Width="60" Height="50" Margin="5,0,0,0" Click="SendChatMessageButton_Click">
+                                            <fa:FontAwesome Icon="Send" Foreground="White" Height="20"/>
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+
+                </Grid>
+
+                <!-- BOTÓN INICIAR PARTIDA -->
+                <Button x:Name="StartMatchButton"
+                        Grid.Row="2"
+                        Content="{x:Static props:Strings.StartMatchButton}" 
+                        Style="{StaticResource PrimaryButtonStyle}" 
+                        Margin="0,10,0,30" 
+                        FontFamily="/Assets/Fonts/#Dosis" 
+                        FontSize="40" 
+                        FontWeight="Bold" 
+                        HorizontalAlignment="Center"
+                        Width="400" 
+                        Height="80"
+                        Click="StartMatchButton_Click"/>
+
+            </Grid>
+        </Border>
+
+        <!-- BOTÓN DE VOLVER (Esencial para navegación) -->
+        <Button x:Name="BackButton" 
+                Height="80" Width="80" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top" 
+                Margin="20" 
+                Background="Transparent" 
+                BorderThickness="0" 
+                Cursor="Hand" 
+                Click="BackButton_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                        <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Opacity" Value="1"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.7"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
     </Grid>
 </Page>

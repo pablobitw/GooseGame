@@ -15,12 +15,37 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-
-    public partial class CreateOrJoinMatch : Page
+  
+    public partial class CreateOrJoinMatchPage : Page
     {
-        public CreateOrJoinMatch()
+        public CreateOrJoinMatchPage()
         {
             InitializeComponent();
+        }
+
+        private void CreateMatchButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void JoinMatchButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void ViewMatchesButton_Click(object sender, RoutedEventArgs e)
+        {
+          
+        }
+
+       
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+        
+            if (NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
         }
     }
 }

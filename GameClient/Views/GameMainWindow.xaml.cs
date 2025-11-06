@@ -24,7 +24,8 @@ namespace GameClient
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Lógica para buscar partida aquí...", "Función no implementada");
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new CreateOrJoinMatchPage());
         }
 
         private void OptionsButtonClick(object sender, RoutedEventArgs e)

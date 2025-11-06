@@ -1,14 +1,84 @@
-﻿<Page x:Class="GameClient.Views.CreateOrJoinMatch"
+﻿<Page x:Class="GameClient.Views.CreateOrJoinMatchPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient.Views"
+      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="CreateOrJoinMatch">
+      d:DesignHeight="1080" d:DesignWidth="1920"
+      Title="CreateOrJoinMatchPage">
 
     <Grid>
-        
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,100,0,0">
+
+            <Button x:Name="CreateMatchButton" 
+                    Content="{x:Static props:Strings.CreateMatchButton}" 
+                    Style="{StaticResource OrangeButtonStyle}" 
+                    Margin="0,10" 
+                    FontFamily="/Assets/Fonts/#Dosis" 
+                    FontSize="70" 
+                    FontWeight="Bold" 
+                    Click="CreateMatchButton_Click" 
+                    Width="514" 
+                    Height="135"/>
+
+            <Button x:Name="JoinMatchButton" 
+                    Content="{x:Static props:Strings.JoinMatchButton}" 
+                    Style="{StaticResource PrimaryButtonStyle}" 
+                    Margin="0,10" 
+                    FontFamily="/Assets/Fonts/#Dosis" 
+                    FontSize="70" 
+                    FontWeight="Bold" 
+                    Click="JoinMatchButton_Click" 
+                    Width="514" 
+                    Height="135"/>
+
+            <Button x:Name="ViewMatchesButton" 
+                    Content="{x:Static props:Strings.ViewMatchesButton}" 
+                    Style="{StaticResource GreenButtonStyle}" 
+                    Margin="0,10" 
+                    FontFamily="/Assets/Fonts/#Dosis" 
+                    FontSize="70" 
+                    FontWeight="Bold" 
+                    Click="ViewMatchesButton_Click" 
+                    Width="514" 
+                    Height="135"/>
+
+        </StackPanel>
+
+
+        <Button x:Name="BackButton" 
+                Height="80" Width="80" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top" 
+                Margin="20" 
+                Background="Transparent" 
+                BorderThickness="0" 
+                Cursor="Hand" 
+                Click="BackButton_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                      
+                        <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Opacity" Value="1"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.7"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
     </Grid>
 </Page>

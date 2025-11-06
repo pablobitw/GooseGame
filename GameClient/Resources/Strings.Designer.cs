@@ -29,7 +29,7 @@ namespace GameClient.Resources {
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public Strings() {
+        internal Strings() {
         }
         
         /// <summary>
@@ -97,6 +97,33 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Tipo de tablero.
+        /// </summary>
+        public static string BoardTypeLabel {
+            get {
+                return ResourceManager.GetString("BoardTypeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tablero Normal.
+        /// </summary>
+        public static string BoardTypeNormal {
+            get {
+                return ResourceManager.GetString("BoardTypeNormal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tablero especial.
+        /// </summary>
+        public static string BoardTypeSpecial {
+            get {
+                return ResourceManager.GetString("BoardTypeSpecial", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Cancelar.
         /// </summary>
         public static string CancelButton {
@@ -142,6 +169,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Crear partida.
+        /// </summary>
+        public static string CreateMatchButton {
+            get {
+                return ResourceManager.GetString("CreateMatchButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Crear partida.
+        /// </summary>
+        public static string CreateMatchTitle {
+            get {
+                return ResourceManager.GetString("CreateMatchTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Correo Electronico.
         /// </summary>
         public static string EmailLabel {
@@ -165,6 +210,15 @@ namespace GameClient.Resources {
         public static string ForgotPassLabel {
             get {
                 return ResourceManager.GetString("ForgotPassLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Unirse a partida.
+        /// </summary>
+        public static string JoinMatchButton {
+            get {
+                return ResourceManager.GetString("JoinMatchButton", resourceCulture);
             }
         }
         
@@ -228,6 +282,15 @@ namespace GameClient.Resources {
         public static string PlayButton {
             get {
                 return ResourceManager.GetString("PlayButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Numero de jugadores.
+        /// </summary>
+        public static string PlayerCountLabel {
+            get {
+                return ResourceManager.GetString("PlayerCountLabel", resourceCulture);
             }
         }
         
@@ -322,6 +385,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Iniciar Partida.
+        /// </summary>
+        public static string StartMatchButton {
+            get {
+                return ResourceManager.GetString("StartMatchButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Usuario:.
         /// </summary>
         public static string UsernameLabel {
@@ -372,6 +444,42 @@ namespace GameClient.Resources {
         public static string VerifyRecoveryCodeLabel {
             get {
                 return ResourceManager.GetString("VerifyRecoveryCodeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Partidas existentes.
+        /// </summary>
+        public static string ViewMatchesButton {
+            get {
+                return ResourceManager.GetString("ViewMatchesButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Visibilidad.
+        /// </summary>
+        public static string VisibilityLabel {
+            get {
+                return ResourceManager.GetString("VisibilityLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Privada.
+        /// </summary>
+        public static string VisibilityPrivate {
+            get {
+                return ResourceManager.GetString("VisibilityPrivate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Publica.
+        /// </summary>
+        public static string VisibilityPublic {
+            get {
+                return ResourceManager.GetString("VisibilityPublic", resourceCulture);
             }
         }
         

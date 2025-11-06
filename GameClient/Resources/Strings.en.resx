@@ -129,6 +129,15 @@
   <data name="BackButton" xml:space="preserve">
     <value>Back</value>
   </data>
+  <data name="BoardTypeLabel" xml:space="preserve">
+    <value>Board Type</value>
+  </data>
+  <data name="BoardTypeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="BoardTypeSpecial" xml:space="preserve">
+    <value>Special</value>
+  </data>
   <data name="CancelButton" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -144,6 +153,12 @@
   <data name="CreateAccountButton" xml:space="preserve">
     <value>Create Account</value>
   </data>
+  <data name="CreateMatchButton" xml:space="preserve">
+    <value>Create Match</value>
+  </data>
+  <data name="CreateMatchTitle" xml:space="preserve">
+    <value>Create Match</value>
+  </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Email</value>
   </data>
@@ -152,6 +167,9 @@
   </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Forgot password?</value>
+  </data>
+  <data name="JoinMatchButton" xml:space="preserve">
+    <value>Join Match</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Log In</value>
@@ -173,6 +191,9 @@
   </data>
   <data name="PlayButton" xml:space="preserve">
     <value>Play</value>
+  </data>
+  <data name="PlayerCountLabel" xml:space="preserve">
+    <value>Number players: </value>
   </data>
   <data name="QuitButton" xml:space="preserve">
     <value>Quit</value>
@@ -204,6 +225,9 @@
   <data name="SendButton" xml:space="preserve">
     <value>Send</value>
   </data>
+  <data name="StartMatchButton" xml:space="preserve">
+    <value>Start Match</value>
+  </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Username:</value>
   </data>
@@ -221,6 +245,18 @@
   </data>
   <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
     <value>Recovery</value>
+  </data>
+  <data name="ViewMatchesButton" xml:space="preserve">
+    <value>Exist Matches</value>
+  </data>
+  <data name="VisibilityLabel" xml:space="preserve">
+    <value>Visibility</value>
+  </data>
+  <data name="VisibilityPrivate" xml:space="preserve">
+    <value>Private</value>
+  </data>
+  <data name="VisibilityPublic" xml:space="preserve">
+    <value>Public</value>
   </data>
   <data name="YesLabel" xml:space="preserve">
     <value>Yes</value>

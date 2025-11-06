@@ -13,7 +13,7 @@
         <Grid Width="1920" Height="1080">
             <Grid x:Name="MainMenuGrid">
                 <Grid.Background>
-                    <ImageBrush ImageSource="/Assets/fondo2.jpg" 
+                    <ImageBrush ImageSource="/Assets/fondo2.png" 
                                 Stretch="UniformToFill" 
                                 Opacity="1">
                         <ImageBrush.Viewbox>
