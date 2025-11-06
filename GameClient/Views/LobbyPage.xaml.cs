@@ -15,12 +15,60 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-
+   
     public partial class LobbyPage : Page
     {
         public LobbyPage()
         {
             InitializeComponent();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
+        }
+
+        private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
+        {
+           
+        }
+
+        private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void DecreasePlayersButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void IncreasePlayersButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void VisibilityPublicButton_Click(object sender, RoutedEventArgs e)
+        {
+      
+        }
+
+        private void VisibilityPrivateButton_Click(object sender, RoutedEventArgs e)
+        {
+         
+        }
+
+        private void SendChatMessageButton_Click(object sender, RoutedEventArgs e)
+        {
+           
+        }
+
+        private void StartMatchButton_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }

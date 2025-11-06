@@ -25,7 +25,7 @@ namespace GameClient.Views
 
         private void CreateMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            NavigationService.Navigate(new LobbyPage());
         }
 
         private void JoinMatchButton_Click(object sender, RoutedEventArgs e)

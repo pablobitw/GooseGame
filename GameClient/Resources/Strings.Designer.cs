@@ -241,6 +241,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Modificar perfil.
+        /// </summary>
+        public static string ModifyProfileTitle {
+            get {
+                return ResourceManager.GetString("ModifyProfileTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Nueva contraseña.
         /// </summary>
         public static string NewPasswordLabel {

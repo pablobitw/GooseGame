@@ -15,20 +15,14 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-  
-    public partial class ModifyProfilePage : Page
+    /// <summary>
+    /// Lógica de interacción para AvatarSelectPage.xaml
+    /// </summary>
+    public partial class AvatarSelectPage : Page
     {
-        public ModifyProfilePage()
+        public AvatarSelectPage()
         {
             InitializeComponent();
-        }
-
-              private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
         }
     }
 }

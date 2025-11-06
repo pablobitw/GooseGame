@@ -177,6 +177,9 @@
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
   </data>
+  <data name="ModifyProfileTitle" xml:space="preserve">
+    <value>Modificar perfil</value>
+  </data>
   <data name="NewPasswordLabel" xml:space="preserve">
     <value>Nueva contraseña</value>
   </data>
