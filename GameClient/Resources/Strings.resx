@@ -141,6 +141,12 @@
   <data name="CancelButton" xml:space="preserve">
     <value>Cancelar</value>
   </data>
+  <data name="ComunicationLabel" xml:space="preserve">
+    <value>Error de comunicación con el servidor. Revisa tu conexión.</value>
+  </data>
+  <data name="ComunicationTile" xml:space="preserve">
+    <value />
+  </data>
   <data name="ConfirmButton" xml:space="preserve">
     <value>Confirmar</value>
   </data>
@@ -162,8 +168,23 @@
   <data name="EmailLabel" xml:space="preserve">
     <value>Correo Electronico</value>
   </data>
+  <data name="EmailUsedLabel" xml:space="preserve">
+    <value>El correo ya está en uso</value>
+  </data>
+  <data name="EmailUsedTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="EndpointNotFoundLabel" xml:space="preserve">
+    <value>No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución</value>
+  </data>
+  <data name="EndpointNotFoundTitle" xml:space="preserve">
+    <value>Error de Conexión</value>
+  </data>
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Instrucciones:</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Error de Red</value>
   </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
@@ -207,6 +228,12 @@
   <data name="RegisterPageTitle" xml:space="preserve">
     <value>Registrarse</value>
   </data>
+  <data name="RegisterSuccesfulLabel" xml:space="preserve">
+    <value>Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam), Revisa tu Correo</value>
+  </data>
+  <data name="RegisterSuccessfulTitle" xml:space="preserve">
+    <value>Registro casi exitoso</value>
+  </data>
   <data name="RepeatEmailLabel" xml:space="preserve">
     <value>Repetir correo</value>
   </data>
@@ -231,8 +258,17 @@
   <data name="StartMatchButton" xml:space="preserve">
     <value>Iniciar Partida</value>
   </data>
+  <data name="TimeoutLabel" xml:space="preserve">
+    <value>La solicitud tardó demasiado en responder. Revisa tu conexión</value>
+  </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Usuario:</value>
+  </data>
+  <data name="UsernameUsedLabel" xml:space="preserve">
+    <value>El nombre de usuario ya está en uso.</value>
+  </data>
+  <data name="UsernameUseTitle" xml:space="preserve">
+    <value>Error</value>
   </data>
   <data name="VerificationCodeLabel" xml:space="preserve">
     <value>Codigo</value>

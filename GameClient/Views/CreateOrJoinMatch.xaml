@@ -10,6 +10,16 @@
       Title="CreateOrJoinMatchPage">
 
     <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/fondo2.png" 
+                        Stretch="UniformToFill" 
+                        Opacity="1">
+                <ImageBrush.Viewbox>
+                    <Rect>0.2, 0.2, 0.6, 0.6</Rect>
+                </ImageBrush.Viewbox>
+            </ImageBrush>
+        </Grid.Background>
+
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,100,0,0">
 
             <Button x:Name="CreateMatchButton" 
@@ -60,7 +70,7 @@
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
-                      
+
                         <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
                     </Border>
                 </ControlTemplate>

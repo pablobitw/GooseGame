@@ -133,6 +133,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación con el servidor. Revisa tu conexión..
+        /// </summary>
+        public static string ComunicationLabel {
+            get {
+                return ResourceManager.GetString("ComunicationLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string ComunicationTile {
+            get {
+                return ResourceManager.GetString("ComunicationTile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Confirmar.
         /// </summary>
         public static string ConfirmButton {
@@ -196,11 +214,56 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El correo ya está en uso.
+        /// </summary>
+        public static string EmailUsedLabel {
+            get {
+                return ResourceManager.GetString("EmailUsedLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error.
+        /// </summary>
+        public static string EmailUsedTitle {
+            get {
+                return ResourceManager.GetString("EmailUsedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.
+        /// </summary>
+        public static string EndpointNotFoundLabel {
+            get {
+                return ResourceManager.GetString("EndpointNotFoundLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Conexión.
+        /// </summary>
+        public static string EndpointNotFoundTitle {
+            get {
+                return ResourceManager.GetString("EndpointNotFoundTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Instrucciones:.
         /// </summary>
         public static string EnterRecoveryCodeInstruction {
             get {
                 return ResourceManager.GetString("EnterRecoveryCodeInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Red.
+        /// </summary>
+        public static string ErrorTitle {
+            get {
+                return ResourceManager.GetString("ErrorTitle", resourceCulture);
             }
         }
         
@@ -331,6 +394,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam), Revisa tu Correo.
+        /// </summary>
+        public static string RegisterSuccesfulLabel {
+            get {
+                return ResourceManager.GetString("RegisterSuccesfulLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Registro casi exitoso.
+        /// </summary>
+        public static string RegisterSuccessfulTitle {
+            get {
+                return ResourceManager.GetString("RegisterSuccessfulTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Repetir correo.
         /// </summary>
         public static string RepeatEmailLabel {
@@ -403,11 +484,38 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a La solicitud tardó demasiado en responder. Revisa tu conexión.
+        /// </summary>
+        public static string TimeoutLabel {
+            get {
+                return ResourceManager.GetString("TimeoutLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Usuario:.
         /// </summary>
         public static string UsernameLabel {
             get {
                 return ResourceManager.GetString("UsernameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El nombre de usuario ya está en uso..
+        /// </summary>
+        public static string UsernameUsedLabel {
+            get {
+                return ResourceManager.GetString("UsernameUsedLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error.
+        /// </summary>
+        public static string UsernameUseTitle {
+            get {
+                return ResourceManager.GetString("UsernameUseTitle", resourceCulture);
             }
         }
         

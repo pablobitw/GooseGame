@@ -19,6 +19,14 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
+        private void ShowTranslatedMessageBox(string messageKey, string titleKey)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+
+            MessageBox.Show(message ?? messageKey, title ?? titleKey);
+        }
+
         private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
@@ -86,26 +94,26 @@ namespace GameClient.Views
 
                     if (registerSuccesful)
                     {
-                        MessageBox.Show("Registro casi completo. Revisa tu correo para obtener el código de verificación (Spam).", "Revisa tu Correo");
+                        ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
                         NavigationService.Navigate(new VerifyAccountPage(email));
                     }
                     else
                     {
-                        ShowError(EmailBox, "El correo ya está en uso.");
-                        ShowError(UserBox, "El nombre de usuario ya está en uso.");
+                        ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
+                        ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
                     }
                 }
                 catch (EndpointNotFoundException)
                 {
-                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                    ShowTranslatedMessageBox("EndpointNotFoundLabel", "EndpointNotFoundTitle");
                 }
                 catch (TimeoutException)
                 {
-                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                    ShowTranslatedMessageBox("TimeoutLabel", "ErrorTitle");
                 }
                 catch (CommunicationException)
                 {
-                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                    ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
                 }
                 catch (Exception ex)
                 {

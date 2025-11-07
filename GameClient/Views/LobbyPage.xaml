@@ -12,7 +12,6 @@
       FontFamily="/Assets/Fonts/#Dosis">
 
     <Page.Resources>
-        <!-- (El resto del archivo es idéntico) -->
         <Style x:Key="LobbyToggleActiveStyle" TargetType="Button" BasedOn="{StaticResource OrangeButtonStyle}">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -39,6 +38,16 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/fondo2.png" 
+                        Stretch="UniformToFill" 
+                        Opacity="1">
+                <ImageBrush.Viewbox>
+                    <Rect>0.2, 0.2, 0.6, 0.6</Rect>
+                </ImageBrush.Viewbox>
+            </ImageBrush>
+        </Grid.Background>
+
         <Border x:Name="LobbyContainerBorder"
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center"
