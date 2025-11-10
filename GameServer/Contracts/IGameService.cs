@@ -1,4 +1,7 @@
-﻿using System.ServiceModel;
+﻿using GameServer.Contracts;
+using GameServer.GameServer.Contracts;
+using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer
@@ -7,11 +10,11 @@ namespace GameServer
     public interface IGameService
     {
         [OperationContract]
-        Task<bool> RegisterUser(string username, string email, string password);
+        Task<RegistrationResult> RegisterUserAsync(string username, string email, string password);
 
 
         [OperationContract]
-        Task<bool> LogIn(string username, string password);
+        Task<bool> LogInAsync(string username, string password);
 
         [OperationContract]
         bool VerifyAccount(string email, string code);
@@ -25,5 +28,25 @@ namespace GameServer
             [OperationContract]
         bool UpdatePassword(string email, string newPassword);
     }
-    
-}
+
+
+    namespace GameServer.Contracts
+    {
+
+        [DataContract]
+        public enum RegistrationResult
+        {
+            [EnumMember]
+            Success,
+            [EnumMember]
+            UsernameAlreadyExists,
+            [EnumMember]
+            EmailAlreadyExists,
+            [EnumMember]
+            EmailPendingVerification,
+            [EnumMember]
+            FatalError
+        }
+    }
+
+    }

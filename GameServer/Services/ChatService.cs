@@ -6,10 +6,11 @@ using System.Linq;
 using System.ServiceModel;
 using log4net;
 
+
 namespace GameServer.Services
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
-    public class ChatService : GameServer.Contracts.IChatService
+    public class ChatService : IChatService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
         private readonly ConcurrentDictionary<string, IChatCallback> _clients

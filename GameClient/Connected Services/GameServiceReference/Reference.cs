@@ -9,17 +9,38 @@
 //------------------------------------------------------------------------------
 
 namespace GameClient.GameServiceReference {
+    using System.Runtime.Serialization;
     
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="RegistrationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.GameServer.Contracts")]
+    public enum RegistrationResult : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Success = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        UsernameAlreadyExists = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        EmailAlreadyExists = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        EmailPendingVerification = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        FatalError = 4,
+    }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="GameServiceReference.IGameService")]
     public interface IGameService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        bool RegisterUser(string username, string email, string password);
+        GameClient.GameServiceReference.RegistrationResult RegisterUser(string username, string email, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        System.Threading.Tasks.Task<bool> RegisterUserAsync(string username, string email, string password);
+        System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(string username, string email, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
         bool LogIn(string username, string password);
@@ -79,11 +100,11 @@ namespace GameClient.GameServiceReference {
                 base(binding, remoteAddress) {
         }
         
-        public bool RegisterUser(string username, string email, string password) {
+        public GameClient.GameServiceReference.RegistrationResult RegisterUser(string username, string email, string password) {
             return base.Channel.RegisterUser(username, email, password);
         }
         
-        public System.Threading.Tasks.Task<bool> RegisterUserAsync(string username, string email, string password) {
+        public System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(string username, string email, string password) {
             return base.Channel.RegisterUserAsync(username, email, password);
         }
         

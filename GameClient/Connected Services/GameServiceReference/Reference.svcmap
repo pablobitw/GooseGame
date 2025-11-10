@@ -23,6 +23,7 @@
   </MetadataSources>
   <Metadata>
     <MetadataFile FileName="item.disco" MetadataType="Disco" ID="bdf1add6-f77b-4b21-afbb-3cf5abc0d3da" SourceId="1" SourceUrl="http://localhost:8080/?disco" />
+    <MetadataFile FileName="item2.xsd" MetadataType="Schema" ID="73c1619b-c9d1-4e5d-8ff0-f59d1ce7889d" SourceId="1" SourceUrl="http://localhost:8080/?xsd=xsd2" />
     <MetadataFile FileName="item.xsd" MetadataType="Schema" ID="e0f33f31-1dd5-4aa8-b94e-43951f039ae4" SourceId="1" SourceUrl="http://localhost:8080/?xsd=xsd1" />
     <MetadataFile FileName="item1.xsd" MetadataType="Schema" ID="e477badf-2da5-4b74-8a97-bd4bbc971fb5" SourceId="1" SourceUrl="http://localhost:8080/?xsd=xsd0" />
     <MetadataFile FileName="GameService.wsdl" MetadataType="Wsdl" ID="ab33e813-85c6-428a-a07c-41f72d10d787" SourceId="1" SourceUrl="http://localhost:8080/?wsdl" />

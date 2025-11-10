@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/GameServer.GameServer.Contracts" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/GameServer.GameServer.Contracts" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="RegistrationResult">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Success" />
+      <xs:enumeration value="UsernameAlreadyExists" />
+      <xs:enumeration value="EmailAlreadyExists" />
+      <xs:enumeration value="EmailPendingVerification" />
+      <xs:enumeration value="FatalError" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="RegistrationResult" nillable="true" type="tns:RegistrationResult" />
+</xs:schema>

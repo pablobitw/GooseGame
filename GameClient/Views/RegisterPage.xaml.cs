@@ -90,17 +90,34 @@ namespace GameClient.Views
                 GameServiceClient serviceClient = new GameServiceClient();
                 try
                 {
-                    bool registerSuccesful = await serviceClient.RegisterUserAsync(username, email, password);
+                    RegistrationResult result = await serviceClient.RegisterUserAsync(username, email, password);
 
-                    if (registerSuccesful)
+                    switch (result)
                     {
-                        ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
-                        NavigationService.Navigate(new VerifyAccountPage(email));
-                    }
-                    else
-                    {
-                        ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
-                        ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
+                        case RegistrationResult.Success:
+                            ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
+                            NavigationService.Navigate(new VerifyAccountPage(email));
+                            break;
+
+                        case RegistrationResult.EmailPendingVerification:
+                            ShowTranslatedMessageBox("AccountPendingLabel", "AccountPendingTitle");
+                            NavigationService.Navigate(new VerifyAccountPage(email));
+                            break;
+
+                        case RegistrationResult.UsernameAlreadyExists:
+                            ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
+                            ShowError(UserBox, "Este nombre de usuario ya está en uso");
+                            break;
+
+                        case RegistrationResult.EmailAlreadyExists:
+                            ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
+                            ShowError(EmailBox, "Este correo electrónico ya está registrado");
+                            break;
+
+                        case RegistrationResult.FatalError:
+                        default:
+                            ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
+                            break;
                     }
                 }
                 catch (EndpointNotFoundException)

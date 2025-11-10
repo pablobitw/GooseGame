@@ -1,13 +1,15 @@
 ﻿using BCrypt.Net;
+using GameServer.GameServer.Contracts;
 using GameServer.Helpers;
+using log4net;
 using System;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
+using System.Data.SqlClient;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using log4net;
-using System.Data.Entity.Validation;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
+
 
 namespace GameServer
 {
@@ -17,77 +19,97 @@ namespace GameServer
 
         private static readonly Random RandomGenerator = new Random();
 
-        public async Task<bool> RegisterUser(string username, string email, string password)
+        public async Task<RegistrationResult> RegisterUserAsync(string username, string email, string password)
         {
-            bool isSuccess = false;
             try
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    if (context.Players.Any(p => p.Username == username) || context.Accounts.Any(a => a.Email == email))
+
+                    if (context.Players.Any(p => p.Username == username))
                     {
-                        Log.WarnFormat("Registro fallido: Usuario o email ya existen para '{0}'", username);
+                        Log.WarnFormat("Registro fallido: Usuario '{0}' ya existe.", username);
+                        return RegistrationResult.UsernameAlreadyExists;
                     }
-                    else
+
+                    var existingAccount = context.Accounts.FirstOrDefault(a => a.Email == email);
+                    if (existingAccount != null)
                     {
-                        string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
-                        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-
-                        var newAccount = new Account
+                        
+                        if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
                         {
-                            Email = email,
-                            PasswordHash = hashedPassword,
-                            RegisterDate = DateTime.Now,
-                            AccountStatus = (int)AccountStatus.Pending,
-                            VerificationCode = verifyCode
-                        };
+                            Log.InfoFormat("Usuario {0} intentó registrarse con un email pendiente. Redirigiendo a verificación.", email);
 
-                        var newStats = new PlayerStat
+                            
+                            return RegistrationResult.EmailPendingVerification;
+                        }
+                        else
                         {
-                            MatchesPlayed = 0,
-                            MatchesWon = 0,
-                            MatchesLost = 0,
-                            LuckyBoxOpened = 0
-                        };
-
-                        var newPlayer = new Player
-                        {
-                            Username = username,
-                            Coins = 0,
-                            Avatar = "default_avatar.png",
-                            Account = newAccount,
-                            PlayerStat = newStats
-                        };
-
-                        context.Players.Add(newPlayer);
-                        await context.SaveChangesAsync();
-
-
-                        bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, verifyCode)
-                                                          .ConfigureAwait(false);
-
-                        if (emailSent) Log.InfoFormat("Correo de verificación enviado a {0}.", email);
-                        isSuccess = emailSent;
+                            Log.WarnFormat("Registro fallido: Email '{0}' ya está en uso.", email);
+                            return RegistrationResult.EmailAlreadyExists;
+                        }
                     }
+
+                    string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+                    var newAccount = new Account
+                    {
+                        Email = email,
+                        PasswordHash = hashedPassword,
+                        RegisterDate = DateTime.Now,
+                        AccountStatus = (int)AccountStatus.Pending,
+                        VerificationCode = verifyCode
+                    };
+
+                    var newStats = new PlayerStat
+                    {
+                        MatchesPlayed = 0,
+                        MatchesWon = 0,
+                        MatchesLost = 0,
+                        LuckyBoxOpened = 0
+                    };
+
+                    var newPlayer = new Player
+                    {
+                        Username = username,
+                        Coins = 0,
+                        Avatar = "default_avatar.png",
+                        Account = newAccount,
+                        PlayerStat = newStats
+                    };
+
+                    context.Players.Add(newPlayer);
+                    await context.SaveChangesAsync();
+
+                    bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, verifyCode)
+                                                      .ConfigureAwait(false);
+
+                    if (emailSent) Log.InfoFormat("Correo de verificación enviado a {0}.", email);
+
+                    return RegistrationResult.Success;
                 }
             }
             catch (DbEntityValidationException ex)
             {
                 Log.Warn($"Error de validación de entidad para {username}.", ex);
+                return RegistrationResult.FatalError;
             }
             catch (DbUpdateException ex)
             {
                 Log.Error($"Error de actualización de BD para {username}.", ex);
+                return RegistrationResult.FatalError;
             }
             catch (SqlException ex)
             {
                 Log.Fatal($"Error fatal de SQL en RegisterUser. ¡Revisar conexión a BD!", ex);
+                return RegistrationResult.FatalError;
             }
             catch (Exception ex)
             {
                 Log.Error($"Error inesperado en RegisterUser para {username}.", ex);
+                return RegistrationResult.FatalError;
             }
-            return isSuccess;
         }
 
         public bool VerifyAccount(string email, string code)
@@ -135,7 +157,7 @@ namespace GameServer
             return isSuccess;
         }
 
-        public async Task<bool> LogIn(string username, string password)
+        public async Task<bool> LogInAsync(string username, string password)
         {
             bool isSuccess = false;
             try
