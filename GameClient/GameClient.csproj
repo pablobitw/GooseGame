@@ -82,6 +82,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Connected Services\LobbyServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>
     </Compile>
@@ -257,6 +262,19 @@
     <None Include="Connected Services\GameServiceReference\item2.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\LobbyServiceReference\GameClient.LobbyServiceReference.LobbyCreationResultDTO.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\LobbyServiceReference\GameServer.Contracts.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LobbyServiceReference\service.wsdl" />
+    <None Include="Connected Services\LobbyServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LobbyServiceReference\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -302,6 +320,7 @@
   <ItemGroup>
     <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
+    <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Connected Services\GameServiceReference\item.disco" />
@@ -347,6 +366,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Avatar\profilepic1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\LobbyServiceReference\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\LobbyServiceReference\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\LobbyServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
