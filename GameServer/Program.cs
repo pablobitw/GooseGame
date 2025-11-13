@@ -18,8 +18,10 @@ namespace GameServer
 
             try
             {
+                // AÑADIDO: El using para LobbyService
                 using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
+                using (ServiceHost lobbyServiceHost = new ServiceHost(typeof(LobbyService)))
                 {
                     gameServiceHost.Open();
                     Log.Info("GameService is running and listening on:");
@@ -31,6 +33,14 @@ namespace GameServer
                     chatServiceHost.Open();
                     Log.Info("ChatService is running and listening on:");
                     foreach (var endpoint in chatServiceHost.Description.Endpoints)
+                    {
+                        Log.Info($"-> {endpoint.Address}");
+                    }
+
+                    // AÑADIDO: Abrimos el LobbyService
+                    lobbyServiceHost.Open();
+                    Log.Info("LobbyService is running and listening on:");
+                    foreach (var endpoint in lobbyServiceHost.Description.Endpoints)
                     {
                         Log.Info($"-> {endpoint.Address}");
                     }

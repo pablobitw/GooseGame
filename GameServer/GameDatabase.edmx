@@ -74,6 +74,10 @@
       <End Role="Player" EntitySet="Players" />
       <End Role="PlayerStat" EntitySet="PlayerStats" />
     </AssociationSet>
+    <AssociationSet Name="GamePlayer" Association="GameServer.Store.GamePlayer">
+      <End Role="Game" EntitySet="Games" />
+      <End Role="Player" EntitySet="Players" />
+    </AssociationSet>
   </EntityContainer>
   <EntityType Name="Accounts">
     <Key>
@@ -125,6 +129,9 @@
     <Property Name="HostPlayerID" Type="nvarchar(max)" Nullable="false" />
     <Property Name="ChatMessageIdChatMessage" Type="int" Nullable="false" />
     <Property Name="Board_idBoard" Type="int" Nullable="false" />
+    <Property Name="LobbyCode" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="MaxPlayers" Type="int" Nullable="false" DefaultValue="4" />
+    <Property Name="IsPublic" Type="bit" Nullable="false" DefaultValue="true" />
   </EntityType>
   <EntityType Name="Items">
     <Key>
@@ -170,6 +177,7 @@
     <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
     <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
     <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+    <Property Name="GameIdGame" Type="int" Nullable="false" />
     <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PlayerStats">
@@ -371,6 +379,18 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
+  <Association Name="GamePlayer">
+    <End Role="Game" Type="GameServer.Store.Games" Multiplicity="1" />
+    <End Role="Player" Type="GameServer.Store.Players" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Game">
+        <PropertyRef Name="IdGame" />
+      </Principal>
+      <Dependent Role="Player">
+        <PropertyRef Name="GameIdGame" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
 </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
@@ -430,13 +450,16 @@
           <Property Name="GameStatus" Type="Int32" Nullable="false" />
           <Property Name="StartTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="EndTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="HostPlayerID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="HostPlayerID" Type="Int32" Nullable="false" />
           <Property Name="ChatMessageIdChatMessage" Type="Int32" Nullable="false" />
           <Property Name="Board_idBoard" Type="Int32" Nullable="false" />
           <NavigationProperty Name="BoardSet" Relationship="Self.FK_GameBoard" FromRole="Games" ToRole="BoardSet" />
           <NavigationProperty Name="ChatMessage" Relationship="Self.FK_ChatMessageGame" FromRole="Games" ToRole="ChatMessages" />
           <NavigationProperty Name="MoveRecords" Relationship="Self.FK_GameMoveRecord" FromRole="Games" ToRole="MoveRecords" />
           <NavigationProperty Name="Sanctions" Relationship="Self.FK_idGame" FromRole="Games" ToRole="Sanctions" />
+          <Property Name="LobbyCode" Type="String" Nullable="false" />
+          <Property Name="MaxPlayers" Type="Int32" Nullable="false" DefaultValue="4" />
+          <Property Name="IsPublic" Type="Boolean" Nullable="false" DefaultValue="True" />
         </EntityType>
         <EntityType Name="Item">
           <Key>
@@ -494,6 +517,7 @@
           <NavigationProperty Name="MoveRecords" Relationship="Self.FK_PlayerMoveRecord" FromRole="Players" ToRole="MoveRecords" />
           <NavigationProperty Name="PlayerInventories" Relationship="Self.FK_PlayerPlayerInventory" FromRole="Players" ToRole="PlayerInventories" />
           <NavigationProperty Name="PlayerStat" Relationship="GameServer.PlayerPlayerStat" FromRole="Player" ToRole="PlayerStat" />
+          <Property Name="GameIdGame" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -755,10 +779,26 @@
             <End Role="Player" EntitySet="Players" />
             <End Role="PlayerStat" EntitySet="PlayerStats" />
           </AssociationSet>
+          <AssociationSet Name="GamePlayer" Association="GameServer.GamePlayer">
+            <End Role="Game" EntitySet="Games" />
+            <End Role="Player" EntitySet="Players" />
+          </AssociationSet>
         </EntityContainer>
         <Association Name="PlayerPlayerStat">
           <End Type="GameServer.Player" Role="Player" Multiplicity="1" />
           <End Type="GameServer.PlayerStat" Role="PlayerStat" Multiplicity="1" />
+        </Association>
+        <Association Name="GamePlayer">
+          <End Type="GameServer.Game" Role="Game" Multiplicity="1" />
+          <End Type="GameServer.Player" Role="Player" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Game">
+              <PropertyRef Name="IdGame" />
+            </Principal>
+            <Dependent Role="Player">
+              <PropertyRef Name="GameIdGame" />
+            </Dependent>
+          </ReferentialConstraint>
         </Association>
       </Schema>
     </edmx:ConceptualModels>
@@ -819,6 +859,9 @@
           <ScalarProperty Name="HostPlayerID" ColumnName="HostPlayerID" />
           <ScalarProperty Name="ChatMessageIdChatMessage" ColumnName="ChatMessageIdChatMessage" />
           <ScalarProperty Name="Board_idBoard" ColumnName="Board_idBoard" />
+          <ScalarProperty Name="LobbyCode" ColumnName="LobbyCode" />
+          <ScalarProperty Name="MaxPlayers" ColumnName="MaxPlayers" />
+          <ScalarProperty Name="IsPublic" ColumnName="IsPublic" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -868,6 +911,7 @@
           <ScalarProperty Name="Avatar" ColumnName="Avatar" />
           <ScalarProperty Name="PlayerInventoryIdPlayerInventory" ColumnName="PlayerInventoryIdPlayerInventory" />
           <ScalarProperty Name="Account_IdAccount" ColumnName="Account_IdAccount" />
+          <ScalarProperty Name="GameIdGame" ColumnName="GameIdGame" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

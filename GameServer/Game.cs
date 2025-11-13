@@ -17,6 +17,8 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Game()
         {
+            this.MaxPlayers = 4;
+            this.IsPublic = true;
             this.MoveRecords = new HashSet<MoveRecord>();
             this.Sanctions = new HashSet<Sanction>();
         }
@@ -25,9 +27,12 @@ namespace GameServer
         public int GameStatus { get; set; }
         public System.DateTime StartTime { get; set; }
         public System.DateTime EndTime { get; set; }
-        public string HostPlayerID { get; set; }
+        public int HostPlayerID { get; set; }
         public int ChatMessageIdChatMessage { get; set; }
         public int Board_idBoard { get; set; }
+        public string LobbyCode { get; set; }
+        public int MaxPlayers { get; set; }
+        public bool IsPublic { get; set; }
     
         public virtual BoardSet BoardSet { get; set; }
         public virtual ChatMessage ChatMessage { get; set; }

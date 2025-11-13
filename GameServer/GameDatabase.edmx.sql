@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 10/16/2025 02:38:36
+-- Date Created: 11/13/2025 01:39:53
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -152,7 +152,10 @@ CREATE TABLE [dbo].[Games] (
     [EndTime] datetime  NOT NULL,
     [HostPlayerID] nvarchar(max)  NOT NULL,
     [ChatMessageIdChatMessage] int  NOT NULL,
-    [Board_idBoard] int  NOT NULL
+    [Board_idBoard] int  NOT NULL,
+    [LobbyCode] nvarchar(max)  NOT NULL,
+    [MaxPlayers] int  NOT NULL,
+    [IsPublic] bit  NOT NULL
 );
 GO
 
@@ -198,6 +201,7 @@ CREATE TABLE [dbo].[Players] (
     [Avatar] nvarchar(max)  NOT NULL,
     [PlayerInventoryIdPlayerInventory] int  NOT NULL,
     [Account_IdAccount] int  NOT NULL,
+    [GameIdGame] int  NOT NULL,
     [PlayerStat_IdPlayers] int  NOT NULL
 );
 GO
@@ -521,6 +525,21 @@ GO
 CREATE INDEX [IX_FK_PlayerPlayerStat]
 ON [dbo].[Players]
     ([PlayerStat_IdPlayers]);
+GO
+
+-- Creating foreign key on [GameIdGame] in table 'Players'
+ALTER TABLE [dbo].[Players]
+ADD CONSTRAINT [FK_GamePlayer]
+    FOREIGN KEY ([GameIdGame])
+    REFERENCES [dbo].[Games]
+        ([IdGame])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_GamePlayer'
+CREATE INDEX [IX_FK_GamePlayer]
+ON [dbo].[Players]
+    ([GameIdGame]);
 GO
 
 -- --------------------------------------------------
