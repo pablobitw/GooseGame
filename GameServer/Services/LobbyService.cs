@@ -4,13 +4,13 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace GameServer.Services
 {
     public class LobbyService : ILobbyService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LobbyService));
-        private static readonly Random RandomGenerator = new Random();
 
         public async Task<LobbyCreationResultDTO> CreateLobbyAsync(LobbySettingsDTO settings, string hostUsername)
         {
@@ -24,7 +24,7 @@ namespace GameServer.Services
                         return new LobbyCreationResultDTO { Success = false, ErrorMessage = "Host player not found." };
                     }
 
-                    if (hostPlayer.GameIdGame != 0) 
+                    if (hostPlayer.GameIdGame != 0)
                     {
                         return new LobbyCreationResultDTO { Success = false, ErrorMessage = "Player is already in a game." };
                     }
@@ -34,8 +34,8 @@ namespace GameServer.Services
                     var newGame = new Game
                     {
                         GameStatus = (int)GameStatus.WaitingForPlayers,
-                        HostPlayerID = hostPlayer.IdPlayer, 
-                        Board_idBoard = settings.BoardId, 
+                        HostPlayerID = hostPlayer.IdPlayer,
+                        Board_idBoard = settings.BoardId,
                         IsPublic = settings.IsPublic,
                         MaxPlayers = settings.MaxPlayers,
                         LobbyCode = newLobbyCode,
@@ -43,8 +43,6 @@ namespace GameServer.Services
                     };
 
                     context.Games.Add(newGame);
-
-                    
                     hostPlayer.GameIdGame = newGame.IdGame;
 
                     await context.SaveChangesAsync();
@@ -93,10 +91,16 @@ namespace GameServer.Services
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string code;
+
             do
             {
-                code = new string(Enumerable.Repeat(chars, 5)
-                    .Select(s => s[RandomGenerator.Next(s.Length)]).ToArray());
+                byte[] randomBytes = new byte[5];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(randomBytes);
+                }
+
+                code = new string(randomBytes.Select(b => chars[b % chars.Length]).ToArray());
             }
             while (context.Games.Any(g => g.LobbyCode == code && g.GameStatus != (int)GameStatus.Finished));
 
