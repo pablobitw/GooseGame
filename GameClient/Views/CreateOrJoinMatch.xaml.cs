@@ -15,33 +15,37 @@ using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
-  
+
     public partial class CreateOrJoinMatchPage : Page
     {
-        public CreateOrJoinMatchPage()
+        private string _username;
+
+        public CreateOrJoinMatchPage(string username)
         {
             InitializeComponent();
+            _username = username;
         }
 
         private void CreateMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new LobbyPage());
+            // CAMBIO: Pasa el _username a la siguiente página
+            NavigationService.Navigate(new LobbyPage(_username));
         }
 
         private void JoinMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            
+
         }
 
         private void ViewMatchesButton_Click(object sender, RoutedEventArgs e)
         {
-          
+
         }
 
-       
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-        
+
             if (NavigationService.CanGoBack)
             {
                 NavigationService.GoBack();

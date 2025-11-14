@@ -2,30 +2,26 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.Views; 
+using GameClient.Views;
 
 namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
- 
-        private string _username;
 
-        
+        private string _username;
         private ChatWindow _chatWindowInstance;
 
-        
         public GameMainWindow(string loggedInUsername)
         {
             InitializeComponent();
-
             _username = loggedInUsername;
         }
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {
             MainMenuGrid.Visibility = Visibility.Collapsed;
-            MainFrame.Navigate(new CreateOrJoinMatchPage());
+            MainFrame.Navigate(new CreateOrJoinMatchPage(_username));
         }
 
         private void OptionsButtonClick(object sender, RoutedEventArgs e)
@@ -50,21 +46,21 @@ namespace GameClient
 
         private void ProfileButtonClick(object sender, RoutedEventArgs e)
         {
-            MainMenuGrid.Visibility = Visibility.Collapsed;
-            MainFrame.Navigate(new ModifyProfilePage());
+            MessageBox.Show("Aquí se abriría la página de perfil.", "Función no implementada");
+            
         }
 
         private void ChatButton_Click(object sender, RoutedEventArgs e)
         {
-          
+
             if (_chatWindowInstance != null && _chatWindowInstance.IsVisible)
             {
-            
+
                 _chatWindowInstance.Activate();
             }
             else
             {
-                
+
                 _chatWindowInstance = new ChatWindow(_username);
                 _chatWindowInstance.Show();
             }
@@ -73,7 +69,7 @@ namespace GameClient
         public void ShowMainMenu()
         {
             MainFrame.Content = null;
-            MainMenuGrid.Visibility = Visibility.Visible; 
+            MainMenuGrid.Visibility = Visibility.Visible;
         }
     }
 }
