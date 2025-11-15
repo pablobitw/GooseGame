@@ -30,7 +30,7 @@ namespace GameServer
         public string Avatar { get; set; }
         public int PlayerInventoryIdPlayerInventory { get; set; }
         public int Account_IdAccount { get; set; }
-        public int GameIdGame { get; set; }
+        public Nullable<int> GameIdGame { get; set; }
     
         public virtual Account Account { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

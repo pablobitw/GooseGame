@@ -4,394 +4,394 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="GameServer.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-  <EntityContainer Name="GameServerStoreContainer">
-    <EntitySet Name="Accounts" EntityType="GameServer.Store.Accounts" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="BoardSets" EntityType="GameServer.Store.BoardSets" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="ChatMessages" EntityType="GameServer.Store.ChatMessages" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Friendships" EntityType="GameServer.Store.Friendships" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Games" EntityType="GameServer.Store.Games" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Items" EntityType="GameServer.Store.Items" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MoveRecords" EntityType="GameServer.Store.MoveRecords" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="PlayerInventories" EntityType="GameServer.Store.PlayerInventories" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Players" EntityType="GameServer.Store.Players" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="PlayerStats" EntityType="GameServer.Store.PlayerStats" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Sanctions" EntityType="GameServer.Store.Sanctions" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="Tiles" EntityType="GameServer.Store.Tiles" store:Type="Tables" Schema="dbo" />
-    <AssociationSet Name="FK_IdAccount" Association="GameServer.Store.FK_IdAccount">
-      <End Role="Accounts" EntitySet="Accounts" />
-      <End Role="Sanctions" EntitySet="Sanctions" />
-    </AssociationSet>
-    <AssociationSet Name="FK_PlayerAccount" Association="GameServer.Store.FK_PlayerAccount">
-      <End Role="Accounts" EntitySet="Accounts" />
-      <End Role="Players" EntitySet="Players" />
-    </AssociationSet>
-    <AssociationSet Name="FK_GameBoard" Association="GameServer.Store.FK_GameBoard">
-      <End Role="BoardSet" EntitySet="BoardSets" />
-      <End Role="Games" EntitySet="Games" />
-    </AssociationSet>
-    <AssociationSet Name="FK_idBoard" Association="GameServer.Store.FK_idBoard">
-      <End Role="BoardSet" EntitySet="BoardSets" />
-      <End Role="Tiles" EntitySet="Tiles" />
-    </AssociationSet>
-    <AssociationSet Name="FK_ChatMessageGame" Association="GameServer.Store.FK_ChatMessageGame">
-      <End Role="ChatMessages" EntitySet="ChatMessages" />
-      <End Role="Games" EntitySet="Games" />
-    </AssociationSet>
-    <AssociationSet Name="FK_ChatMessagePlayer" Association="GameServer.Store.FK_ChatMessagePlayer">
-      <End Role="Players" EntitySet="Players" />
-      <End Role="ChatMessages" EntitySet="ChatMessages" />
-    </AssociationSet>
-    <AssociationSet Name="FK_PlayerFriendship" Association="GameServer.Store.FK_PlayerFriendship">
-      <End Role="Players" EntitySet="Players" />
-      <End Role="Friendships" EntitySet="Friendships" />
-    </AssociationSet>
-    <AssociationSet Name="FK_PlayerFriendship1" Association="GameServer.Store.FK_PlayerFriendship1">
-      <End Role="Players" EntitySet="Players" />
-      <End Role="Friendships" EntitySet="Friendships" />
-    </AssociationSet>
-    <AssociationSet Name="FK_GameMoveRecord" Association="GameServer.Store.FK_GameMoveRecord">
-      <End Role="Games" EntitySet="Games" />
-      <End Role="MoveRecords" EntitySet="MoveRecords" />
-    </AssociationSet>
-    <AssociationSet Name="FK_idGame" Association="GameServer.Store.FK_idGame">
-      <End Role="Games" EntitySet="Games" />
-      <End Role="Sanctions" EntitySet="Sanctions" />
-    </AssociationSet>
-    <AssociationSet Name="FK_ItemPlayerInventory" Association="GameServer.Store.FK_ItemPlayerInventory">
-      <End Role="Items" EntitySet="Items" />
-      <End Role="PlayerInventories" EntitySet="PlayerInventories" />
-    </AssociationSet>
-    <AssociationSet Name="FK_PlayerMoveRecord" Association="GameServer.Store.FK_PlayerMoveRecord">
-      <End Role="Players" EntitySet="Players" />
-      <End Role="MoveRecords" EntitySet="MoveRecords" />
-    </AssociationSet>
-    <AssociationSet Name="FK_PlayerPlayerInventory" Association="GameServer.Store.FK_PlayerPlayerInventory">
-      <End Role="Players" EntitySet="Players" />
-      <End Role="PlayerInventories" EntitySet="PlayerInventories" />
-    </AssociationSet>
-    <AssociationSet Name="PlayerPlayerStat" Association="GameServer.Store.PlayerPlayerStat">
-      <End Role="Player" EntitySet="Players" />
-      <End Role="PlayerStat" EntitySet="PlayerStats" />
-    </AssociationSet>
-    <AssociationSet Name="GamePlayer" Association="GameServer.Store.GamePlayer">
-      <End Role="Game" EntitySet="Games" />
-      <End Role="Player" EntitySet="Players" />
-    </AssociationSet>
-  </EntityContainer>
-  <EntityType Name="Accounts">
-    <Key>
-      <PropertyRef Name="IdAccount" />
-    </Key>
-    <Property Name="IdAccount" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Email" Type="nvarchar" Nullable="false" MaxLength="255" />
-    <Property Name="PasswordHash" Type="nvarchar" Nullable="false" MaxLength="255" />
-    <Property Name="RegisterDate" Type="datetime" Nullable="false" />
-    <Property Name="AccountStatus" Type="int" Nullable="false" />
-    <Property Name="VerificationCode" Type="nvarchar(max)" Nullable="true" />
-  </EntityType>
-  <EntityType Name="BoardSets">
-    <Key>
-      <PropertyRef Name="idBoard" />
-    </Key>
-    <Property Name="idBoard" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="TileCount" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="ChatMessages">
-    <Key>
-      <PropertyRef Name="IdChatMessage" />
-    </Key>
-    <Property Name="IdChatMessage" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="MessageText" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Player_IdPlayer" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="Friendships">
-    <Key>
-      <PropertyRef Name="IdFriendship" />
-    </Key>
-    <Property Name="IdFriendship" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="FriendshipStatus" Type="int" Nullable="false" />
-    <Property Name="RequestDate" Type="datetime" Nullable="false" />
-    <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
-    <Property Name="PlayerIdPlayer1" Type="int" Nullable="false" />
-    <Property Name="Player1_IdPlayer" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="Games">
-    <Key>
-      <PropertyRef Name="IdGame" />
-    </Key>
-    <Property Name="IdGame" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="GameStatus" Type="int" Nullable="false" />
-    <Property Name="StartTime" Type="datetime" Nullable="false" />
-    <Property Name="EndTime" Type="datetime" Nullable="false" />
-    <Property Name="HostPlayerID" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="ChatMessageIdChatMessage" Type="int" Nullable="false" />
-    <Property Name="Board_idBoard" Type="int" Nullable="false" />
-    <Property Name="LobbyCode" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="MaxPlayers" Type="int" Nullable="false" DefaultValue="4" />
-    <Property Name="IsPublic" Type="bit" Nullable="false" DefaultValue="true" />
-  </EntityType>
-  <EntityType Name="Items">
-    <Key>
-      <PropertyRef Name="IdItem" />
-    </Key>
-    <Property Name="IdItem" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="ItemType" Type="int" Nullable="false" />
-    <Property Name="RarityType" Type="int" Nullable="false" />
-    <Property Name="Cost" Type="smallint" Nullable="false" />
-    <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="MoveRecords">
-    <Key>
-      <PropertyRef Name="IdMoveRecord" />
-    </Key>
-    <Property Name="IdMoveRecord" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="TurnNumber" Type="int" Nullable="false" />
-    <Property Name="DiceOne" Type="int" Nullable="false" />
-    <Property Name="DiceTwo" Type="int" Nullable="false" />
-    <Property Name="StartPosition" Type="int" Nullable="false" />
-    <Property Name="FinalPosition" Type="int" Nullable="false" />
-    <Property Name="ActionDescription" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
-    <Property Name="GameIdGame" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="PlayerInventories">
-    <Key>
-      <PropertyRef Name="IdPlayerInventory" />
-    </Key>
-    <Property Name="IdPlayerInventory" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="ItemIdItem" Type="int" Nullable="false" />
-    <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="Players">
-    <Key>
-      <PropertyRef Name="IdPlayer" />
-    </Key>
-    <Property Name="IdPlayer" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Coins" Type="int" Nullable="false" />
-    <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
-    <Property Name="Account_IdAccount" Type="int" Nullable="false" />
-    <Property Name="GameIdGame" Type="int" Nullable="false" />
-    <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="PlayerStats">
-    <Key>
-      <PropertyRef Name="IdPlayers" />
-    </Key>
-    <Property Name="IdPlayers" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="MatchesPlayed" Type="int" Nullable="false" />
-    <Property Name="MatchesWon" Type="int" Nullable="false" />
-    <Property Name="MatchesLost" Type="int" Nullable="false" />
-    <Property Name="LuckyBoxOpened" Type="int" Nullable="false" />
-    <Property Name="IdPlayer_IdPlayer" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="Sanctions">
-    <Key>
-      <PropertyRef Name="IdSanction" />
-    </Key>
-    <Property Name="IdSanction" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="SanctionType" Type="int" Nullable="false" />
-    <Property Name="Reason" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="StartDate" Type="datetime" Nullable="false" />
-    <Property Name="EndDate" Type="datetime" Nullable="false" />
-    <Property Name="Account_IdAccount" Type="int" Nullable="false" />
-    <Property Name="Game_IdGame" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="Tiles">
-    <Key>
-      <PropertyRef Name="IdTile" />
-    </Key>
-    <Property Name="IdTile" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="TileNumber" Type="int" Nullable="false" />
-    <Property Name="Board_idBoard" Type="int" Nullable="false" />
-  </EntityType>
-  <Association Name="FK_IdAccount">
-    <End Role="Accounts" Type="GameServer.Store.Accounts" Multiplicity="1" />
-    <End Role="Sanctions" Type="GameServer.Store.Sanctions" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Accounts">
-        <PropertyRef Name="IdAccount" />
-      </Principal>
-      <Dependent Role="Sanctions">
-        <PropertyRef Name="Account_IdAccount" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_PlayerAccount">
-    <End Role="Accounts" Type="GameServer.Store.Accounts" Multiplicity="1" />
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Accounts">
-        <PropertyRef Name="IdAccount" />
-      </Principal>
-      <Dependent Role="Players">
-        <PropertyRef Name="Account_IdAccount" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_GameBoard">
-    <End Role="BoardSet" Type="GameServer.Store.BoardSets" Multiplicity="1" />
-    <End Role="Games" Type="GameServer.Store.Games" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="BoardSet">
-        <PropertyRef Name="idBoard" />
-      </Principal>
-      <Dependent Role="Games">
-        <PropertyRef Name="Board_idBoard" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_idBoard">
-    <End Role="BoardSet" Type="GameServer.Store.BoardSets" Multiplicity="1" />
-    <End Role="Tiles" Type="GameServer.Store.Tiles" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="BoardSet">
-        <PropertyRef Name="idBoard" />
-      </Principal>
-      <Dependent Role="Tiles">
-        <PropertyRef Name="Board_idBoard" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_ChatMessageGame">
-    <End Role="ChatMessages" Type="GameServer.Store.ChatMessages" Multiplicity="1" />
-    <End Role="Games" Type="GameServer.Store.Games" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="ChatMessages">
-        <PropertyRef Name="IdChatMessage" />
-      </Principal>
-      <Dependent Role="Games">
-        <PropertyRef Name="ChatMessageIdChatMessage" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_ChatMessagePlayer">
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="1" />
-    <End Role="ChatMessages" Type="GameServer.Store.ChatMessages" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Players">
-        <PropertyRef Name="IdPlayer" />
-      </Principal>
-      <Dependent Role="ChatMessages">
-        <PropertyRef Name="Player_IdPlayer" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_PlayerFriendship">
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="1" />
-    <End Role="Friendships" Type="GameServer.Store.Friendships" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Players">
-        <PropertyRef Name="IdPlayer" />
-      </Principal>
-      <Dependent Role="Friendships">
-        <PropertyRef Name="PlayerIdPlayer" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_PlayerFriendship1">
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="1" />
-    <End Role="Friendships" Type="GameServer.Store.Friendships" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Players">
-        <PropertyRef Name="IdPlayer" />
-      </Principal>
-      <Dependent Role="Friendships">
-        <PropertyRef Name="Player1_IdPlayer" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_GameMoveRecord">
-    <End Role="Games" Type="GameServer.Store.Games" Multiplicity="1" />
-    <End Role="MoveRecords" Type="GameServer.Store.MoveRecords" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Games">
-        <PropertyRef Name="IdGame" />
-      </Principal>
-      <Dependent Role="MoveRecords">
-        <PropertyRef Name="GameIdGame" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_idGame">
-    <End Role="Games" Type="GameServer.Store.Games" Multiplicity="1" />
-    <End Role="Sanctions" Type="GameServer.Store.Sanctions" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Games">
-        <PropertyRef Name="IdGame" />
-      </Principal>
-      <Dependent Role="Sanctions">
-        <PropertyRef Name="Game_IdGame" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_ItemPlayerInventory">
-    <End Role="Items" Type="GameServer.Store.Items" Multiplicity="1" />
-    <End Role="PlayerInventories" Type="GameServer.Store.PlayerInventories" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Items">
-        <PropertyRef Name="IdItem" />
-      </Principal>
-      <Dependent Role="PlayerInventories">
-        <PropertyRef Name="ItemIdItem" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_PlayerMoveRecord">
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="1" />
-    <End Role="MoveRecords" Type="GameServer.Store.MoveRecords" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Players">
-        <PropertyRef Name="IdPlayer" />
-      </Principal>
-      <Dependent Role="MoveRecords">
-        <PropertyRef Name="PlayerIdPlayer" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_PlayerPlayerInventory">
-    <End Role="Players" Type="GameServer.Store.Players" Multiplicity="1" />
-    <End Role="PlayerInventories" Type="GameServer.Store.PlayerInventories" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Players">
-        <PropertyRef Name="IdPlayer" />
-      </Principal>
-      <Dependent Role="PlayerInventories">
-        <PropertyRef Name="PlayerIdPlayer" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="PlayerPlayerStat">
-    <End Role="Player" Type="GameServer.Store.Players" Multiplicity="*" />
-    <End Role="PlayerStat" Type="GameServer.Store.PlayerStats" Multiplicity="1" />
-    <ReferentialConstraint>
-      <Principal Role="PlayerStat">
-        <PropertyRef Name="IdPlayers" />
-      </Principal>
-      <Dependent Role="Player">
-        <PropertyRef Name="PlayerStat_IdPlayers" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="GamePlayer">
-    <End Role="Game" Type="GameServer.Store.Games" Multiplicity="1" />
-    <End Role="Player" Type="GameServer.Store.Players" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Game">
-        <PropertyRef Name="IdGame" />
-      </Principal>
-      <Dependent Role="Player">
-        <PropertyRef Name="GameIdGame" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-</Schema></edmx:StorageModels>
+    <Schema Namespace="GameServer.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Accounts">
+          <Key>
+            <PropertyRef Name="IdAccount" />
+          </Key>
+          <Property Name="IdAccount" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Email" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="PasswordHash" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="RegisterDate" Type="datetime" Nullable="false" />
+          <Property Name="AccountStatus" Type="int" Nullable="false" />
+          <Property Name="VerificationCode" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="BoardSets">
+          <Key>
+            <PropertyRef Name="idBoard" />
+          </Key>
+          <Property Name="idBoard" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="TileCount" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ChatMessages">
+          <Key>
+            <PropertyRef Name="IdChatMessage" />
+          </Key>
+          <Property Name="IdChatMessage" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MessageText" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Player_IdPlayer" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Friendships">
+          <Key>
+            <PropertyRef Name="IdFriendship" />
+          </Key>
+          <Property Name="IdFriendship" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FriendshipStatus" Type="int" Nullable="false" />
+          <Property Name="RequestDate" Type="datetime" Nullable="false" />
+          <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
+          <Property Name="PlayerIdPlayer1" Type="int" Nullable="false" />
+          <Property Name="Player1_IdPlayer" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Games">
+          <Key>
+            <PropertyRef Name="IdGame" />
+          </Key>
+          <Property Name="IdGame" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="GameStatus" Type="int" Nullable="false" />
+          <Property Name="StartTime" Type="datetime" Nullable="false" />
+          <Property Name="EndTime" Type="datetime" />
+          <Property Name="HostPlayerID" Type="int" Nullable="false" />
+          <Property Name="ChatMessageIdChatMessage" Type="int" Nullable="false" />
+          <Property Name="Board_idBoard" Type="int" Nullable="false" />
+          <Property Name="LobbyCode" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="MaxPlayers" Type="int" Nullable="false" />
+          <Property Name="IsPublic" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Items">
+          <Key>
+            <PropertyRef Name="IdItem" />
+          </Key>
+          <Property Name="IdItem" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="ItemType" Type="int" Nullable="false" />
+          <Property Name="RarityType" Type="int" Nullable="false" />
+          <Property Name="Cost" Type="smallint" Nullable="false" />
+          <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="MoveRecords">
+          <Key>
+            <PropertyRef Name="IdMoveRecord" />
+          </Key>
+          <Property Name="IdMoveRecord" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TurnNumber" Type="int" Nullable="false" />
+          <Property Name="DiceOne" Type="int" Nullable="false" />
+          <Property Name="DiceTwo" Type="int" Nullable="false" />
+          <Property Name="StartPosition" Type="int" Nullable="false" />
+          <Property Name="FinalPosition" Type="int" Nullable="false" />
+          <Property Name="ActionDescription" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
+          <Property Name="GameIdGame" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="PlayerInventories">
+          <Key>
+            <PropertyRef Name="IdPlayerInventory" />
+          </Key>
+          <Property Name="IdPlayerInventory" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ItemIdItem" Type="int" Nullable="false" />
+          <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Players">
+          <Key>
+            <PropertyRef Name="IdPlayer" />
+          </Key>
+          <Property Name="IdPlayer" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Coins" Type="int" Nullable="false" />
+          <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
+          <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+          <Property Name="GameIdGame" Type="int" />
+          <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="PlayerStats">
+          <Key>
+            <PropertyRef Name="IdPlayers" />
+          </Key>
+          <Property Name="IdPlayers" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MatchesPlayed" Type="int" Nullable="false" />
+          <Property Name="MatchesWon" Type="int" Nullable="false" />
+          <Property Name="MatchesLost" Type="int" Nullable="false" />
+          <Property Name="LuckyBoxOpened" Type="int" Nullable="false" />
+          <Property Name="IdPlayer_IdPlayer" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Sanctions">
+          <Key>
+            <PropertyRef Name="IdSanction" />
+          </Key>
+          <Property Name="IdSanction" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SanctionType" Type="int" Nullable="false" />
+          <Property Name="Reason" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="StartDate" Type="datetime" Nullable="false" />
+          <Property Name="EndDate" Type="datetime" Nullable="false" />
+          <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+          <Property Name="Game_IdGame" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Tiles">
+          <Key>
+            <PropertyRef Name="IdTile" />
+          </Key>
+          <Property Name="IdTile" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TileNumber" Type="int" Nullable="false" />
+          <Property Name="Board_idBoard" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_ChatMessageGame">
+          <End Role="ChatMessages" Type="Self.ChatMessages" Multiplicity="1" />
+          <End Role="Games" Type="Self.Games" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ChatMessages">
+              <PropertyRef Name="IdChatMessage" />
+            </Principal>
+            <Dependent Role="Games">
+              <PropertyRef Name="ChatMessageIdChatMessage" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ChatMessagePlayer">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="ChatMessages" Type="Self.ChatMessages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="ChatMessages">
+              <PropertyRef Name="Player_IdPlayer" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_GameBoard">
+          <End Role="BoardSets" Type="Self.BoardSets" Multiplicity="1" />
+          <End Role="Games" Type="Self.Games" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="BoardSets">
+              <PropertyRef Name="idBoard" />
+            </Principal>
+            <Dependent Role="Games">
+              <PropertyRef Name="Board_idBoard" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_GameMoveRecord">
+          <End Role="Games" Type="Self.Games" Multiplicity="1" />
+          <End Role="MoveRecords" Type="Self.MoveRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Games">
+              <PropertyRef Name="IdGame" />
+            </Principal>
+            <Dependent Role="MoveRecords">
+              <PropertyRef Name="GameIdGame" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_GamePlayer">
+          <End Role="Games" Type="Self.Games" Multiplicity="0..1" />
+          <End Role="Players" Type="Self.Players" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Games">
+              <PropertyRef Name="IdGame" />
+            </Principal>
+            <Dependent Role="Players">
+              <PropertyRef Name="GameIdGame" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_IdAccount">
+          <End Role="Accounts" Type="Self.Accounts" Multiplicity="1" />
+          <End Role="Sanctions" Type="Self.Sanctions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Accounts">
+              <PropertyRef Name="IdAccount" />
+            </Principal>
+            <Dependent Role="Sanctions">
+              <PropertyRef Name="Account_IdAccount" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_idBoard">
+          <End Role="BoardSets" Type="Self.BoardSets" Multiplicity="1" />
+          <End Role="Tiles" Type="Self.Tiles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="BoardSets">
+              <PropertyRef Name="idBoard" />
+            </Principal>
+            <Dependent Role="Tiles">
+              <PropertyRef Name="Board_idBoard" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_idGame">
+          <End Role="Games" Type="Self.Games" Multiplicity="1" />
+          <End Role="Sanctions" Type="Self.Sanctions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Games">
+              <PropertyRef Name="IdGame" />
+            </Principal>
+            <Dependent Role="Sanctions">
+              <PropertyRef Name="Game_IdGame" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ItemPlayerInventory">
+          <End Role="Items" Type="Self.Items" Multiplicity="1" />
+          <End Role="PlayerInventories" Type="Self.PlayerInventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Items">
+              <PropertyRef Name="IdItem" />
+            </Principal>
+            <Dependent Role="PlayerInventories">
+              <PropertyRef Name="ItemIdItem" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerAccount">
+          <End Role="Accounts" Type="Self.Accounts" Multiplicity="1" />
+          <End Role="Players" Type="Self.Players" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Accounts">
+              <PropertyRef Name="IdAccount" />
+            </Principal>
+            <Dependent Role="Players">
+              <PropertyRef Name="Account_IdAccount" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerFriendship">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="Friendships" Type="Self.Friendships" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="Friendships">
+              <PropertyRef Name="PlayerIdPlayer" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerFriendship1">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="Friendships" Type="Self.Friendships" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="Friendships">
+              <PropertyRef Name="Player1_IdPlayer" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerMoveRecord">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="MoveRecords" Type="Self.MoveRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="MoveRecords">
+              <PropertyRef Name="PlayerIdPlayer" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerPlayerInventory">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="PlayerInventories" Type="Self.PlayerInventories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="PlayerInventories">
+              <PropertyRef Name="PlayerIdPlayer" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PlayerPlayerStat">
+          <End Role="PlayerStats" Type="Self.PlayerStats" Multiplicity="1" />
+          <End Role="Players" Type="Self.Players" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="PlayerStats">
+              <PropertyRef Name="IdPlayers" />
+            </Principal>
+            <Dependent Role="Players">
+              <PropertyRef Name="PlayerStat_IdPlayers" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="GameServerStoreContainer">
+          <EntitySet Name="Accounts" EntityType="Self.Accounts" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BoardSets" EntityType="Self.BoardSets" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ChatMessages" EntityType="Self.ChatMessages" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Friendships" EntityType="Self.Friendships" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Games" EntityType="Self.Games" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Items" EntityType="Self.Items" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="MoveRecords" EntityType="Self.MoveRecords" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PlayerInventories" EntityType="Self.PlayerInventories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Players" EntityType="Self.Players" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PlayerStats" EntityType="Self.PlayerStats" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sanctions" EntityType="Self.Sanctions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Tiles" EntityType="Self.Tiles" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_ChatMessageGame" Association="Self.FK_ChatMessageGame">
+            <End Role="ChatMessages" EntitySet="ChatMessages" />
+            <End Role="Games" EntitySet="Games" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ChatMessagePlayer" Association="Self.FK_ChatMessagePlayer">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="ChatMessages" EntitySet="ChatMessages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_GameBoard" Association="Self.FK_GameBoard">
+            <End Role="BoardSets" EntitySet="BoardSets" />
+            <End Role="Games" EntitySet="Games" />
+          </AssociationSet>
+          <AssociationSet Name="FK_GameMoveRecord" Association="Self.FK_GameMoveRecord">
+            <End Role="Games" EntitySet="Games" />
+            <End Role="MoveRecords" EntitySet="MoveRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_GamePlayer" Association="Self.FK_GamePlayer">
+            <End Role="Games" EntitySet="Games" />
+            <End Role="Players" EntitySet="Players" />
+          </AssociationSet>
+          <AssociationSet Name="FK_IdAccount" Association="Self.FK_IdAccount">
+            <End Role="Accounts" EntitySet="Accounts" />
+            <End Role="Sanctions" EntitySet="Sanctions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_idBoard" Association="Self.FK_idBoard">
+            <End Role="BoardSets" EntitySet="BoardSets" />
+            <End Role="Tiles" EntitySet="Tiles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_idGame" Association="Self.FK_idGame">
+            <End Role="Games" EntitySet="Games" />
+            <End Role="Sanctions" EntitySet="Sanctions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ItemPlayerInventory" Association="Self.FK_ItemPlayerInventory">
+            <End Role="Items" EntitySet="Items" />
+            <End Role="PlayerInventories" EntitySet="PlayerInventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerAccount" Association="Self.FK_PlayerAccount">
+            <End Role="Accounts" EntitySet="Accounts" />
+            <End Role="Players" EntitySet="Players" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerFriendship" Association="Self.FK_PlayerFriendship">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="Friendships" EntitySet="Friendships" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerFriendship1" Association="Self.FK_PlayerFriendship1">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="Friendships" EntitySet="Friendships" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerMoveRecord" Association="Self.FK_PlayerMoveRecord">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="MoveRecords" EntitySet="MoveRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerPlayerInventory" Association="Self.FK_PlayerPlayerInventory">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="PlayerInventories" EntitySet="PlayerInventories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PlayerPlayerStat" Association="Self.FK_PlayerPlayerStat">
+            <End Role="PlayerStats" EntitySet="PlayerStats" />
+            <End Role="Players" EntitySet="Players" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="GameServer" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -406,7 +406,7 @@
           <Property Name="AccountStatus" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Sanctions" Relationship="Self.FK_IdAccount" FromRole="Accounts" ToRole="Sanctions" />
           <NavigationProperty Name="Players" Relationship="Self.FK_PlayerAccount" FromRole="Accounts" ToRole="Players" />
-          <Property Name="VerificationCode" Type="String" Nullable="true" />
+          <Property Name="VerificationCode" Type="String" Nullable="true" MaxLength="Max" Unicode="true" FixedLength="false" />
         </EntityType>
         <EntityType Name="BoardSet">
           <Key>
@@ -449,7 +449,7 @@
           <Property Name="IdGame" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="GameStatus" Type="Int32" Nullable="false" />
           <Property Name="StartTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="EndTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="EndTime" Type="DateTime" Nullable="true" Precision="3" />
           <Property Name="HostPlayerID" Type="Int32" Nullable="false" />
           <Property Name="ChatMessageIdChatMessage" Type="Int32" Nullable="false" />
           <Property Name="Board_idBoard" Type="Int32" Nullable="false" />
@@ -457,7 +457,7 @@
           <NavigationProperty Name="ChatMessage" Relationship="Self.FK_ChatMessageGame" FromRole="Games" ToRole="ChatMessages" />
           <NavigationProperty Name="MoveRecords" Relationship="Self.FK_GameMoveRecord" FromRole="Games" ToRole="MoveRecords" />
           <NavigationProperty Name="Sanctions" Relationship="Self.FK_idGame" FromRole="Games" ToRole="Sanctions" />
-          <Property Name="LobbyCode" Type="String" Nullable="false" />
+          <Property Name="LobbyCode" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
           <Property Name="MaxPlayers" Type="Int32" Nullable="false" DefaultValue="4" />
           <Property Name="IsPublic" Type="Boolean" Nullable="false" DefaultValue="True" />
         </EntityType>
@@ -517,7 +517,7 @@
           <NavigationProperty Name="MoveRecords" Relationship="Self.FK_PlayerMoveRecord" FromRole="Players" ToRole="MoveRecords" />
           <NavigationProperty Name="PlayerInventories" Relationship="Self.FK_PlayerPlayerInventory" FromRole="Players" ToRole="PlayerInventories" />
           <NavigationProperty Name="PlayerStat" Relationship="GameServer.PlayerPlayerStat" FromRole="Player" ToRole="PlayerStat" />
-          <Property Name="GameIdGame" Type="Int32" Nullable="false" />
+          <Property Name="GameIdGame" Type="Int32" Nullable="true" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -789,7 +789,7 @@
           <End Type="GameServer.PlayerStat" Role="PlayerStat" Multiplicity="1" />
         </Association>
         <Association Name="GamePlayer">
-          <End Type="GameServer.Game" Role="Game" Multiplicity="1" />
+          <End Type="GameServer.Game" Role="Game" Multiplicity="0..1" />
           <End Type="GameServer.Player" Role="Player" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Game">

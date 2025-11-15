@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using GameServer; 
 
 namespace GameServer.Services
 {
@@ -24,7 +25,7 @@ namespace GameServer.Services
                         return new LobbyCreationResultDTO { Success = false, ErrorMessage = "Host player not found." };
                     }
 
-                    if (hostPlayer.GameIdGame != 0)
+                    if (hostPlayer.GameIdGame != null)
                     {
                         return new LobbyCreationResultDTO { Success = false, ErrorMessage = "Player is already in a game." };
                     }
@@ -43,8 +44,14 @@ namespace GameServer.Services
                     };
 
                     context.Games.Add(newGame);
+
+                    // Guardamos primero para que newGame.IdGame tenga un valor
+                    await context.SaveChangesAsync();
+
+                    // Asignamos el jugador al juego
                     hostPlayer.GameIdGame = newGame.IdGame;
 
+                    // Guardamos por segunda vez para actualizar al jugador
                     await context.SaveChangesAsync();
 
                     Log.InfoFormat("Lobby created by '{0}'. Code: {1}", hostUsername, newLobbyCode);
