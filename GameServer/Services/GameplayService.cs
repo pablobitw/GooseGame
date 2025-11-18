@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace GameServer.Services
@@ -11,7 +12,6 @@ namespace GameServer.Services
     public class GameplayService : IGameplayService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayService));
-        private static readonly Random RandomGenerator = new Random();
 
         public async Task<DiceRollDTO> RollDiceAsync(string lobbyCode, string username)
         {
@@ -19,15 +19,23 @@ namespace GameServer.Services
             {
                 using (var context = new GameDatabase_Container())
                 {
-                   
-
                     var game = await context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
-                    if (game == null) return null;
+                    if (game == null)
+                    {
+                        return null;
+                    }
 
                     var player = await context.Players.FirstOrDefaultAsync(p => p.Username == username);
 
-                    int d1 = RandomGenerator.Next(1, 7);
-                    int d2 = RandomGenerator.Next(1, 7);
+                    int d1;
+                    int d2;
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
+                        byte[] randomBytes = new byte[2];
+                        rng.GetBytes(randomBytes);
+                        d1 = (randomBytes[0] % 6) + 1;
+                        d2 = (randomBytes[1] % 6) + 1;
+                    }
 
                     var move = new MoveRecord
                     {
@@ -37,8 +45,8 @@ namespace GameServer.Services
                         DiceTwo = d2,
                         TurnNumber = context.MoveRecords.Count(m => m.GameIdGame == game.IdGame) + 1,
                         ActionDescription = $"{username} tiró {d1} y {d2} (Total: {d1 + d2})",
-                        StartPosition = 0, 
-                        FinalPosition = 0 
+                        StartPosition = 0,
+                        FinalPosition = 0
                     };
 
                     context.MoveRecords.Add(move);
@@ -50,7 +58,7 @@ namespace GameServer.Services
             catch (Exception ex)
             {
                 Log.Error("Error en RollDiceAsync", ex);
-                return new DiceRollDTO(); 
+                return new DiceRollDTO();
             }
         }
 
@@ -61,14 +69,20 @@ namespace GameServer.Services
                 using (var context = new GameDatabase_Container())
                 {
                     var game = await context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
-                    if (game == null) return new GameStateDTO();
+                    if (game == null)
+                    {
+                        return new GameStateDTO();
+                    }
 
                     var players = await context.Players
                         .Where(p => p.GameIdGame == game.IdGame)
                         .OrderBy(p => p.IdPlayer)
                         .ToListAsync();
 
-                    if (players.Count == 0) return new GameStateDTO();
+                    if (players.Count == 0)
+                    {
+                        return new GameStateDTO();
+                    }
 
                     int totalMoves = await context.MoveRecords.CountAsync(m => m.GameIdGame == game.IdGame);
 
