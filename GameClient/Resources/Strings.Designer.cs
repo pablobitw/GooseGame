@@ -259,6 +259,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Hubo un error.
+        /// </summary>
+        public static string ErrorLabel {
+            get {
+                return ResourceManager.GetString("ErrorLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Error de Red.
         /// </summary>
         public static string ErrorTitle {

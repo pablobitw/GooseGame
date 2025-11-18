@@ -171,6 +171,9 @@
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Please type the code</value>
   </data>
+  <data name="ErrorLabel" xml:space="preserve">
+    <value>Something wrong:(</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Forgot password?</value>
   </data>

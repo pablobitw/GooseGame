@@ -183,6 +183,9 @@
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Instrucciones:</value>
   </data>
+  <data name="ErrorLabel" xml:space="preserve">
+    <value>Hubo un error</value>
+  </data>
   <data name="ErrorTitle" xml:space="preserve">
     <value>Error de Red</value>
   </data>

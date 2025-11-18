@@ -71,15 +71,15 @@ namespace GameClient.Views
                 }
                 catch (TimeoutException)
                 {
-                    MessageBox.Show("Tiempo de espera agotado.", "Error");
+                    MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorLabel);
                 }
                 catch (EndpointNotFoundException)
                 {
-                    MessageBox.Show("No se encontró el servidor.", "Error");
+                    MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorLabel);
                 }
                 catch (CommunicationException)
                 {
-                    MessageBox.Show("Error de comunicación.", "Error");
+                    MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorLabel);
                 }
                 catch (Exception ex)
                 {
@@ -147,102 +147,113 @@ namespace GameClient.Views
 
         private async void StartMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            if (isLobbyCreated == false)
+            if (!isLobbyCreated)
             {
-                StartMatchButton.IsEnabled = false;
-
-                var settings = new LobbySettingsDTO
-                {
-                    IsPublic = (VisibilityPublicButton.Style == (Style)FindResource("LobbyToggleActiveStyle")),
-                    MaxPlayers = playerCount,
-                    BoardId = boardId
-                };
-
-                try
-                {
-                    var result = await lobbyClient.CreateLobbyAsync(settings, username);
-                    if (result.Success)
-                    {
-                        lobbyCode = result.LobbyCode;
-                        LockLobbySettings(result.LobbyCode);
-
-                        var initialPlayers = new PlayerLobbyDTO[] { new PlayerLobbyDTO { Username = username, IsHost = true } };
-                        UpdatePlayerListUI(initialPlayers);
-                        InitializeTimer();
-                        ConnectToChatService();
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Error: {result.ErrorMessage}", "Error");
-                        if (result.ErrorMessage.Contains("already in a game"))
-                        {
-                            try
-                            {
-                                await lobbyClient.DisbandLobbyAsync(username);
-                            }
-                            catch (CommunicationException) { }
-                            catch (Exception) { }
-                        }
-                        StartMatchButton.IsEnabled = true;
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    MessageBox.Show("Tiempo de espera agotado.", "Error");
-                    StartMatchButton.IsEnabled = true;
-                }
-                catch (EndpointNotFoundException)
-                {
-                    MessageBox.Show("No se encontró el servidor.", "Error");
-                    StartMatchButton.IsEnabled = true;
-                }
-                catch (CommunicationException)
-                {
-                    MessageBox.Show("Error de comunicación.", "Error");
-                    StartMatchButton.IsEnabled = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error: " + ex.Message, "Error");
-                    StartMatchButton.IsEnabled = true;
-                }
+                await HandleCreateLobbyAsync();
             }
             else
             {
-                int currentPlayers = PlayerList.Items.OfType<ListBoxItem>()
+                await HandleStartGameAsync();
+            }
+        }
+
+        private async Task HandleCreateLobbyAsync()
+        {
+            StartMatchButton.IsEnabled = false;
+
+            var settings = new LobbySettingsDTO
+            {
+                IsPublic = (VisibilityPublicButton.Style == (Style)FindResource("LobbyToggleActiveStyle")),
+                MaxPlayers = playerCount,
+                BoardId = boardId
+            };
+
+            try
+            {
+                var result = await lobbyClient.CreateLobbyAsync(settings, username);
+
+                if (result.Success)
+                {
+                    lobbyCode = result.LobbyCode;
+                    LockLobbySettings(result.LobbyCode);
+
+                    var initialPlayers = new PlayerLobbyDTO[] { new PlayerLobbyDTO { Username = username, IsHost = true } };
+                    UpdatePlayerListUI(initialPlayers);
+                    InitializeTimer();
+                    ConnectToChatService();
+                }
+                else
+                {
+                    MessageBox.Show($"Error: {result.ErrorMessage}", GameClient.Resources.Strings.ErrorLabel);
+                    if (result.ErrorMessage.Contains("already in a game"))
+                    {
+                        try
+                        {
+                            await lobbyClient.DisbandLobbyAsync(username);
+                        }
+                        catch (CommunicationException) { }
+                        catch (Exception) { }
+                    }
+                    StartMatchButton.IsEnabled = true;
+                }
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorLabel);
+                StartMatchButton.IsEnabled = true;
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorLabel);
+                StartMatchButton.IsEnabled = true;
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorLabel);
+                StartMatchButton.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorLabel);
+                StartMatchButton.IsEnabled = true;
+            }
+        }
+
+        private async Task HandleStartGameAsync()
+        {
+            int currentPlayers = PlayerList.Items.OfType<ListBoxItem>()
                     .Count(item => !((TextBlock)((StackPanel)item.Content).Children[1]).Text.Contains("Slot Vacío"));
 
-                if (currentPlayers < 2)
-                {
-                    MessageBox.Show("Se necesitan al menos 2 jugadores para iniciar la partida.", "Aviso");
-                    return;
-                }
+            if (currentPlayers < 2)
+            {
+                MessageBox.Show("Se necesitan al menos 2 jugadores para iniciar la partida.", "Aviso");
+                return;
+            }
 
-                try
+            try
+            {
+                bool started = await lobbyClient.StartGameAsync(lobbyCode);
+                if (started)
                 {
-                    bool started = await lobbyClient.StartGameAsync(lobbyCode);
-                    if (started)
-                    {
-                        pollingTimer.Stop();
-                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
-                    }
-                    else
-                    {
-                        MessageBox.Show("Error al iniciar", "Error");
-                    }
+                    pollingTimer.Stop();
+                    NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                 }
-                catch (TimeoutException)
+                else
                 {
-                    MessageBox.Show("Tiempo de espera agotado.", "Error");
+                    MessageBox.Show("Error al iniciar", GameClient.Resources.Strings.ErrorLabel);
                 }
-                catch (CommunicationException)
-                {
-                    MessageBox.Show("Error de comunicación.", "Error");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error: " + ex.Message, "Error");
-                }
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorLabel);
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorLabel);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorLabel);
             }
         }
 
@@ -285,11 +296,11 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                AddMessageToUI("[Sistema]:", "Error de comunicación.");
+                AddMessageToUI("[Sistema]:", GameClient.Resources.Strings.ComunicationLabel);
             }
             catch (TimeoutException)
             {
-                AddMessageToUI("[Sistema]:", "Tiempo de espera agotado.");
+                AddMessageToUI("[Sistema]:", GameClient.Resources.Strings.TimeoutLabel);
             }
             catch (Exception ex)
             {
