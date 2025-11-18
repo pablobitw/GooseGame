@@ -15,23 +15,23 @@ namespace GameClient.ChatServiceReference {
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ChatServiceReference.IChatService", CallbackContract=typeof(GameClient.ChatServiceReference.IChatServiceCallback))]
     public interface IChatService {
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinChat", ReplyAction="http://tempuri.org/IChatService/JoinChatResponse")]
-        void JoinChat(string username);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/JoinLobbyChat")]
+        void JoinLobbyChat(string username, string lobbyCode);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinChat", ReplyAction="http://tempuri.org/IChatService/JoinChatResponse")]
-        System.Threading.Tasks.Task JoinChatAsync(string username);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/JoinLobbyChat")]
+        System.Threading.Tasks.Task JoinLobbyChatAsync(string username, string lobbyCode);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendMessage")]
-        void SendMessage(string username, string message);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendLobbyMessage")]
+        void SendLobbyMessage(string username, string lobbyCode, string message);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendMessage")]
-        System.Threading.Tasks.Task SendMessageAsync(string username, string message);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendLobbyMessage")]
+        System.Threading.Tasks.Task SendLobbyMessageAsync(string username, string lobbyCode, string message);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/Leave")]
-        void Leave(string username);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/LeaveLobbyChat")]
+        void LeaveLobbyChat(string username, string lobbyCode);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/Leave")]
-        System.Threading.Tasks.Task LeaveAsync(string username);
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/LeaveLobbyChat")]
+        System.Threading.Tasks.Task LeaveLobbyChatAsync(string username, string lobbyCode);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -69,28 +69,28 @@ namespace GameClient.ChatServiceReference {
                 base(callbackInstance, binding, remoteAddress) {
         }
         
-        public void JoinChat(string username) {
-            base.Channel.JoinChat(username);
+        public void JoinLobbyChat(string username, string lobbyCode) {
+            base.Channel.JoinLobbyChat(username, lobbyCode);
         }
         
-        public System.Threading.Tasks.Task JoinChatAsync(string username) {
-            return base.Channel.JoinChatAsync(username);
+        public System.Threading.Tasks.Task JoinLobbyChatAsync(string username, string lobbyCode) {
+            return base.Channel.JoinLobbyChatAsync(username, lobbyCode);
         }
         
-        public void SendMessage(string username, string message) {
-            base.Channel.SendMessage(username, message);
+        public void SendLobbyMessage(string username, string lobbyCode, string message) {
+            base.Channel.SendLobbyMessage(username, lobbyCode, message);
         }
         
-        public System.Threading.Tasks.Task SendMessageAsync(string username, string message) {
-            return base.Channel.SendMessageAsync(username, message);
+        public System.Threading.Tasks.Task SendLobbyMessageAsync(string username, string lobbyCode, string message) {
+            return base.Channel.SendLobbyMessageAsync(username, lobbyCode, message);
         }
         
-        public void Leave(string username) {
-            base.Channel.Leave(username);
+        public void LeaveLobbyChat(string username, string lobbyCode) {
+            base.Channel.LeaveLobbyChat(username, lobbyCode);
         }
         
-        public System.Threading.Tasks.Task LeaveAsync(string username) {
-            return base.Channel.LeaveAsync(username);
+        public System.Threading.Tasks.Task LeaveLobbyChatAsync(string username, string lobbyCode) {
+            return base.Channel.LeaveLobbyChatAsync(username, lobbyCode);
         }
     }
 }

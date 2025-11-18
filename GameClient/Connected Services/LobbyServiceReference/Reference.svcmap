@@ -25,7 +25,7 @@
     <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="32e453b9-e34e-403b-bee5-af8e9a075929" SourceId="1" SourceUrl="net.tcp://localhost:8092/mex" />
     <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="287b99c8-5970-4dfc-860b-4c3f8452b02e" SourceId="1" SourceUrl="net.tcp://localhost:8092/mex" />
     <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="6eea3ee0-5ede-4096-ab33-5b004a2d15e5" SourceId="1" SourceUrl="net.tcp://localhost:8092/mex" />
-    <MetadataFile FileName="GameServer.Contracts.xsd" MetadataType="Schema" ID="742f8487-d5a4-4788-8eba-e7b0340d489d" SourceId="1" SourceUrl="net.tcp://localhost:8092/mex" />
+    <MetadataFile FileName="GameServer.Contracts.xsd" MetadataType="Schema" ID="c581d5df-1bc4-40a8-9b5d-51d26bb98bef" SourceId="1" SourceUrl="net.tcp://localhost:8092/mex" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

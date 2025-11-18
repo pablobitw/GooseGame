@@ -10,7 +10,7 @@ namespace GameClient
     {
 
         private string _username;
-        private ChatWindow _chatWindowInstance;
+        
 
         public GameMainWindow(string loggedInUsername)
         {
@@ -50,21 +50,6 @@ namespace GameClient
             
         }
 
-        private void ChatButton_Click(object sender, RoutedEventArgs e)
-        {
-
-            if (_chatWindowInstance != null && _chatWindowInstance.IsVisible)
-            {
-
-                _chatWindowInstance.Activate();
-            }
-            else
-            {
-
-                _chatWindowInstance = new ChatWindow(_username);
-                _chatWindowInstance.Show();
-            }
-        }
 
         public void ShowMainMenu()
         {

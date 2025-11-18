@@ -57,38 +57,18 @@
 
         </StackPanel>
 
-
         <Button x:Name="BackButton" 
-                Height="80" Width="80" 
+                Content="Volver"
+                Style="{StaticResource PrimaryButtonStyle}"
+                FontFamily="/Assets/Fonts/#Dosis" 
+                FontSize="24"
+                FontWeight="Bold"
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top" 
-                Margin="20" 
-                Background="Transparent" 
-                BorderThickness="0" 
+                Margin="20,20,0,0" 
+                Width="176" 
+                Height="106"
                 Cursor="Hand" 
-                Click="BackButton_Click">
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
-
-                        <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Setter Property="Opacity" Value="1"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Opacity" Value="0.7"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Opacity" Value="0.5"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-
+                Click="BackButton_Click"/>
     </Grid>
 </Page>

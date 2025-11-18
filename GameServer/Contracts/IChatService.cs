@@ -1,18 +1,17 @@
 ﻿using System.ServiceModel;
 
 namespace GameServer.Contracts
-
 {
     [ServiceContract(CallbackContract = typeof(IChatCallback))]
     public interface IChatService
     {
-        [OperationContract]
-        void JoinChat(string username);
+        [OperationContract(IsOneWay = true)]
+        void JoinLobbyChat(string username, string lobbyCode);
 
         [OperationContract(IsOneWay = true)]
-        void SendMessage(string username, string message);
+        void SendLobbyMessage(string username, string lobbyCode, string message);
 
         [OperationContract(IsOneWay = true)]
-        void Leave(string username);
+        void LeaveLobbyChat(string username, string lobbyCode);
     }
 }

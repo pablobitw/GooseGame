@@ -52,6 +52,24 @@
   <wsdl:message name="ILobbyService_StartGame_OutputMessage">
     <wsdl:part name="parameters" element="tns:StartGameResponse" />
   </wsdl:message>
+  <wsdl:message name="ILobbyService_DisbandLobby_InputMessage">
+    <wsdl:part name="parameters" element="tns:DisbandLobby" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_DisbandLobby_OutputMessage">
+    <wsdl:part name="parameters" element="tns:DisbandLobbyResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_JoinLobby_InputMessage">
+    <wsdl:part name="parameters" element="tns:JoinLobby" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_JoinLobby_OutputMessage">
+    <wsdl:part name="parameters" element="tns:JoinLobbyResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_GetLobbyState_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLobbyState" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_GetLobbyState_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLobbyStateResponse" />
+  </wsdl:message>
   <wsdl:portType name="ILobbyService">
     <wsdl:operation name="CreateLobby">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/CreateLobby" message="tns:ILobbyService_CreateLobby_InputMessage" />
@@ -60,6 +78,18 @@
     <wsdl:operation name="StartGame">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/StartGame" message="tns:ILobbyService_StartGame_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/StartGameResponse" message="tns:ILobbyService_StartGame_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DisbandLobby">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/DisbandLobby" message="tns:ILobbyService_DisbandLobby_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/DisbandLobbyResponse" message="tns:ILobbyService_DisbandLobby_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="JoinLobby">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/JoinLobby" message="tns:ILobbyService_JoinLobby_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/JoinLobbyResponse" message="tns:ILobbyService_JoinLobby_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLobbyState">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/GetLobbyState" message="tns:ILobbyService_GetLobbyState_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/GetLobbyStateResponse" message="tns:ILobbyService_GetLobbyState_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_ILobbyService" type="tns:ILobbyService">
@@ -84,6 +114,33 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="DisbandLobby">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/DisbandLobby" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinLobby">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/JoinLobby" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLobbyState">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/GetLobbyState" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="LobbyService">
     <wsdl:port name="NetTcpBinding_ILobbyService" binding="tns:NetTcpBinding_ILobbyService">
@@ -91,7 +148,7 @@
       <wsa10:EndpointReference>
         <wsa10:Address>net.tcp://localhost:8092/LobbyService</wsa10:Address>
         <Identity xmlns="http://schemas.xmlsoap.org/ws/2006/02/addressingidentity">
-          <Upn>Pablo\Pablo Silva</Upn>
+          <Upn>PABLO\PABLO</Upn>
         </Identity>
       </wsa10:EndpointReference>
     </wsdl:port>

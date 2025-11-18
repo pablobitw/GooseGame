@@ -28,13 +28,12 @@ namespace GameClient.Views
 
         private void CreateMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            // CAMBIO: Pasa el _username a la siguiente página
             NavigationService.Navigate(new LobbyPage(_username));
         }
 
         private void JoinMatchButton_Click(object sender, RoutedEventArgs e)
         {
-
+            NavigationService.Navigate(new JoinMatchCodePage(_username));
         }
 
         private void ViewMatchesButton_Click(object sender, RoutedEventArgs e)
@@ -45,10 +44,9 @@ namespace GameClient.Views
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-
-            if (NavigationService.CanGoBack)
+            if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                NavigationService.GoBack();
+                mainWindow.ShowMainMenu();
             }
         }
     }

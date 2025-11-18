@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/13/2025 01:39:53
+-- Date Created: 11/18/2025 01:53:51
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -58,6 +58,9 @@ IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerInventory]', 'F') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerStat]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerPlayerStat];
+GO
+IF OBJECT_ID(N'[dbo].[FK_GamePlayer]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_GamePlayer];
 GO
 
 -- --------------------------------------------------
@@ -149,9 +152,9 @@ CREATE TABLE [dbo].[Games] (
     [IdGame] int IDENTITY(1,1) NOT NULL,
     [GameStatus] int  NOT NULL,
     [StartTime] datetime  NOT NULL,
-    [EndTime] datetime  NOT NULL,
-    [HostPlayerID] nvarchar(max)  NOT NULL,
-    [ChatMessageIdChatMessage] int  NOT NULL,
+    [EndTime] datetime  NULL,
+    [HostPlayerID] int  NOT NULL,
+    [ChatMessageIdChatMessage] int  NULL,
     [Board_idBoard] int  NOT NULL,
     [LobbyCode] nvarchar(max)  NOT NULL,
     [MaxPlayers] int  NOT NULL,
@@ -201,7 +204,7 @@ CREATE TABLE [dbo].[Players] (
     [Avatar] nvarchar(max)  NOT NULL,
     [PlayerInventoryIdPlayerInventory] int  NOT NULL,
     [Account_IdAccount] int  NOT NULL,
-    [GameIdGame] int  NOT NULL,
+    [GameIdGame] int  NULL,
     [PlayerStat_IdPlayers] int  NOT NULL
 );
 GO

@@ -1,11 +1,10 @@
 ﻿using GameServer.Contracts;
+using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using log4net;
-
 
 namespace GameServer.Services
 {
@@ -13,94 +12,83 @@ namespace GameServer.Services
     public class ChatService : IChatService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
-        private readonly ConcurrentDictionary<string, IChatCallback> _clients
-            = new ConcurrentDictionary<string, IChatCallback>();
 
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, IChatCallback>> _lobbies;
 
-        public void JoinChat(string username)
+        public ChatService()
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                Log.Warn("A user tried to join with an empty username.");
-            }
-            else
-            {
-                IChatCallback callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
+            _lobbies = new ConcurrentDictionary<string, ConcurrentDictionary<string, IChatCallback>>();
+        }
 
-                _clients.AddOrUpdate(username, callback, (key, oldCallback) => {
-                    Log.Warn($"User '{username}' already existed, Updating callback channel.");
-                    return callback;
-                });
+        public void JoinLobbyChat(string username, string lobbyCode)
+        {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(lobbyCode)) return;
 
-                Log.Info($"User '{username}' joined the chat. Total clients: {_clients.Count}");
+            var callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
+
+            var lobbyChatters = _lobbies.GetOrAdd(lobbyCode, new ConcurrentDictionary<string, IChatCallback>());
+
+            lobbyChatters[username] = callback;
+
+            Log.Info($"El jugador '{username}' se unió al chat del lobby {lobbyCode}");
+            BroadcastMessage(username, lobbyCode, "[Sistema]: " + username + " se ha unido al chat.");
+        }
+
+        public void LeaveLobbyChat(string username, string lobbyCode)
+        {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(lobbyCode)) return;
+
+            if (_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
+            {
+                if (lobbyChatters.TryRemove(username, out _))
+                {
+                    Log.Info($"El jugador '{username}' abandonó el chat del lobby {lobbyCode}");
+                    BroadcastMessage(username, lobbyCode, "[Sistema]: " + username + " ha abandonado el chat.");
+                }
+
+                if (lobbyChatters.IsEmpty)
+                {
+                    _lobbies.TryRemove(lobbyCode, out _);
+                    Log.Info($"Chat del lobby {lobbyCode} cerrado por estar vacío.");
+                }
             }
         }
 
-        public void Leave(string username)
+        public void SendLobbyMessage(string username, string lobbyCode, string message)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                Log.Warn("A user tried to leave with an empty username.");
-            }
-            else
-            {
-                if (_clients.TryRemove(username, out _))
-                {
-                    Log.Info($"User '{username}' left the chat. Total clients: {_clients.Count}");
-                }
-                else
-                {
-                    Log.Warn($"User '{username}' tried to leave but was not found in the list.");
-                }
-            }
+            BroadcastMessage(username, lobbyCode, message);
         }
 
-        public void SendMessage(string username, string message)
+        private void BroadcastMessage(string senderUsername, string lobbyCode, string message)
         {
-            var formattedMessage = message.Trim();
-
-            if (string.IsNullOrEmpty(formattedMessage))
+            if (!_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
             {
-                Log.Warn($"User '{username}' sent an empty message.");
+                return;
             }
-            else
+
+            var clientsToRemove = new List<string>();
+
+            foreach (var chatter in lobbyChatters.ToList())
             {
-                Log.Debug($"Received message from '{username}': {formattedMessage}");
-
-                var clientsToRemove = new List<string>();
-
-                foreach (var client in _clients.ToList())
+                if (chatter.Key.Equals(senderUsername, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (client.Key == username)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        client.Value.ReceiveMessage(username, formattedMessage);
-                    }
-                    catch (TimeoutException ex)
-                    {
-                        Log.Warn($"Failed to send message to '{client.Key}' (Timeout). Marking for removal.", ex);
-                        clientsToRemove.Add(client.Key);
-                    }
-                    catch (CommunicationException ex)
-                    {
-                        Log.Error($"Failed to send message to '{client.Key}' (Communication Error). Marking for removal.", ex);
-                        clientsToRemove.Add(client.Key);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"Failed to send message to '{client.Key}' (General Error). Marking for removal.", ex);
-                        clientsToRemove.Add(client.Key);
-                    }
+                    continue;
                 }
 
-                foreach (var clientKeyToRemove in clientsToRemove)
+                try
                 {
-                    Leave(clientKeyToRemove);
+                    chatter.Value.ReceiveMessage(senderUsername, message);
                 }
+                catch (Exception ex)
+                {
+                    Log.Warn($"No se pudo enviar mensaje a {chatter.Key} en lobby {lobbyCode}. Removiendo.", ex);
+                    clientsToRemove.Add(chatter.Key);
+                }
+            }
+
+            foreach (var clientKeyToRemove in clientsToRemove)
+            {
+                lobbyChatters.TryRemove(clientKeyToRemove, out _);
             }
         }
     }

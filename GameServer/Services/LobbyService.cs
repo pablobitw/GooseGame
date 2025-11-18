@@ -1,11 +1,12 @@
-﻿using GameServer.Contracts;
+﻿using GameServer; 
+using GameServer.Contracts;
 using log4net;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
-using GameServer; 
+using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
@@ -45,13 +46,10 @@ namespace GameServer.Services
 
                     context.Games.Add(newGame);
 
-                    // Guardamos primero para que newGame.IdGame tenga un valor
                     await context.SaveChangesAsync();
 
-                    // Asignamos el jugador al juego
                     hostPlayer.GameIdGame = newGame.IdGame;
 
-                    // Guardamos por segunda vez para actualizar al jugador
                     await context.SaveChangesAsync();
 
                     Log.InfoFormat("Lobby created by '{0}'. Code: {1}", hostUsername, newLobbyCode);
@@ -66,6 +64,106 @@ namespace GameServer.Services
             }
         }
 
+        public async Task<JoinLobbyResultDTO> JoinLobbyAsync(string lobbyCode, string joiningUsername)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var player = await context.Players.FirstOrDefaultAsync(p => p.Username == joiningUsername);
+                    if (player == null)
+                    {
+                        return new JoinLobbyResultDTO { Success = false, ErrorMessage = "Jugador no encontrado." };
+                    }
+                    if (player.GameIdGame != null)
+                    {
+                        return new JoinLobbyResultDTO { Success = false, ErrorMessage = "Ya estás en otra partida." };
+                    }
+
+                    var game = await context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
+                    if (game == null)
+                    {
+                        return new JoinLobbyResultDTO { Success = false, ErrorMessage = "Código de partida no encontrado." };
+                    }
+                    if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                    {
+                        return new JoinLobbyResultDTO { Success = false, ErrorMessage = "La partida ya ha comenzado." };
+                    }
+
+                    var playersInLobby = await context.Players
+                        .Where(p => p.GameIdGame == game.IdGame)
+                        .ToListAsync();
+
+                    if (playersInLobby.Count >= game.MaxPlayers)
+                    {
+                        return new JoinLobbyResultDTO { Success = false, ErrorMessage = "La partida está llena." };
+                    }
+
+                    player.GameIdGame = game.IdGame;
+                    await context.SaveChangesAsync();
+
+                    Log.InfoFormat("El jugador '{0}' se ha unido al lobby {1}", joiningUsername, lobbyCode);
+
+                    var dtoList = playersInLobby.Select(p => new PlayerLobbyDTO
+                    {
+                        Username = p.Username,
+                        IsHost = (p.IdPlayer == game.HostPlayerID)
+                    }).ToList();
+
+                    dtoList.Add(new PlayerLobbyDTO { Username = joiningUsername, IsHost = false });
+
+                    return new JoinLobbyResultDTO
+                    {
+                        Success = true,
+                        BoardId = game.Board_idBoard,
+                        MaxPlayers = game.MaxPlayers,
+                        IsHost = false,
+                        PlayersInLobby = dtoList
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en JoinLobbyAsync para {joiningUsername}", ex);
+                return new JoinLobbyResultDTO { Success = false, ErrorMessage = "Error del servidor." };
+            }
+        }
+
+        public async Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var game = await context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
+                    if (game == null)
+                    {
+                        return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
+                    }
+
+                    if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                    {
+                        return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
+                    }
+
+                    var players = await context.Players
+                        .Where(p => p.GameIdGame == game.IdGame)
+                        .Select(p => new PlayerLobbyDTO
+                        {
+                            Username = p.Username,
+                            IsHost = (p.IdPlayer == game.HostPlayerID)
+                        })
+                        .ToListAsync();
+
+                    return new LobbyStateDTO { IsGameStarted = false, Players = players };
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en GetLobbyStateAsync para {lobbyCode}", ex);
+                return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
+            }
+        }
         public async Task<bool> StartGameAsync(string lobbyCode)
         {
             try
@@ -91,6 +189,53 @@ namespace GameServer.Services
             {
                 Log.Error($"Error starting game {lobbyCode}", ex);
                 return false;
+            }
+        }
+
+        public async Task DisbandLobbyAsync(string hostUsername)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var hostPlayer = await context.Players.FirstOrDefaultAsync(p => p.Username == hostUsername);
+
+                    if (hostPlayer == null || hostPlayer.GameIdGame == null)
+                    {
+                        Log.WarnFormat("DisbandLobbyAsync: El host {0} no fue encontrado o no estaba en un lobby.", hostUsername);
+                        return;
+                    }
+
+                    int gameIdToDisband = hostPlayer.GameIdGame.Value;
+
+                    var gameToDisband = await context.Games.FindAsync(gameIdToDisband);
+
+                    if (gameToDisband == null)
+                    {
+                        Log.ErrorFormat("DisbandLobbyAsync: El jugador {0} apuntaba al Game ID {1} pero no se encontró. Limpiando jugador.", hostUsername, gameIdToDisband);
+                        hostPlayer.GameIdGame = null;
+                        await context.SaveChangesAsync();
+                        return;
+                    }
+
+                    var playersInLobby = await context.Players
+                        .Where(p => p.GameIdGame == gameIdToDisband)
+                        .ToListAsync();
+
+                    foreach (var player in playersInLobby)
+                    {
+                        player.GameIdGame = null;
+                    }
+
+                    context.Games.Remove(gameToDisband);
+
+                    await context.SaveChangesAsync();
+                    Log.InfoFormat("Lobby {0} (Host: {1}) fue disuelto.", gameToDisband.LobbyCode, hostUsername);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en DisbandLobbyAsync para {hostUsername}", ex);
             }
         }
 

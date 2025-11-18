@@ -45,31 +45,27 @@
       <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
     </xsd:schema>
   </wsdl:types>
-  <wsdl:message name="IChatService_JoinChat_InputMessage">
-    <wsdl:part name="parameters" element="tns:JoinChat" />
+  <wsdl:message name="IChatService_JoinLobbyChat_InputMessage">
+    <wsdl:part name="parameters" element="tns:JoinLobbyChat" />
   </wsdl:message>
-  <wsdl:message name="IChatService_JoinChat_OutputMessage">
-    <wsdl:part name="parameters" element="tns:JoinChatResponse" />
+  <wsdl:message name="IChatService_SendLobbyMessage_InputMessage">
+    <wsdl:part name="parameters" element="tns:SendLobbyMessage" />
   </wsdl:message>
-  <wsdl:message name="IChatService_SendMessage_InputMessage">
-    <wsdl:part name="parameters" element="tns:SendMessage" />
-  </wsdl:message>
-  <wsdl:message name="IChatService_Leave_InputMessage">
-    <wsdl:part name="parameters" element="tns:Leave" />
+  <wsdl:message name="IChatService_LeaveLobbyChat_InputMessage">
+    <wsdl:part name="parameters" element="tns:LeaveLobbyChat" />
   </wsdl:message>
   <wsdl:message name="IChatService_ReceiveMessage_OutputCallbackMessage">
     <wsdl:part name="parameters" element="tns:ReceiveMessage" />
   </wsdl:message>
   <wsdl:portType name="IChatService">
-    <wsdl:operation name="JoinChat">
-      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/JoinChat" message="tns:IChatService_JoinChat_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IChatService/JoinChatResponse" message="tns:IChatService_JoinChat_OutputMessage" />
+    <wsdl:operation name="JoinLobbyChat">
+      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/JoinLobbyChat" message="tns:IChatService_JoinLobbyChat_InputMessage" />
     </wsdl:operation>
-    <wsdl:operation name="SendMessage">
-      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/SendMessage" message="tns:IChatService_SendMessage_InputMessage" />
+    <wsdl:operation name="SendLobbyMessage">
+      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/SendLobbyMessage" message="tns:IChatService_SendLobbyMessage_InputMessage" />
     </wsdl:operation>
-    <wsdl:operation name="Leave">
-      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/Leave" message="tns:IChatService_Leave_InputMessage" />
+    <wsdl:operation name="LeaveLobbyChat">
+      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/LeaveLobbyChat" message="tns:IChatService_LeaveLobbyChat_InputMessage" />
     </wsdl:operation>
     <wsdl:operation name="ReceiveMessage">
       <wsdl:output wsaw:Action="http://tempuri.org/IChatService/ReceiveMessage" message="tns:IChatService_ReceiveMessage_OutputCallbackMessage" />
@@ -79,23 +75,20 @@
     <wsp:PolicyReference URI="#NetTcpBinding_IChatService_policy">
     </wsp:PolicyReference>
     <soap12:binding transport="http://schemas.microsoft.com/soap/tcp" />
-    <wsdl:operation name="JoinChat">
-      <soap12:operation soapAction="http://tempuri.org/IChatService/JoinChat" style="document" />
-      <wsdl:input>
-        <soap12:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap12:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="SendMessage">
-      <soap12:operation soapAction="http://tempuri.org/IChatService/SendMessage" style="document" />
+    <wsdl:operation name="JoinLobbyChat">
+      <soap12:operation soapAction="http://tempuri.org/IChatService/JoinLobbyChat" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
     </wsdl:operation>
-    <wsdl:operation name="Leave">
-      <soap12:operation soapAction="http://tempuri.org/IChatService/Leave" style="document" />
+    <wsdl:operation name="SendLobbyMessage">
+      <soap12:operation soapAction="http://tempuri.org/IChatService/SendLobbyMessage" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="LeaveLobbyChat">
+      <soap12:operation soapAction="http://tempuri.org/IChatService/LeaveLobbyChat" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

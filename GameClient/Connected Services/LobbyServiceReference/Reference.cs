@@ -167,6 +167,253 @@ namespace GameClient.LobbyServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="JoinLobbyResultDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.SerializableAttribute()]
+    public partial class JoinLobbyResultDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int BoardIdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ErrorMessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsHostField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int MaxPlayersField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersInLobbyField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool SuccessField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int BoardId {
+            get {
+                return this.BoardIdField;
+            }
+            set {
+                if ((this.BoardIdField.Equals(value) != true)) {
+                    this.BoardIdField = value;
+                    this.RaisePropertyChanged("BoardId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ErrorMessage {
+            get {
+                return this.ErrorMessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ErrorMessageField, value) != true)) {
+                    this.ErrorMessageField = value;
+                    this.RaisePropertyChanged("ErrorMessage");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsHost {
+            get {
+                return this.IsHostField;
+            }
+            set {
+                if ((this.IsHostField.Equals(value) != true)) {
+                    this.IsHostField = value;
+                    this.RaisePropertyChanged("IsHost");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int MaxPlayers {
+            get {
+                return this.MaxPlayersField;
+            }
+            set {
+                if ((this.MaxPlayersField.Equals(value) != true)) {
+                    this.MaxPlayersField = value;
+                    this.RaisePropertyChanged("MaxPlayers");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersInLobby {
+            get {
+                return this.PlayersInLobbyField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PlayersInLobbyField, value) != true)) {
+                    this.PlayersInLobbyField = value;
+                    this.RaisePropertyChanged("PlayersInLobby");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool Success {
+            get {
+                return this.SuccessField;
+            }
+            set {
+                if ((this.SuccessField.Equals(value) != true)) {
+                    this.SuccessField = value;
+                    this.RaisePropertyChanged("Success");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerLobbyDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.SerializableAttribute()]
+    public partial class PlayerLobbyDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsHostField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsHost {
+            get {
+                return this.IsHostField;
+            }
+            set {
+                if ((this.IsHostField.Equals(value) != true)) {
+                    this.IsHostField = value;
+                    this.RaisePropertyChanged("IsHost");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyStateDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.SerializableAttribute()]
+    public partial class LobbyStateDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsGameStartedField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsGameStarted {
+            get {
+                return this.IsGameStartedField;
+            }
+            set {
+                if ((this.IsGameStartedField.Equals(value) != true)) {
+                    this.IsGameStartedField = value;
+                    this.RaisePropertyChanged("IsGameStarted");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.LobbyServiceReference.PlayerLobbyDTO[] Players {
+            get {
+                return this.PlayersField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PlayersField, value) != true)) {
+                    this.PlayersField = value;
+                    this.RaisePropertyChanged("Players");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LobbyServiceReference.ILobbyService")]
     public interface ILobbyService {
@@ -182,6 +429,24 @@ namespace GameClient.LobbyServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/StartGame", ReplyAction="http://tempuri.org/ILobbyService/StartGameResponse")]
         System.Threading.Tasks.Task<bool> StartGameAsync(string lobbyCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/DisbandLobby", ReplyAction="http://tempuri.org/ILobbyService/DisbandLobbyResponse")]
+        void DisbandLobby(string hostUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/DisbandLobby", ReplyAction="http://tempuri.org/ILobbyService/DisbandLobbyResponse")]
+        System.Threading.Tasks.Task DisbandLobbyAsync(string hostUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
+        GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(string lobbyCode, string joiningUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDTO> JoinLobbyAsync(string lobbyCode, string joiningUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
+        GameClient.LobbyServiceReference.LobbyStateDTO GetLobbyState(string lobbyCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -225,6 +490,30 @@ namespace GameClient.LobbyServiceReference {
         
         public System.Threading.Tasks.Task<bool> StartGameAsync(string lobbyCode) {
             return base.Channel.StartGameAsync(lobbyCode);
+        }
+        
+        public void DisbandLobby(string hostUsername) {
+            base.Channel.DisbandLobby(hostUsername);
+        }
+        
+        public System.Threading.Tasks.Task DisbandLobbyAsync(string hostUsername) {
+            return base.Channel.DisbandLobbyAsync(hostUsername);
+        }
+        
+        public GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(string lobbyCode, string joiningUsername) {
+            return base.Channel.JoinLobby(lobbyCode, joiningUsername);
+        }
+        
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDTO> JoinLobbyAsync(string lobbyCode, string joiningUsername) {
+            return base.Channel.JoinLobbyAsync(lobbyCode, joiningUsername);
+        }
+        
+        public GameClient.LobbyServiceReference.LobbyStateDTO GetLobbyState(string lobbyCode) {
+            return base.Channel.GetLobbyState(lobbyCode);
+        }
+        
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode) {
+            return base.Channel.GetLobbyStateAsync(lobbyCode);
         }
     }
 }

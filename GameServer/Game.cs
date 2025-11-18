@@ -28,7 +28,7 @@ namespace GameServer
         public System.DateTime StartTime { get; set; }
         public Nullable<System.DateTime> EndTime { get; set; }
         public int HostPlayerID { get; set; }
-        public int ChatMessageIdChatMessage { get; set; }
+        public Nullable<int> ChatMessageIdChatMessage { get; set; }
         public int Board_idBoard { get; set; }
         public string LobbyCode { get; set; }
         public int MaxPlayers { get; set; }
