@@ -224,7 +224,7 @@ namespace GameClient.Views
                     if (started)
                     {
                         pollingTimer.Stop();
-                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId));
+                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                     }
                     else
                     {
@@ -401,7 +401,7 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId));
+                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                     }
                 }
                 else

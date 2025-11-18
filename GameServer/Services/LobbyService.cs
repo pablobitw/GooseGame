@@ -227,10 +227,18 @@ namespace GameServer.Services
                         player.GameIdGame = null;
                     }
 
+                    var moveRecords = context.MoveRecords.Where(m => m.GameIdGame == gameIdToDisband);
+                    context.MoveRecords.RemoveRange(moveRecords);
+
+                   
+                    var sanctions = context.Sanctions.Where(s => s.Game_IdGame == gameIdToDisband);
+                    context.Sanctions.RemoveRange(sanctions);
+
+                    
                     context.Games.Remove(gameToDisband);
 
                     await context.SaveChangesAsync();
-                    Log.InfoFormat("Lobby {0} (Host: {1}) fue disuelto.", gameToDisband.LobbyCode, hostUsername);
+                    Log.InfoFormat("Lobby {0} (Host: {1}) fue disuelto y limpiado.", gameToDisband.LobbyCode, hostUsername);
                 }
             }
             catch (Exception ex)
