@@ -18,32 +18,32 @@ namespace GameServer
 
             try
             {
-                // AÑADIDO: El using para LobbyService
                 using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
                 using (ServiceHost lobbyServiceHost = new ServiceHost(typeof(LobbyService)))
+                using (ServiceHost gameplayServiceHost = new ServiceHost(typeof(GameplayService)))   // 🔥 AGREGADO
                 {
                     gameServiceHost.Open();
                     Log.Info("GameService is running and listening on:");
                     foreach (var endpoint in gameServiceHost.Description.Endpoints)
-                    {
                         Log.Info($"-> {endpoint.Address}");
-                    }
 
                     chatServiceHost.Open();
                     Log.Info("ChatService is running and listening on:");
                     foreach (var endpoint in chatServiceHost.Description.Endpoints)
-                    {
                         Log.Info($"-> {endpoint.Address}");
-                    }
 
-                    // AÑADIDO: Abrimos el LobbyService
                     lobbyServiceHost.Open();
                     Log.Info("LobbyService is running and listening on:");
                     foreach (var endpoint in lobbyServiceHost.Description.Endpoints)
-                    {
                         Log.Info($"-> {endpoint.Address}");
-                    }
+
+                    // 🔥 NUEVO BLOQUE PARA GAMEPLAY SERVICE
+                    gameplayServiceHost.Open();
+                    Log.Info("GameplayService is running and listening on:");
+                    foreach (var endpoint in gameplayServiceHost.Description.Endpoints)
+                        Log.Info($"-> {endpoint.Address}");
+                    // 🔥 FIN
 
                     Log.Info(LogSeparator);
                     Log.Warn("Server is fully operational. Press [Enter] to stop.");

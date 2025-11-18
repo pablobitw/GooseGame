@@ -1,22 +1,22 @@
 ﻿using System;
+using System.ServiceModel; 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.LobbyServiceReference;
-using System.ServiceModel;
 
 namespace GameClient.Views
 {
     public partial class JoinMatchCodePage : Page
     {
-        private string _username;
-        private LobbyServiceClient _lobbyClient;
+        private string username;
+        private LobbyServiceClient lobbyClient;
 
         public JoinMatchCodePage(string username)
         {
             InitializeComponent();
-            _username = username;
-            _lobbyClient = new LobbyServiceClient();
+            this.username = username;
+            lobbyClient = new LobbyServiceClient();
         }
 
         private async void JoinButton_Click(object sender, RoutedEventArgs e)
@@ -33,24 +33,40 @@ namespace GameClient.Views
 
             try
             {
-                var result = await _lobbyClient.JoinLobbyAsync(code, _username);
+                var result = await lobbyClient.JoinLobbyAsync(code, username);
 
                 if (result.Success)
                 {
-                    NavigationService.Navigate(new LobbyPage(_username, code, result));
+                    NavigationService.Navigate(new LobbyPage(username, code, result));
                 }
                 else
                 {
-                    MessageBox.Show(result.ErrorMessage, "Error al unirse");
+                    MessageBox.Show(result.ErrorMessage, "Error");
                 }
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El servidor tardó demasiado en responder.", "Error de Tiempo");
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación con el servicio de lobby.", "Error de Red");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error de conexión: " + ex.Message, "Error");
+                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
             }
             finally
             {
                 JoinButton.IsEnabled = true;
+                if (lobbyClient.State == CommunicationState.Opened)
+                {
+                    lobbyClient.Close();
+                }
             }
         }
 

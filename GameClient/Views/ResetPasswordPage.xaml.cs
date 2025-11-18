@@ -1,5 +1,4 @@
 ﻿using GameClient.GameServiceReference;
-using GameClient.Views;
 using System;
 using System.ServiceModel;
 using System.Windows;
@@ -11,15 +10,17 @@ namespace GameClient.Views
 {
     public partial class ResetPasswordPage : Page
     {
-        private string _userEmail;
+        private string userEmail;
 
         public ResetPasswordPage(string email)
         {
             InitializeComponent();
-            _userEmail = email;
+            this.userEmail = email;
         }
 
-        public ResetPasswordPage() : this(string.Empty) { }
+        public ResetPasswordPage() : this(string.Empty)
+        {
+        }
 
         private async void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
@@ -32,7 +33,7 @@ namespace GameClient.Views
 
                 try
                 {
-                    updateSuccess = await client.UpdatePasswordAsync(_userEmail, newPassword);
+                    updateSuccess = await client.UpdatePasswordAsync(userEmail, newPassword);
                 }
                 catch (EndpointNotFoundException)
                 {
@@ -134,6 +135,7 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
+
             if (placeholder != null)
             {
                 placeholder.Visibility = Visibility.Collapsed;
@@ -144,6 +146,7 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
+
             if (placeholder != null)
             {
                 if (string.IsNullOrWhiteSpace(passwordBox.Password))
@@ -157,12 +160,15 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
+
             if (placeholder != null)
             {
+                // Optimización con ternario como te gustó
                 placeholder.Visibility = string.IsNullOrEmpty(passwordBox.Password)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
+
             passwordBox.ClearValue(Border.BorderBrushProperty);
             passwordBox.ToolTip = null;
         }

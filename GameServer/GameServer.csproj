@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Contracts\IChatCallback.cs" />
     <Compile Include="Contracts\IChatService.cs" />
+    <Compile Include="Contracts\IGameplayService.cs" />
     <Compile Include="Contracts\IGameService.cs" />
     <Compile Include="Contracts\ILobbyService.cs" />
     <Compile Include="Enums.cs" />
@@ -141,6 +142,7 @@
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="Services\ChatService.cs" />
+    <Compile Include="Services\GameplayService.cs" />
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
