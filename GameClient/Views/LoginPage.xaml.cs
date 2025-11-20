@@ -1,5 +1,4 @@
 ﻿using GameClient.GameServiceReference;
-using GameClient.Views;
 using System;
 using System.ServiceModel;
 using System.Windows;
@@ -18,62 +17,64 @@ namespace GameClient.Views
 
         private async void Login(object sender, RoutedEventArgs e)
         {
-            if (IsFormValid())
+            if (!IsFormValid())
             {
-                string username = UsernameTextBox.Text;
-                string password = PasswordBox.Password;
+                return;
+            }
 
-                GameServiceClient serviceClient = new GameServiceClient();
-                bool loginSuccessful = false;
-                bool connectionError = false;
+            string usernameOrEmail = UsernameTextBox.Text;
+            string password = PasswordBox.Password;
 
-                try
-                {
-                    loginSuccessful = await serviceClient.LogInAsync(username, password);
-                }
-                catch (EndpointNotFoundException)
-                {
-                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-                    connectionError = true;
-                }
-                catch (TimeoutException)
-                {
-                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (CommunicationException)
-                {
-                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
-                    connectionError = true;
-                }
-                finally
-                {
-                    if (serviceClient.State == CommunicationState.Opened)
-                    {
-                        serviceClient.Close();
-                    }
-                }
+            bool loginSuccessful = await AttemptLoginAsync(usernameOrEmail, password);
 
-                if (!connectionError)
+            if (loginSuccessful)
+            {
+                GameMainWindow gameMenu = new GameMainWindow(usernameOrEmail);
+                gameMenu.Show();
+                Window.GetWindow(this).Close();
+            }
+            else
+            {
+                string errorMsg = GameClient.Resources.Strings.LoginErrorLabel;
+                ShowError(UsernameBorder, errorMsg);
+                ShowError(PasswordBorder, errorMsg);
+            }
+        }
+
+        private async System.Threading.Tasks.Task<bool> AttemptLoginAsync(string username, string password)
+        {
+            var serviceClient = new GameServiceClient();
+            bool isSuccess = false;
+
+            try
+            {
+                isSuccess = await serviceClient.LogInAsync(username, password);
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorTitle);
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorTitle);
+            }
+            finally
+            {
+                if (serviceClient.State == CommunicationState.Opened)
                 {
-                    if (loginSuccessful)
-                    {
-                        GameMainWindow gameMenu = new GameMainWindow(username);
-                        gameMenu.Show();
-                        Window.GetWindow(this).Close();
-                    }
-                    else
-                    {
-                        ShowError(UsernameBorder, "Usuario o contraseña incorrectos.");
-                        ShowError(PasswordBorder, "Usuario o contraseña incorrectos.");
-                    }
+                    serviceClient.Close();
                 }
             }
+
+            return isSuccess;
         }
 
         private bool IsFormValid()
@@ -83,13 +84,13 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
-                ShowError(UsernameBorder, "El nombre de usuario no puede estar vacío.");
+                ShowError(UsernameBorder, GameClient.Resources.Strings.EmptyUsernameLabel);
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
-                ShowError(PasswordBorder, "La contraseña no puede estar vacía.");
+                ShowError(PasswordBorder, GameClient.Resources.Strings.EmptyPasswordLabel);
                 isValid = false;
             }
 
@@ -112,9 +113,9 @@ namespace GameClient.Views
 
         private void ForgotPass(object sender, RoutedEventArgs e)
         {
-            if (this.NavigationService != null)
+            if (NavigationService != null)
             {
-                this.NavigationService.Navigate(new ForgotPassPage());
+                NavigationService.Navigate(new ForgotPassPage());
             }
         }
 

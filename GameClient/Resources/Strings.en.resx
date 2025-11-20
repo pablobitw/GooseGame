@@ -168,6 +168,12 @@
   <data name="EmailUsedTitle" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="EmptyPasswordLabel" xml:space="preserve">
+    <value>Password cannot be empty</value>
+  </data>
+  <data name="EmptyUsernameLabel" xml:space="preserve">
+    <value>The username or email cannot be empty</value>
+  </data>
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Please type the code</value>
   </data>
@@ -182,6 +188,9 @@
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Log In</value>
+  </data>
+  <data name="LoginErrorLabel" xml:space="preserve">
+    <value>Incorrect email, username or password </value>
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Log In</value>

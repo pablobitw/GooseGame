@@ -1,8 +1,9 @@
 ﻿using BCrypt.Net;
-using GameServer.GameServer.Contracts;
+using GameServer.Contracts;
 using GameServer.Helpers;
 using log4net;
 using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
@@ -10,14 +11,13 @@ using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
-
 namespace GameServer
 {
     public class GameService : IGameService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameService));
-
         private static readonly Random RandomGenerator = new Random();
+        private const string DefaultAvatar = "default_avatar.png";
 
         public async Task<RegistrationResult> RegisterUserAsync(string username, string email, string password)
         {
@@ -25,27 +25,23 @@ namespace GameServer
             {
                 using (var context = new GameDatabase_Container())
                 {
-
                     if (context.Players.Any(p => p.Username == username))
                     {
-                        Log.WarnFormat("Registro fallido: Usuario '{0}' ya existe.", username);
+                        Log.WarnFormat("Registration failed: Username '{0}' already exists.", username);
                         return RegistrationResult.UsernameAlreadyExists;
                     }
 
                     var existingAccount = context.Accounts.FirstOrDefault(a => a.Email == email);
                     if (existingAccount != null)
                     {
-                        
                         if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
                         {
-                            Log.InfoFormat("Usuario {0} intentó registrarse con un email pendiente. Redirigiendo a verificación.", email);
-
-                            
+                            Log.InfoFormat("User {0} tried to register with a pending email. Redirecting to verification.", email);
                             return RegistrationResult.EmailPendingVerification;
                         }
                         else
                         {
-                            Log.WarnFormat("Registro fallido: Email '{0}' ya está en uso.", email);
+                            Log.WarnFormat("Registration failed: Email '{0}' is already in use.", email);
                             return RegistrationResult.EmailAlreadyExists;
                         }
                     }
@@ -74,7 +70,7 @@ namespace GameServer
                     {
                         Username = username,
                         Coins = 0,
-                        Avatar = "default_avatar.png",
+                        Avatar = DefaultAvatar,
                         Account = newAccount,
                         PlayerStat = newStats
                     };
@@ -85,29 +81,32 @@ namespace GameServer
                     bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, verifyCode)
                                                       .ConfigureAwait(false);
 
-                    if (emailSent) Log.InfoFormat("Correo de verificación enviado a {0}.", email);
+                    if (emailSent)
+                    {
+                        Log.InfoFormat("Verification email sent to {0}.", email);
+                    }
 
                     return RegistrationResult.Success;
                 }
             }
             catch (DbEntityValidationException ex)
             {
-                Log.Warn($"Error de validación de entidad para {username}.", ex);
+                Log.Warn($"Entity validation error for {username}.", ex);
                 return RegistrationResult.FatalError;
             }
             catch (DbUpdateException ex)
             {
-                Log.Error($"Error de actualización de BD para {username}.", ex);
+                Log.Error($"DB update error for {username}.", ex);
                 return RegistrationResult.FatalError;
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en RegisterUser. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in RegisterUser. Check DB connection!", ex);
                 return RegistrationResult.FatalError;
             }
             catch (Exception ex)
             {
-                Log.Error($"Error inesperado en RegisterUser para {username}.", ex);
+                Log.Error($"Unexpected error in RegisterUser for {username}.", ex);
                 return RegistrationResult.FatalError;
             }
         }
@@ -126,90 +125,89 @@ namespace GameServer
                         account.AccountStatus = (int)AccountStatus.Active;
                         account.VerificationCode = null;
 
-                        
                         context.SaveChanges();
 
-                        Log.InfoFormat("Cuenta para {0} verificada exitosamente", email);
+                        Log.InfoFormat("Account for {0} verified successfully.", email);
                         isSuccess = true;
                     }
                     else
                     {
-                        Log.WarnFormat("Verificación fallida para {0} (código incorrecto).", email);
+                        Log.WarnFormat("Verification failed for {0} (wrong code).", email);
                     }
                 }
             }
             catch (DbEntityValidationException ex)
             {
-                Log.Warn($"Error de validación de entidad al verificar {email}.", ex);
+                Log.Warn($"Entity validation error verifying {email}.", ex);
             }
             catch (DbUpdateException ex)
             {
-                Log.Error($"Error de actualización de BD al verificar {email}.", ex);
+                Log.Error($"DB update error verifying {email}.", ex);
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en VerifyAccount. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in VerifyAccount.", ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en VerificarCuenta: {email}", ex);
+                Log.Error($"Error in VerifyAccount: {email}", ex);
             }
             return isSuccess;
         }
 
-        public async Task<bool> LogInAsync(string username, string password)
+        public async Task<bool> LogInAsync(string usernameOrEmail, string password)
         {
             bool isSuccess = false;
             try
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    var player = context.Players
-                        .FirstOrDefault(p => p.Username == username);
+                    var player = await context.Players
+                        .Include(p => p.Account)
+                        .FirstOrDefaultAsync(p => p.Username == usernameOrEmail || p.Account.Email == usernameOrEmail);
 
                     if (player != null &&
                         BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
                     {
                         if (player.Account.AccountStatus == (int)AccountStatus.Active)
                         {
-                            Log.InfoFormat("Inicio de sesión exitoso para {0}", username);
+                            Log.InfoFormat("Login successful for {0}", player.Username);
                             isSuccess = true;
                         }
                         else
                         {
-                            Log.WarnFormat("Intento de inicio con cuenta inactiva: {0}", username);
+                            Log.WarnFormat("Login attempt with inactive account: {0}", player.Username);
                         }
                     }
                     else
                     {
-                        Log.WarnFormat("Inicio fallido: credenciales incorrectas para {0}", username);
+                        Log.WarnFormat("Login failed: incorrect credentials for {0}", usernameOrEmail);
                     }
                 }
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en LogIn. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in LogIn.", ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error inesperado en LogIn para {username}.", ex);
+                Log.Error($"Unexpected error in LogIn for {usernameOrEmail}.", ex);
             }
             return isSuccess;
         }
 
-
-        public async Task<bool> RequestPasswordReset(string email)
+        public async Task<bool> RequestPasswordResetAsync(string email)
         {
             bool isSuccess = false;
             try
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    var account = context.Accounts.FirstOrDefault(a => a.Email == email);
+                    var account = await context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
 
                     if (account == null)
                     {
-                        Log.WarnFormat("Password reset solicitado para email no existente: {0}", email);
+                        Log.WarnFormat("Password reset requested for non-existent email: {0}", email);
                         isSuccess = true;
                     }
                     else
@@ -222,22 +220,22 @@ namespace GameServer
                         bool emailSent = await EmailHelper.SendRecoveryEmailAsync(email, verifyCode)
                                                           .ConfigureAwait(false);
 
-                        Log.InfoFormat("Correo de reseteo enviado a: {0}", email);
+                        Log.InfoFormat("Reset email sent to: {0}", email);
                         isSuccess = emailSent;
                     }
                 }
             }
             catch (DbUpdateException ex)
             {
-                Log.Error($"Error de actualización de BD en RequestPasswordReset para {email}.", ex);
+                Log.Error($"DB update error in RequestPasswordReset for {email}.", ex);
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en RequestPasswordReset. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in RequestPasswordReset.", ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en RequestPasswordReset for {email}", ex);
+                Log.Error($"Error in RequestPasswordReset for {email}", ex);
             }
             return isSuccess;
         }
@@ -254,17 +252,23 @@ namespace GameServer
                         a.VerificationCode == code &&
                         a.VerificationCode != null);
 
-                    if (isValid) Log.InfoFormat("Código de recuperación verificado para: {0}", email);
-                    else Log.WarnFormat("Intento fallido de código de recuperación para: {0}", email);
+                    if (isValid)
+                    {
+                        Log.InfoFormat("Recovery code verified for: {0}", email);
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Failed recovery code attempt for: {0}", email);
+                    }
                 }
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en VerifyRecoveryCode. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in VerifyRecoveryCode.", ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en VerifyRecoveryCode for {email}", ex);
+                Log.Error($"Error in VerifyRecoveryCode for {email}", ex);
             }
             return isValid;
         }
@@ -279,11 +283,11 @@ namespace GameServer
                     var account = context.Accounts.FirstOrDefault(a => a.Email == email);
                     if (account == null)
                     {
-                        Log.ErrorFormat("Intento de actualizar contraseña para cuenta no existente: {0}", email);
+                        Log.ErrorFormat("Attempt to update password for non-existent account: {0}", email);
                     }
                     else if (BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
                     {
-                        Log.WarnFormat("Usuario '{0}' intentó reusar su contraseña anterior.", email);
+                        Log.WarnFormat("User '{0}' tried to reuse old password.", email);
                     }
                     else
                     {
@@ -293,25 +297,24 @@ namespace GameServer
 
                         context.SaveChanges();
 
-                        Log.InfoFormat("Contraseña reseteada exitosamente para: {0}", email);
+                        Log.InfoFormat("Password reset successfully for: {0}", email);
                         isSuccess = true;
                     }
                 }
             }
             catch (DbUpdateException ex)
             {
-                Log.Error($"Error de actualización de BD en UpdatePassword para {email}.", ex);
+                Log.Error($"DB update error in UpdatePassword for {email}.", ex);
             }
             catch (SqlException ex)
             {
-                Log.Fatal($"Error fatal de SQL en UpdatePassword. ¡Revisar conexión a BD!", ex);
+                Log.Fatal($"Fatal SQL error in UpdatePassword.", ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en UpdatePassword for {email}", ex);
+                Log.Error($"Error in UpdatePassword for {email}", ex);
             }
             return isSuccess;
         }
-
     }
 }

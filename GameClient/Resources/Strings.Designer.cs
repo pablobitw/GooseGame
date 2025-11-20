@@ -232,6 +232,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a La contraseña no puede estar vacia.
+        /// </summary>
+        public static string EmptyPasswordLabel {
+            get {
+                return ResourceManager.GetString("EmptyPasswordLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El usuario o correo no puede estar vacío.
+        /// </summary>
+        public static string EmptyUsernameLabel {
+            get {
+                return ResourceManager.GetString("EmptyUsernameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.
         /// </summary>
         public static string EndpointNotFoundLabel {
@@ -300,6 +318,15 @@ namespace GameClient.Resources {
         public static string LoginButton {
             get {
                 return ResourceManager.GetString("LoginButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Usuario, correo o contraseña incorrectos.
+        /// </summary>
+        public static string LoginErrorLabel {
+            get {
+                return ResourceManager.GetString("LoginErrorLabel", resourceCulture);
             }
         }
         

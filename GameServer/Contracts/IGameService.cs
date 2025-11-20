@@ -1,5 +1,4 @@
 ﻿using GameServer.Contracts;
-using GameServer.GameServer.Contracts;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -12,41 +11,37 @@ namespace GameServer
         [OperationContract]
         Task<RegistrationResult> RegisterUserAsync(string username, string email, string password);
 
-
         [OperationContract]
-        Task<bool> LogInAsync(string username, string password);
+        Task<bool> LogInAsync(string usernameOrEmail, string password);
 
         [OperationContract]
         bool VerifyAccount(string email, string code);
 
-             [OperationContract]
-        Task<bool> RequestPasswordReset(string email);
+        [OperationContract]
+        Task<bool> RequestPasswordResetAsync(string email);
 
-           [OperationContract]
+        [OperationContract]
         bool VerifyRecoveryCode(string email, string code);
 
-            [OperationContract]
+        [OperationContract]
         bool UpdatePassword(string email, string newPassword);
     }
+}
 
-
-    namespace GameServer.Contracts
+namespace GameServer.Contracts
+{
+    [DataContract]
+    public enum RegistrationResult
     {
-
-        [DataContract]
-        public enum RegistrationResult
-        {
-            [EnumMember]
-            Success,
-            [EnumMember]
-            UsernameAlreadyExists,
-            [EnumMember]
-            EmailAlreadyExists,
-            [EnumMember]
-            EmailPendingVerification,
-            [EnumMember]
-            FatalError
-        }
+        [EnumMember]
+        Success,
+        [EnumMember]
+        UsernameAlreadyExists,
+        [EnumMember]
+        EmailAlreadyExists,
+        [EnumMember]
+        EmailPendingVerification,
+        [EnumMember]
+        FatalError
     }
-
-    }
+}
