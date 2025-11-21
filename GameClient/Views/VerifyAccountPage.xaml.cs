@@ -84,9 +84,63 @@ namespace GameClient
             }
         }
 
-        private void ResendCodeButton(object sender, RoutedEventArgs e)
+        private async void ResendCodeButton(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Funcionalidad para reenviar el código no implementada.", "Información");
+            var button = sender as Button;
+            if (button != null) button.IsEnabled = false; 
+
+            var client = new GameServiceClient();
+            bool requestSent = false;
+            bool connectionError = false;
+            string errorMessage = string.Empty;
+
+            try
+            {
+                requestSent = await client.ResendVerificationCodeAsync(userEmail);
+            }
+            catch (EndpointNotFoundException)
+            {
+                errorMessage = "No se pudo conectar al servidor.";
+                connectionError = true;
+            }
+            catch (TimeoutException)
+            {
+                errorMessage = "El servidor tardó demasiado en responder.";
+                connectionError = true;
+            }
+            catch (CommunicationException)
+            {
+                errorMessage = "Error de comunicación con el servidor.";
+                connectionError = true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error inesperado: {ex.Message}";
+                connectionError = true;
+            }
+            finally
+            {
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                if (button != null) button.IsEnabled = true; 
+            }
+
+            if (connectionError)
+            {
+                MessageBox.Show(errorMessage, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (requestSent)
+            {
+                MessageBox.Show($"Se ha enviado un nuevo código a {userEmail}. Tienes 15 minutos para usarlo.", "Código Reenviado", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("No se pudo reenviar el código. Verifica que la cuenta exista y esté pendiente.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void BackButton(object sender, RoutedEventArgs e)

@@ -89,6 +89,7 @@
     <Property Name="RegisterDate" Type="datetime" Nullable="false" />
     <Property Name="AccountStatus" Type="int" Nullable="false" />
     <Property Name="VerificationCode" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="CodeExpiration" Type="datetime" Nullable="true" />
   </EntityType>
   <EntityType Name="BoardSets">
     <Key>
@@ -407,6 +408,7 @@
           <NavigationProperty Name="Sanctions" Relationship="Self.FK_IdAccount" FromRole="Accounts" ToRole="Sanctions" />
           <NavigationProperty Name="Players" Relationship="Self.FK_PlayerAccount" FromRole="Accounts" ToRole="Players" />
           <Property Name="VerificationCode" Type="String" Nullable="true" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="CodeExpiration" Type="DateTime" Nullable="true" />
         </EntityType>
         <EntityType Name="BoardSet">
           <Key>
@@ -815,6 +817,7 @@
           <ScalarProperty Name="RegisterDate" ColumnName="RegisterDate" />
           <ScalarProperty Name="AccountStatus" ColumnName="AccountStatus" />
           <ScalarProperty Name="VerificationCode" ColumnName="VerificationCode" />
+          <ScalarProperty Name="CodeExpiration" ColumnName="CodeExpiration" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

@@ -25,6 +25,9 @@ namespace GameServer
 
         [OperationContract]
         bool UpdatePassword(string email, string newPassword);
+
+        [OperationContract]
+        Task<bool> ResendVerificationCodeAsync(string email);
     }
 }
 

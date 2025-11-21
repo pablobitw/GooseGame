@@ -4,27 +4,6 @@
     <wsp:ExactlyOne>
       <wsp:All>
         <msb:BinaryEncoding xmlns:msb="http://schemas.microsoft.com/ws/06/2004/mspolicy/netbinary1" />
-        <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
-          <wsp:Policy>
-            <sp:TransportToken>
-              <wsp:Policy>
-                <msf:WindowsTransportSecurity xmlns:msf="http://schemas.microsoft.com/ws/2006/05/framing/policy">
-                  <msf:ProtectionLevel>EncryptAndSign</msf:ProtectionLevel>
-                </msf:WindowsTransportSecurity>
-              </wsp:Policy>
-            </sp:TransportToken>
-            <sp:AlgorithmSuite>
-              <wsp:Policy>
-                <sp:Basic256 />
-              </wsp:Policy>
-            </sp:AlgorithmSuite>
-            <sp:Layout>
-              <wsp:Policy>
-                <sp:Strict />
-              </wsp:Policy>
-            </sp:Layout>
-          </wsp:Policy>
-        </sp:TransportBinding>
         <wsaw:UsingAddressing />
       </wsp:All>
     </wsp:ExactlyOne>
@@ -33,7 +12,7 @@
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import schemaLocation="http://localhost:8080/?xsd=xsd0" namespace="http://tempuri.org/" />
       <xsd:import schemaLocation="http://localhost:8080/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
-      <xsd:import schemaLocation="http://localhost:8080/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GameServer.GameServer.Contracts" />
+      <xsd:import schemaLocation="http://localhost:8080/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="IGameService_RegisterUser_InputMessage">
@@ -72,6 +51,12 @@
   <wsdl:message name="IGameService_UpdatePassword_OutputMessage">
     <wsdl:part name="parameters" element="tns:UpdatePasswordResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameService_ResendVerificationCode_InputMessage">
+    <wsdl:part name="parameters" element="tns:ResendVerificationCode" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_ResendVerificationCode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ResendVerificationCodeResponse" />
+  </wsdl:message>
   <wsdl:portType name="IGameService">
     <wsdl:operation name="RegisterUser">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RegisterUser" message="tns:IGameService_RegisterUser_InputMessage" />
@@ -96,6 +81,10 @@
     <wsdl:operation name="UpdatePassword">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/UpdatePassword" message="tns:IGameService_UpdatePassword_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameService/UpdatePasswordResponse" message="tns:IGameService_UpdatePassword_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ResendVerificationCode">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/ResendVerificationCode" message="tns:IGameService_ResendVerificationCode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/ResendVerificationCodeResponse" message="tns:IGameService_ResendVerificationCode_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IGameService" type="tns:IGameService">
@@ -155,15 +144,21 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="ResendVerificationCode">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/ResendVerificationCode" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="GameService">
     <wsdl:port name="NetTcpBinding_IGameService" binding="tns:NetTcpBinding_IGameService">
       <soap12:address location="net.tcp://localhost:8090/GameService" />
       <wsa10:EndpointReference>
         <wsa10:Address>net.tcp://localhost:8090/GameService</wsa10:Address>
-        <Identity xmlns="http://schemas.xmlsoap.org/ws/2006/02/addressingidentity">
-          <Upn>PABLO\PABLO</Upn>
-        </Identity>
       </wsa10:EndpointReference>
     </wsdl:port>
   </wsdl:service>

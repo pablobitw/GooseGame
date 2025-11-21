@@ -13,7 +13,7 @@ namespace GameClient.GameServiceReference {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="RegistrationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="RegistrationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
     public enum RegistrationResult : int {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
@@ -43,10 +43,10 @@ namespace GameClient.GameServiceReference {
         System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(string username, string email, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        bool LogIn(string username, string password);
+        bool LogIn(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        System.Threading.Tasks.Task<bool> LogInAsync(string username, string password);
+        System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
         bool VerifyAccount(string email, string code);
@@ -71,6 +71,12 @@ namespace GameClient.GameServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/UpdatePassword", ReplyAction="http://tempuri.org/IGameService/UpdatePasswordResponse")]
         System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ResendVerificationCode", ReplyAction="http://tempuri.org/IGameService/ResendVerificationCodeResponse")]
+        bool ResendVerificationCode(string email);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ResendVerificationCode", ReplyAction="http://tempuri.org/IGameService/ResendVerificationCodeResponse")]
+        System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -108,12 +114,12 @@ namespace GameClient.GameServiceReference {
             return base.Channel.RegisterUserAsync(username, email, password);
         }
         
-        public bool LogIn(string username, string password) {
-            return base.Channel.LogIn(username, password);
+        public bool LogIn(string usernameOrEmail, string password) {
+            return base.Channel.LogIn(usernameOrEmail, password);
         }
         
-        public System.Threading.Tasks.Task<bool> LogInAsync(string username, string password) {
-            return base.Channel.LogInAsync(username, password);
+        public System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password) {
+            return base.Channel.LogInAsync(usernameOrEmail, password);
         }
         
         public bool VerifyAccount(string email, string code) {
@@ -146,6 +152,14 @@ namespace GameClient.GameServiceReference {
         
         public System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword) {
             return base.Channel.UpdatePasswordAsync(email, newPassword);
+        }
+        
+        public bool ResendVerificationCode(string email) {
+            return base.Channel.ResendVerificationCode(email);
+        }
+        
+        public System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email) {
+            return base.Channel.ResendVerificationCodeAsync(email);
         }
     }
 }

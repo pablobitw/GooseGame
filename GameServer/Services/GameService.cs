@@ -18,6 +18,7 @@ namespace GameServer
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameService));
         private static readonly Random RandomGenerator = new Random();
         private const string DefaultAvatar = "default_avatar.png";
+        private const int CodeExpirationMinutes = 15;
 
         public async Task<RegistrationResult> RegisterUserAsync(string username, string email, string password)
         {
@@ -36,7 +37,15 @@ namespace GameServer
                     {
                         if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
                         {
-                            Log.InfoFormat("User {0} tried to register with a pending email. Redirecting to verification.", email);
+                            string newCode = RandomGenerator.Next(100000, 999999).ToString();
+                            existingAccount.VerificationCode = newCode;
+                            existingAccount.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
+                            await context.SaveChangesAsync();
+
+                            await EmailHelper.SendVerificationEmailAsync(email, newCode).ConfigureAwait(false);
+
+                            Log.InfoFormat("User {0} tried to register with a pending email. New code sent.", email);
                             return RegistrationResult.EmailPendingVerification;
                         }
                         else
@@ -55,7 +64,8 @@ namespace GameServer
                         PasswordHash = hashedPassword,
                         RegisterDate = DateTime.Now,
                         AccountStatus = (int)AccountStatus.Pending,
-                        VerificationCode = verifyCode
+                        VerificationCode = verifyCode,
+                        CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes)
                     };
 
                     var newStats = new PlayerStat
@@ -120,19 +130,30 @@ namespace GameServer
                 {
                     var account = context.Accounts.FirstOrDefault(a => a.Email == email);
 
-                    if (account != null && account.VerificationCode == code)
+                    if (account != null)
                     {
-                        account.AccountStatus = (int)AccountStatus.Active;
-                        account.VerificationCode = null;
+                        if (account.VerificationCode == code)
+                        {
+                            if (account.CodeExpiration >= DateTime.Now)
+                            {
+                                account.AccountStatus = (int)AccountStatus.Active;
+                                account.VerificationCode = null;
+                                account.CodeExpiration = null;
 
-                        context.SaveChanges();
+                                context.SaveChanges();
 
-                        Log.InfoFormat("Account for {0} verified successfully.", email);
-                        isSuccess = true;
-                    }
-                    else
-                    {
-                        Log.WarnFormat("Verification failed for {0} (wrong code).", email);
+                                Log.InfoFormat("Account for {0} verified successfully.", email);
+                                isSuccess = true;
+                            }
+                            else
+                            {
+                                Log.WarnFormat("Verification failed for {0} (code expired).", email);
+                            }
+                        }
+                        else
+                        {
+                            Log.WarnFormat("Verification failed for {0} (wrong code).", email);
+                        }
                     }
                 }
             }
@@ -214,6 +235,7 @@ namespace GameServer
                     {
                         string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
                         account.VerificationCode = verifyCode;
+                        account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                         await context.SaveChangesAsync();
 
@@ -250,7 +272,8 @@ namespace GameServer
                     isValid = context.Accounts.Any(a =>
                         a.Email == email &&
                         a.VerificationCode == code &&
-                        a.VerificationCode != null);
+                        a.VerificationCode != null &&
+                        a.CodeExpiration >= DateTime.Now);
 
                     if (isValid)
                     {
@@ -271,6 +294,45 @@ namespace GameServer
                 Log.Error($"Error in VerifyRecoveryCode for {email}", ex);
             }
             return isValid;
+        }
+        public async Task<bool> ResendVerificationCodeAsync(string email)
+        {
+            bool isSuccess = false;
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var account = context.Accounts.FirstOrDefault(a => a.Email == email);
+
+                    if (account != null && account.AccountStatus == (int)AccountStatus.Pending)
+                    {
+                        string newCode = RandomGenerator.Next(100000, 999999).ToString();
+
+                        account.VerificationCode = newCode;
+                        account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
+                        await context.SaveChangesAsync();
+
+                        bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, newCode)
+                                                          .ConfigureAwait(false);
+
+                        if (emailSent)
+                        {
+                            Log.InfoFormat("Verification code resent to {0}.", email);
+                            isSuccess = true;
+                        }
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Resend code requested for invalid or active account: {0}", email);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error in ResendVerificationCode for {email}", ex);
+            }
+            return isSuccess;
         }
 
         public bool UpdatePassword(string email, string newPassword)
@@ -294,6 +356,7 @@ namespace GameServer
                         string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
                         account.PasswordHash = newHashedPassword;
                         account.VerificationCode = null;
+                        account.CodeExpiration = null;
 
                         context.SaveChanges();
 

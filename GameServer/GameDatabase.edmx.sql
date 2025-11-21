@@ -2,8 +2,8 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/18/2025 01:53:51
--- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
+-- Date Created: 11/20/2025 17:31:40
+-- Generated from EDMX file: C:\Users\Pablo Silva\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
 SET QUOTED_IDENTIFIER OFF;
@@ -115,7 +115,8 @@ CREATE TABLE [dbo].[Accounts] (
     [PasswordHash] nvarchar(255)  NOT NULL,
     [RegisterDate] datetime  NOT NULL,
     [AccountStatus] int  NOT NULL,
-    [VerificationCode] nvarchar(max)  NULL
+    [VerificationCode] nvarchar(max)  NULL,
+    [CodeExpiration] datetime  NULL
 );
 GO
 
