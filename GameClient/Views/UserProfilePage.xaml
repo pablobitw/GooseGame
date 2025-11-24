@@ -1,0 +1,165 @@
+﻿<Page x:Class="GameClient.Views.UserProfilePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:GameClient.Views"
+      xmlns:props="clr-namespace:GameClient.Resources"
+      mc:Ignorable="d" 
+      d:DesignHeight="1080" d:DesignWidth="1920"
+      Title="UserProfilePage"
+      FontFamily="Segoe UI">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/> <!-- Azul tipo VS -->
+        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>   <!-- Verde Éxito -->
+        <SolidColorBrush x:Key="OrangeBrush" Color="#FD7E14"/>  <!-- Naranja Acción -->
+        <SolidColorBrush x:Key="DangerBrush" Color="#DC3545"/>  <!-- Rojo Error -->
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OrangeButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource OrangeBrush}"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
+        </Grid.Background>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="1400" Height="800"
+                Background="#E6FFFFFF" 
+                BorderBrush="#FFB0B0B0" 
+                BorderThickness="3" 
+                CornerRadius="20">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#80000000" Opacity="0.5"/>
+            </Border.Effect>
+
+            <Grid Margin="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                    <Border Width="300" Height="300" CornerRadius="150" 
+                            BorderBrush="{StaticResource PrimaryBrush}" BorderThickness="5" Margin="0,0,0,30">
+                        <Border.Background>
+                            <ImageBrush ImageSource="/Assets/Avatar/default_avatar.png" Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
+
+                    <Button x:Name="ChangeAvatarButton" 
+                            Content="📷 Cambiar Foto" 
+                            Style="{StaticResource OrangeButtonStyle}" 
+                            Width="250" Height="60" 
+                            FontSize="24" FontWeight="Bold"
+                            Click="ChangeAvatarButton_Click"/>
+
+                    <Border Background="#20000000" CornerRadius="10" Padding="20" Margin="0,40,0,0">
+                        <StackPanel>
+                            <TextBlock Text="ESTADÍSTICAS" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Partidas Jugadas:" FontSize="20" Grid.Column="0"/>
+                                <TextBlock x:Name="GamesPlayedText" Text="45" FontSize="20" FontWeight="Bold" Grid.Column="1"/>
+                            </Grid>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Victorias:" FontSize="20" Grid.Column="0"/>
+                                <TextBlock x:Name="GamesWonText" Text="12" FontSize="20" FontWeight="Bold" Grid.Column="1" Foreground="{StaticResource GreenBrush}"/>
+                            </Grid>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Monedas:" FontSize="20" Grid.Column="0"/>
+                                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                                    <TextBlock Text="💰" FontSize="20" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock x:Name="CoinsText" Text="250" FontSize="20" FontWeight="Bold" Foreground="#D4AF37"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="60,0,0,0" VerticalAlignment="Center">
+
+                    <TextBlock Text="MI PERFIL" FontSize="48" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
+                    <Separator Background="#CCC" Margin="0,0,0,40"/>
+
+                    <TextBlock Text="Nombre de Usuario:" FontSize="20" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,5"/>
+                    <Grid Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="UsernameTextBox" Text="PabloGamer" FontSize="24" Padding="10" Height="50" VerticalContentAlignment="Center" Grid.Column="0"/>
+                        <Button x:Name="SaveUsernameButton" Content="Guardar" Style="{StaticResource PrimaryButtonStyle}" Width="120" Height="50" Margin="10,0,0,0" Grid.Column="1" Click="SaveUsernameButton_Click"/>
+                    </Grid>
+                    
+                    <TextBlock x:Name="UsernameInfoLabel" Text="Espera 3 días para cambiarlo de nuevo." FontSize="14" Foreground="{StaticResource DangerBrush}" Margin="0,0,0,30" Visibility="Collapsed"/>
+
+                    <TextBlock Text="Correo Electrónico:" FontSize="20" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EmailTextBox" Text="pablo@uv.mx" FontSize="24" Padding="10" Height="50" VerticalContentAlignment="Center" 
+                             IsEnabled="False" Background="#EEE" Foreground="#888" Margin="0,0,0,40"/>
+
+                    <Button x:Name="ChangePasswordButton" 
+                            Content="Cambiar Contraseña" 
+                            Style="{StaticResource PrimaryButtonStyle}" 
+                            HorizontalAlignment="Left"
+                            Width="300" Height="60" 
+                            FontSize="20" FontWeight="Bold"
+                            Margin="0,0,0,20"
+                            Click="ChangePasswordButton_Click"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,40,0,0">
+                        <Button x:Name="BackButton" 
+                                Content="Volver" 
+                                Style="{StaticResource PrimaryButtonStyle}" 
+                                Width="150" Height="60" 
+                                FontSize="24" FontWeight="Bold"
+                                Margin="0,0,20,0"
+                                Click="BackButton_Click"/>
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

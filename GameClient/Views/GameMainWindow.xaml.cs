@@ -8,14 +8,35 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
-
         private string _username;
-        
 
         public GameMainWindow(string loggedInUsername)
         {
             InitializeComponent();
             _username = loggedInUsername;
+        }
+
+        private void MediaElement_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string videoPath = System.IO.Path.Combine(baseDir, "Assets", "fondoloop.mp4");
+
+                var media = (MediaElement)sender;
+                media.Source = new Uri(videoPath, UriKind.Absolute);
+                media.Play();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error cargando video: " + ex.Message);
+            }
+        }
+
+        private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            ((MediaElement)sender).Position = TimeSpan.FromSeconds(0);
+            ((MediaElement)sender).Play();
         }
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
@@ -46,10 +67,9 @@ namespace GameClient
 
         private void ProfileButtonClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Aquí se abriría la página de perfil.", "Función no implementada");
-            
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new UserProfilePage(_username));
         }
-
 
         public void ShowMainMenu()
         {

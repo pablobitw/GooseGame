@@ -179,6 +179,7 @@
     <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
     <Property Name="Account_IdAccount" Type="int" Nullable="false" />
     <Property Name="GameIdGame" Type="int" Nullable="true" />
+    <Property Name="UsernameChangeCount" Type="int" Nullable="false" DefaultValue="0" />
     <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PlayerStats">
@@ -520,6 +521,7 @@
           <NavigationProperty Name="PlayerInventories" Relationship="Self.FK_PlayerPlayerInventory" FromRole="Players" ToRole="PlayerInventories" />
           <NavigationProperty Name="PlayerStat" Relationship="GameServer.PlayerPlayerStat" FromRole="Player" ToRole="PlayerStat" />
           <Property Name="GameIdGame" Type="Int32" Nullable="true" />
+          <Property Name="UsernameChangeCount" Type="Int32" Nullable="false" DefaultValue="0" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -915,6 +917,7 @@
           <ScalarProperty Name="PlayerInventoryIdPlayerInventory" ColumnName="PlayerInventoryIdPlayerInventory" />
           <ScalarProperty Name="Account_IdAccount" ColumnName="Account_IdAccount" />
           <ScalarProperty Name="GameIdGame" ColumnName="GameIdGame" />
+          <ScalarProperty Name="UsernameChangeCount" ColumnName="UsernameChangeCount" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

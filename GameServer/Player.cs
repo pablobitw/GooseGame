@@ -17,6 +17,7 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Player()
         {
+            this.UsernameChangeCount = 0;
             this.ChatMessages = new HashSet<ChatMessage>();
             this.Friendships = new HashSet<Friendship>();
             this.Friendships1 = new HashSet<Friendship>();
@@ -31,6 +32,7 @@ namespace GameServer
         public int PlayerInventoryIdPlayerInventory { get; set; }
         public int Account_IdAccount { get; set; }
         public Nullable<int> GameIdGame { get; set; }
+        public int UsernameChangeCount { get; set; }
     
         public virtual Account Account { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

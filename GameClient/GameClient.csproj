@@ -92,6 +92,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Connected Services\UserProfileServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>
     </Compile>
@@ -119,8 +124,8 @@
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ModifyProfilePage.xaml.cs">
-      <DependentUpon>ModifyProfilePage.xaml</DependentUpon>
+    <Compile Include="Views\UserProfilePage.xaml.cs">
+      <DependentUpon>UserProfilePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OptionsPage.xaml.cs">
       <DependentUpon>OptionsPage.xaml</DependentUpon>
@@ -198,7 +203,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ModifyProfilePage.xaml">
+    <Page Include="Views\UserProfilePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -312,6 +317,22 @@
     <None Include="Connected Services\LobbyServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\UserProfileServiceReference\GameClient.UserProfileServiceReference.UsernameChangeResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\UserProfileServiceReference\GameClient.UserProfileServiceReference.UserProfileDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\UserProfileServiceReference\GameServer.Contracts.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\UserProfileServiceReference\service.wsdl" />
+    <None Include="Connected Services\UserProfileServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\UserProfileServiceReference\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -359,6 +380,7 @@
     <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
+    <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Connected Services\GameServiceReference\item.disco" />
@@ -432,6 +454,41 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Avatar\default_avatar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\UserProfileServiceReference\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\UserProfileServiceReference\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\UserProfileServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\logo_main_menu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\fondo3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\fondoloop.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Assets\Icons\configuration_icon.png" />
+    <Resource Include="Assets\Icons\friendship_icon.png" />
+    <Resource Include="Assets\Icons\leaderboards_icon.png" />
+    <Resource Include="Assets\Icons\profile_icon.png" />
+    <Resource Include="Assets\Icons\shop_icon.png" />
+    <Resource Include="Assets\Icons\skins_icon.png" />
+    <Content Include="Assets\logoloop.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

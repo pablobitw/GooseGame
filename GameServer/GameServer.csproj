@@ -100,6 +100,7 @@
     <Compile Include="Contracts\IGameplayService.cs" />
     <Compile Include="Contracts\IGameService.cs" />
     <Compile Include="Contracts\ILobbyService.cs" />
+    <Compile Include="Contracts\IUserProfileService.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Friendship.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
@@ -147,6 +148,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\LobbyService.cs" />
+    <Compile Include="Services\UserProfileService.cs" />
     <Compile Include="Tile.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>

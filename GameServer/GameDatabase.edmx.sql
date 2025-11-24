@@ -2,8 +2,8 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/20/2025 17:31:40
--- Generated from EDMX file: C:\Users\Pablo Silva\source\repos\GooseGame\GameServer\GameDatabase.edmx
+-- Date Created: 11/22/2025 19:34:46
+-- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
 SET QUOTED_IDENTIFIER OFF;
@@ -206,6 +206,7 @@ CREATE TABLE [dbo].[Players] (
     [PlayerInventoryIdPlayerInventory] int  NOT NULL,
     [Account_IdAccount] int  NOT NULL,
     [GameIdGame] int  NULL,
+    [UsernameChangeCount] int  NOT NULL,
     [PlayerStat_IdPlayers] int  NOT NULL
 );
 GO
