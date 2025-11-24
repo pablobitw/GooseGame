@@ -486,6 +486,8 @@
     <Resource Include="Assets\Icons\profile_icon.png" />
     <Resource Include="Assets\Icons\shop_icon.png" />
     <Resource Include="Assets\Icons\skins_icon.png" />
+    <Resource Include="Assets\Icons\back_icon.png" />
+    <Resource Include="Assets\Icons\exit_icon.png" />
     <Content Include="Assets\logoloop.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

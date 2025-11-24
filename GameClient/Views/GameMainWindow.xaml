@@ -40,29 +40,51 @@
                             Margin="0,10" Width="514" Height="135"
                             FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" 
                             Click="PlayButtonClick"/>
-
-                    <Button x:Name="OptionsButton" Content="{x:Static props:Strings.OptionsButton}" 
-                            Style="{StaticResource OrangeButtonStyle}" 
-                            Margin="0,10" Width="514" Height="135"
-                            FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" 
-                            Click="OptionsButtonClick"/>
-
-                    <Button x:Name="QuitButton" Content="{x:Static props:Strings.QuitButton}" 
-                            Style="{StaticResource GreenButtonStyle}" 
-                            Margin="0,10" Width="514" Height="135"
-                            FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" 
-                            Click="QuitButtonClick"/>
                 </StackPanel>
 
+                <Button x:Name="QuitButton" 
+                        Height="150" Width="150" 
+                        HorizontalAlignment="Left" VerticalAlignment="Top" 
+                        Margin="40" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand" 
+                        Click="QuitButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Image Source="/Assets/Icons/exit_icon.png" Stretch="Uniform"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1" CenterX="50" CenterY="50"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <Button x:Name="ProfileButton" 
-                        Height="100" Width="100" 
+                        Height="150" Width="150" 
                         HorizontalAlignment="Right" VerticalAlignment="Top" 
                         Margin="40" 
                         Background="Transparent" 
                         BorderThickness="0" 
                         Cursor="Hand" 
                         Click="ProfileButtonClick">
-
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Grid>
@@ -70,7 +92,41 @@
                             </Grid>
                         </ControlTemplate>
                     </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.05" ScaleY="1.05" CenterX="50" CenterY="50"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
+                <Button x:Name="OptionsButton" 
+                        Height="150" Width="150"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                        Margin="40" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand" 
+                        Click="OptionsButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Image Source="/Assets/Icons/configuration_icon.png" Stretch="Uniform"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Opacity" Value="1"/>
