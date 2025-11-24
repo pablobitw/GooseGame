@@ -1,26 +1,45 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using GameClient; 
 
 namespace GameClient.Views
 {
-    
     public partial class OptionsPage : Page
     {
         public OptionsPage()
         {
             InitializeComponent();
+            LoadCurrentSettings();
+        }
+
+        private void LoadCurrentSettings()
+        {
+            // TODO: Cargar configuración guardada (UserPreferences o archivo local)
+            // Ejemplo:
+            // MusicSlider.Value = Settings.Default.MusicVolume;
+            // LanguageComboBox.SelectedIndex = ...
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            double musicVol = MusicSlider.Value;
+            double sfxVol = SfxSlider.Value;
+            string screenMode = (ScreenModeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            string language = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+
+            MessageBox.Show("¡Configuración guardada correctamente!", "Opciones", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as GameMainWindow;
+
+            if (mainWindow != null)
+            {
+                mainWindow.ShowMainMenu();
+            }
         }
     }
 }

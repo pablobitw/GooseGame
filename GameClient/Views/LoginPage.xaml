@@ -43,7 +43,7 @@
                     <Border x:Name="UsernameBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
                         <Grid>
                             <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
-                                       Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                                     Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                             <TextBox x:Name="UsernameTextBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
                                      TextChanged="OnUsernameTextChanged"/>
                         </Grid>
@@ -52,15 +52,16 @@
                     <Border x:Name="PasswordBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Margin="0,5" Height="40">
                         <Grid>
                             <TextBlock x:Name="PasswordPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
-                                       Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                                     Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                             <PasswordBox x:Name="PasswordBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
-                                         PasswordChanged="OnPasswordChanged"/>
+                                       PasswordChanged="OnPasswordChanged"/>
                         </Grid>
                     </Border>
 
                     <Button Content="{x:Static props:Strings.LoginButton}" 
                             Style="{StaticResource PrimaryButtonStyle}" 
                             Margin="1, 15,0,5"
+                            IsDefault="True"
                             Click="Login"/>
 
                     <Button Content="{x:Static props:Strings.ForgotPassLabel}" 

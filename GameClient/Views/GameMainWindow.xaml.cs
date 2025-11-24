@@ -47,7 +47,8 @@ namespace GameClient
 
         private void OptionsButtonClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Aquí se abriría la página de opciones.", "Función no implementada");
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new OptionsPage());
         }
 
         private void QuitButtonClick(object sender, RoutedEventArgs e)
