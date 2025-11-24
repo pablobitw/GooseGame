@@ -9,12 +9,10 @@
       FontFamily="/Assets/Fonts/#Dosis">
 
     <Page.Resources>
-        <!-- COLORES -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
         <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
         <SolidColorBrush x:Key="OrangeBrush" Color="#FD7E14"/>
 
-        <!-- ESTILO BOTÓN PRIMARIO -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -39,12 +37,10 @@
             </Style.Triggers>
         </Style>
 
-        <!-- ESTILO BOTÓN VERDE -->
         <Style x:Key="GreenButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
             <Setter Property="Background" Value="{StaticResource GreenBrush}"/>
         </Style>
 
-        <!-- ESTILO TEXTOS DE TITULO DE SECCIÓN -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -55,12 +51,10 @@
     </Page.Resources>
 
     <Grid>
-        <!-- FONDO -->
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
         </Grid.Background>
 
-        <!-- CONTENEDOR PRINCIPAL (TARJETA) -->
         <Border HorizontalAlignment="Center" VerticalAlignment="Center"
                 Width="1000" Height="850"
                 Background="#F0FFFFFF" 
@@ -74,14 +68,10 @@
             <Grid Margin="60">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <!-- Título -->
                     <RowDefinition Height="*"/>
-                    <!-- Contenido Scrollable -->
                     <RowDefinition Height="Auto"/>
-                    <!-- Botones Acción -->
                 </Grid.RowDefinitions>
 
-                <!-- TÍTULO -->
                 <TextBlock Text="OPCIONES" Grid.Row="0" 
                            FontSize="48" FontWeight="Bold" 
                            Foreground="#333" HorizontalAlignment="Center" 
@@ -126,7 +116,6 @@
 
                         <Separator Margin="0,20"/>
 
-                        <!-- 2. VIDEO -->
                         <TextBlock Text="Video" Style="{StaticResource SectionHeaderStyle}"/>
 
                         <Grid Margin="0,10">
@@ -144,7 +133,6 @@
 
                         <Separator Margin="0,20"/>
 
-                        <!-- 3. IDIOMA -->
                         <TextBlock Text="Idioma" Style="{StaticResource SectionHeaderStyle}"/>
 
                         <Grid Margin="0,10">
@@ -163,15 +151,12 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- BOTONES INFERIORES -->
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <!-- Botón Volver (Grisáceo/Primario) -->
                     <Button x:Name="BackButton" Content="Volver" 
                             Style="{StaticResource PrimaryButtonStyle}" 
                             Width="200" Margin="0,0,20,0"
                             Click="BackButton_Click"/>
 
-                    <!-- Botón Guardar (Verde) -->
                     <Button x:Name="SaveButton" Content="Guardar Cambios" 
                             Style="{StaticResource GreenButtonStyle}" 
                             Width="250"
