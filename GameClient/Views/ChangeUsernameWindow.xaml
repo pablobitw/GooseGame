@@ -1,0 +1,138 @@
+﻿<Window x:Class="GameClient.Views.ChangeUsernameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Cambiar Nombre de Usuario"
+        Height="550" Width="450"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- COLORES Y ESTILOS (Copiados para mantener consistencia visual) -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
+        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#DC3545"/>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <!-- BORDE PRINCIPAL (Tarjeta Blanca con Sombra) -->
+    <Border Background="White" CornerRadius="15" BorderBrush="#DDDDDD" BorderThickness="1" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
+        </Border.Effect>
+
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Botón Cerrar -->
+                <RowDefinition Height="Auto"/>
+                <!-- Título e Icono -->
+                <RowDefinition Height="*"/>
+                <!-- Contenido Dinámico -->
+            </Grid.RowDefinitions>
+
+            <!-- BOTÓN CERRAR (X) -->
+            <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Background="Transparent" BorderThickness="0" Foreground="#999"
+                    FontSize="18" Cursor="Hand" Click="CloseButton_Click"/>
+
+            <!-- CABECERA -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <!-- Usamos el icono de perfil para dar contexto -->
+                <Image Source="/Assets/Icons/profile_icon.png" Height="80" Margin="0,0,0,15"/>
+                <TextBlock Text="Cambiar Nombre" FontSize="28" FontWeight="Bold" Foreground="#333" 
+                           HorizontalAlignment="Center" FontFamily="/Assets/Fonts/#Dosis"/>
+            </StackPanel>
+
+            <!-- === PASO 1: VERIFICAR CÓDIGO === -->
+            <StackPanel x:Name="Step1_VerifyCode" Grid.Row="2" Visibility="Visible" VerticalAlignment="Center">
+
+                <TextBlock Text="Por seguridad, hemos enviado un código a tu correo. Ingrésalo para continuar." 
+                           TextWrapping="Wrap" TextAlignment="Center" Foreground="#666" Margin="0,0,0,25" FontSize="14"/>
+
+                <TextBlock Text="Código de Verificación" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,5"/>
+
+                <Border x:Name="CodeBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Height="45">
+                    <Grid>
+                        <TextBlock x:Name="CodePlaceholder" Text="Ej. 123456" Foreground="#AAA" 
+                                   VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                        <TextBox x:Name="CodeTextBox" Background="Transparent" BorderThickness="0" 
+                                 VerticalContentAlignment="Center" Padding="10,0" FontSize="16" MaxLength="6"
+                                 TextChanged="OnCodeTextChanged"/>
+                    </Grid>
+                </Border>
+                <!-- Mensaje de Error para Código -->
+                <TextBlock x:Name="CodeErrorLabel" Text="Código incorrecto o expirado" Foreground="{StaticResource DangerBrush}" 
+                           FontSize="12" Visibility="Collapsed" Margin="2,5,0,0"/>
+
+                <Button x:Name="VerifyCodeButton" Content="Verificar Código" 
+                        Style="{StaticResource PrimaryButtonStyle}" Height="50" Margin="0,25,0,0"
+                        Click="VerifyCodeButton_Click" IsDefault="True"/>
+
+                <Button Content="Reenviar Código" Background="Transparent" BorderThickness="0" 
+                        Foreground="{StaticResource PrimaryBrush}" Cursor="Hand" Margin="0,15,0,0"
+                        Click="ResendCode_Click"/>
+            </StackPanel>
+
+
+            <!-- === PASO 2: NUEVO NOMBRE (Oculto al inicio) === -->
+            <StackPanel x:Name="Step2_ChangeName" Grid.Row="2" Visibility="Collapsed" VerticalAlignment="Center">
+
+                <TextBlock Text="¡Código verificado! Escribe tu nuevo nombre." 
+                           TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource GreenBrush}" Margin="0,0,0,25" FontSize="14"/>
+
+                <TextBlock Text="Nuevo Nombre de Usuario" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,5"/>
+
+                <Border x:Name="UsernameBorder" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Height="45">
+                    <Grid>
+                        <TextBlock x:Name="UsernamePlaceholder" Text="Mínimo 3 caracteres" Foreground="#AAA" 
+                                   VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
+                        <TextBox x:Name="NewUsernameTextBox" Background="Transparent" BorderThickness="0" 
+                                 VerticalContentAlignment="Center" Padding="10,0" FontSize="16" MaxLength="20"
+                                 TextChanged="OnUsernameTextChanged"/>
+                    </Grid>
+                </Border>
+                <!-- Mensaje de Error para Nombre (Rojo si está ocupado) -->
+                <TextBlock x:Name="UsernameErrorLabel" Text="El nombre ya está en uso" Foreground="{StaticResource DangerBrush}" 
+                           FontSize="12" Visibility="Collapsed" Margin="2,5,0,0"/>
+
+                <Button x:Name="SaveButton" Content="Guardar Cambios" 
+                        Style="{StaticResource PrimaryButtonStyle}" Background="{StaticResource GreenBrush}"
+                        Height="50" Margin="0,25,0,0"
+                        Click="SaveButton_Click" IsDefault="True"/>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</Window>

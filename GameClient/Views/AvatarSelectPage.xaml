@@ -3,12 +3,92 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:GameClient.Views"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="AvatarSelectPage">
+      d:DesignHeight="1080" d:DesignWidth="1920"
+      Title="Seleccionar Avatar"
+      FontFamily="Segoe UI">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
+        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
+
+        <!-- Estilo para los items del ListBox (Quitar selección azul por defecto) -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Border" BorderThickness="0" Background="Transparent" Margin="10">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
 
     <Grid>
-        
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
+        </Grid.Background>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="1200" Height="900"
+                Background="#F2FFFFFF" BorderBrush="#FFB0B0B0" BorderThickness="2" CornerRadius="25">
+            <Grid Margin="50">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="SELECCIONA TU AVATAR" FontSize="48" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Elige una imagen de la galería" FontSize="20" Foreground="#666" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" CornerRadius="10" BorderBrush="#DDD" BorderThickness="1" Margin="0,0,0,30">
+
+                    <ListBox x:Name="AvatarsListBox" 
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             SelectionChanged="AvatarsListBox_SelectionChanged"
+                             Background="Transparent" BorderThickness="0" Padding="20">
+
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="150" Height="150" CornerRadius="100" BorderThickness="4" Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="Gray"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#28A745"/>
+                                                    <Setter Property="BorderThickness" Value="6"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <Border.Background>
+                                        <ImageBrush ImageSource="{Binding FullPath}" Stretch="UniformToFill"/>
+                                    </Border.Background>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="BackButton" Content="Cancelar" Width="200" Height="60" Margin="0,0,20,0" Click="BackButton_Click"/>
+                    <Button x:Name="SaveAvatarButton" Content="Guardar Avatar" Width="250" Height="60" Click="SaveAvatarButton_Click" IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

@@ -3,18 +3,16 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:GameClient.Views"
-      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="UserProfilePage"
       FontFamily="Segoe UI">
 
     <Page.Resources>
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/> <!-- Azul tipo VS -->
-        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>   <!-- Verde Éxito -->
-        <SolidColorBrush x:Key="OrangeBrush" Color="#FD7E14"/>  <!-- Naranja Acción -->
-        <SolidColorBrush x:Key="DangerBrush" Color="#DC3545"/>  <!-- Rojo Error -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
+        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
+        <SolidColorBrush x:Key="OrangeBrush" Color="#FD7E14"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#DC3545"/>
 
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
@@ -33,6 +31,9 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -65,13 +66,12 @@
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
 
-                    <Border Width="300" Height="300" CornerRadius="150" 
-                            BorderBrush="{StaticResource PrimaryBrush}" BorderThickness="5" Margin="0,0,0,30">
+                    <Border Width="450" Height="306" CornerRadius="150" 
+                            BorderThickness="0" Margin="0,0,0,30">
                         <Border.Background>
-                            <ImageBrush ImageSource="/Assets/Avatar/default_avatar.png" Stretch="UniformToFill"/>
+                            <ImageBrush x:Name="CurrentAvatarBrush" ImageSource="/Assets/Avatar/default_avatar.png" Stretch="UniformToFill"/>
                         </Border.Background>
                     </Border>
-
                     <Button x:Name="ChangeAvatarButton" 
                             Content="📷 Cambiar Foto" 
                             Style="{StaticResource OrangeButtonStyle}" 
@@ -89,7 +89,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Partidas Jugadas:" FontSize="20" Grid.Column="0"/>
-                                <TextBlock x:Name="GamesPlayedText" Text="45" FontSize="20" FontWeight="Bold" Grid.Column="1"/>
+                                <TextBlock x:Name="GamesPlayedText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1"/>
                             </Grid>
 
                             <Grid Margin="0,5">
@@ -98,7 +98,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Victorias:" FontSize="20" Grid.Column="0"/>
-                                <TextBlock x:Name="GamesWonText" Text="12" FontSize="20" FontWeight="Bold" Grid.Column="1" Foreground="{StaticResource GreenBrush}"/>
+                                <TextBlock x:Name="GamesWonText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1" Foreground="{StaticResource GreenBrush}"/>
                             </Grid>
 
                             <Grid Margin="0,5">
@@ -109,7 +109,7 @@
                                 <TextBlock Text="Monedas:" FontSize="20" Grid.Column="0"/>
                                 <StackPanel Orientation="Horizontal" Grid.Column="1">
                                     <TextBlock Text="💰" FontSize="20" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <TextBlock x:Name="CoinsText" Text="250" FontSize="20" FontWeight="Bold" Foreground="#D4AF37"/>
+                                    <TextBlock x:Name="CoinsText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D4AF37"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -128,14 +128,19 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="UsernameTextBox" Text="PabloGamer" FontSize="24" Padding="10" Height="50" VerticalContentAlignment="Center" Grid.Column="0"/>
-                        <Button x:Name="SaveUsernameButton" Content="Guardar" Style="{StaticResource PrimaryButtonStyle}" Width="120" Height="50" Margin="10,0,0,0" Grid.Column="1" Click="SaveUsernameButton_Click"/>
+                        <TextBox x:Name="UsernameTextBox" Text="Cargando..." FontSize="24" Padding="10" Height="50" 
+                                 VerticalContentAlignment="Center" Grid.Column="0"
+                                 IsEnabled="False" Background="#EEE" Foreground="#888"/>
+
+                        <Button x:Name="ChangeUsernameButton" Content="Cambiar" Style="{StaticResource PrimaryButtonStyle}" 
+                                Width="120" Height="50" Margin="10,0,0,0" Grid.Column="1" 
+                                Click="ChangeUsernameButton_Click"/>
                     </Grid>
-                    
-                    <TextBlock x:Name="UsernameInfoLabel" Text="Espera 3 días para cambiarlo de nuevo." FontSize="14" Foreground="{StaticResource DangerBrush}" Margin="0,0,0,30" Visibility="Collapsed"/>
+
+                    <TextBlock x:Name="UsernameInfoLabel" Text="" FontSize="14" Foreground="{StaticResource DangerBrush}" Margin="0,0,0,30" Visibility="Collapsed"/>
 
                     <TextBlock Text="Correo Electrónico:" FontSize="20" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,5"/>
-                    <TextBox x:Name="EmailTextBox" Text="pablo@uv.mx" FontSize="24" Padding="10" Height="50" VerticalContentAlignment="Center" 
+                    <TextBox x:Name="EmailTextBox" Text="Cargando..." FontSize="24" Padding="10" Height="50" VerticalContentAlignment="Center" 
                              IsEnabled="False" Background="#EEE" Foreground="#888" Margin="0,0,0,40"/>
 
                     <Button x:Name="ChangePasswordButton" 

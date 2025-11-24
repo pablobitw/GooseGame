@@ -2,130 +2,125 @@
 using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using GameClient.UserProfileServiceReference;
-using GameClient; // Necesario para ver GameMainWindow
+using GameClient;
 
 namespace GameClient.Views
 {
     public partial class UserProfilePage : Page
     {
         private readonly string userEmail;
-        private string currentUsername;
 
         public UserProfilePage(string email)
         {
             InitializeComponent();
             userEmail = email;
-            LoadUserProfile();
+
+            this.Loaded += UserProfilePage_Loaded;
         }
 
         public UserProfilePage() : this("dev@test.com")
         {
         }
 
-        private void LoadUserProfile()
+        private void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (EmailTextBox != null)
-            {
-                EmailTextBox.Text = userEmail;
-            }
+            LoadUserProfile();
         }
 
-        private async void SaveUsernameButton_Click(object sender, RoutedEventArgs e)
+        private async void LoadUserProfile()
         {
-            string newUsername = UsernameTextBox.Text.Trim();
-
-            if (string.IsNullOrEmpty(newUsername))
-            {
-                MessageBox.Show("El nombre de usuario no puede estar vacío.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (newUsername.Length < 3)
-            {
-                MessageBox.Show("El nombre es muy corto (mínimo 3 caracteres).", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             var client = new UserProfileServiceClient();
-            bool connectionError = false;
-            string errorMessage = string.Empty;
 
             try
             {
-                var result = await client.ChangeUsernameAsync(userEmail, newUsername);
+                var profile = await client.GetUserProfileAsync(userEmail);
 
-                switch (result)
+                if (profile != null)
                 {
-                    case UsernameChangeResult.Success:
-                        MessageBox.Show("¡Nombre de usuario actualizado correctamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                        currentUsername = newUsername;
-                        break;
+                    UsernameTextBox.Text = profile.Username;
 
-                    case UsernameChangeResult.UsernameAlreadyExists:
-                        MessageBox.Show($"El nombre '{newUsername}' ya está en uso. Elige otro.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
+                    if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
 
-                    case UsernameChangeResult.LimitReached:
-                        MessageBox.Show("Has alcanzado el límite de cambios de nombre permitidos (3).", "Límite Alcanzado", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
+                    if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
+                    if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
+                    if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
 
-                    case UsernameChangeResult.CooldownActive:
-                        MessageBox.Show("No puedes cambiar tu nombre aún. Intenta más tarde.", "Espera", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
+                    string avatarName = profile.AvatarPath;
+                    if (string.IsNullOrEmpty(avatarName)) avatarName = "default_avatar.png";
 
-                    case UsernameChangeResult.UserNotFound:
-                        MessageBox.Show("Error crítico: Usuario no encontrado.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
+                    try
+                    {
+                        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                        string fullPath = System.IO.Path.Combine(baseDir, "Assets", "Avatar", avatarName);
 
-                    case UsernameChangeResult.FatalError:
-                        MessageBox.Show("Ocurrió un error interno en el servidor.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                           
+                            var bitmap = new BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.EndInit();
+
+                            CurrentAvatarBrush.ImageSource = bitmap;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error cargando avatar: " + ex.Message);
+                    }
+
+                    if (profile.UsernameChangeCount >= 3)
+                    {
+                        UsernameInfoLabel.Text = "Has alcanzado el límite de cambios de nombre (3/3).";
+                        UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Red);
+                        UsernameInfoLabel.Visibility = Visibility.Visible;
+                        ChangeUsernameButton.IsEnabled = false;
+                    }
+                    else
+                    {
+                        UsernameInfoLabel.Text = $"Te quedan {3 - profile.UsernameChangeCount} cambios de nombre.";
+                        UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Gray);
+                        UsernameInfoLabel.Visibility = Visibility.Visible;
+                        ChangeUsernameButton.IsEnabled = true;
+                    }
                 }
-            }
-            catch (EndpointNotFoundException)
-            {
-                errorMessage = "No se pudo conectar al servidor. Verifica tu conexión.";
-                connectionError = true;
-            }
-            catch (TimeoutException)
-            {
-                errorMessage = "El servidor tardó demasiado en responder.";
-                connectionError = true;
-            }
-            catch (CommunicationException)
-            {
-                errorMessage = "Error de comunicación con el servidor.";
-                connectionError = true;
+                else
+                {
+                    MessageBox.Show("No se pudo cargar el perfil del usuario.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error inesperado: {ex.Message}";
-                connectionError = true;
+                MessageBox.Show($"Error de conexión al cargar perfil: {ex.Message}", "Error de Red");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
+                if (client.State == CommunicationState.Opened) client.Close();
             }
+        }
 
-            if (connectionError)
-            {
-                MessageBox.Show(errorMessage, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+        private void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
+        {
+            var changeWindow = new ChangeUsernameWindow(userEmail);
+            changeWindow.ShowDialog();
+
+            LoadUserProfile();
         }
 
         private void ChangeAvatarButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Funcionalidad de Selección de Avatar pendiente de implementación.", "Info");
+            NavigationService.Navigate(new AvatarSelectPage(userEmail));
         }
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
-            // NavigationService.Navigate(new ChangePasswordPage(userEmail));
+            //var passWindow = new ChangePasswordWindow(userEmail);
+            //passWindow.ShowDialog();
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

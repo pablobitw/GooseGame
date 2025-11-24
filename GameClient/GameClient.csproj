@@ -97,12 +97,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\AudioManager.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
+    <Compile Include="Models\AvatarItem.cs" />
+    <Compile Include="ViewModels\AvatarViewModel.cs" />
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\BoardPage.xaml.cs">
       <DependentUpon>BoardPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ChangeUsernameWindow.xaml.cs">
+      <DependentUpon>ChangeUsernameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CreateOrJoinMatch.xaml.cs">
       <DependentUpon>CreateOrJoinMatch.xaml</DependentUpon>
@@ -173,6 +179,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\BoardPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ChangeUsernameWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -343,9 +353,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Assets\LOGO.png" />
   </ItemGroup>
@@ -426,7 +434,9 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Avatar\profilepic1.png" />
+    <Content Include="Assets\Avatar\profilepic1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Connected Services\LobbyServiceReference\configuration91.svcinfo" />
@@ -457,7 +467,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Avatar\default_avatar.png" />
+    <Content Include="Assets\Avatar\default_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Connected Services\UserProfileServiceReference\configuration91.svcinfo" />
