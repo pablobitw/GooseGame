@@ -547,6 +547,22 @@ ON [dbo].[Players]
     ([GameIdGame]);
 GO
 
+
+SET IDENTITY_INSERT [dbo].[BoardSets] ON;
+GO
+
+-- Insertar Tablero 1
+INSERT INTO [dbo].[BoardSets] (idBoard, Name, Description, TileCount)
+VALUES (1, 'Tablero Clásico', 'El tablero tradicional del juego de la oca.', 64);
+
+-- Insertar Tablero 2
+INSERT INTO [dbo].[BoardSets] (idBoard, Name, Description, TileCount)
+VALUES (2, 'Tablero Especial', 'Tablero oscuro con reglas avanzadas.', 64);
+
+-- Desactivamos la insercion explicita
+SET IDENTITY_INSERT [dbo].[BoardSets] OFF;
+GO
+
 -- --------------------------------------------------
 -- Script has ended
 -- --------------------------------------------------

@@ -399,16 +399,29 @@ namespace GameClient.Views
 
         private async Task PollLobbyState()
         {
+            // 1. Detener el timer para evitar solapamiento de peticiones
+            // si el servidor tarda más de 3 segundos en responder.
+            pollingTimer.Stop();
+
             try
             {
+                // 2. AUTOREPARACIÓN: Verificar si el cliente es válido
+                if (lobbyClient == null ||
+                    lobbyClient.State == CommunicationState.Faulted ||
+                    lobbyClient.State == CommunicationState.Closed)
+                {
+                    // Si está roto o cerrado, lo recreamos
+                    lobbyClient = new LobbyServiceClient();
+                }
+
                 var state = await lobbyClient.GetLobbyStateAsync(lobbyCode);
 
                 if (state.IsGameStarted)
                 {
-                    pollingTimer.Stop();
+                    // El timer ya está detenido, no hace falta Stop() aquí
                     if (isHost)
                     {
-                        MessageBox.Show("Error de estado");
+                        MessageBox.Show("Error de estado: El juego inició pero soy Host sin saberlo.");
                     }
                     else
                     {
@@ -420,13 +433,23 @@ namespace GameClient.Views
                     UpdatePlayerListUI(state.Players);
                 }
             }
+            catch (EndpointNotFoundException)
+            {
+                Console.WriteLine("Servidor no encontrado. Reintentando...");
+            }
             catch (CommunicationException)
             {
-                Console.WriteLine("Error de conexión al sondear.");
+                Console.WriteLine("Problema de conexión. El cliente intentará reconectar en el siguiente tick.");
+
+                if (lobbyClient != null) lobbyClient.Abort();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error inesperado: " + ex.Message);
+            }
+            finally
+            {               
+                pollingTimer.Start();
             }
         }
 
