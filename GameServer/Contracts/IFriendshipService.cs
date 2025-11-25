@@ -31,5 +31,8 @@ namespace GameServer.Contracts
 
         [OperationContract]
         Task<List<FriendDto>> GetPendingRequests(string username);
+
+        [OperationContract]
+        Task<bool> RemoveFriend(string username, string friendUsername);
     }
 }

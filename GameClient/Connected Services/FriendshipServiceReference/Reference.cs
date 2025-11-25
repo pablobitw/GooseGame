@@ -117,6 +117,12 @@ namespace GameClient.FriendshipServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetPendingRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetPendingRequestsResponse")]
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetPendingRequestsAsync(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
+        bool RemoveFriend(string username, string friendUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
+        System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -176,6 +182,14 @@ namespace GameClient.FriendshipServiceReference {
         
         public System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetPendingRequestsAsync(string username) {
             return base.Channel.GetPendingRequestsAsync(username);
+        }
+        
+        public bool RemoveFriend(string username, string friendUsername) {
+            return base.Channel.RemoveFriend(username, friendUsername);
+        }
+        
+        public System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername) {
+            return base.Channel.RemoveFriendAsync(username, friendUsername);
         }
     }
 }

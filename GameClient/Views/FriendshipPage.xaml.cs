@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel; 
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,17 +11,39 @@ using GameClient.Models;
 
 namespace GameClient.Views
 {
-    public partial class FriendshipPage : Page
+    public partial class FriendshipPage : Page, INotifyPropertyChanged
     {
         public ObservableCollection<FriendDisplayModel> FriendsList { get; set; }
         public ObservableCollection<FriendRequestDisplayModel> FriendRequestsList { get; set; }
 
         private readonly string _currentUsername;
 
+        private int _requestCount;
+        public int RequestCount
+        {
+            get { return _requestCount; }
+            set
+            {
+                _requestCount = value;
+                OnPropertyChanged(nameof(RequestCount));
+                OnPropertyChanged(nameof(RequestBadgeVisibility));
+            }
+        }
+
+        public Visibility RequestBadgeVisibility => RequestCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public FriendshipPage(string username)
         {
             InitializeComponent();
-            _currentUsername = username; 
+            _currentUsername = username;
+
+            this.DataContext = this;
 
             FriendsList = new ObservableCollection<FriendDisplayModel>();
             FriendRequestsList = new ObservableCollection<FriendRequestDisplayModel>();
@@ -64,6 +87,10 @@ namespace GameClient.Views
             {
                 MessageBox.Show("Tiempo de espera agotado.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading friends: " + ex.Message);
+            }
             UpdateEmptyStateMessages();
         }
 
@@ -83,6 +110,8 @@ namespace GameClient.Views
                             Username = req.Username
                         });
                     }
+
+                    RequestCount = FriendRequestsList.Count;
                 }
             }
             catch (CommunicationException)
@@ -129,7 +158,7 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    MessageBox.Show($"No se pudo enviar la solicitud a '{targetUser}'. Verifica que el usuario exista.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"No se pudo enviar la solicitud a '{targetUser}'.\nVerifica que el usuario exista o no sean amigos ya.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (CommunicationException)
@@ -155,14 +184,15 @@ namespace GameClient.Views
                 if (success)
                 {
                     MessageBox.Show($"¡Ahora eres amigo de {requesterUsername}!", "Aceptado", MessageBoxButton.OK, MessageBoxImage.Information);
+
                     RemoveRequestFromList(requesterUsername);
-                    FriendsList.Add(new FriendDisplayModel { Username = requesterUsername, IsOnline = true });
+                    FriendsList.Add(new FriendDisplayModel { Username = requesterUsername, IsOnline = true }); 
                     UpdateEmptyStateMessages();
                 }
                 else
                 {
-                    MessageBox.Show("Error al aceptar.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    await LoadRequestsAsync();
+                    MessageBox.Show("Error al aceptar la solicitud.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await LoadRequestsAsync(); 
                 }
             }
             catch (CommunicationException)
@@ -190,10 +220,68 @@ namespace GameClient.Views
                     MessageBox.Show($"Solicitud rechazada.", "Rechazado", MessageBoxButton.OK, MessageBoxImage.Information);
                     RemoveRequestFromList(requesterUsername);
                 }
+                else
+                {
+                    RemoveRequestFromList(requesterUsername);
+                }
             }
             catch (CommunicationException)
             {
                 MessageBox.Show("Error de red.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button == null) return;
+
+            string friendUsername = button.Tag.ToString();
+
+            var result = MessageBox.Show(
+                $"¿Estás seguro de eliminar a {friendUsername}?",
+                "Confirmar Eliminación",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    bool deleted = false;
+                    using (var client = new FriendshipServiceClient())
+                    {
+                        deleted = await client.RemoveFriendAsync(_currentUsername, friendUsername);
+                    }
+
+                    if (deleted)
+                    {
+                        FriendDisplayModel friendToRemove = null;
+                        foreach (var friend in FriendsList)
+                        {
+                            if (friend.Username == friendUsername)
+                            {
+                                friendToRemove = friend;
+                                break;
+                            }
+                        }
+
+                        if (friendToRemove != null)
+                        {
+                            FriendsList.Remove(friendToRemove);
+                            UpdateEmptyStateMessages();
+                        }
+                        MessageBox.Show($"Amigo eliminado.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error al eliminar. Intenta nuevamente.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (CommunicationException)
+                {
+                    MessageBox.Show("Error de conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -208,16 +296,23 @@ namespace GameClient.Views
                     break;
                 }
             }
+
             if (itemToRemove != null)
             {
                 FriendRequestsList.Remove(itemToRemove);
+                RequestCount = FriendRequestsList.Count;
                 UpdateEmptyStateMessages();
             }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (NavigationService.CanGoBack) NavigationService.GoBack();
+            var mainWindow = Window.GetWindow(this) as GameMainWindow;
+
+            if (mainWindow != null)
+            {
+                mainWindow.ShowMainMenu();
+            }
         }
     }
 }

@@ -176,6 +176,39 @@ namespace GameServer.Services
             }
         }
 
+        public async Task<bool> RemoveFriend(string username, string friendUsername)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var user1 = context.Players.FirstOrDefault(p => p.Username == username);
+                    var user2 = context.Players.FirstOrDefault(p => p.Username == friendUsername);
+
+                    if (user1 == null || user2 == null) return false;
+
+                    var friendship = context.Friendships.FirstOrDefault(f =>
+                        ((f.PlayerIdPlayer == user1.IdPlayer && f.Player1_IdPlayer == user2.IdPlayer) ||
+                         (f.PlayerIdPlayer == user2.IdPlayer && f.Player1_IdPlayer == user1.IdPlayer))
+                        && f.FriendshipStatus == (int)FriendshipStatus.Accepted);
+
+                    if (friendship != null)
+                    {
+                        context.Friendships.Remove(friendship);
+                        await context.SaveChangesAsync();
+                        Log.Info($"Amistad eliminada entre {username} y {friendUsername}");
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error eliminando amigo", ex);
+                return false;
+            }
+        }
+
         public async Task<List<FriendDto>> GetPendingRequests(string username)
         {
             try

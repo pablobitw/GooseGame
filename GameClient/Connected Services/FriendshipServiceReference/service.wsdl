@@ -41,6 +41,12 @@
   <wsdl:message name="IFriendshipService_GetPendingRequests_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetPendingRequestsResponse" />
   </wsdl:message>
+  <wsdl:message name="IFriendshipService_RemoveFriend_InputMessage">
+    <wsdl:part name="parameters" element="tns:RemoveFriend" />
+  </wsdl:message>
+  <wsdl:message name="IFriendshipService_RemoveFriend_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RemoveFriendResponse" />
+  </wsdl:message>
   <wsdl:portType name="IFriendshipService">
     <wsdl:operation name="SendFriendRequest">
       <wsdl:input wsaw:Action="http://tempuri.org/IFriendshipService/SendFriendRequest" message="tns:IFriendshipService_SendFriendRequest_InputMessage" />
@@ -57,6 +63,10 @@
     <wsdl:operation name="GetPendingRequests">
       <wsdl:input wsaw:Action="http://tempuri.org/IFriendshipService/GetPendingRequests" message="tns:IFriendshipService_GetPendingRequests_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/GetPendingRequestsResponse" message="tns:IFriendshipService_GetPendingRequests_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveFriend">
+      <wsdl:input wsaw:Action="http://tempuri.org/IFriendshipService/RemoveFriend" message="tns:IFriendshipService_RemoveFriend_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/RemoveFriendResponse" message="tns:IFriendshipService_RemoveFriend_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IFriendshipService" type="tns:IFriendshipService">
@@ -92,6 +102,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetPendingRequests">
       <soap12:operation soapAction="http://tempuri.org/IFriendshipService/GetPendingRequests" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveFriend">
+      <soap12:operation soapAction="http://tempuri.org/IFriendshipService/RemoveFriend" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
