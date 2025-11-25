@@ -147,6 +147,41 @@
                     </Button.Style>
                 </Button>
 
+                <Button x:Name="FriendsButton" 
+                        Height="150" Width="150"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom" 
+                        Margin="40" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand" 
+                        Click="FriendsButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Image Source="/Assets/Icons/friendship_icon.png" Stretch="Uniform"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.05" ScaleY="1.05" CenterX="50" CenterY="50"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
             </Grid>
 
             <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>

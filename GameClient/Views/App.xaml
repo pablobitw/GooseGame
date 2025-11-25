@@ -5,6 +5,10 @@
              StartupUri="AuthWindow.xaml">
     <Application.Resources>
 
+        <!-- ¡ESTO FALTABA! Define el color principal para usarlo como recurso -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#0078D4"/>
+
+        <!-- Estilos de Botones -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#0078D4"/>
             <Setter Property="Foreground" Value="White"/>
@@ -40,7 +44,7 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="Black"/>
         </Style>
-        
+
         <Style x:Key="LinkButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -63,6 +67,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
         <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
             <Setter Property="BorderBrush" Value="#CCCCCC"/>
             <Setter Property="BorderThickness" Value="1"/>

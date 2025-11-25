@@ -18,37 +18,62 @@ namespace GameServer
 
             try
             {
+                // Instanciamos todos los Hosts.
+                // Nota: Se agrega friendshipServiceHost al final de la cadena de 'using'.
                 using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
                 using (ServiceHost lobbyServiceHost = new ServiceHost(typeof(LobbyService)))
                 using (ServiceHost gameplayServiceHost = new ServiceHost(typeof(GameplayService)))
                 using (ServiceHost userProfileServiceHost = new ServiceHost(typeof(UserProfileService)))
+                using (ServiceHost friendshipServiceHost = new ServiceHost(typeof(FriendshipService)))
                 {
                     // 1. GameService
                     gameServiceHost.Open();
                     Log.Info("GameService is running and listening on:");
                     foreach (var endpoint in gameServiceHost.Description.Endpoints)
+                    {
                         Log.Info($"-> {endpoint.Address}");
+                    }
 
+                    // 2. ChatService
                     chatServiceHost.Open();
                     Log.Info("ChatService is running and listening on:");
                     foreach (var endpoint in chatServiceHost.Description.Endpoints)
+                    {
                         Log.Info($"-> {endpoint.Address}");
+                    }
 
+                    // 3. LobbyService
                     lobbyServiceHost.Open();
                     Log.Info("LobbyService is running and listening on:");
                     foreach (var endpoint in lobbyServiceHost.Description.Endpoints)
+                    {
                         Log.Info($"-> {endpoint.Address}");
+                    }
 
+                    // 4. GameplayService
                     gameplayServiceHost.Open();
                     Log.Info("GameplayService is running and listening on:");
                     foreach (var endpoint in gameplayServiceHost.Description.Endpoints)
+                    {
                         Log.Info($"-> {endpoint.Address}");
+                    }
 
+                    // 5. UserProfileService
                     userProfileServiceHost.Open();
                     Log.Info("UserProfileService is running and listening on:");
                     foreach (var endpoint in userProfileServiceHost.Description.Endpoints)
+                    {
                         Log.Info($"-> {endpoint.Address}");
+                    }
+
+                    // 6. FriendshipService (NUEVO)
+                    friendshipServiceHost.Open();
+                    Log.Info("FriendshipService is running and listening on:");
+                    foreach (var endpoint in friendshipServiceHost.Description.Endpoints)
+                    {
+                        Log.Info($"-> {endpoint.Address}");
+                    }
 
                     Log.Info(LogSeparator);
                     Log.Warn("Server is fully operational. Press [Enter] to stop.");

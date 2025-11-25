@@ -72,6 +72,13 @@ namespace GameClient
             MainFrame.Navigate(new UserProfilePage(_username));
         }
 
+    
+        private void FriendsButtonClick(object sender, RoutedEventArgs e)
+        {
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new FriendshipPage(_username));
+        }
+
         public void ShowMainMenu()
         {
             MainFrame.Content = null;
