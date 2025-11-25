@@ -17,9 +17,16 @@ namespace GameServer.Contracts
         [DataMember]
         public bool IsOnline { get; set; }
     }
-    [ServiceContract]
+
+    [ServiceContract(CallbackContract = typeof(IFriendshipServiceCallback))]
     public interface IFriendshipService
     {
+        [OperationContract]
+        void Connect(string username);
+
+        [OperationContract]
+        void Disconnect(string username);
+
         [OperationContract]
         Task<bool> SendFriendRequest(string senderUsername, string receiverUsername);
 

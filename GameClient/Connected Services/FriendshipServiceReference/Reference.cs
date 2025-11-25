@@ -91,8 +91,20 @@ namespace GameClient.FriendshipServiceReference {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="FriendshipServiceReference.IFriendshipService")]
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="FriendshipServiceReference.IFriendshipService", CallbackContract=typeof(GameClient.FriendshipServiceReference.IFriendshipServiceCallback))]
     public interface IFriendshipService {
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/Connect", ReplyAction="http://tempuri.org/IFriendshipService/ConnectResponse")]
+        void Connect(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/Connect", ReplyAction="http://tempuri.org/IFriendshipService/ConnectResponse")]
+        System.Threading.Tasks.Task ConnectAsync(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/Disconnect", ReplyAction="http://tempuri.org/IFriendshipService/DisconnectResponse")]
+        void Disconnect(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/Disconnect", ReplyAction="http://tempuri.org/IFriendshipService/DisconnectResponse")]
+        System.Threading.Tasks.Task DisconnectAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/SendFriendRequestResponse")]
         bool SendFriendRequest(string senderUsername, string receiverUsername);
@@ -126,30 +138,57 @@ namespace GameClient.FriendshipServiceReference {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    public interface IFriendshipServiceCallback {
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnFriendRequestReceived")]
+        void OnFriendRequestReceived();
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnFriendListUpdated")]
+        void OnFriendListUpdated();
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface IFriendshipServiceChannel : GameClient.FriendshipServiceReference.IFriendshipService, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class FriendshipServiceClient : System.ServiceModel.ClientBase<GameClient.FriendshipServiceReference.IFriendshipService>, GameClient.FriendshipServiceReference.IFriendshipService {
+    public partial class FriendshipServiceClient : System.ServiceModel.DuplexClientBase<GameClient.FriendshipServiceReference.IFriendshipService>, GameClient.FriendshipServiceReference.IFriendshipService {
         
-        public FriendshipServiceClient() {
+        public FriendshipServiceClient(System.ServiceModel.InstanceContext callbackInstance) : 
+                base(callbackInstance) {
         }
         
-        public FriendshipServiceClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+        public FriendshipServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName) : 
+                base(callbackInstance, endpointConfigurationName) {
         }
         
-        public FriendshipServiceClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public FriendshipServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, string remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public FriendshipServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public FriendshipServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public FriendshipServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+        public FriendshipServiceClient(System.ServiceModel.InstanceContext callbackInstance, System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, binding, remoteAddress) {
+        }
+        
+        public void Connect(string username) {
+            base.Channel.Connect(username);
+        }
+        
+        public System.Threading.Tasks.Task ConnectAsync(string username) {
+            return base.Channel.ConnectAsync(username);
+        }
+        
+        public void Disconnect(string username) {
+            base.Channel.Disconnect(username);
+        }
+        
+        public System.Threading.Tasks.Task DisconnectAsync(string username) {
+            return base.Channel.DisconnectAsync(username);
         }
         
         public bool SendFriendRequest(string senderUsername, string receiverUsername) {

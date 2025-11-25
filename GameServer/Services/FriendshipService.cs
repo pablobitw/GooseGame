@@ -3,15 +3,57 @@ using System.Collections.Generic;
 using System.Data.Entity.Core;
 using System.Data.SqlClient;
 using System.Linq;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using GameServer.Contracts;
 using log4net;
 
 namespace GameServer.Services
 {
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.Single)]
     public class FriendshipService : IFriendshipService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(FriendshipService));
+        private static readonly Dictionary<string, IFriendshipServiceCallback> _connectedClients = new Dictionary<string, IFriendshipServiceCallback>();
+        private static readonly object _locker = new object();
+
+        public void Connect(string username)
+        {
+            try
+            {
+                var callback = OperationContext.Current.GetCallbackChannel<IFriendshipServiceCallback>();
+                lock (_locker)
+                {
+                    if (!_connectedClients.ContainsKey(username))
+                    {
+                        _connectedClients.Add(username, callback);
+                    }
+                    else
+                    {
+                        _connectedClients[username] = callback;
+                    }
+                }
+
+                NotifyFriendsOfStatusChange(username);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error registering client {username}", ex);
+            }
+        }
+
+        public void Disconnect(string username)
+        {
+            lock (_locker)
+            {
+                if (_connectedClients.ContainsKey(username))
+                {
+                    _connectedClients.Remove(username);
+                }
+            }
+
+            NotifyFriendsOfStatusChange(username);
+        }
 
         public async Task<bool> SendFriendRequest(string senderUsername, string receiverUsername)
         {
@@ -51,9 +93,9 @@ namespace GameServer.Services
 
                     var newFriendship = new Friendship
                     {
-                        PlayerIdPlayer = sender.IdPlayer,     
-                        Player1_IdPlayer = receiver.IdPlayer, 
-                        FriendshipStatus = (int)FriendshipStatus.Pending, 
+                        PlayerIdPlayer = sender.IdPlayer,
+                        Player1_IdPlayer = receiver.IdPlayer,
+                        FriendshipStatus = (int)FriendshipStatus.Pending,
                         RequestDate = DateTime.Now
                     };
 
@@ -61,6 +103,8 @@ namespace GameServer.Services
                     await context.SaveChangesAsync();
 
                     Log.Info($"Friend request sent from {senderUsername} to {receiverUsername}");
+                    NotifyUserRequestReceived(receiverUsername);
+
                     return true;
                 }
             }
@@ -112,6 +156,10 @@ namespace GameServer.Services
 
                     await context.SaveChangesAsync();
                     Log.Info($"User {respondingUsername} responded {isAccepted} to request from {requesterUsername}");
+
+                    NotifyUserListUpdated(requesterUsername);
+                    NotifyUserListUpdated(respondingUsername);
+
                     return true;
                 }
             }
@@ -123,6 +171,43 @@ namespace GameServer.Services
             catch (EntityException ex)
             {
                 Log.Error("Entity context error in RespondToFriendRequest", ex);
+                return false;
+            }
+        }
+
+        public async Task<bool> RemoveFriend(string username, string friendUsername)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var user1 = context.Players.FirstOrDefault(p => p.Username == username);
+                    var user2 = context.Players.FirstOrDefault(p => p.Username == friendUsername);
+
+                    if (user1 == null || user2 == null) return false;
+
+                    var friendship = context.Friendships.FirstOrDefault(f =>
+                        ((f.PlayerIdPlayer == user1.IdPlayer && f.Player1_IdPlayer == user2.IdPlayer) ||
+                         (f.PlayerIdPlayer == user2.IdPlayer && f.Player1_IdPlayer == user1.IdPlayer))
+                        && f.FriendshipStatus == (int)FriendshipStatus.Accepted);
+
+                    if (friendship != null)
+                    {
+                        context.Friendships.Remove(friendship);
+                        await context.SaveChangesAsync();
+                        Log.Info($"Amistad eliminada entre {username} y {friendUsername}");
+
+                        NotifyUserListUpdated(username);
+                        NotifyUserListUpdated(friendUsername);
+
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error eliminando amigo", ex);
                 return false;
             }
         }
@@ -157,11 +242,17 @@ namespace GameServer.Services
                         var friendEntity = context.Players.FirstOrDefault(p => p.IdPlayer == friendId);
                         if (friendEntity != null)
                         {
+                            bool isUserOnline = false;
+                            lock (_locker)
+                            {
+                                isUserOnline = _connectedClients.ContainsKey(friendEntity.Username);
+                            }
+
                             friendsList.Add(new FriendDto
                             {
                                 Username = friendEntity.Username,
                                 AvatarPath = friendEntity.Avatar,
-                                IsOnline = false 
+                                IsOnline = isUserOnline
                             });
                         }
                     }
@@ -173,39 +264,6 @@ namespace GameServer.Services
             {
                 Log.Error("Database error in GetFriendList", ex);
                 return new List<FriendDto>();
-            }
-        }
-
-        public async Task<bool> RemoveFriend(string username, string friendUsername)
-        {
-            try
-            {
-                using (var context = new GameDatabase_Container())
-                {
-                    var user1 = context.Players.FirstOrDefault(p => p.Username == username);
-                    var user2 = context.Players.FirstOrDefault(p => p.Username == friendUsername);
-
-                    if (user1 == null || user2 == null) return false;
-
-                    var friendship = context.Friendships.FirstOrDefault(f =>
-                        ((f.PlayerIdPlayer == user1.IdPlayer && f.Player1_IdPlayer == user2.IdPlayer) ||
-                         (f.PlayerIdPlayer == user2.IdPlayer && f.Player1_IdPlayer == user1.IdPlayer))
-                        && f.FriendshipStatus == (int)FriendshipStatus.Accepted);
-
-                    if (friendship != null)
-                    {
-                        context.Friendships.Remove(friendship);
-                        await context.SaveChangesAsync();
-                        Log.Info($"Amistad eliminada entre {username} y {friendUsername}");
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error eliminando amigo", ex);
-                return false;
             }
         }
 
@@ -249,6 +307,86 @@ namespace GameServer.Services
                 Log.Error("Database error in GetPendingRequests", ex);
                 return new List<FriendDto>();
             }
+        }
+
+        private void NotifyUserRequestReceived(string username)
+        {
+            lock (_locker)
+            {
+                if (_connectedClients.ContainsKey(username))
+                {
+                    try
+                    {
+                        _connectedClients[username].OnFriendRequestReceived();
+                    }
+                    catch (CommunicationException)
+                    {
+                        _connectedClients.Remove(username);
+                    }
+                }
+            }
+        }
+
+        private void NotifyUserListUpdated(string username)
+        {
+            lock (_locker)
+            {
+                if (_connectedClients.ContainsKey(username))
+                {
+                    try
+                    {
+                        _connectedClients[username].OnFriendListUpdated();
+                    }
+                    catch (CommunicationException)
+                    {
+                        _connectedClients.Remove(username);
+                    }
+                }
+            }
+        }
+
+        private void NotifyFriendsOfStatusChange(string username)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    List<string> friendsToNotify = new List<string>();
+
+                    using (var context = new GameDatabase_Container())
+                    {
+                        var player = context.Players.FirstOrDefault(p => p.Username == username);
+                        if (player != null)
+                        {
+                            var accepted = (int)FriendshipStatus.Accepted;
+
+                            var friendships = context.Friendships
+                                .Where(f => (f.PlayerIdPlayer == player.IdPlayer || f.Player1_IdPlayer == player.IdPlayer)
+                                            && f.FriendshipStatus == accepted)
+                                .ToList();
+
+                            foreach (var f in friendships)
+                            {
+                                int friendId = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
+                                var friendUser = context.Players.FirstOrDefault(p => p.IdPlayer == friendId);
+                                if (friendUser != null)
+                                {
+                                    friendsToNotify.Add(friendUser.Username);
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (var friendUsername in friendsToNotify)
+                    {
+                        NotifyUserListUpdated(friendUsername);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error notifying friends of status change for {username}", ex);
+                }
+            });
         }
     }
 }

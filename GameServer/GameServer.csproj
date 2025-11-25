@@ -98,6 +98,7 @@
     <Compile Include="Contracts\IChatCallback.cs" />
     <Compile Include="Contracts\IChatService.cs" />
     <Compile Include="Contracts\IFriendshipService.cs" />
+    <Compile Include="Contracts\IFriendshipServiceCallback.cs" />
     <Compile Include="Contracts\IGameplayService.cs" />
     <Compile Include="Contracts\IGameService.cs" />
     <Compile Include="Contracts\ILobbyService.cs" />
