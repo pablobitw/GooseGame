@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel; 
-using System.ServiceModel;   
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.FriendshipServiceReference;
+using GameClient.Helpers;
 using GameClient.Models;
 
 namespace GameClient.Views
 {
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
-    public partial class FriendshipPage : Page, INotifyPropertyChanged, IFriendshipServiceCallback
+    public partial class FriendshipPage : Page, INotifyPropertyChanged
     {
         public ObservableCollection<FriendDisplayModel> FriendsList { get; set; }
         public ObservableCollection<FriendRequestDisplayModel> FriendRequestsList { get; set; }
 
         private readonly string _currentUsername;
-        private FriendshipServiceClient _proxy; 
+        private FriendshipServiceManager _friendshipManager;
 
         private int _requestCount;
         public int RequestCount
@@ -48,91 +47,62 @@ namespace GameClient.Views
             FriendsListBox.ItemsSource = FriendsList;
             FriendRequestsListBox.ItemsSource = FriendRequestsList;
 
+            _friendshipManager = new FriendshipServiceManager(_currentUsername);
+
+            _friendshipManager.FriendListUpdated += HandleDataUpdate;
+            _friendshipManager.RequestReceived += HandleDataUpdate;
+
             Loaded += FriendshipPage_Loaded;
             Unloaded += FriendshipPage_Unloaded;
         }
 
         private async void FriendshipPage_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var instanceContext = new InstanceContext(this);
-
-                _proxy = new FriendshipServiceClient(instanceContext);
-
-                _proxy.Connect(_currentUsername);
-
-                await LoadFriendsAsync();
-                await LoadRequestsAsync();
-            }
-            catch (CommunicationException)
-            {
-                MessageBox.Show("No se pudo conectar al servicio de chat/amigos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            await LoadDataAsync();
         }
 
         private void FriendshipPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                if (_proxy != null && _proxy.State == CommunicationState.Opened)
-                {
-                    _proxy.Disconnect(_currentUsername);
-                    _proxy.Close();
-                }
-            }
-            catch (Exception) { _proxy?.Abort(); }
+            _friendshipManager.FriendListUpdated -= HandleDataUpdate;
+            _friendshipManager.RequestReceived -= HandleDataUpdate;
+            _friendshipManager.Disconnect();
         }
 
-        public void OnFriendRequestReceived()
+        private void HandleDataUpdate()
         {
-            this.Dispatcher.Invoke(async () =>
-            {
-                await LoadRequestsAsync();
-            });
+            this.Dispatcher.Invoke(async () => await LoadDataAsync());
         }
 
-        public void OnFriendListUpdated()
+        private async Task LoadDataAsync()
         {
-            this.Dispatcher.Invoke(async () =>
-            {
-                await LoadFriendsAsync();
-                await LoadRequestsAsync(); 
-            });
+            await LoadFriendsAsync();
+            await LoadRequestsAsync();
         }
 
         private async Task LoadFriendsAsync()
         {
-            try
+            var friends = await _friendshipManager.GetFriendListAsync();
+            FriendsList.Clear();
+            foreach (var friend in friends)
             {
-                var friends = await _proxy.GetFriendListAsync(_currentUsername);
-                FriendsList.Clear();
-                foreach (var friend in friends)
+                FriendsList.Add(new FriendDisplayModel
                 {
-                    FriendsList.Add(new FriendDisplayModel
-                    {
-                        Username = friend.Username,
-                        IsOnline = friend.IsOnline,
-                    });
-                }
+                    Username = friend.Username,
+                    IsOnline = friend.IsOnline,
+                });
             }
-            catch (Exception) { }
             UpdateEmptyStateMessages();
         }
 
         private async Task LoadRequestsAsync()
         {
-            try
+            var requests = await _friendshipManager.GetPendingRequestsAsync();
+            FriendRequestsList.Clear();
+            foreach (var req in requests)
             {
-                var requests = await _proxy.GetPendingRequestsAsync(_currentUsername);
-                FriendRequestsList.Clear();
-                foreach (var req in requests)
-                {
-                    FriendRequestsList.Add(new FriendRequestDisplayModel { Username = req.Username });
-                }
-                RequestCount = FriendRequestsList.Count;
+                FriendRequestsList.Add(new FriendRequestDisplayModel { Username = req.Username });
             }
-            catch (Exception) { }
+            RequestCount = FriendRequestsList.Count;
             UpdateEmptyStateMessages();
         }
 
@@ -142,47 +112,48 @@ namespace GameClient.Views
             NoRequestsMessage.Visibility = FriendRequestsList.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // --- Acciones ---
-
         private async void SendFriendRequest_Click(object sender, RoutedEventArgs e)
         {
             string target = SearchUserBox.Text.Trim();
-            if (string.IsNullOrEmpty(target) || target == _currentUsername) return;
-
-            try
+            if (string.IsNullOrEmpty(target))
             {
-                bool sent = await _proxy.SendFriendRequestAsync(_currentUsername, target);
-                if (sent)
-                {
-                    MessageBox.Show($"Solicitud enviada a {target}.");
-                    SearchUserBox.Text = string.Empty;
-                }
-                else MessageBox.Show("No se pudo enviar (Usuario no existe o ya son amigos).");
+                DialogHelper.ShowWarning("Por favor escribe un nombre de usuario.");
+                return;
             }
-            catch (CommunicationException) { MessageBox.Show("Error de red."); }
+
+            if (target == _currentUsername)
+            {
+                DialogHelper.ShowWarning("No puedes enviarte solicitud a ti mismo.");
+                return;
+            }
+
+            bool sent = await _friendshipManager.SendFriendRequestAsync(target);
+            if (sent)
+            {
+                DialogHelper.ShowInfo($"Solicitud enviada a {target}.");
+                SearchUserBox.Text = string.Empty;
+            }
+            else
+            {
+                DialogHelper.ShowWarning("No se pudo enviar (Usuario no existe o ya son amigos).");
+            }
         }
 
         private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
             string requester = btn.Tag.ToString();
-            try
-            {
-                await _proxy.RespondToFriendRequestAsync(_currentUsername, requester, true);
-            }
-            catch (CommunicationException) { }
+
+            await _friendshipManager.RespondToFriendRequestAsync(requester, true);
         }
 
         private async void RejectRequest_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
             string requester = btn.Tag.ToString();
-            try
-            {
-                await _proxy.RespondToFriendRequestAsync(_currentUsername, requester, false);
-                await LoadRequestsAsync();
-            }
-            catch (CommunicationException) { }
+
+            await _friendshipManager.RespondToFriendRequestAsync(requester, false);
+            await LoadRequestsAsync();
         }
 
         private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
@@ -190,13 +161,13 @@ namespace GameClient.Views
             var btn = sender as Button;
             string friend = btn.Tag.ToString();
 
-            if (MessageBox.Show($"¿Eliminar a {friend}?", "Confirmar", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (DialogHelper.ShowConfirmation($"¿Eliminar a {friend}?"))
             {
-                try
+                bool deleted = await _friendshipManager.RemoveFriendAsync(friend);
+                if (deleted)
                 {
-                    bool deleted = await _proxy.RemoveFriendAsync(_currentUsername, friend);
+                    DialogHelper.ShowInfo("Amigo eliminado.");
                 }
-                catch (CommunicationException) { }
             }
         }
 

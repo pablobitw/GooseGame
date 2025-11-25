@@ -1,6 +1,7 @@
 ﻿using BCrypt.Net;
 using GameServer.Contracts;
 using GameServer.Helpers;
+using GameServer.Managers;
 using log4net;
 using System;
 using System.Data.Entity;
@@ -8,6 +9,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
@@ -16,7 +18,6 @@ namespace GameServer
     public class GameService : IGameService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameService));
-        private static readonly Random RandomGenerator = new Random();
         private const string DefaultAvatar = "default_avatar.png";
         private const int CodeExpirationMinutes = 15;
 
@@ -37,7 +38,7 @@ namespace GameServer
                     {
                         if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
                         {
-                            string newCode = RandomGenerator.Next(100000, 999999).ToString();
+                            string newCode = GenerateSecureCode();
                             existingAccount.VerificationCode = newCode;
                             existingAccount.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
@@ -55,7 +56,7 @@ namespace GameServer
                         }
                     }
 
-                    string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+                    string verifyCode = GenerateSecureCode();
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
                     var newAccount = new Account
@@ -101,7 +102,13 @@ namespace GameServer
             }
             catch (DbEntityValidationException ex)
             {
-                Log.Warn($"Entity validation error for {username}.", ex);
+                foreach (var validationErrors in ex.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        Log.Warn($"Property: {validationError.PropertyName} Error: {validationError.ErrorMessage}");
+                    }
+                }
                 return RegistrationResult.FatalError;
             }
             catch (DbUpdateException ex)
@@ -157,14 +164,6 @@ namespace GameServer
                     }
                 }
             }
-            catch (DbEntityValidationException ex)
-            {
-                Log.Warn($"Entity validation error verifying {email}.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error($"DB update error verifying {email}.", ex);
-            }
             catch (SqlException ex)
             {
                 Log.Fatal($"Fatal SQL error in VerifyAccount.", ex);
@@ -181,28 +180,47 @@ namespace GameServer
             bool isSuccess = false;
             try
             {
+                if (ConnectionManager.IsUserOnline(usernameOrEmail))
+                {
+                    Log.Warn($"Login blocked: User {usernameOrEmail} is already connected.");
+                    return false;
+                }
+
                 using (var context = new GameDatabase_Container())
                 {
                     var player = await context.Players
                         .Include(p => p.Account)
                         .FirstOrDefaultAsync(p => p.Username == usernameOrEmail || p.Account.Email == usernameOrEmail);
 
-                    if (player != null &&
-                        BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
+                    if (player != null)
                     {
-                        if (player.Account.AccountStatus == (int)AccountStatus.Active)
+                        if (ConnectionManager.IsUserOnline(player.Username))
                         {
-                            Log.InfoFormat("Login successful for {0}", player.Username);
-                            isSuccess = true;
+                            Log.Warn($"Login blocked: User {player.Username} is already connected (resolved by email).");
+                            return false;
+                        }
+
+                        if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
+                        {
+                            if (player.Account.AccountStatus == (int)AccountStatus.Active)
+                            {
+                                Log.InfoFormat("Login successful for {0}", player.Username);
+                                ConnectionManager.AddUser(player.Username);
+                                isSuccess = true;
+                            }
+                            else
+                            {
+                                Log.WarnFormat("Login attempt with inactive account: {0}", player.Username);
+                            }
                         }
                         else
                         {
-                            Log.WarnFormat("Login attempt with inactive account: {0}", player.Username);
+                            Log.WarnFormat("Login failed: incorrect credentials for {0}", usernameOrEmail);
                         }
                     }
                     else
                     {
-                        Log.WarnFormat("Login failed: incorrect credentials for {0}", usernameOrEmail);
+                        Log.WarnFormat("Login failed: User not found {0}", usernameOrEmail);
                     }
                 }
             }
@@ -215,6 +233,19 @@ namespace GameServer
                 Log.Error($"Unexpected error in LogIn for {usernameOrEmail}.", ex);
             }
             return isSuccess;
+        }
+
+        public void Logout(string username)
+        {
+            try
+            {
+                ConnectionManager.RemoveUser(username);
+                Log.Info($"User {username} logged out successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error during logout for {username}", ex);
+            }
         }
 
         public async Task<bool> RequestPasswordResetAsync(string email)
@@ -233,7 +264,7 @@ namespace GameServer
                     }
                     else
                     {
-                        string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+                        string verifyCode = GenerateSecureCode();
                         account.VerificationCode = verifyCode;
                         account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
@@ -246,10 +277,6 @@ namespace GameServer
                         isSuccess = emailSent;
                     }
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error($"DB update error in RequestPasswordReset for {email}.", ex);
             }
             catch (SqlException ex)
             {
@@ -295,6 +322,7 @@ namespace GameServer
             }
             return isValid;
         }
+
         public async Task<bool> ResendVerificationCodeAsync(string email)
         {
             bool isSuccess = false;
@@ -306,7 +334,7 @@ namespace GameServer
 
                     if (account != null && account.AccountStatus == (int)AccountStatus.Pending)
                     {
-                        string newCode = RandomGenerator.Next(100000, 999999).ToString();
+                        string newCode = GenerateSecureCode();
 
                         account.VerificationCode = newCode;
                         account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
@@ -365,11 +393,7 @@ namespace GameServer
                     }
                 }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error($"DB update error in UpdatePassword for {email}.", ex);
-            }
-            catch (SqlException ex)
+            catch (SqlException ex) 
             {
                 Log.Fatal($"Fatal SQL error in UpdatePassword.", ex);
             }
@@ -378,6 +402,17 @@ namespace GameServer
                 Log.Error($"Error in UpdatePassword for {email}", ex);
             }
             return isSuccess;
+        }
+
+        private string GenerateSecureCode()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] data = new byte[4];
+                rng.GetBytes(data);
+                int value = BitConverter.ToInt32(data, 0);
+                return Math.Abs(value % 1000000).ToString("D6");
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.Views;
+using GameClient.GameServiceReference;
 
 namespace GameClient
 {
@@ -14,6 +15,7 @@ namespace GameClient
         {
             InitializeComponent();
             _username = loggedInUsername;
+            this.Closed += GameMainWindow_Closed;
         }
 
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
@@ -62,6 +64,24 @@ namespace GameClient
             bool? result = confirmationDialog.ShowDialog();
             if (result == true)
             {
+                this.Close();
+            }
+        }
+
+        private async void GameMainWindow_Closed(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var client = new GameServiceClient())
+                {
+                    await client.LogoutAsync(_username);
+                }
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
                 Application.Current.Shutdown();
             }
         }
@@ -72,7 +92,6 @@ namespace GameClient
             MainFrame.Navigate(new UserProfilePage(_username));
         }
 
-    
         private void FriendsButtonClick(object sender, RoutedEventArgs e)
         {
             MainMenuGrid.Visibility = Visibility.Collapsed;

@@ -103,6 +103,8 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Helpers\AudioManager.cs" />
+    <Compile Include="Helpers\DialogHelper.cs" />
+    <Compile Include="Helpers\FriendshipServiceManager.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\AvatarItem.cs" />
     <Compile Include="Models\FriendDisplayModel.cs" />

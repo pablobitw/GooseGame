@@ -35,7 +35,7 @@ namespace GameClient.Views
             }
             else
             {
-                string errorMsg = GameClient.Resources.Strings.LoginErrorLabel;
+                string errorMsg = "Login failed. Check credentials or ensure account is not already active.";
                 ShowError(UsernameBorder, errorMsg);
                 ShowError(PasswordBorder, errorMsg);
             }

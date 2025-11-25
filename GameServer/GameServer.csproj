@@ -125,6 +125,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>GameDatabase.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
     <Compile Include="Item.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>

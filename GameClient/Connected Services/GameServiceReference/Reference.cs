@@ -48,6 +48,12 @@ namespace GameClient.GameServiceReference {
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
         System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password);
         
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/Logout", ReplyAction="http://tempuri.org/IGameService/LogoutResponse")]
+        void Logout(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/Logout", ReplyAction="http://tempuri.org/IGameService/LogoutResponse")]
+        System.Threading.Tasks.Task LogoutAsync(string username);
+        
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
         bool VerifyAccount(string email, string code);
         
@@ -120,6 +126,14 @@ namespace GameClient.GameServiceReference {
         
         public System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password) {
             return base.Channel.LogInAsync(usernameOrEmail, password);
+        }
+        
+        public void Logout(string username) {
+            base.Channel.Logout(username);
+        }
+        
+        public System.Threading.Tasks.Task LogoutAsync(string username) {
+            return base.Channel.LogoutAsync(username);
         }
         
         public bool VerifyAccount(string email, string code) {
