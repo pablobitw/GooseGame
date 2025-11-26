@@ -21,6 +21,7 @@
       <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="IsHost" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsPublic" type="xs:boolean" />
       <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
       <xs:element minOccurs="0" name="PlayersInLobby" nillable="true" type="tns:ArrayOfPlayerLobbyDTO" />
       <xs:element minOccurs="0" name="Success" type="xs:boolean" />
@@ -42,7 +43,10 @@
   <xs:element name="PlayerLobbyDTO" nillable="true" type="tns:PlayerLobbyDTO" />
   <xs:complexType name="LobbyStateDTO">
     <xs:sequence>
+      <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="IsGameStarted" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsPublic" type="xs:boolean" />
+      <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
       <xs:element minOccurs="0" name="Players" nillable="true" type="tns:ArrayOfPlayerLobbyDTO" />
     </xs:sequence>
   </xs:complexType>

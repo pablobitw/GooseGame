@@ -135,6 +135,12 @@ namespace GameClient.FriendshipServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
         System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
+        void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
+        System.Threading.Tasks.Task SendGameInvitationAsync(string senderUsername, string targetUsername, string lobbyCode);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -145,6 +151,9 @@ namespace GameClient.FriendshipServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnFriendListUpdated")]
         void OnFriendListUpdated();
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnGameInvitationReceived")]
+        void OnGameInvitationReceived(string hostUsername, string lobbyCode);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -229,6 +238,14 @@ namespace GameClient.FriendshipServiceReference {
         
         public System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername) {
             return base.Channel.RemoveFriendAsync(username, friendUsername);
+        }
+        
+        public void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode) {
+            base.Channel.SendGameInvitation(senderUsername, targetUsername, lobbyCode);
+        }
+        
+        public System.Threading.Tasks.Task SendGameInvitationAsync(string senderUsername, string targetUsername, string lobbyCode) {
+            return base.Channel.SendGameInvitationAsync(senderUsername, targetUsername, lobbyCode);
         }
     }
 }

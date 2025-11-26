@@ -41,5 +41,8 @@ namespace GameServer.Contracts
 
         [OperationContract]
         Task<bool> RemoveFriend(string username, string friendUsername);
+
+        [OperationContract]
+        void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode);
     }
 }

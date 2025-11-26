@@ -59,11 +59,20 @@
   <wsdl:message name="IFriendshipService_RemoveFriend_OutputMessage">
     <wsdl:part name="parameters" element="tns:RemoveFriendResponse" />
   </wsdl:message>
+  <wsdl:message name="IFriendshipService_SendGameInvitation_InputMessage">
+    <wsdl:part name="parameters" element="tns:SendGameInvitation" />
+  </wsdl:message>
+  <wsdl:message name="IFriendshipService_SendGameInvitation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SendGameInvitationResponse" />
+  </wsdl:message>
   <wsdl:message name="IFriendshipService_OnFriendRequestReceived_OutputCallbackMessage">
     <wsdl:part name="parameters" element="tns:OnFriendRequestReceived" />
   </wsdl:message>
   <wsdl:message name="IFriendshipService_OnFriendListUpdated_OutputCallbackMessage">
     <wsdl:part name="parameters" element="tns:OnFriendListUpdated" />
+  </wsdl:message>
+  <wsdl:message name="IFriendshipService_OnGameInvitationReceived_OutputCallbackMessage">
+    <wsdl:part name="parameters" element="tns:OnGameInvitationReceived" />
   </wsdl:message>
   <wsdl:portType name="IFriendshipService">
     <wsdl:operation name="Connect">
@@ -94,11 +103,18 @@
       <wsdl:input wsaw:Action="http://tempuri.org/IFriendshipService/RemoveFriend" message="tns:IFriendshipService_RemoveFriend_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/RemoveFriendResponse" message="tns:IFriendshipService_RemoveFriend_OutputMessage" />
     </wsdl:operation>
+    <wsdl:operation name="SendGameInvitation">
+      <wsdl:input wsaw:Action="http://tempuri.org/IFriendshipService/SendGameInvitation" message="tns:IFriendshipService_SendGameInvitation_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/SendGameInvitationResponse" message="tns:IFriendshipService_SendGameInvitation_OutputMessage" />
+    </wsdl:operation>
     <wsdl:operation name="OnFriendRequestReceived">
       <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/OnFriendRequestReceived" message="tns:IFriendshipService_OnFriendRequestReceived_OutputCallbackMessage" />
     </wsdl:operation>
     <wsdl:operation name="OnFriendListUpdated">
       <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/OnFriendListUpdated" message="tns:IFriendshipService_OnFriendListUpdated_OutputCallbackMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="OnGameInvitationReceived">
+      <wsdl:output wsaw:Action="http://tempuri.org/IFriendshipService/OnGameInvitationReceived" message="tns:IFriendshipService_OnGameInvitationReceived_OutputCallbackMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IFriendshipService" type="tns:IFriendshipService">
@@ -168,6 +184,15 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="SendGameInvitation">
+      <soap12:operation soapAction="http://tempuri.org/IFriendshipService/SendGameInvitation" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="OnFriendRequestReceived">
       <soap12:operation soapAction="http://tempuri.org/IFriendshipService/OnFriendRequestReceived" style="document" />
       <wsdl:output>
@@ -176,6 +201,12 @@
     </wsdl:operation>
     <wsdl:operation name="OnFriendListUpdated">
       <soap12:operation soapAction="http://tempuri.org/IFriendshipService/OnFriendListUpdated" style="document" />
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnGameInvitationReceived">
+      <soap12:operation soapAction="http://tempuri.org/IFriendshipService/OnGameInvitationReceived" style="document" />
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>

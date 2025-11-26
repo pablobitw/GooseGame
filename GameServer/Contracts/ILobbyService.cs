@@ -18,6 +18,9 @@ namespace GameServer.Contracts
         Task DisbandLobbyAsync(string hostUsername);
 
         [OperationContract]
+        Task<bool> LeaveLobbyAsync(string username);
+
+        [OperationContract]
         Task<JoinLobbyResultDTO> JoinLobbyAsync(string lobbyCode, string joiningUsername);
 
         [OperationContract]
@@ -61,10 +64,15 @@ namespace GameServer.Contracts
 
         [DataMember]
         public int BoardId { get; set; }
+
         [DataMember]
         public int MaxPlayers { get; set; }
+
         [DataMember]
         public bool IsHost { get; set; }
+
+        [DataMember]
+        public bool IsPublic { get; set; }
 
         [DataMember]
         public List<PlayerLobbyDTO> PlayersInLobby { get; set; }
@@ -78,13 +86,22 @@ namespace GameServer.Contracts
         [DataMember]
         public bool IsHost { get; set; }
     }
-
     [DataContract]
     public class LobbyStateDTO
     {
         [DataMember]
         public List<PlayerLobbyDTO> Players { get; set; }
+
         [DataMember]
         public bool IsGameStarted { get; set; }
+
+        [DataMember]
+        public int BoardId { get; set; }
+
+        [DataMember]
+        public int MaxPlayers { get; set; }
+
+        [DataMember]
+        public bool IsPublic { get; set; }
     }
 }

@@ -13,6 +13,8 @@ using System.Windows.Threading;
 using FontAwesome.WPF;
 using GameClient.ChatServiceReference;
 using GameClient.LobbyServiceReference;
+using GameClient.Helpers;
+using GameClient.Models;
 
 namespace GameClient.Views
 {
@@ -51,12 +53,41 @@ namespace GameClient.Views
             isHost = false;
             lobbyClient = new LobbyServiceClient();
 
+            SyncLobbyVisuals(joinResult.MaxPlayers, joinResult.BoardId, joinResult.IsPublic);
+
             LockLobbySettings(lobbyCode);
             StartMatchButton.Visibility = Visibility.Collapsed;
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
             InitializeTimer();
             ConnectToChatService();
+        }
+
+        private void SyncLobbyVisuals(int maxPlayers, int currentBoardId, bool isPublic)
+        {
+            PlayerCountBlock.Text = maxPlayers.ToString();
+
+            if (currentBoardId == 2)
+            {
+                BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
+                BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            }
+            else
+            {
+                BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
+                BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            }
+
+            if (isPublic)
+            {
+                VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
+                VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            }
+            else
+            {
+                VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
+                VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            }
         }
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
@@ -399,18 +430,14 @@ namespace GameClient.Views
 
         private async Task PollLobbyState()
         {
-            // 1. Detener el timer para evitar solapamiento de peticiones
-            // si el servidor tarda más de 3 segundos en responder.
             pollingTimer.Stop();
 
             try
             {
-                // 2. AUTOREPARACIÓN: Verificar si el cliente es válido
                 if (lobbyClient == null ||
                     lobbyClient.State == CommunicationState.Faulted ||
                     lobbyClient.State == CommunicationState.Closed)
                 {
-                    // Si está roto o cerrado, lo recreamos
                     lobbyClient = new LobbyServiceClient();
                 }
 
@@ -418,7 +445,6 @@ namespace GameClient.Views
 
                 if (state.IsGameStarted)
                 {
-                    // El timer ya está detenido, no hace falta Stop() aquí
                     if (isHost)
                     {
                         MessageBox.Show("Error de estado: El juego inició pero soy Host sin saberlo.");
@@ -431,6 +457,8 @@ namespace GameClient.Views
                 else
                 {
                     UpdatePlayerListUI(state.Players);
+
+                    SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
                 }
             }
             catch (EndpointNotFoundException)
@@ -440,7 +468,6 @@ namespace GameClient.Views
             catch (CommunicationException)
             {
                 Console.WriteLine("Problema de conexión. El cliente intentará reconectar en el siguiente tick.");
-
                 if (lobbyClient != null) lobbyClient.Abort();
             }
             catch (Exception ex)
@@ -448,7 +475,7 @@ namespace GameClient.Views
                 Console.WriteLine("Error inesperado: " + ex.Message);
             }
             finally
-            {               
+            {
                 pollingTimer.Start();
             }
         }
@@ -533,6 +560,43 @@ namespace GameClient.Views
             stackPanel.Children.Add(textBlock);
 
             return new ListBoxItem { Content = stackPanel, Padding = new Thickness(10) };
+        }
+
+        private void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
+        {
+            InviteFriendsOverlay.Visibility = Visibility.Visible;
+            LoadOnlineFriends();
+        }
+
+        private void CloseInviteMenu_Click(object sender, RoutedEventArgs e)
+        {
+            InviteFriendsOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void LoadOnlineFriends()
+        {
+            if (FriendshipServiceManager.Instance == null) return;
+
+            var allFriends = await FriendshipServiceManager.Instance.GetFriendListAsync();
+
+            var onlineFriends = allFriends.Where(f => f.IsOnline).ToList();
+
+            InviteFriendsList.ItemsSource = onlineFriends;
+
+            NoFriendsToInviteText.Visibility = onlineFriends.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void InviteFriend_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as Button;
+            string friendUsername = btn.Tag.ToString();
+
+            FriendshipServiceManager.Instance.SendGameInvitation(friendUsername, this.lobbyCode);
+
+            MessageBox.Show($"Invitación enviada a {friendUsername}.", "Invitado", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            btn.IsEnabled = false;
+            btn.Content = "Enviado";
         }
     }
 }

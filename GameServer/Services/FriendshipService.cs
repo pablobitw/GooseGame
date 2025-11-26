@@ -244,6 +244,25 @@ namespace GameServer.Services
             }
         }
 
+        public void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode)
+        {
+            string key = targetUsername.ToLower();
+            lock (_locker)
+            {
+                if (_connectedClients.ContainsKey(key))
+                {
+                    try
+                    {
+                        _connectedClients[key].OnGameInvitationReceived(senderUsername, lobbyCode);
+                    }
+                    catch (CommunicationException)
+                    {
+                        _connectedClients.Remove(key);
+                    }
+                }
+            }
+        }
+
         private void NotifyFriendsOfStatusChange(string username)
         {
             Task.Run(() =>

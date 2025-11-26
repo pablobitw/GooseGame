@@ -12,6 +12,8 @@
       FontFamily="/Assets/Fonts/#Dosis">
 
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
         <Style x:Key="LobbyToggleActiveStyle" TargetType="Button" BasedOn="{StaticResource OrangeButtonStyle}">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -67,35 +69,47 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,20">
-                    <TextBlock x:Name="TitleBlock"
-                               Text="{x:Static props:Strings.CreateMatchTitle}"
-                               FontSize="48" 
-                               FontWeight="Bold" 
-                               VerticalAlignment="Center"/>
+                <Grid Grid.Row="0" Margin="0,30,0,20">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TitleBlock"
+                                   Text="{x:Static props:Strings.CreateMatchTitle}"
+                                   FontSize="48" 
+                                   FontWeight="Bold" 
+                                   VerticalAlignment="Center"/>
 
-                    <Button x:Name="CopyCodeButton" 
-                            Background="Transparent" 
-                            BorderThickness="0" 
-                            Cursor="Hand" 
-                            Margin="20,0,0,0" 
-                            VerticalAlignment="Center"
-                            Visibility="Collapsed"
-                            Click="CopyCodeButton_Click"
-                            ToolTip="Copiar Código">
-                        <fa:FontAwesome x:Name="CopyIcon" Icon="Copy" Foreground="#FF333333" Height="30"/>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Opacity" Value="0.5"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
+                        <Button x:Name="CopyCodeButton" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                Cursor="Hand" 
+                                Margin="20,0,0,0" 
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed"
+                                Click="CopyCodeButton_Click"
+                                ToolTip="Copiar Código">
+                            <fa:FontAwesome x:Name="CopyIcon" Icon="Copy" Foreground="#FF333333" Height="30"/>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+
+                    <Button x:Name="OpenInviteMenuButton"
+                            HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Margin="0,0,40,0"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Width="60" Height="60"
+                            ToolTip="Invitar Amigos"
+                            Click="OpenInviteMenu_Click">
+                        <fa:FontAwesome Icon="UserPlus" Foreground="White" FontSize="25"/>
                     </Button>
-                </StackPanel>
+                </Grid>
 
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
@@ -228,5 +242,74 @@
                 Height="50"
                 Cursor="Hand" 
                 Click="BackButton_Click"/>
+
+        <Grid x:Name="InviteFriendsOverlay" Visibility="Collapsed" Background="#7F000000">
+            <Grid.InputBindings>
+                <MouseBinding MouseAction="LeftClick" Command="{Binding CloseInviteCommand}" />
+            </Grid.InputBindings>
+
+            <Border HorizontalAlignment="Right" Width="350" Background="White" BorderBrush="#FFB0B0B0" BorderThickness="1,0,0,0">
+                <Border.Effect>
+                    <DropShadowEffect Direction="180" ShadowDepth="5" BlurRadius="20" Opacity="0.3"/>
+                </Border.Effect>
+
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                        <fa:FontAwesome Icon="Users" Foreground="#333" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Invitar Amigos" FontSize="24" FontWeight="Bold" Foreground="#333"/>
+                    </StackPanel>
+
+                    <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="Transparent" BorderThickness="0" Click="CloseInviteMenu_Click" Cursor="Hand">
+                        <fa:FontAwesome Icon="Times" Foreground="Gray" FontSize="20"/>
+                    </Button>
+
+                    <ListBox x:Name="InviteFriendsList" Grid.Row="1" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F5F5F5" CornerRadius="8" Padding="10" Margin="0,5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid>
+                                            <fa:FontAwesome Icon="UserCircle" Foreground="Gray" FontSize="30"/>
+                                            <Ellipse Width="10" Height="10" Fill="LimeGreen" 
+                                                     Visibility="{Binding IsOnline, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,0"/>
+                                        </Grid>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding Username}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="15,0,0,0"/>
+
+                                        <Button Grid.Column="2" 
+                                                Content="Invitar" 
+                                                FontSize="14"
+                                                Height="30" Width="70"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Tag="{Binding Username}"
+                                                IsEnabled="{Binding IsOnline}" 
+                                                Click="InviteFriend_Click"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock x:Name="NoFriendsToInviteText" Grid.Row="1" 
+                               Text="No hay amigos conectados." 
+                               FontSize="18" Foreground="Gray" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center" 
+                               Visibility="Collapsed"/>
+                </Grid>
+            </Border>
+        </Grid>
+
     </Grid>
 </Page>

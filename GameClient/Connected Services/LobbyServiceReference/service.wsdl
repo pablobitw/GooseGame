@@ -35,6 +35,12 @@
   <wsdl:message name="ILobbyService_DisbandLobby_OutputMessage">
     <wsdl:part name="parameters" element="tns:DisbandLobbyResponse" />
   </wsdl:message>
+  <wsdl:message name="ILobbyService_LeaveLobby_InputMessage">
+    <wsdl:part name="parameters" element="tns:LeaveLobby" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_LeaveLobby_OutputMessage">
+    <wsdl:part name="parameters" element="tns:LeaveLobbyResponse" />
+  </wsdl:message>
   <wsdl:message name="ILobbyService_JoinLobby_InputMessage">
     <wsdl:part name="parameters" element="tns:JoinLobby" />
   </wsdl:message>
@@ -59,6 +65,10 @@
     <wsdl:operation name="DisbandLobby">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/DisbandLobby" message="tns:ILobbyService_DisbandLobby_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/DisbandLobbyResponse" message="tns:ILobbyService_DisbandLobby_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="LeaveLobby">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/LeaveLobby" message="tns:ILobbyService_LeaveLobby_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/LeaveLobbyResponse" message="tns:ILobbyService_LeaveLobby_OutputMessage" />
     </wsdl:operation>
     <wsdl:operation name="JoinLobby">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/JoinLobby" message="tns:ILobbyService_JoinLobby_InputMessage" />
@@ -93,6 +103,15 @@
     </wsdl:operation>
     <wsdl:operation name="DisbandLobby">
       <soap12:operation soapAction="http://tempuri.org/ILobbyService/DisbandLobby" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LeaveLobby">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/LeaveLobby" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

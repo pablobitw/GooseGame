@@ -23,6 +23,7 @@ namespace GameClient.Helpers
 
         public event Action FriendListUpdated;
         public event Action RequestReceived;
+        public event Action<string, string> GameInvitationReceived;
 
         private FriendshipServiceManager(string username)
         {
@@ -40,7 +41,7 @@ namespace GameClient.Helpers
             }
             catch (CommunicationException)
             {
-                
+
             }
         }
 
@@ -62,6 +63,7 @@ namespace GameClient.Helpers
 
         public void OnFriendRequestReceived() => RequestReceived?.Invoke();
         public void OnFriendListUpdated() => FriendListUpdated?.Invoke();
+        public void OnGameInvitationReceived(string hostUsername, string lobbyCode) => GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
 
         public async Task<FriendDto[]> GetFriendListAsync()
         {
@@ -91,6 +93,12 @@ namespace GameClient.Helpers
         {
             try { return await _proxy.RemoveFriendAsync(_username, friendUsername); }
             catch (CommunicationException) { return false; }
+        }
+
+        public void SendGameInvitation(string targetUser, string lobbyCode)
+        {
+            try { _proxy.SendGameInvitation(_username, targetUser, lobbyCode); }
+            catch { }
         }
     }
 }

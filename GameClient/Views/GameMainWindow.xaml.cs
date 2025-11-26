@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GameClient.GameServiceReference;
+using GameClient.Helpers;
+using GameClient.LobbyServiceReference;
+using GameClient.Views;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.Views;
-using GameClient.GameServiceReference;
-using GameClient.Helpers;
 
 namespace GameClient
 {
@@ -18,6 +19,7 @@ namespace GameClient
             _username = loggedInUsername;
 
             FriendshipServiceManager.Initialize(_username);
+            FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
 
             this.Closed += GameMainWindow_Closed;
         }
@@ -111,6 +113,44 @@ namespace GameClient
         {
             MainFrame.Content = null;
             MainMenuGrid.Visibility = Visibility.Visible;
+        }
+
+        private async void HandleInvitation(string host, string code)
+        {
+            await this.Dispatcher.Invoke(async () =>
+            {
+                var result = MessageBox.Show(
+                    $"{host} te ha invitado a una partida. ¿Quieres unirte?",
+                    "Invitación de Juego",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+
+                        using (var lobbyClient = new LobbyServiceClient())
+                        {
+                            var joinResult = await lobbyClient.JoinLobbyAsync(code, _username);
+
+                            if (joinResult.Success)
+                            {
+                                MainMenuGrid.Visibility = Visibility.Collapsed;
+                                MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
+                            }
+                            else
+                            {
+                                MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            });
         }
     }
 }

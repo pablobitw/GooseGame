@@ -1,4 +1,4 @@
-﻿using GameServer; 
+﻿using GameServer;
 using GameServer.Contracts;
 using log4net;
 using System;
@@ -118,6 +118,7 @@ namespace GameServer.Services
                         BoardId = game.Board_idBoard,
                         MaxPlayers = game.MaxPlayers,
                         IsHost = false,
+                        IsPublic = game.IsPublic,
                         PlayersInLobby = dtoList
                     };
                 }
@@ -136,14 +137,17 @@ namespace GameServer.Services
                 using (var context = new GameDatabase_Container())
                 {
                     var game = await context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
-                    if (game == null)
-                    {
-                        return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
-                    }
 
-                    if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                    if (game == null || game.GameStatus != (int)GameStatus.WaitingForPlayers)
                     {
-                        return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
+                        return new LobbyStateDTO
+                        {
+                            IsGameStarted = true,
+                            Players = new List<PlayerLobbyDTO>(),
+                            BoardId = 1,
+                            MaxPlayers = 4,
+                            IsPublic = true
+                        };
                     }
 
                     var players = await context.Players
@@ -155,7 +159,14 @@ namespace GameServer.Services
                         })
                         .ToListAsync();
 
-                    return new LobbyStateDTO { IsGameStarted = false, Players = players };
+                    return new LobbyStateDTO
+                    {
+                        IsGameStarted = false,
+                        Players = players,
+                        BoardId = game.Board_idBoard,
+                        MaxPlayers = game.MaxPlayers,
+                        IsPublic = game.IsPublic
+                    };
                 }
             }
             catch (Exception ex)
@@ -164,6 +175,7 @@ namespace GameServer.Services
                 return new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
             }
         }
+
         public async Task<bool> StartGameAsync(string lobbyCode)
         {
             try
@@ -230,11 +242,9 @@ namespace GameServer.Services
                     var moveRecords = context.MoveRecords.Where(m => m.GameIdGame == gameIdToDisband);
                     context.MoveRecords.RemoveRange(moveRecords);
 
-                   
                     var sanctions = context.Sanctions.Where(s => s.Game_IdGame == gameIdToDisband);
                     context.Sanctions.RemoveRange(sanctions);
 
-                    
                     context.Games.Remove(gameToDisband);
 
                     await context.SaveChangesAsync();
@@ -244,6 +254,33 @@ namespace GameServer.Services
             catch (Exception ex)
             {
                 Log.Error($"Error en DisbandLobbyAsync para {hostUsername}", ex);
+            }
+        }
+
+        public async Task<bool> LeaveLobbyAsync(string username)
+        {
+            try
+            {
+                using (var context = new GameDatabase_Container())
+                {
+                    var player = await context.Players.FirstOrDefaultAsync(p => p.Username == username);
+
+                    if (player == null || player.GameIdGame == null)
+                    {
+                        return false;
+                    }
+
+                    player.GameIdGame = null;
+                    await context.SaveChangesAsync();
+
+                    Log.InfoFormat("Player {0} left the lobby.", username);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error in LeaveLobbyAsync for {username}", ex);
+                return false;
             }
         }
 

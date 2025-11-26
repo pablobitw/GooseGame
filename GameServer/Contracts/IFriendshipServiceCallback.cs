@@ -10,5 +10,8 @@ namespace GameServer.Contracts
 
         [OperationContract(IsOneWay = true)]
         void OnFriendListUpdated();
+
+        [OperationContract(IsOneWay = true)]
+        void OnGameInvitationReceived(string hostUsername, string lobbyCode);
     }
 }

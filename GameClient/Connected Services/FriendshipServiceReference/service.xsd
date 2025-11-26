@@ -99,6 +99,20 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="SendGameInvitation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="senderUsername" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="targetUsername" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="lobbyCode" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendGameInvitationResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
   <xs:element name="OnFriendRequestReceived">
     <xs:complexType>
       <xs:sequence />
@@ -107,6 +121,14 @@
   <xs:element name="OnFriendListUpdated">
     <xs:complexType>
       <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnGameInvitationReceived">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="hostUsername" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="lobbyCode" nillable="true" type="xs:string" />
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
 </xs:schema>

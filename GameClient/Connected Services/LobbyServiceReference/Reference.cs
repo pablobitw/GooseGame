@@ -186,6 +186,9 @@ namespace GameClient.LobbyServiceReference {
         private bool IsHostField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsPublicField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int MaxPlayersField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -239,6 +242,19 @@ namespace GameClient.LobbyServiceReference {
                 if ((this.IsHostField.Equals(value) != true)) {
                     this.IsHostField = value;
                     this.RaisePropertyChanged("IsHost");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsPublic {
+            get {
+                return this.IsPublicField;
+            }
+            set {
+                if ((this.IsPublicField.Equals(value) != true)) {
+                    this.IsPublicField = value;
+                    this.RaisePropertyChanged("IsPublic");
                 }
             }
         }
@@ -363,7 +379,16 @@ namespace GameClient.LobbyServiceReference {
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int BoardIdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsGameStartedField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsPublicField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int MaxPlayersField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersField;
@@ -379,6 +404,19 @@ namespace GameClient.LobbyServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public int BoardId {
+            get {
+                return this.BoardIdField;
+            }
+            set {
+                if ((this.BoardIdField.Equals(value) != true)) {
+                    this.BoardIdField = value;
+                    this.RaisePropertyChanged("BoardId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public bool IsGameStarted {
             get {
                 return this.IsGameStartedField;
@@ -387,6 +425,32 @@ namespace GameClient.LobbyServiceReference {
                 if ((this.IsGameStartedField.Equals(value) != true)) {
                     this.IsGameStartedField = value;
                     this.RaisePropertyChanged("IsGameStarted");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsPublic {
+            get {
+                return this.IsPublicField;
+            }
+            set {
+                if ((this.IsPublicField.Equals(value) != true)) {
+                    this.IsPublicField = value;
+                    this.RaisePropertyChanged("IsPublic");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int MaxPlayers {
+            get {
+                return this.MaxPlayersField;
+            }
+            set {
+                if ((this.MaxPlayersField.Equals(value) != true)) {
+                    this.MaxPlayersField = value;
+                    this.RaisePropertyChanged("MaxPlayers");
                 }
             }
         }
@@ -435,6 +499,12 @@ namespace GameClient.LobbyServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/DisbandLobby", ReplyAction="http://tempuri.org/ILobbyService/DisbandLobbyResponse")]
         System.Threading.Tasks.Task DisbandLobbyAsync(string hostUsername);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/LeaveLobby", ReplyAction="http://tempuri.org/ILobbyService/LeaveLobbyResponse")]
+        bool LeaveLobby(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/LeaveLobby", ReplyAction="http://tempuri.org/ILobbyService/LeaveLobbyResponse")]
+        System.Threading.Tasks.Task<bool> LeaveLobbyAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
         GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(string lobbyCode, string joiningUsername);
@@ -498,6 +568,14 @@ namespace GameClient.LobbyServiceReference {
         
         public System.Threading.Tasks.Task DisbandLobbyAsync(string hostUsername) {
             return base.Channel.DisbandLobbyAsync(hostUsername);
+        }
+        
+        public bool LeaveLobby(string username) {
+            return base.Channel.LeaveLobby(username);
+        }
+        
+        public System.Threading.Tasks.Task<bool> LeaveLobbyAsync(string username) {
+            return base.Channel.LeaveLobbyAsync(username);
         }
         
         public GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(string lobbyCode, string joiningUsername) {
