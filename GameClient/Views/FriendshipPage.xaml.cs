@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -47,7 +46,11 @@ namespace GameClient.Views
             FriendsListBox.ItemsSource = FriendsList;
             FriendRequestsListBox.ItemsSource = FriendRequestsList;
 
-            _friendshipManager = new FriendshipServiceManager(_currentUsername);
+            if (FriendshipServiceManager.Instance == null)
+            {
+                FriendshipServiceManager.Initialize(_currentUsername);
+            }
+            _friendshipManager = FriendshipServiceManager.Instance;
 
             _friendshipManager.FriendListUpdated += HandleDataUpdate;
             _friendshipManager.RequestReceived += HandleDataUpdate;
@@ -63,9 +66,11 @@ namespace GameClient.Views
 
         private void FriendshipPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            _friendshipManager.FriendListUpdated -= HandleDataUpdate;
-            _friendshipManager.RequestReceived -= HandleDataUpdate;
-            _friendshipManager.Disconnect();
+            if (_friendshipManager != null)
+            {
+                _friendshipManager.FriendListUpdated -= HandleDataUpdate;
+                _friendshipManager.RequestReceived -= HandleDataUpdate;
+            }
         }
 
         private void HandleDataUpdate()
@@ -142,23 +147,27 @@ namespace GameClient.Views
         private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
+            if (btn == null) return;
             string requester = btn.Tag.ToString();
 
             await _friendshipManager.RespondToFriendRequestAsync(requester, true);
+            await LoadDataAsync();
         }
 
         private async void RejectRequest_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
+            if (btn == null) return;
             string requester = btn.Tag.ToString();
 
             await _friendshipManager.RespondToFriendRequestAsync(requester, false);
-            await LoadRequestsAsync();
+            await LoadDataAsync();
         }
 
         private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
+            if (btn == null) return;
             string friend = btn.Tag.ToString();
 
             if (DialogHelper.ShowConfirmation($"¿Eliminar a {friend}?"))
@@ -167,6 +176,7 @@ namespace GameClient.Views
                 if (deleted)
                 {
                     DialogHelper.ShowInfo("Amigo eliminado.");
+                    await LoadDataAsync();
                 }
             }
         }

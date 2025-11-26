@@ -19,10 +19,9 @@ namespace GameClient.Helpers
             MessageBox.Show(message, "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
-        public static bool ShowConfirmation(string message, string title = "Confirmación")
+        public static bool ShowConfirmation(string message)
         {
-            var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
-            return result == MessageBoxResult.Yes;
+            return MessageBox.Show(message, "Confirmación", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
         }
     }
 }

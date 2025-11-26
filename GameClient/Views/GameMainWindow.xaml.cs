@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.Views;
 using GameClient.GameServiceReference;
+using GameClient.Helpers;
 
 namespace GameClient
 {
@@ -15,6 +16,9 @@ namespace GameClient
         {
             InitializeComponent();
             _username = loggedInUsername;
+
+            FriendshipServiceManager.Initialize(_username);
+
             this.Closed += GameMainWindow_Closed;
         }
 
@@ -72,6 +76,11 @@ namespace GameClient
         {
             try
             {
+                if (FriendshipServiceManager.Instance != null)
+                {
+                    FriendshipServiceManager.Instance.Disconnect();
+                }
+
                 using (var client = new GameServiceClient())
                 {
                     await client.LogoutAsync(_username);

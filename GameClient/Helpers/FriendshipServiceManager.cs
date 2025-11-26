@@ -1,20 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using GameClient.FriendshipServiceReference;
 
 namespace GameClient.Helpers
 {
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class FriendshipServiceManager : IFriendshipServiceCallback
     {
+        public static FriendshipServiceManager Instance { get; private set; }
+
+        public static void Initialize(string username)
+        {
+            if (Instance == null)
+            {
+                Instance = new FriendshipServiceManager(username);
+            }
+        }
+
         private FriendshipServiceClient _proxy;
         private readonly string _username;
 
-        public event Action FriendListUpdated; 
-        public event Action RequestReceived;  
+        public event Action FriendListUpdated;
+        public event Action RequestReceived;
 
-        public FriendshipServiceManager(string username)
+        private FriendshipServiceManager(string username)
         {
             _username = username;
             InitializeConnection();
@@ -30,7 +40,7 @@ namespace GameClient.Helpers
             }
             catch (CommunicationException)
             {
-                DialogHelper.ShowError("No se pudo conectar al servicio de amigos.");
+                
             }
         }
 
@@ -50,78 +60,37 @@ namespace GameClient.Helpers
             }
         }
 
-
-        public void OnFriendRequestReceived()
-        {
-            RequestReceived?.Invoke();
-        }
-
-        public void OnFriendListUpdated()
-        {
-            FriendListUpdated?.Invoke();
-        }
-
+        public void OnFriendRequestReceived() => RequestReceived?.Invoke();
+        public void OnFriendListUpdated() => FriendListUpdated?.Invoke();
 
         public async Task<FriendDto[]> GetFriendListAsync()
         {
-            try
-            {
-                return await _proxy.GetFriendListAsync(_username);
-            }
-            catch (CommunicationException)
-            {
-                return new FriendDto[0];
-            }
+            try { return await _proxy.GetFriendListAsync(_username); }
+            catch (CommunicationException) { return new FriendDto[0]; }
         }
 
         public async Task<FriendDto[]> GetPendingRequestsAsync()
         {
-            try
-            {
-                return await _proxy.GetPendingRequestsAsync(_username);
-            }
-            catch (CommunicationException)
-            {
-                return new FriendDto[0];
-            }
+            try { return await _proxy.GetPendingRequestsAsync(_username); }
+            catch (CommunicationException) { return new FriendDto[0]; }
         }
 
         public async Task<bool> SendFriendRequestAsync(string targetUser)
         {
-            try
-            {
-                return await _proxy.SendFriendRequestAsync(_username, targetUser);
-            }
-            catch (CommunicationException)
-            {
-                DialogHelper.ShowError("Error de conexión al enviar solicitud.");
-                return false;
-            }
+            try { return await _proxy.SendFriendRequestAsync(_username, targetUser); }
+            catch (CommunicationException) { return false; }
         }
 
         public async Task RespondToFriendRequestAsync(string requester, bool accept)
         {
-            try
-            {
-                await _proxy.RespondToFriendRequestAsync(_username, requester, accept);
-            }
-            catch (CommunicationException)
-            {
-                DialogHelper.ShowError("Error de conexión al responder.");
-            }
+            try { await _proxy.RespondToFriendRequestAsync(_username, requester, accept); }
+            catch (CommunicationException) { }
         }
 
         public async Task<bool> RemoveFriendAsync(string friendUsername)
         {
-            try
-            {
-                return await _proxy.RemoveFriendAsync(_username, friendUsername);
-            }
-            catch (CommunicationException)
-            {
-                DialogHelper.ShowError("Error de conexión al eliminar amigo.");
-                return false;
-            }
+            try { return await _proxy.RemoveFriendAsync(_username, friendUsername); }
+            catch (CommunicationException) { return false; }
         }
     }
 }
