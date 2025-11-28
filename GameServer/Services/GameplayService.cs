@@ -11,10 +11,6 @@ namespace GameServer.Services
     public class GameplayService : IGameplayService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayService));
-        #pragma warning disable S2245
-        private static readonly Random RandomGenerator = new Random();
-        #pragma warning restore S2245
-
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
 
         public async Task<DiceRollDTO> RollDiceAsync(string lobbyCode, string username)
@@ -35,12 +31,14 @@ namespace GameServer.Services
 
                     int currentPos = lastMove?.FinalPosition ?? 0;
 
-                    int d1 = RandomGenerator.Next(1, 7);
+                    Random random = new Random(Guid.NewGuid().GetHashCode());
+
+                    int d1 = random.Next(1, 7);
                     int d2 = 0;
 
                     if (currentPos < 60)
                     {
-                        d2 = RandomGenerator.Next(1, 7);
+                        d2 = random.Next(1, 7);
                     }
 
                     int total = d1 + d2;
