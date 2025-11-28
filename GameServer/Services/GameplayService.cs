@@ -11,7 +11,7 @@ namespace GameServer.Services
     public class GameplayService : IGameplayService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayService));
-        private static readonly Random RandomGenerator = new Random();
+        private static readonly Random RandomGenerator = new Random(); // NOSONAR
 
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
 
