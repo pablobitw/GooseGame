@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -26,12 +27,12 @@ namespace GameClient.Views
         {
         }
 
-        private void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
+        private async void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadUserProfile();
+            await LoadUserProfile();
         }
 
-        private async void LoadUserProfile()
+        private async Task LoadUserProfile()
         {
             var client = new UserProfileServiceClient();
 
@@ -44,7 +45,6 @@ namespace GameClient.Views
                     UsernameTextBox.Text = profile.Username;
 
                     if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
-
                     if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
                     if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
                     if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
@@ -59,7 +59,6 @@ namespace GameClient.Views
 
                         if (System.IO.File.Exists(fullPath))
                         {
-                           
                             var bitmap = new BitmapImage();
                             bitmap.BeginInit();
                             bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
@@ -104,12 +103,12 @@ namespace GameClient.Views
             }
         }
 
-        private void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
+        private async void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
         {
             var changeWindow = new ChangeUsernameWindow(userEmail);
-            changeWindow.ShowDialog();
+            changeWindow.ShowDialog(); 
 
-            LoadUserProfile();
+            await LoadUserProfile(); 
         }
 
         private void ChangeAvatarButton_Click(object sender, RoutedEventArgs e)
