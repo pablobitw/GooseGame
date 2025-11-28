@@ -13,10 +13,27 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="CurrentTurnUsername" nillable="true" type="xs:string" />
       <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="GameLog" nillable="true" type="q1:ArrayOfstring" />
+      <xs:element minOccurs="0" name="IsGameOver" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsMyTurn" type="xs:boolean" />
       <xs:element minOccurs="0" name="LastDiceOne" type="xs:int" />
       <xs:element minOccurs="0" name="LastDiceTwo" type="xs:int" />
+      <xs:element minOccurs="0" name="PlayerPositions" nillable="true" type="tns:ArrayOfPlayerPositionDTO" />
+      <xs:element minOccurs="0" name="WinnerUsername" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="GameStateDTO" nillable="true" type="tns:GameStateDTO" />
+  <xs:complexType name="ArrayOfPlayerPositionDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerPositionDTO" nillable="true" type="tns:PlayerPositionDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPlayerPositionDTO" nillable="true" type="tns:ArrayOfPlayerPositionDTO" />
+  <xs:complexType name="PlayerPositionDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CurrentTile" type="xs:int" />
+      <xs:element minOccurs="0" name="IsOnline" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PlayerPositionDTO" nillable="true" type="tns:PlayerPositionDTO" />
 </xs:schema>

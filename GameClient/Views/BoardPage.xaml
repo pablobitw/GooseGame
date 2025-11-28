@@ -9,71 +9,79 @@
       Title="BoardPage"
       FontFamily="/Assets/Fonts/#Dosis">
 
-    <Grid x:Name="BoardGrid">
+    <Grid x:Name="MainGrid">
 
-        <Button x:Name="BackButton" 
-                Height="80" Width="80" 
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top" 
-                Margin="20" 
-                Background="Transparent" 
-                BorderThickness="0" 
-                Cursor="Hand" 
-                Click="BackButton_Click">
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
-                        <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Setter Property="Opacity" Value="1"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Opacity" Value="0.7"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Opacity" Value="0.5"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
+        <Viewbox Stretch="Uniform">
+            <Canvas x:Name="BoardCanvas" Width="1200" Height="800" Background="Transparent">
+                <Image x:Name="BoardImage" 
+                       Stretch="Fill" 
+                       Width="1200" Height="800"/>
+            </Canvas>
+        </Viewbox>
 
-        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0" 
-                Background="#AA000000" CornerRadius="10" Padding="10" Width="300" Height="400">
-            <StackPanel>
-                <TextBlock Text="Registro de Juego" Foreground="White" FontWeight="Bold" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <ListBox x:Name="GameLogListBox" Height="330" Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18"/>
-            </StackPanel>
-        </Border>
+        <Grid>
+            <Button x:Name="BackButton" 
+                    Height="80" Width="80" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top" 
+                    Margin="20" 
+                    Background="Transparent" 
+                    BorderThickness="0" 
+                    Cursor="Hand" 
+                    Click="BackButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                            <Image Source="/Assets/Icons/back_icon.png" Stretch="Uniform"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
 
-        <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,50" 
-                Background="#DDFFFFFF" CornerRadius="20" Padding="20">
-            <StackPanel Orientation="Horizontal">
-
-                <StackPanel Margin="20,0">
-                    <TextBlock Text="Dado 1" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    <Border BorderBrush="Black" BorderThickness="2" Width="60" Height="60" Margin="5" Background="White">
-                        <TextBlock x:Name="DiceOneText" Text="?" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
+            <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0" 
+                    Background="#AA000000" CornerRadius="10" Padding="10" Width="300" Height="400">
+                <StackPanel>
+                    <TextBlock Text="Registro de Juego" Foreground="White" FontWeight="Bold" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <ListBox x:Name="GameLogListBox" Height="330" Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18"/>
                 </StackPanel>
+            </Border>
 
-                <StackPanel Margin="20,0">
-                    <TextBlock Text="Dado 2" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    <Border BorderBrush="Black" BorderThickness="2" Width="60" Height="60" Margin="5" Background="White">
-                        <TextBlock x:Name="DiceTwoText" Text="?" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
+            <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,50" 
+                    Background="#DDFFFFFF" CornerRadius="20" Padding="20">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="20,0">
+                        <TextBlock Text="Dado 1" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <Border BorderBrush="Black" BorderThickness="2" Width="60" Height="60" Margin="5" Background="White">
+                            <TextBlock x:Name="DiceOneText" Text="?" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Margin="20,0">
+                        <TextBlock Text="Dado 2" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <Border BorderBrush="Black" BorderThickness="2" Width="60" Height="60" Margin="5" Background="White">
+                            <TextBlock x:Name="DiceTwoText" Text="?" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <Button x:Name="RollDiceButton" Content="Tirar Dados" 
+                            Width="280" Height="60" Margin="20,0,0,0" 
+                            FontSize="24" FontWeight="Bold" 
+                            Click="RollDiceButton_Click"/>
                 </StackPanel>
-
-                <Button x:Name="RollDiceButton" Content="Tirar Dados" 
-                        Width="280" Height="60" Margin="20,0,0,0"
-                        FontSize="24" FontWeight="Bold"
-                        Click="RollDiceButton_Click"/>
-            </StackPanel>
-        </Border>
-
+            </Border>
+        </Grid>
     </Grid>
 </Page>

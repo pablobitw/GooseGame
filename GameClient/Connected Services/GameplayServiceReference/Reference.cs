@@ -106,6 +106,9 @@ namespace GameClient.GameplayServiceReference {
         private string[] GameLogField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsGameOverField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsMyTurnField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -113,6 +116,12 @@ namespace GameClient.GameplayServiceReference {
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int LastDiceTwoField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.GameplayServiceReference.PlayerPositionDTO[] PlayerPositionsField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string WinnerUsernameField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
@@ -146,6 +155,19 @@ namespace GameClient.GameplayServiceReference {
                 if ((object.ReferenceEquals(this.GameLogField, value) != true)) {
                     this.GameLogField = value;
                     this.RaisePropertyChanged("GameLog");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsGameOver {
+            get {
+                return this.IsGameOverField;
+            }
+            set {
+                if ((this.IsGameOverField.Equals(value) != true)) {
+                    this.IsGameOverField = value;
+                    this.RaisePropertyChanged("IsGameOver");
                 }
             }
         }
@@ -185,6 +207,109 @@ namespace GameClient.GameplayServiceReference {
                 if ((this.LastDiceTwoField.Equals(value) != true)) {
                     this.LastDiceTwoField = value;
                     this.RaisePropertyChanged("LastDiceTwo");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.GameplayServiceReference.PlayerPositionDTO[] PlayerPositions {
+            get {
+                return this.PlayerPositionsField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PlayerPositionsField, value) != true)) {
+                    this.PlayerPositionsField = value;
+                    this.RaisePropertyChanged("PlayerPositions");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string WinnerUsername {
+            get {
+                return this.WinnerUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.WinnerUsernameField, value) != true)) {
+                    this.WinnerUsernameField = value;
+                    this.RaisePropertyChanged("WinnerUsername");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerPositionDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.SerializableAttribute()]
+    public partial class PlayerPositionDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int CurrentTileField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsOnlineField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int CurrentTile {
+            get {
+                return this.CurrentTileField;
+            }
+            set {
+                if ((this.CurrentTileField.Equals(value) != true)) {
+                    this.CurrentTileField = value;
+                    this.RaisePropertyChanged("CurrentTile");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsOnline {
+            get {
+                return this.IsOnlineField;
+            }
+            set {
+                if ((this.IsOnlineField.Equals(value) != true)) {
+                    this.IsOnlineField = value;
+                    this.RaisePropertyChanged("IsOnline");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
                 }
             }
         }

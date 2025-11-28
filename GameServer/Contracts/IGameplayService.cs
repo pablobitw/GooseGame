@@ -30,18 +30,40 @@ namespace GameServer.Contracts
     public class GameStateDTO
     {
         [DataMember]
-        public string CurrentTurnUsername { get; set; } 
+        public string CurrentTurnUsername { get; set; }
 
         [DataMember]
-        public bool IsMyTurn { get; set; } 
+        public bool IsMyTurn { get; set; }
 
         [DataMember]
-        public int LastDiceOne { get; set; } 
+        public int LastDiceOne { get; set; }
 
         [DataMember]
         public int LastDiceTwo { get; set; }
 
         [DataMember]
-        public List<string> GameLog { get; set; } 
+        public List<string> GameLog { get; set; }
+
+        [DataMember]
+        public List<PlayerPositionDTO> PlayerPositions { get; set; }
+
+        [DataMember]
+        public bool IsGameOver { get; set; }
+
+        [DataMember]
+        public string WinnerUsername { get; set; }
+    }
+
+    [DataContract]
+    public class PlayerPositionDTO
+    {
+        [DataMember]
+        public string Username { get; set; }
+
+        [DataMember]
+        public int CurrentTile { get; set; }
+
+        [DataMember]
+        public bool IsOnline { get; set; }
     }
 }
