@@ -13,7 +13,6 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- COLORES Y ESTILOS (Copiados para mantener consistencia visual) -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
         <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
         <SolidColorBrush x:Key="DangerBrush" Color="#DC3545"/>
@@ -46,7 +45,6 @@
         </Style>
     </Window.Resources>
 
-    <!-- BORDE PRINCIPAL (Tarjeta Blanca con Sombra) -->
     <Border Background="White" CornerRadius="15" BorderBrush="#DDDDDD" BorderThickness="1" Margin="10">
         <Border.Effect>
             <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
@@ -55,27 +53,20 @@
         <Grid Margin="30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <!-- Botón Cerrar -->
                 <RowDefinition Height="Auto"/>
-                <!-- Título e Icono -->
                 <RowDefinition Height="*"/>
-                <!-- Contenido Dinámico -->
             </Grid.RowDefinitions>
 
-            <!-- BOTÓN CERRAR (X) -->
             <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Background="Transparent" BorderThickness="0" Foreground="#999"
                     FontSize="18" Cursor="Hand" Click="CloseButton_Click"/>
 
-            <!-- CABECERA -->
             <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,20">
-                <!-- Usamos el icono de perfil para dar contexto -->
                 <Image Source="/Assets/Icons/profile_icon.png" Height="80" Margin="0,0,0,15"/>
                 <TextBlock Text="Cambiar Nombre" FontSize="28" FontWeight="Bold" Foreground="#333" 
                            HorizontalAlignment="Center" FontFamily="/Assets/Fonts/#Dosis"/>
             </StackPanel>
 
-            <!-- === PASO 1: VERIFICAR CÓDIGO === -->
             <StackPanel x:Name="Step1_VerifyCode" Grid.Row="2" Visibility="Visible" VerticalAlignment="Center">
 
                 <TextBlock Text="Por seguridad, hemos enviado un código a tu correo. Ingrésalo para continuar." 
@@ -92,7 +83,6 @@
                                  TextChanged="OnCodeTextChanged"/>
                     </Grid>
                 </Border>
-                <!-- Mensaje de Error para Código -->
                 <TextBlock x:Name="CodeErrorLabel" Text="Código incorrecto o expirado" Foreground="{StaticResource DangerBrush}" 
                            FontSize="12" Visibility="Collapsed" Margin="2,5,0,0"/>
 
@@ -106,7 +96,6 @@
             </StackPanel>
 
 
-            <!-- === PASO 2: NUEVO NOMBRE (Oculto al inicio) === -->
             <StackPanel x:Name="Step2_ChangeName" Grid.Row="2" Visibility="Collapsed" VerticalAlignment="Center">
 
                 <TextBlock Text="¡Código verificado! Escribe tu nuevo nombre." 
@@ -123,7 +112,6 @@
                                  TextChanged="OnUsernameTextChanged"/>
                     </Grid>
                 </Border>
-                <!-- Mensaje de Error para Nombre (Rojo si está ocupado) -->
                 <TextBlock x:Name="UsernameErrorLabel" Text="El nombre ya está en uso" Foreground="{StaticResource DangerBrush}" 
                            FontSize="12" Visibility="Collapsed" Margin="2,5,0,0"/>
 
