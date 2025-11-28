@@ -562,10 +562,10 @@ namespace GameClient.Views
             return new ListBoxItem { Content = stackPanel, Padding = new Thickness(10) };
         }
 
-        private void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
+        private async void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
         {
             InviteFriendsOverlay.Visibility = Visibility.Visible;
-            LoadOnlineFriends();
+            await LoadOnlineFriends();
         }
 
         private void CloseInviteMenu_Click(object sender, RoutedEventArgs e)
@@ -589,7 +589,7 @@ namespace GameClient.Views
             {
                 Console.WriteLine("Error cargando amigos: " + ex.Message);
             }
-        }}
+        }
 
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
         {
