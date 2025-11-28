@@ -65,5 +65,11 @@ namespace GameServer.Contracts
 
         [DataMember]
         public bool IsOnline { get; set; }
+
+        [DataMember]
+        public string AvatarPath { get; set; }
+
+        [DataMember]
+        public bool IsMyTurn { get; set; }
     }
 }

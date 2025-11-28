@@ -51,7 +51,7 @@ namespace GameClient.Views
             new Point(627, 464), new Point(582, 461), new Point(532, 461), new Point(483, 458),
             new Point(448, 419), new Point(447, 366), new Point(474, 311), new Point(512, 318),
             new Point(563, 319), new Point(625, 318), new Point(690, 319), new Point(739, 327),
-            new Point(611, 393) 
+            new Point(611, 393)
         };
 
         public BoardPage(string lobbyCode, int boardId, string username)
@@ -118,6 +118,7 @@ namespace GameClient.Views
 
                     UpdateGameLog(state.GameLog);
                     UpdateBoardVisuals(state.PlayerPositions);
+                    UpdatePlayerAvatars(state.PlayerPositions);
                 }
             }
             catch (Exception ex)
@@ -133,19 +134,72 @@ namespace GameClient.Views
             }
         }
 
-        private void HandleGameOver(string winner)
+        private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
-            MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Navegación segura al menú principal
-            var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null)
+            if (players == null)
             {
-                mainWindow.ShowMainMenu();
+                return;
             }
-            else
+
+            Player1Panel.Visibility = Visibility.Hidden;
+            Player2Panel.Visibility = Visibility.Hidden;
+            Player3Panel.Visibility = Visibility.Hidden;
+            Player4Panel.Visibility = Visibility.Hidden;
+
+            var sortedPlayers = players.OrderBy(p => p.Username).ToList();
+
+            for (int i = 0; i < sortedPlayers.Count; i++)
             {
-                if (NavigationService.CanGoBack) NavigationService.GoBack();
+                var player = sortedPlayers[i];
+                string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
+                    ? "pack://application:,,,/Assets/default_avatar.png"
+                    : player.AvatarPath;
+
+                ImageBrush targetAvatarBrush = null;
+                TextBlock targetNameBlock = null;
+                Border targetPanel = null;
+
+                switch (i)
+                {
+                    case 0:
+                        targetAvatarBrush = Player1Avatar;
+                        targetNameBlock = Player1Name;
+                        targetPanel = Player1Panel;
+                        break;
+                    case 1:
+                        targetAvatarBrush = Player2Avatar;
+                        targetNameBlock = Player2Name;
+                        targetPanel = Player2Panel;
+                        break;
+                    case 2:
+                        targetAvatarBrush = Player3Avatar;
+                        targetNameBlock = Player3Name;
+                        targetPanel = Player3Panel;
+                        break;
+                    case 3:
+                        targetAvatarBrush = Player4Avatar;
+                        targetNameBlock = Player4Name;
+                        targetPanel = Player4Panel;
+                        break;
+                }
+
+                if (targetPanel != null)
+                {
+                    targetPanel.Visibility = Visibility.Visible;
+                    targetNameBlock.Text = player.Username;
+
+                    try
+                    {
+                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute));
+                    }
+                    catch
+                    {
+                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/default_avatar.png"));
+                    }
+
+                    targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
+                    targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+                }
             }
         }
 
@@ -265,6 +319,21 @@ namespace GameClient.Views
                 {
                     GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
                 }
+            }
+        }
+
+        private void HandleGameOver(string winner)
+        {
+            MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            var mainWindow = Window.GetWindow(this) as GameMainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.ShowMainMenu();
+            }
+            else
+            {
+                if (NavigationService.CanGoBack) NavigationService.GoBack();
             }
         }
 

@@ -30,7 +30,9 @@
   <xs:element name="ArrayOfPlayerPositionDTO" nillable="true" type="tns:ArrayOfPlayerPositionDTO" />
   <xs:complexType name="PlayerPositionDTO">
     <xs:sequence>
+      <xs:element minOccurs="0" name="AvatarPath" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="CurrentTile" type="xs:int" />
+      <xs:element minOccurs="0" name="IsMyTurn" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsOnline" type="xs:boolean" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>

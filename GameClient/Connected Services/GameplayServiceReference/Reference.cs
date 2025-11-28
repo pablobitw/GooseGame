@@ -257,7 +257,13 @@ namespace GameClient.GameplayServiceReference {
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string AvatarPathField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int CurrentTileField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsMyTurnField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsOnlineField;
@@ -276,6 +282,19 @@ namespace GameClient.GameplayServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public string AvatarPath {
+            get {
+                return this.AvatarPathField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.AvatarPathField, value) != true)) {
+                    this.AvatarPathField = value;
+                    this.RaisePropertyChanged("AvatarPath");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public int CurrentTile {
             get {
                 return this.CurrentTileField;
@@ -284,6 +303,19 @@ namespace GameClient.GameplayServiceReference {
                 if ((this.CurrentTileField.Equals(value) != true)) {
                     this.CurrentTileField = value;
                     this.RaisePropertyChanged("CurrentTile");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsMyTurn {
+            get {
+                return this.IsMyTurnField;
+            }
+            set {
+                if ((this.IsMyTurnField.Equals(value) != true)) {
+                    this.IsMyTurnField = value;
+                    this.RaisePropertyChanged("IsMyTurn");
                 }
             }
         }

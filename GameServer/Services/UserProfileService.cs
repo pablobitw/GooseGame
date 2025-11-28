@@ -25,7 +25,6 @@ namespace GameServer.Services
             {
                 using (var context = new GameDatabase_Container())
                 {
-                    // CORRECCIÓN: Busca por Email O por Username
                     var player = await context.Players
                         .Include(p => p.Account)
                         .Include(p => p.PlayerStat)

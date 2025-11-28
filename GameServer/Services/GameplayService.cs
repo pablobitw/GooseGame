@@ -71,12 +71,12 @@ namespace GameServer.Services
                         }
                         isExtraTurn = true;
                     }
-                    else if (finalPos == 6 || finalPos == 12) 
+                    else if (finalPos == 6 || finalPos == 12)
                     {
                         message = "¡Puente! Saltas a la Posada (19).";
                         finalPos = 19;
                     }
-                    else if (finalPos == 26 || finalPos == 53) 
+                    else if (finalPos == 26 || finalPos == 53)
                     {
                         int bonus = finalPos;
                         message = $"¡Dados! Sumas {bonus} casillas extra.";
@@ -88,12 +88,12 @@ namespace GameServer.Services
                             finalPos = 64 - excess;
                         }
                     }
-                    else if (finalPos == 42) 
+                    else if (finalPos == 42)
                     {
                         message = "¡Laberinto! Retrocedes a la 30.";
                         finalPos = 30;
                     }
-                    else if (finalPos == 58) 
+                    else if (finalPos == 58)
                     {
                         message = "¡CALAVERA! Regresas al inicio (1).";
                         finalPos = 1;
@@ -177,7 +177,7 @@ namespace GameServer.Services
                         .Where(m => m.GameIdGame == game.IdGame)
                         .OrderByDescending(m => m.IdMoveRecord)
                         .Take(20)
-                        .Select(m => m.ActionDescription.Replace("[EXTRA] ", "")) 
+                        .Select(m => m.ActionDescription.Replace("[EXTRA] ", ""))
                         .ToListAsync();
 
                     var playerPositions = new List<PlayerPositionDTO>();
@@ -192,7 +192,9 @@ namespace GameServer.Services
                         {
                             Username = p.Username,
                             CurrentTile = pLastMove?.FinalPosition ?? 0,
-                            IsOnline = true
+                            IsOnline = true,
+                            AvatarPath = p.Avatar,
+                            IsMyTurn = (p.Username == currentTurnPlayer.Username)
                         });
                     }
 
