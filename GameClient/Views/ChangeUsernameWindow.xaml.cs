@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using GameClient.UserProfileServiceReference;
-using GameClient.GameServiceReference; 
+using GameClient.GameServiceReference;
 
 namespace GameClient.Views
 {
@@ -17,10 +18,15 @@ namespace GameClient.Views
             InitializeComponent();
             _userEmail = email;
 
-            SendVerificationCode();
+            this.Loaded += ChangeUsernameWindow_Loaded;
         }
 
-        private async void SendVerificationCode()
+        private async void ChangeUsernameWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            await SendVerificationCode();
+        }
+
+        private async Task SendVerificationCode()
         {
             var client = new UserProfileServiceClient();
             try
@@ -52,7 +58,7 @@ namespace GameClient.Views
             }
 
             VerifyCodeButton.IsEnabled = false;
-            var client = new GameServiceClient(); 
+            var client = new GameServiceClient();
 
             try
             {
@@ -102,7 +108,7 @@ namespace GameClient.Views
                 {
                     case UsernameChangeResult.Success:
                         MessageBox.Show("¡Nombre cambiado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                        this.Close(); 
+                        this.Close();
                         break;
 
                     case UsernameChangeResult.UsernameAlreadyExists:
@@ -133,9 +139,9 @@ namespace GameClient.Views
             }
         }
 
-        private void ResendCode_Click(object sender, RoutedEventArgs e)
+        private async void ResendCode_Click(object sender, RoutedEventArgs e)
         {
-            SendVerificationCode();
+            await SendVerificationCode();
             MessageBox.Show("Código reenviado a tu correo.", "Información");
         }
 
@@ -154,7 +160,7 @@ namespace GameClient.Views
 
         private void ClearError(Border border, TextBlock label)
         {
-            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCC")); 
+            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCC"));
             border.BorderThickness = new Thickness(1);
             if (label != null) label.Visibility = Visibility.Collapsed;
         }
