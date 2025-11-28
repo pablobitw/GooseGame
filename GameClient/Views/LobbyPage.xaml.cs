@@ -573,18 +573,23 @@ namespace GameClient.Views
             InviteFriendsOverlay.Visibility = Visibility.Collapsed;
         }
 
-        private async void LoadOnlineFriends()
+        private async Task LoadOnlineFriends()
         {
             if (FriendshipServiceManager.Instance == null) return;
 
-            var allFriends = await FriendshipServiceManager.Instance.GetFriendListAsync();
+            try
+            {
+                var allFriends = await FriendshipServiceManager.Instance.GetFriendListAsync();
+                var onlineFriends = allFriends.Where(f => f.IsOnline).ToList();
 
-            var onlineFriends = allFriends.Where(f => f.IsOnline).ToList();
-
-            InviteFriendsList.ItemsSource = onlineFriends;
-
-            NoFriendsToInviteText.Visibility = onlineFriends.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        }
+                InviteFriendsList.ItemsSource = onlineFriends;
+                NoFriendsToInviteText.Visibility = onlineFriends.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cargando amigos: " + ex.Message);
+            }
+        }}
 
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
         {
