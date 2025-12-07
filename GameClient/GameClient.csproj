@@ -72,17 +72,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Connected Services\ChatServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Connected Services\FriendshipServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Connected Services\GameplayServiceReference\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Connected Services\ChatServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -286,6 +286,16 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Assets\Fonts\Dosis.ttf" />
+    <None Include="Connected Services\ChatServiceReference\GameServer.DTOs.Chat.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\ChatServiceReference\service.wsdl" />
+    <None Include="Connected Services\ChatServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\ChatServiceReference\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\FriendshipServiceReference\GameClient.FriendshipServiceReference.FriendDto.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -316,13 +326,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameplayServiceReference\service1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\ChatServiceReference\service.wsdl" />
-    <None Include="Connected Services\ChatServiceReference\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\ChatServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.RegistrationResult.datasource">
@@ -414,27 +417,15 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\FriendshipServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameplayServiceReference\" />
-    <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\alert.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\ChatServiceReference\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\ChatServiceReference\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\ChatServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\chat_icon.png" />
@@ -458,6 +449,12 @@
     <Content Include="Assets\Avatar\profilepic1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Connected Services\ChatServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\ChatServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\ChatServiceReference\configuration91.svcinfo" />
     <None Include="Connected Services\FriendshipServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>

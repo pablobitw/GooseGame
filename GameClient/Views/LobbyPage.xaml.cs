@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using FontAwesome.WPF;
-using GameClient.ChatServiceReference;
+using GameClient.ChatServiceReference; 
 using GameClient.LobbyServiceReference;
 using GameClient.Helpers;
 using GameClient.Models;
@@ -62,6 +62,7 @@ namespace GameClient.Views
             InitializeTimer();
             ConnectToChatService();
         }
+
 
         private void SyncLobbyVisuals(int maxPlayers, int currentBoardId, bool isPublic)
         {
@@ -118,6 +119,16 @@ namespace GameClient.Views
                 }
             }
 
+            if (chatClient != null && chatClient.State == CommunicationState.Opened)
+            {
+                try
+                {
+                    var request = new JoinChatRequest { Username = username, LobbyCode = lobbyCode };
+                    chatClient.LeaveLobbyChat(request);
+                }
+                catch { }
+            }
+
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
                 mainWindow.ShowMainMenu();
@@ -126,6 +137,7 @@ namespace GameClient.Views
             await CloseClientAsync();
             await CloseChatClientAsync();
         }
+
 
         private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
         {
@@ -294,7 +306,14 @@ namespace GameClient.Views
             {
                 InstanceContext context = new InstanceContext(this);
                 chatClient = new ChatServiceClient(context);
-                chatClient.JoinLobbyChat(username, lobbyCode);
+
+                var request = new JoinChatRequest
+                {
+                    Username = username,
+                    LobbyCode = lobbyCode
+                };
+
+                chatClient.JoinLobbyChat(request);
 
                 ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown;
             }
@@ -321,7 +340,15 @@ namespace GameClient.Views
 
             try
             {
-                chatClient.SendLobbyMessage(username, lobbyCode, ChatMessageTextBox.Text);
+                var messageDto = new ChatMessageDto
+                {
+                    Sender = username,
+                    LobbyCode = lobbyCode,
+                    Message = ChatMessageTextBox.Text
+                };
+
+                chatClient.SendLobbyMessage(messageDto);
+
                 AddMessageToUI("Tú:", ChatMessageTextBox.Text);
                 ChatMessageTextBox.Clear();
             }
@@ -460,13 +487,12 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        // Cliente: Navegar a la partida
                         NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                     }
                 }
                 else
                 {
-                    if (state.Players != null) 
+                    if (state.Players != null)
                     {
                         UpdatePlayerListUI(state.Players);
                     }
@@ -577,10 +603,10 @@ namespace GameClient.Views
             return new ListBoxItem { Content = stackPanel, Padding = new Thickness(10) };
         }
 
-        private void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
+        private async void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
         {
             InviteFriendsOverlay.Visibility = Visibility.Visible;
-            LoadOnlineFriends();
+            await LoadOnlineFriends();
         }
 
         private void CloseInviteMenu_Click(object sender, RoutedEventArgs e)
@@ -588,7 +614,7 @@ namespace GameClient.Views
             InviteFriendsOverlay.Visibility = Visibility.Collapsed;
         }
 
-        private async void LoadOnlineFriends()
+        private async Task LoadOnlineFriends()
         {
             if (FriendshipServiceManager.Instance == null) return;
 

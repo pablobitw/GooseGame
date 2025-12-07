@@ -3,37 +3,8 @@
   <wsp:Policy wsu:Id="NetTcpBinding_IChatService_policy">
     <wsp:ExactlyOne>
       <wsp:All>
-        <wsrm:RMAssertion xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm/policy">
-          <wsrm:InactivityTimeout Milliseconds="600000">
-          </wsrm:InactivityTimeout>
-          <wsrm:AcknowledgementInterval Milliseconds="200">
-          </wsrm:AcknowledgementInterval>
-        </wsrm:RMAssertion>
         <msb:BinaryEncoding xmlns:msb="http://schemas.microsoft.com/ws/06/2004/mspolicy/netbinary1">
         </msb:BinaryEncoding>
-        <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
-          <wsp:Policy>
-            <sp:TransportToken>
-              <wsp:Policy>
-                <msf:WindowsTransportSecurity xmlns:msf="http://schemas.microsoft.com/ws/2006/05/framing/policy">
-                  <msf:ProtectionLevel>EncryptAndSign</msf:ProtectionLevel>
-                </msf:WindowsTransportSecurity>
-              </wsp:Policy>
-            </sp:TransportToken>
-            <sp:AlgorithmSuite>
-              <wsp:Policy>
-                <sp:Basic256>
-                </sp:Basic256>
-              </wsp:Policy>
-            </sp:AlgorithmSuite>
-            <sp:Layout>
-              <wsp:Policy>
-                <sp:Strict>
-                </sp:Strict>
-              </wsp:Policy>
-            </sp:Layout>
-          </wsp:Policy>
-        </sp:TransportBinding>
         <wsaw:UsingAddressing>
         </wsaw:UsingAddressing>
       </wsp:All>
@@ -43,6 +14,7 @@
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import namespace="http://tempuri.org/" />
       <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="IChatService_JoinLobbyChat_InputMessage">
@@ -105,9 +77,6 @@
       <soap12:address location="net.tcp://localhost:8091/ChatService" />
       <wsa10:EndpointReference>
         <wsa10:Address>net.tcp://localhost:8091/ChatService</wsa10:Address>
-        <Identity xmlns="http://schemas.xmlsoap.org/ws/2006/02/addressingidentity">
-          <Upn>PABLO\PABLO</Upn>
-        </Identity>
       </wsa10:EndpointReference>
     </wsdl:port>
   </wsdl:service>

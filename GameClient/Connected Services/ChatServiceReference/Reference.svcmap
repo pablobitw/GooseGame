@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="85002d7a-e7b4-4260-9f1c-24f433e4d4d6" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="3e5ac307-b2f0-4624-ab8e-54ab00898103" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -22,9 +22,10 @@
     <MetadataSource Address="net.tcp://localhost:8091/mex" Protocol="mex" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="e8936f84-7474-45a3-bfa6-468f62349d86" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
-    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="23f6dd91-aa7b-4a83-ad25-9242465352eb" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
-    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="9a63eea2-44a1-4b72-9c09-c5197fdb055c" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
+    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="27df7995-7cd3-4d2a-a476-428c9473c606" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
+    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="50452093-09ca-4035-a34d-e6eb12967110" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
+    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="e55b4a0e-5243-4bc4-b530-fd60fc86f968" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
+    <MetadataFile FileName="GameServer.DTOs.Chat.xsd" MetadataType="Schema" ID="2493ef3b-9f6d-4291-8759-de47eb5e768c" SourceId="1" SourceUrl="net.tcp://localhost:8091/mex" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
