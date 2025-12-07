@@ -289,7 +289,7 @@
     <None Include="Connected Services\FriendshipServiceReference\GameClient.FriendshipServiceReference.FriendDto.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Connected Services\FriendshipServiceReference\GameServer.Contracts.xsd">
+    <None Include="Connected Services\FriendshipServiceReference\GameServer.DTOs.Friendship.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\FriendshipServiceReference\service.wsdl" />
@@ -363,7 +363,7 @@
     <None Include="Connected Services\UserProfileServiceReference\GameClient.UserProfileServiceReference.UserProfileDto.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Connected Services\UserProfileServiceReference\GameServer.Contracts.xsd">
+    <None Include="Connected Services\UserProfileServiceReference\GameServer.DTOs.User.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\UserProfileServiceReference\service.wsdl" />
@@ -458,6 +458,18 @@
     <Content Include="Assets\Avatar\profilepic1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Connected Services\FriendshipServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\FriendshipServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\FriendshipServiceReference\configuration91.svcinfo" />
+    <None Include="Connected Services\UserProfileServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\UserProfileServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\UserProfileServiceReference\configuration91.svcinfo" />
     <None Include="Connected Services\GameServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -465,12 +477,6 @@
     <None Include="Connected Services\GameServiceReference\configuration.svcinfo" />
     <None Include="Connected Services\GameServiceReference\configuration91.svcinfo" />
     <None Include="Connected Services\GameServiceReference\item.disco" />
-    <None Include="Connected Services\FriendshipServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Connected Services\FriendshipServiceReference\configuration.svcinfo" />
-    <None Include="Connected Services\FriendshipServiceReference\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Connected Services\LobbyServiceReference\configuration91.svcinfo" />
@@ -500,18 +506,6 @@
     <Content Include="Assets\Avatar\default_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\UserProfileServiceReference\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\UserProfileServiceReference\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\UserProfileServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />

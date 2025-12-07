@@ -1,12 +1,12 @@
-﻿using System;
+﻿using GameClient.UserProfileServiceReference;
+using System;
+using System.IO;
 using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using GameClient.UserProfileServiceReference;
-using GameClient;
 
 namespace GameClient.Views
 {
@@ -18,7 +18,6 @@ namespace GameClient.Views
         {
             InitializeComponent();
             userEmail = email;
-
             this.Loaded += UserProfilePage_Loaded;
         }
 
@@ -44,7 +43,6 @@ namespace GameClient.Views
                     UsernameTextBox.Text = profile.Username;
 
                     if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
-
                     if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
                     if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
                     if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
@@ -55,11 +53,10 @@ namespace GameClient.Views
                     try
                     {
                         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                        string fullPath = System.IO.Path.Combine(baseDir, "Assets", "Avatar", avatarName);
+                        string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarName);
 
-                        if (System.IO.File.Exists(fullPath))
+                        if (File.Exists(fullPath))
                         {
-                           
                             var bitmap = new BitmapImage();
                             bitmap.BeginInit();
                             bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
@@ -69,9 +66,13 @@ namespace GameClient.Views
                             CurrentAvatarBrush.ImageSource = bitmap;
                         }
                     }
-                    catch (Exception ex)
+                    catch (UriFormatException)
                     {
-                        Console.WriteLine("Error cargando avatar: " + ex.Message);
+                        Console.WriteLine("Error de formato en URI de avatar.");
+                    }
+                    catch (IOException)
+                    {
+                        Console.WriteLine("Error de lectura de archivo de avatar.");
                     }
 
                     if (profile.UsernameChangeCount >= 3)
@@ -94,13 +95,28 @@ namespace GameClient.Views
                     MessageBox.Show("No se pudo cargar el perfil del usuario.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                MessageBox.Show($"Error de conexión al cargar perfil: {ex.Message}", "Error de Red");
+                MessageBox.Show("La operación ha excedido el tiempo de espera.", "Error de Tiempo");
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+            }
+            catch (CommunicationException ex)
+            {
+                MessageBox.Show($"Error de comunicación: {ex.Message}", "Error de Red");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened) client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
             }
         }
 
@@ -108,7 +124,6 @@ namespace GameClient.Views
         {
             var changeWindow = new ChangeUsernameWindow(userEmail);
             changeWindow.ShowDialog();
-
             LoadUserProfile();
         }
 
@@ -119,8 +134,7 @@ namespace GameClient.Views
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
-            //var passWindow = new ChangePasswordWindow(userEmail);
-            //passWindow.ShowDialog();
+
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

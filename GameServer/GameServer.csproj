@@ -100,11 +100,16 @@
     <Compile Include="Contracts\IFriendshipService.cs" />
     <Compile Include="Contracts\IFriendshipServiceCallback.cs" />
     <Compile Include="Contracts\IGameplayService.cs" />
-    <Compile Include="Contracts\IGameService.cs" />
     <Compile Include="Contracts\ILobbyService.cs" />
     <Compile Include="Contracts\IUserProfileService.cs" />
     <Compile Include="DTOs\Auth\RegisterUserRequest.cs" />
     <Compile Include="DTOs\Auth\RegistrationResult.cs" />
+    <Compile Include="DTOs\Friendship\FriendDto.cs" />
+    <Compile Include="DTOs\Friendship\GameInvitationDto.cs" />
+    <Compile Include="DTOs\Friendship\RespondRequestDto.cs" />
+    <Compile Include="DTOs\User\ChangePasswordRequest.cs" />
+    <Compile Include="DTOs\User\UsernameChangeResult.cs" />
+    <Compile Include="DTOs\User\UserProfileDto.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Friendship.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
@@ -129,7 +134,10 @@
     </Compile>
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
+    <Compile Include="Interfaces\IFriendshipService.cs" />
+    <Compile Include="Interfaces\IFriendshipServiceCallback.cs" />
     <Compile Include="Interfaces\IGameService.cs" />
+    <Compile Include="Interfaces\IUserProfileService.cs" />
     <Compile Include="Item.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
@@ -146,6 +154,8 @@
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="Repositories\AuthRepository.cs" />
+    <Compile Include="Repositories\FriendshipRepository.cs" />
+    <Compile Include="Repositories\UserProfileRepository.cs" />
     <Compile Include="Sanction.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
@@ -157,6 +167,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\LobbyService.cs" />
     <Compile Include="Services\Logic\AuthAppService.cs" />
+    <Compile Include="Services\Logic\FriendshipAppService.cs" />
+    <Compile Include="Services\Logic\UserProfileAppService.cs" />
     <Compile Include="Services\UserProfileService.cs" />
     <Compile Include="Tile.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>

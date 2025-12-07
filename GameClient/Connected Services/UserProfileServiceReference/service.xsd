@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:import namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts" />
+  <xs:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User" />
   <xs:element name="GetUserProfile">
     <xs:complexType>
       <xs:sequence>
@@ -11,7 +11,7 @@
   <xs:element name="GetUserProfileResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="GetUserProfileResult" nillable="true" type="q1:UserProfileDto" />
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User" minOccurs="0" name="GetUserProfileResult" nillable="true" type="q1:UserProfileDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -26,7 +26,7 @@
   <xs:element name="ChangeUsernameResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="ChangeUsernameResult" type="q2:UsernameChangeResult" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User" minOccurs="0" name="ChangeUsernameResult" type="q2:UsernameChangeResult" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -62,9 +62,7 @@
   <xs:element name="ChangePasswordWithCode">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" name="email" nillable="true" type="xs:string" />
-        <xs:element minOccurs="0" name="code" nillable="true" type="xs:string" />
-        <xs:element minOccurs="0" name="newPassword" nillable="true" type="xs:string" />
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User" minOccurs="0" name="request" nillable="true" type="q3:ChangePasswordRequest" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

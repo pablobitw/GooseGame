@@ -15,7 +15,7 @@ namespace GameClient.UserProfileServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="UserProfileDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="UserProfileDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User")]
     [System.SerializableAttribute()]
     public partial class UserProfileDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -155,7 +155,7 @@ namespace GameClient.UserProfileServiceReference {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="UsernameChangeResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="UsernameChangeResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User")]
     public enum UsernameChangeResult : int {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
@@ -178,6 +178,83 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
         IncorrectPassword = 6,
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ChangePasswordRequest", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User")]
+    [System.SerializableAttribute()]
+    public partial class ChangePasswordRequest : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string EmailField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string NewPasswordField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Email {
+            get {
+                return this.EmailField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.EmailField, value) != true)) {
+                    this.EmailField = value;
+                    this.RaisePropertyChanged("Email");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string NewPassword {
+            get {
+                return this.NewPasswordField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.NewPasswordField, value) != true)) {
+                    this.NewPasswordField = value;
+                    this.RaisePropertyChanged("NewPassword");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -209,10 +286,10 @@ namespace GameClient.UserProfileServiceReference {
         System.Threading.Tasks.Task<bool> SendPasswordChangeCodeAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode", ReplyAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse")]
-        bool ChangePasswordWithCode(string email, string code, string newPassword);
+        bool ChangePasswordWithCode(GameClient.UserProfileServiceReference.ChangePasswordRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode", ReplyAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse")]
-        System.Threading.Tasks.Task<bool> ChangePasswordWithCodeAsync(string email, string code, string newPassword);
+        System.Threading.Tasks.Task<bool> ChangePasswordWithCodeAsync(GameClient.UserProfileServiceReference.ChangePasswordRequest request);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -274,12 +351,12 @@ namespace GameClient.UserProfileServiceReference {
             return base.Channel.SendPasswordChangeCodeAsync(email);
         }
         
-        public bool ChangePasswordWithCode(string email, string code, string newPassword) {
-            return base.Channel.ChangePasswordWithCode(email, code, newPassword);
+        public bool ChangePasswordWithCode(GameClient.UserProfileServiceReference.ChangePasswordRequest request) {
+            return base.Channel.ChangePasswordWithCode(request);
         }
         
-        public System.Threading.Tasks.Task<bool> ChangePasswordWithCodeAsync(string email, string code, string newPassword) {
-            return base.Channel.ChangePasswordWithCodeAsync(email, code, newPassword);
+        public System.Threading.Tasks.Task<bool> ChangePasswordWithCodeAsync(GameClient.UserProfileServiceReference.ChangePasswordRequest request) {
+            return base.Channel.ChangePasswordWithCodeAsync(request);
         }
     }
 }

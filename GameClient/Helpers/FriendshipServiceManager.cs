@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using GameClient.FriendshipServiceReference;
+using GameClient.FriendshipServiceReference; 
 
 namespace GameClient.Helpers
 {
@@ -41,7 +41,7 @@ namespace GameClient.Helpers
             }
             catch (CommunicationException)
             {
-
+                // Manejo de error de conexión inicial
             }
         }
 
@@ -85,7 +85,17 @@ namespace GameClient.Helpers
 
         public async Task RespondToFriendRequestAsync(string requester, bool accept)
         {
-            try { await _proxy.RespondToFriendRequestAsync(_username, requester, accept); }
+            try
+            {
+                var request = new RespondRequestDto
+                {
+                    RespondingUsername = _username,
+                    RequesterUsername = requester,
+                    IsAccepted = accept
+                };
+
+                await _proxy.RespondToFriendRequestAsync(request);
+            }
             catch (CommunicationException) { }
         }
 
@@ -97,7 +107,17 @@ namespace GameClient.Helpers
 
         public void SendGameInvitation(string targetUser, string lobbyCode)
         {
-            try { _proxy.SendGameInvitation(_username, targetUser, lobbyCode); }
+            try
+            {
+                var invitation = new GameInvitationDto
+                {
+                    SenderUsername = _username,
+                    TargetUsername = targetUser,
+                    LobbyCode = lobbyCode
+                };
+
+                _proxy.SendGameInvitation(invitation);
+            }
             catch { }
         }
     }

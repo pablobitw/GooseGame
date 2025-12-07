@@ -15,7 +15,84 @@ namespace GameClient.FriendshipServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="FriendDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="RespondRequestDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
+    [System.SerializableAttribute()]
+    public partial class RespondRequestDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsAcceptedField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string RequesterUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string RespondingUsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsAccepted {
+            get {
+                return this.IsAcceptedField;
+            }
+            set {
+                if ((this.IsAcceptedField.Equals(value) != true)) {
+                    this.IsAcceptedField = value;
+                    this.RaisePropertyChanged("IsAccepted");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string RequesterUsername {
+            get {
+                return this.RequesterUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.RequesterUsernameField, value) != true)) {
+                    this.RequesterUsernameField = value;
+                    this.RaisePropertyChanged("RequesterUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string RespondingUsername {
+            get {
+                return this.RespondingUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.RespondingUsernameField, value) != true)) {
+                    this.RespondingUsernameField = value;
+                    this.RaisePropertyChanged("RespondingUsername");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="FriendDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
     [System.SerializableAttribute()]
     public partial class FriendDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -90,6 +167,83 @@ namespace GameClient.FriendshipServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameInvitationDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
+    [System.SerializableAttribute()]
+    public partial class GameInvitationDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string LobbyCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string SenderUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TargetUsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string LobbyCode {
+            get {
+                return this.LobbyCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.LobbyCodeField, value) != true)) {
+                    this.LobbyCodeField = value;
+                    this.RaisePropertyChanged("LobbyCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string SenderUsername {
+            get {
+                return this.SenderUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.SenderUsernameField, value) != true)) {
+                    this.SenderUsernameField = value;
+                    this.RaisePropertyChanged("SenderUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string TargetUsername {
+            get {
+                return this.TargetUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TargetUsernameField, value) != true)) {
+                    this.TargetUsernameField = value;
+                    this.RaisePropertyChanged("TargetUsername");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="FriendshipServiceReference.IFriendshipService", CallbackContract=typeof(GameClient.FriendshipServiceReference.IFriendshipServiceCallback))]
     public interface IFriendshipService {
@@ -113,10 +267,10 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task<bool> SendFriendRequestAsync(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
-        bool RespondToFriendRequest(string respondingUsername, string requesterUsername, bool isAccepted);
+        bool RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
-        System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(string respondingUsername, string requesterUsername, bool isAccepted);
+        System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetFriendList", ReplyAction="http://tempuri.org/IFriendshipService/GetFriendListResponse")]
         GameClient.FriendshipServiceReference.FriendDto[] GetFriendList(string username);
@@ -137,10 +291,10 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
-        void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode);
+        void SendGameInvitation(GameClient.FriendshipServiceReference.GameInvitationDto invitation);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
-        System.Threading.Tasks.Task SendGameInvitationAsync(string senderUsername, string targetUsername, string lobbyCode);
+        System.Threading.Tasks.Task SendGameInvitationAsync(GameClient.FriendshipServiceReference.GameInvitationDto invitation);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -208,12 +362,12 @@ namespace GameClient.FriendshipServiceReference {
             return base.Channel.SendFriendRequestAsync(senderUsername, receiverUsername);
         }
         
-        public bool RespondToFriendRequest(string respondingUsername, string requesterUsername, bool isAccepted) {
-            return base.Channel.RespondToFriendRequest(respondingUsername, requesterUsername, isAccepted);
+        public bool RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request) {
+            return base.Channel.RespondToFriendRequest(request);
         }
         
-        public System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(string respondingUsername, string requesterUsername, bool isAccepted) {
-            return base.Channel.RespondToFriendRequestAsync(respondingUsername, requesterUsername, isAccepted);
+        public System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request) {
+            return base.Channel.RespondToFriendRequestAsync(request);
         }
         
         public GameClient.FriendshipServiceReference.FriendDto[] GetFriendList(string username) {
@@ -240,12 +394,12 @@ namespace GameClient.FriendshipServiceReference {
             return base.Channel.RemoveFriendAsync(username, friendUsername);
         }
         
-        public void SendGameInvitation(string senderUsername, string targetUsername, string lobbyCode) {
-            base.Channel.SendGameInvitation(senderUsername, targetUsername, lobbyCode);
+        public void SendGameInvitation(GameClient.FriendshipServiceReference.GameInvitationDto invitation) {
+            base.Channel.SendGameInvitation(invitation);
         }
         
-        public System.Threading.Tasks.Task SendGameInvitationAsync(string senderUsername, string targetUsername, string lobbyCode) {
-            return base.Channel.SendGameInvitationAsync(senderUsername, targetUsername, lobbyCode);
+        public System.Threading.Tasks.Task SendGameInvitationAsync(GameClient.FriendshipServiceReference.GameInvitationDto invitation) {
+            return base.Channel.SendGameInvitationAsync(invitation);
         }
     }
 }
