@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using GameClient.FriendshipServiceReference; 
+using GameClient.FriendshipServiceReference;
 
 namespace GameClient.Helpers
 {
@@ -39,25 +39,28 @@ namespace GameClient.Helpers
                 _proxy = new FriendshipServiceClient(context);
                 _proxy.Connect(_username);
             }
-            catch (CommunicationException)
+            catch (CommunicationException ex)
             {
-                // Manejo de error de conexión inicial
+                Console.WriteLine($"[FriendshipManager] Error de conexión inicial: {ex.Message}");
             }
         }
 
         public void Disconnect()
         {
+            if (_proxy == null) return;
+
             try
             {
-                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                if (_proxy.State == CommunicationState.Opened)
                 {
                     _proxy.Disconnect(_username);
                     _proxy.Close();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _proxy?.Abort();
+                Console.WriteLine($"[FriendshipManager] Error al desconectar: {ex.Message}");
+                _proxy.Abort();
             }
         }
 
@@ -67,20 +70,41 @@ namespace GameClient.Helpers
 
         public async Task<FriendDto[]> GetFriendListAsync()
         {
-            try { return await _proxy.GetFriendListAsync(_username); }
-            catch (CommunicationException) { return new FriendDto[0]; }
+            try
+            {
+                return await _proxy.GetFriendListAsync(_username);
+            }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error obteniendo lista de amigos: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
         }
 
         public async Task<FriendDto[]> GetPendingRequestsAsync()
         {
-            try { return await _proxy.GetPendingRequestsAsync(_username); }
-            catch (CommunicationException) { return new FriendDto[0]; }
+            try
+            {
+                return await _proxy.GetPendingRequestsAsync(_username);
+            }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error obteniendo solicitudes: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
         }
 
         public async Task<bool> SendFriendRequestAsync(string targetUser)
         {
-            try { return await _proxy.SendFriendRequestAsync(_username, targetUser); }
-            catch (CommunicationException) { return false; }
+            try
+            {
+                return await _proxy.SendFriendRequestAsync(_username, targetUser);
+            }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error enviando solicitud a {targetUser}: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task RespondToFriendRequestAsync(string requester, bool accept)
@@ -96,13 +120,23 @@ namespace GameClient.Helpers
 
                 await _proxy.RespondToFriendRequestAsync(request);
             }
-            catch (CommunicationException) { }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error respondiendo solicitud de {requester}: {ex.Message}");
+            }
         }
 
         public async Task<bool> RemoveFriendAsync(string friendUsername)
         {
-            try { return await _proxy.RemoveFriendAsync(_username, friendUsername); }
-            catch (CommunicationException) { return false; }
+            try
+            {
+                return await _proxy.RemoveFriendAsync(_username, friendUsername);
+            }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error eliminando amigo {friendUsername}: {ex.Message}");
+                return false;
+            }
         }
 
         public void SendGameInvitation(string targetUser, string lobbyCode)
@@ -118,7 +152,10 @@ namespace GameClient.Helpers
 
                 _proxy.SendGameInvitation(invitation);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FriendshipManager] Error enviando invitación de juego a {targetUser}: {ex.Message}");
+            }
         }
     }
 }
