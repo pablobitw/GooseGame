@@ -16,15 +16,10 @@ namespace GameClient.Views
 {
     public partial class BoardPage : Page
     {
-        private string lobbyCode;
-        private int boardId;
-        private string currentUsername;
-        private GameplayServiceClient gameplayClient;
-        private DispatcherTimer gameLoopTimer;
-
-        private bool _isGameOverHandled = false;
-
-        private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
+        private const string BaseAvatarUri = "pack://application:,,,/Assets/Avatar/";
+        private const string DefaultAvatarName = "default_avatar.png";
+        private const string BoardNormalPath = "pack://application:,,,/Assets/Boards/normal_board.png";
+        private const string BoardSpecialPath = "pack://application:,,,/Assets/Boards/special_board.png";
 
         private readonly string[] _tokenImagePaths =
         {
@@ -33,6 +28,14 @@ namespace GameClient.Views
             "pack://application:,,,/Assets/Game Pieces/green_piece.png",
             "pack://application:,,,/Assets/Game Pieces/yellow_piece.png"
         };
+
+        private string lobbyCode;
+        private int boardId;
+        private string currentUsername;
+        private GameplayServiceClient gameplayClient;
+        private DispatcherTimer gameLoopTimer;
+        private bool _isGameOverHandled = false;
+        private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
 
         private readonly List<Point> _tileCoordinates = new List<Point>
         {
@@ -76,10 +79,7 @@ namespace GameClient.Views
 
         private void LoadBoardImage()
         {
-            string imagePath = (boardId == 1)
-                ? "pack://application:,,,/Assets/Boards/normal_board.png"
-                : "pack://application:,,,/Assets/Boards/special_board.png";
-
+            string imagePath = (boardId == 1) ? BoardNormalPath : BoardSpecialPath;
             BoardImage.Source = new BitmapImage(new Uri(imagePath));
         }
 
@@ -93,10 +93,7 @@ namespace GameClient.Views
 
         private async Task UpdateGameState()
         {
-            if (_isGameOverHandled)
-            {
-                return;
-            }
+            if (_isGameOverHandled) return;
 
             gameLoopTimer.Stop();
 
@@ -144,90 +141,75 @@ namespace GameClient.Views
             }
             finally
             {
-                if (!_isGameOverHandled)
-                {
-                    gameLoopTimer.Start();
-                }
+                if (!_isGameOverHandled) gameLoopTimer.Start();
             }
         }
+
 
         private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
             if (players == null) return;
 
-            Player1Panel.Visibility = Visibility.Hidden;
-            Player2Panel.Visibility = Visibility.Hidden;
-            Player3Panel.Visibility = Visibility.Hidden;
-            Player4Panel.Visibility = Visibility.Hidden;
+            SetPanelsVisibility(Visibility.Hidden);
 
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
 
-            for (int i = 0; i < sortedPlayers.Count; i++)
+            var playerControls = new List<(Border Panel, ImageBrush Avatar, TextBlock Name)>
+            {
+                (Player1Panel, Player1Avatar, Player1Name),
+                (Player2Panel, Player2Avatar, Player2Name),
+                (Player3Panel, Player3Avatar, Player3Name),
+                (Player4Panel, Player4Avatar, Player4Name)
+            };
+
+            for (int i = 0; i < sortedPlayers.Count && i < playerControls.Count; i++)
             {
                 var player = sortedPlayers[i];
+                var controls = playerControls[i];
 
-                string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
-                    ? "default_avatar.png" 
-                    : player.AvatarPath;
+                SetupPlayerPanel(controls, player);
+            }
+        }
 
-                ImageBrush targetAvatarBrush = null;
-                TextBlock targetNameBlock = null;
-                Border targetPanel = null;
+        private void SetupPlayerPanel((Border Panel, ImageBrush Avatar, TextBlock Name) controls, PlayerPositionDTO player)
+        {
+            controls.Panel.Visibility = Visibility.Visible;
+            controls.Name.Text = player.Username;
 
-                switch (i)
+            string avatarName = string.IsNullOrEmpty(player.AvatarPath) ? DefaultAvatarName : player.AvatarPath;
+            controls.Avatar.ImageSource = LoadAvatarImage(avatarName);
+
+            controls.Panel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
+            controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+        }
+
+        private ImageSource LoadAvatarImage(string avatarName)
+        {
+            try
+            {
+                return new BitmapImage(new Uri($"{BaseAvatarUri}{avatarName}"));
+            }
+            catch
+            {
+                try
                 {
-                    case 0:
-                        targetAvatarBrush = Player1Avatar;
-                        targetNameBlock = Player1Name;
-                        targetPanel = Player1Panel;
-                        break;
-                    case 1:
-                        targetAvatarBrush = Player2Avatar;
-                        targetNameBlock = Player2Name;
-                        targetPanel = Player2Panel;
-                        break;
-                    case 2:
-                        targetAvatarBrush = Player3Avatar;
-                        targetNameBlock = Player3Name;
-                        targetPanel = Player3Panel;
-                        break;
-                    case 3:
-                        targetAvatarBrush = Player4Avatar;
-                        targetNameBlock = Player4Name;
-                        targetPanel = Player4Panel;
-                        break;
+                    return new BitmapImage(new Uri($"{BaseAvatarUri}{DefaultAvatarName}"));
                 }
-
-                if (targetPanel != null)
+                catch
                 {
-                    targetPanel.Visibility = Visibility.Visible;
-                    targetNameBlock.Text = player.Username;
-
-                    try
-                    {
-                        string fullPath = $"pack://application:,,,/Assets/Avatar/{avatarPath}";
-                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(fullPath));
-                    }
-                    catch
-                    {
-                       
-                        try
-                        {
-                            string defaultPath = "pack://application:,,,/Assets/Avatar/default_avatar.png";
-                            targetAvatarBrush.ImageSource = new BitmapImage(new Uri(defaultPath));
-                        }
-                        catch
-                        {
-                            // Excepcion
-                            
-                        }
-                    }
-
-                    targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
-                    targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+                    return null; 
                 }
             }
         }
+
+        private void SetPanelsVisibility(Visibility visibility)
+        {
+            Player1Panel.Visibility = visibility;
+            Player2Panel.Visibility = visibility;
+            Player3Panel.Visibility = visibility;
+            Player4Panel.Visibility = visibility;
+        }
+
 
         private void UpdateBoardVisuals(PlayerPositionDTO[] players)
         {
