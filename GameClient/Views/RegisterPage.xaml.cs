@@ -8,7 +8,7 @@ using System.ServiceModel;
 using System.Net.Mail;
 using GameClient.Views;
 using System.Linq;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 
 namespace GameClient.Views
 {
@@ -90,7 +90,18 @@ namespace GameClient.Views
                 GameServiceClient serviceClient = new GameServiceClient();
                 try
                 {
-                    RegistrationResult result = await serviceClient.RegisterUserAsync(username, email, password);
+                    // --- CAMBIO CLAVE AQUI ---
+                    // Creamos el DTO (paquete) que espera el servidor
+                    var request = new RegisterUserRequest
+                    {
+                        Username = username,
+                        Email = email,
+                        Password = password
+                    };
+
+                    // Enviamos el paquete completo
+                    RegistrationResult result = await serviceClient.RegisterUserAsync(request);
+                    // -------------------------
 
                     switch (result)
                     {

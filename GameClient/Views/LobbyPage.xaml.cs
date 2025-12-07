@@ -431,6 +431,7 @@ namespace GameClient.Views
         private async Task PollLobbyState()
         {
             pollingTimer.Stop();
+            bool shouldContinuePolling = true;
 
             try
             {
@@ -443,21 +444,32 @@ namespace GameClient.Views
 
                 var state = await lobbyClient.GetLobbyStateAsync(lobbyCode);
 
+                if (state == null)
+                {
+                    Console.WriteLine("El estado del lobby es nulo.");
+                    return;
+                }
+
                 if (state.IsGameStarted)
                 {
+                    shouldContinuePolling = false;
+
                     if (isHost)
                     {
-                        MessageBox.Show("Error de estado: El juego inició pero soy Host sin saberlo.");
+                        Console.WriteLine("El juego inició (detectado por polling en Host).");
                     }
                     else
                     {
+                        // Cliente: Navegar a la partida
                         NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                     }
                 }
                 else
                 {
-                    UpdatePlayerListUI(state.Players);
-
+                    if (state.Players != null) 
+                    {
+                        UpdatePlayerListUI(state.Players);
+                    }
                     SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
                 }
             }
@@ -467,16 +479,19 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                Console.WriteLine("Problema de conexión. El cliente intentará reconectar en el siguiente tick.");
+                Console.WriteLine("Problema de conexión. Reintentando...");
                 if (lobbyClient != null) lobbyClient.Abort();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error inesperado: " + ex.Message);
+                Console.WriteLine("Error inesperado en Polling: " + ex.Message);
             }
             finally
             {
-                pollingTimer.Start();
+                if (shouldContinuePolling)
+                {
+                    pollingTimer.Start();
+                }
             }
         }
 

@@ -10,10 +10,88 @@
 
 namespace GameClient.GameServiceReference {
     using System.Runtime.Serialization;
+    using System;
     
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="RegisterUserRequest", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth")]
+    [System.SerializableAttribute()]
+    public partial class RegisterUserRequest : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string EmailField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string PasswordField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Email {
+            get {
+                return this.EmailField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.EmailField, value) != true)) {
+                    this.EmailField = value;
+                    this.RaisePropertyChanged("Email");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Password {
+            get {
+                return this.PasswordField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PasswordField, value) != true)) {
+                    this.PasswordField = value;
+                    this.RaisePropertyChanged("Password");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="RegistrationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="RegistrationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth")]
     public enum RegistrationResult : int {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
@@ -37,10 +115,10 @@ namespace GameClient.GameServiceReference {
     public interface IGameService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        GameClient.GameServiceReference.RegistrationResult RegisterUser(string username, string email, string password);
+        GameClient.GameServiceReference.RegistrationResult RegisterUser(GameClient.GameServiceReference.RegisterUserRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(string username, string email, string password);
+        System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(GameClient.GameServiceReference.RegisterUserRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
         bool LogIn(string usernameOrEmail, string password);
@@ -112,12 +190,12 @@ namespace GameClient.GameServiceReference {
                 base(binding, remoteAddress) {
         }
         
-        public GameClient.GameServiceReference.RegistrationResult RegisterUser(string username, string email, string password) {
-            return base.Channel.RegisterUser(username, email, password);
+        public GameClient.GameServiceReference.RegistrationResult RegisterUser(GameClient.GameServiceReference.RegisterUserRequest request) {
+            return base.Channel.RegisterUser(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(string username, string email, string password) {
-            return base.Channel.RegisterUserAsync(username, email, password);
+        public System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(GameClient.GameServiceReference.RegisterUserRequest request) {
+            return base.Channel.RegisterUserAsync(request);
         }
         
         public bool LogIn(string usernameOrEmail, string password) {

@@ -82,12 +82,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Connected Services\GameServiceReference\Reference.cs">
+    <Compile Include="Connected Services\ChatServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Connected Services\ChatServiceReference\Reference.cs">
+    <Compile Include="Connected Services\GameServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -318,6 +318,13 @@
     <None Include="Connected Services\GameplayServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\ChatServiceReference\service.wsdl" />
+    <None Include="Connected Services\ChatServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\ChatServiceReference\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.RegistrationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -326,13 +333,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameServiceReference\item1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\ChatServiceReference\service.wsdl" />
-    <None Include="Connected Services\ChatServiceReference\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\ChatServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameServiceReference\item2.xsd">
@@ -416,25 +416,10 @@
   <ItemGroup>
     <WCFMetadataStorage Include="Connected Services\FriendshipServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameplayServiceReference\" />
-    <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
+    <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameServiceReference\item.disco" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameServiceReference\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameServiceReference\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\alert.png" />
@@ -473,6 +458,13 @@
     <Content Include="Assets\Avatar\profilepic1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Connected Services\GameServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\GameServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\GameServiceReference\configuration91.svcinfo" />
+    <None Include="Connected Services\GameServiceReference\item.disco" />
     <None Include="Connected Services\FriendshipServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>

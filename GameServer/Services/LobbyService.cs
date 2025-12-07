@@ -28,7 +28,8 @@ namespace GameServer.Services
 
                     if (hostPlayer.GameIdGame != null)
                     {
-                        return new LobbyCreationResultDTO { Success = false, ErrorMessage = "Player is already in a game." };
+                        hostPlayer.GameIdGame = null;
+                        await context.SaveChangesAsync();
                     }
 
                     string newLobbyCode = GenerateLobbyCode(context);
