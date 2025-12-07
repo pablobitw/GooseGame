@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using GameClient.ChatServiceReference;
 using GameClient.LobbyServiceReference;
-using GameClient.Helpers; 
+using GameClient.Helpers;
 
 namespace GameClient.ViewModels
 {
@@ -25,9 +25,9 @@ namespace GameClient.ViewModels
         public bool IsPublic { get; set; } = true;
         public bool IsLobbyCreated { get; private set; } = false;
 
-        public event Action<string, string> MessageReceived; 
-        public event Action<LobbyStateDTO> StateUpdated;     
-        public event Action GameStarted;                     
+        public event Action<string, string> MessageReceived;
+        public event Action<LobbyStateDTO> StateUpdated;
+        public event Action GameStarted;
 
         public LobbyViewModel(string username)
         {
@@ -101,8 +101,16 @@ namespace GameClient.ViewModels
 
             if (_chatClient != null && _chatClient.State == CommunicationState.Opened)
             {
-                var request = new JoinChatRequest { Username = Username, LobbyCode = LobbyCode };
-                _chatClient.LeaveLobbyChat(request);
+                try
+                {
+                    var request = new JoinChatRequest { Username = Username, LobbyCode = LobbyCode };
+                    await _chatClient.LeaveLobbyChatAsync(request);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LobbyVM] Error al salir del chat: {ex.Message}");
+                    _chatClient.Abort();
+                }
             }
 
             await CloseClientsAsync();
@@ -114,7 +122,6 @@ namespace GameClient.ViewModels
             if (started) _pollingTimer?.Stop();
             return started;
         }
-
 
         private void ConnectToChat()
         {
@@ -129,6 +136,7 @@ namespace GameClient.ViewModels
             catch (Exception ex)
             {
                 MessageReceived?.Invoke("[Sistema]", "Error chat: " + ex.Message);
+                Console.WriteLine($"[LobbyVM] Error conectando al chat: {ex.Message}");
             }
         }
 
@@ -136,20 +144,26 @@ namespace GameClient.ViewModels
         {
             if (string.IsNullOrWhiteSpace(message) || _chatClient == null) return;
 
-            var dto = new ChatMessageDto
+            try
             {
-                Sender = Username,
-                LobbyCode = LobbyCode,
-                Message = message
-            };
-            _chatClient.SendLobbyMessage(dto);
+                var dto = new ChatMessageDto
+                {
+                    Sender = Username,
+                    LobbyCode = LobbyCode,
+                    Message = message
+                };
+                _chatClient.SendLobbyMessage(dto);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LobbyVM] Error enviando mensaje: {ex.Message}");
+            }
         }
 
         public void ReceiveMessage(string username, string message)
         {
             MessageReceived?.Invoke(username, message);
         }
-
 
         private void InitializeTimer()
         {
@@ -178,7 +192,7 @@ namespace GameClient.ViewModels
                     if (state.IsGameStarted)
                     {
                         shouldContinue = false;
-                        GameStarted?.Invoke(); 
+                        GameStarted?.Invoke();
                     }
                     else
                     {
@@ -192,17 +206,18 @@ namespace GameClient.ViewModels
                     }
                 }
             }
-            catch (EndpointNotFoundException) 
+            catch (EndpointNotFoundException ex)
             {
-
+                Console.WriteLine($"[LobbyVM] Servidor no encontrado (Polling): {ex.Message}");
             }
-            catch (CommunicationException)
+            catch (CommunicationException ex)
             {
+                Console.WriteLine($"[LobbyVM] Error de comunicación (Polling): {ex.Message}");
                 _lobbyClient.Abort();
             }
-            catch (TimeoutException) 
-            { 
-
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine($"[LobbyVM] Timeout (Polling): {ex.Message}");
             }
             finally
             {
@@ -212,14 +227,45 @@ namespace GameClient.ViewModels
 
         private async Task CloseClientsAsync()
         {
-            try { if (_chatClient?.State == CommunicationState.Opened) _chatClient.Close(); } catch { _chatClient?.Abort(); }
-            try { if (_lobbyClient?.State == CommunicationState.Opened) _lobbyClient.Close(); } catch { _lobbyClient?.Abort(); }
+            if (_chatClient != null)
+            {
+                try
+                {
+                    if (_chatClient.State == CommunicationState.Opened) _chatClient.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LobbyVM] Error cerrando ChatClient: {ex.Message}");
+                    _chatClient.Abort(); 
+                }
+            }
+
+            if (_lobbyClient != null)
+            {
+                try
+                {
+                    if (_lobbyClient.State == CommunicationState.Opened) _lobbyClient.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LobbyVM] Error cerrando LobbyClient: {ex.Message}");
+                    _lobbyClient.Abort();
+                }
+            }
+
             await Task.CompletedTask;
         }
 
         public void SendInvitation(string friendUsername)
         {
-            FriendshipServiceManager.Instance.SendGameInvitation(friendUsername, this.LobbyCode);
+            try
+            {
+                FriendshipServiceManager.Instance.SendGameInvitation(friendUsername, this.LobbyCode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LobbyVM] Error enviando invitación: {ex.Message}");
+            }
         }
 
         public async Task LeaveOrDisbandAsync()
@@ -237,13 +283,17 @@ namespace GameClient.ViewModels
                     await LeaveLobbyAsync();
                 }
             }
-            catch (CommunicationException)
+            catch (CommunicationException ex)
             {
-
+                Console.WriteLine($"[LobbyVM] Error de red al salir/disolver: {ex.Message}");
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
-
+                Console.WriteLine($"[LobbyVM] Timeout al salir/disolver: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LobbyVM] Error general al salir/disolver: {ex.Message}");
             }
             finally
             {
