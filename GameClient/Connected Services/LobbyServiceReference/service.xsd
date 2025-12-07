@@ -1,18 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:import namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts" />
+  <xs:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" />
   <xs:element name="CreateLobby">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="settings" nillable="true" type="q1:LobbySettingsDTO" />
-        <xs:element minOccurs="0" name="hostUsername" nillable="true" type="xs:string" />
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="request" nillable="true" type="q1:CreateLobbyRequest" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="CreateLobbyResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="CreateLobbyResult" nillable="true" type="q2:LobbyCreationResultDTO" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="CreateLobbyResult" nillable="true" type="q2:LobbyCreationResultDTO" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -59,15 +58,14 @@
   <xs:element name="JoinLobby">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" name="lobbyCode" nillable="true" type="xs:string" />
-        <xs:element minOccurs="0" name="joiningUsername" nillable="true" type="xs:string" />
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="request" nillable="true" type="q3:JoinLobbyRequest" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="JoinLobbyResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="JoinLobbyResult" nillable="true" type="q3:JoinLobbyResultDTO" />
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="JoinLobbyResult" nillable="true" type="q4:JoinLobbyResultDTO" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -81,7 +79,7 @@
   <xs:element name="GetLobbyStateResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.Contracts" minOccurs="0" name="GetLobbyStateResult" nillable="true" type="q4:LobbyStateDTO" />
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="GetLobbyStateResult" nillable="true" type="q5:LobbyStateDTO" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

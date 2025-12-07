@@ -1,8 +1,10 @@
 ﻿using GameClient.GameServiceReference;
 using GameClient.Helpers;
-using GameClient.LobbyServiceReference;
+using GameClient.LobbyServiceReference; 
 using GameClient.Views;
 using System;
+using System.IO;
+using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
@@ -29,7 +31,7 @@ namespace GameClient
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string videoPath = System.IO.Path.Combine(baseDir, "Assets", "fondoloop.mp4");
+                string videoPath = Path.Combine(baseDir, "Assets", "fondoloop.mp4");
 
                 var media = (MediaElement)sender;
                 media.Source = new Uri(videoPath, UriKind.Absolute);
@@ -88,9 +90,9 @@ namespace GameClient
                     await client.LogoutAsync(_username);
                 }
             }
-            catch (Exception)
-            {
-            }
+            catch (CommunicationException) { }
+            catch (TimeoutException) { }
+            catch (Exception) { } 
             finally
             {
                 Application.Current.Shutdown();
@@ -127,27 +129,48 @@ namespace GameClient
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    LobbyServiceClient lobbyClient = null;
                     try
                     {
+                        lobbyClient = new LobbyServiceClient();
 
-                        using (var lobbyClient = new LobbyServiceClient())
+                        var request = new JoinLobbyRequest
                         {
-                            var joinResult = await lobbyClient.JoinLobbyAsync(code, _username);
+                            LobbyCode = code,
+                            Username = _username
+                        };
 
-                            if (joinResult.Success)
-                            {
-                                MainMenuGrid.Visibility = Visibility.Collapsed;
-                                MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
-                            }
-                            else
-                            {
-                                MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
+                        var joinResult = await lobbyClient.JoinLobbyAsync(request);
+
+                        if (joinResult.Success)
+                        {
+                            MainMenuGrid.Visibility = Visibility.Collapsed;
+                            MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
                         }
+                        else
+                        {
+                            MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    catch (CommunicationException)
+                    {
+                        MessageBox.Show("Error de comunicación al unirse.", "Error");
+                    }
+                    catch (TimeoutException)
+                    {
+                        MessageBox.Show("Tiempo de espera agotado.", "Error");
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error");
+                    }
+                    finally
+                    {
+                        if (lobbyClient != null)
+                        {
+                            try { if (lobbyClient.State == CommunicationState.Opened) lobbyClient.Close(); }
+                            catch { lobbyClient.Abort(); }
+                        }
                     }
                 }
             });

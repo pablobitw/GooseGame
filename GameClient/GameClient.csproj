@@ -110,6 +110,7 @@
     <Compile Include="Models\FriendDisplayModel.cs" />
     <Compile Include="Models\FriendRequestDisplayModel.cs" />
     <Compile Include="ViewModels\AvatarViewModel.cs" />
+    <Compile Include="ViewModels\LobbyViewModel.cs" />
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>
     </Compile>
@@ -174,6 +175,10 @@
     <Compile Include="Views\VerifyRecoveryCodePage.xaml.cs">
       <DependentUpon>VerifyRecoveryCodePage.xaml</DependentUpon>
     </Compile>
+    <Page Include="Resources\LobbyResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\AuthWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -318,7 +323,7 @@
     <None Include="Connected Services\GameplayServiceReference\GameClient.GameplayServiceReference.GameStateDTO.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Connected Services\GameplayServiceReference\GameServer.Contracts.xsd">
+    <None Include="Connected Services\GameplayServiceReference\GameServer.DTOs.Gameplay.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameplayServiceReference\service.wsdl" />
@@ -350,7 +355,7 @@
     <None Include="Connected Services\LobbyServiceReference\GameClient.LobbyServiceReference.LobbyStateDTO.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Connected Services\LobbyServiceReference\GameServer.Contracts.xsd">
+    <None Include="Connected Services\LobbyServiceReference\GameServer.DTOs.Lobby.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\LobbyServiceReference\service.wsdl" />
@@ -449,6 +454,18 @@
     <Content Include="Assets\Avatar\profilepic1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Connected Services\LobbyServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\LobbyServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\LobbyServiceReference\configuration91.svcinfo" />
+    <None Include="Connected Services\GameplayServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\GameplayServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\GameplayServiceReference\configuration91.svcinfo" />
     <None Include="Connected Services\ChatServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -476,33 +493,9 @@
     <None Include="Connected Services\GameServiceReference\item.disco" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Connected Services\LobbyServiceReference\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\LobbyServiceReference\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\LobbyServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameplayServiceReference\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameplayServiceReference\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\GameplayServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Assets\Avatar\default_avatar.png">
+    <Resource Include="Assets\Avatar\default_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />

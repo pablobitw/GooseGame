@@ -41,9 +41,7 @@
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/fondo2.png" 
-                        Stretch="UniformToFill" 
-                        Opacity="1">
+            <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>
@@ -51,13 +49,9 @@
         </Grid.Background>
 
         <Border x:Name="LobbyContainerBorder"
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Center"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
                 Width="1400" Height="800"
-                Background="#E6FFFFFF" 
-                BorderBrush="#FFB0B0B0" 
-                BorderThickness="3" 
-                CornerRadius="20">
+                Background="#E6FFFFFF" BorderBrush="#FFB0B0B0" BorderThickness="3" CornerRadius="20">
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#80000000" Opacity="0.5"/>
             </Border.Effect>
@@ -70,43 +64,19 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,20">
-                    <TextBlock x:Name="TitleBlock"
-                               Text="{x:Static props:Strings.CreateMatchTitle}"
-                               FontSize="48" 
-                               FontWeight="Bold" 
-                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TitleBlock" Text="CREAR PARTIDA" 
+                               FontSize="48" FontWeight="Bold" VerticalAlignment="Center"/>
 
-                    <Button x:Name="CopyCodeButton" 
-                            Background="Transparent" 
-                            BorderThickness="0" 
-                            Cursor="Hand" 
-                            Margin="20,0,0,0" 
-                            VerticalAlignment="Center"
-                            Visibility="Collapsed"
-                            Click="CopyCodeButton_Click"
-                            ToolTip="Copiar Código">
+                    <Button x:Name="CopyCodeButton" Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                            Margin="20,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"
+                            Click="CopyCodeButton_Click" ToolTip="Copiar Código">
                         <fa:FontAwesome x:Name="CopyIcon" Icon="Copy" Foreground="#FF333333" Height="30"/>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Opacity" Value="0.5"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
                     </Button>
                 </StackPanel>
 
-                <Button x:Name="OpenInviteMenuButton"
-                        Grid.Row="0"
-                        HorizontalAlignment="Right" VerticalAlignment="Center"
-                        Margin="0,0,40,0"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Width="60" Height="60"
-                        ToolTip="Invitar Amigos"
-                        Click="OpenInviteMenu_Click">
+                <Button x:Name="OpenInviteMenuButton" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Margin="0,0,40,0" Style="{StaticResource PrimaryButtonStyle}" Width="60" Height="60"
+                        ToolTip="Invitar Amigos" Click="OpenInviteMenu_Click">
                     <fa:FontAwesome Icon="UserPlus" Foreground="White" FontSize="25"/>
                 </Button>
 
@@ -118,51 +88,33 @@
 
                     <StackPanel x:Name="LobbySettingsPanel" Grid.Column="0" Margin="40,10,40,10" VerticalAlignment="Top" IsEnabled="True">
 
-                        <TextBlock Text="{x:Static props:Strings.BoardTypeLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Tipo de Tablero" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="BoardTypeSpecialButton" 
-                                    Content="{x:Static props:Strings.BoardTypeSpecial}" 
-                                    Style="{StaticResource LobbyToggleActiveStyle}" 
-                                    Margin="5"
+                            <Button x:Name="BoardTypeSpecialButton" Content="Tablero Especial" 
+                                    Style="{StaticResource LobbyToggleInactiveStyle}" Margin="5"
+                                    IsEnabled="False" Opacity="0.4"
                                     Click="BoardTypeSpecialButton_Click"/>
 
-                            <Button x:Name="BoardTypeNormalButton" 
-                                    Content="Tablero Normal (Próximamente)" 
-                                    Style="{StaticResource LobbyToggleInactiveStyle}" 
-                                    Margin="5"
-                                    IsEnabled="False"
-                                    Opacity="0.4" Width="329"/>
+                            <Button x:Name="BoardTypeNormalButton" Content="Tablero Normal" 
+                                    Style="{StaticResource LobbyToggleActiveStyle}" Margin="5"
+                                    Click="BoardTypeNormalButton_Click"/>
                         </StackPanel>
 
-                        <TextBlock Text="{x:Static props:Strings.PlayerCountLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <TextBlock Text="Cantidad de Jugadores" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="DecreasePlayersButton" 
-                                    Content="-" 
-                                    Style="{StaticResource LobbyCounterButtonStyle}" 
-                                    Click="DecreasePlayersButton_Click"/>
+                            <Button x:Name="DecreasePlayersButton" Content="-" Style="{StaticResource LobbyCounterButtonStyle}" Click="DecreasePlayersButton_Click"/>
                             <TextBlock x:Name="PlayerCountBlock" Text="4" FontSize="48" FontWeight="Bold" Margin="40,0" VerticalAlignment="Center"/>
-                            <Button x:Name="IncreasePlayersButton" 
-                                    Content="+" 
-                                    Style="{StaticResource LobbyCounterButtonStyle}" 
-                                    Click="IncreasePlayersButton_Click"/>
+                            <Button x:Name="IncreasePlayersButton" Content="+" Style="{StaticResource LobbyCounterButtonStyle}" Click="IncreasePlayersButton_Click"/>
                         </StackPanel>
                         <TextBlock Text="2-4" HorizontalAlignment="Center" FontSize="18" Opacity="0.7"/>
 
-
-                        <TextBlock Text="{x:Static props:Strings.VisibilityLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <TextBlock Text="Visibilidad" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="VisibilityPublicButton" 
-                                    Content="{x:Static props:Strings.VisibilityPublic}" 
-                                    Style="{StaticResource LobbyToggleActiveStyle}" 
-                                    Margin="5"
-                                    Click="VisibilityPublicButton_Click"/>
-                            <Button x:Name="VisibilityPrivateButton" 
-                                    Style="{StaticResource LobbyToggleInactiveStyle}" 
-                                    Margin="5"
-                                    Click="VisibilityPrivateButton_Click">
+                            <Button x:Name="VisibilityPublicButton" Content="Pública" Style="{StaticResource LobbyToggleActiveStyle}" Margin="5" Click="VisibilityPublicButton_Click"/>
+                            <Button x:Name="VisibilityPrivateButton" Style="{StaticResource LobbyToggleInactiveStyle}" Margin="5" Click="VisibilityPrivateButton_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <fa:FontAwesome Icon="Lock" Foreground="White" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{x:Static props:Strings.VisibilityPrivate}"/>
+                                    <TextBlock Text="Privada"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -183,6 +135,7 @@
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
                             </TabItem>
+
                             <TabItem>
                                 <TabItem.Header>
                                     <TextBlock Text="CHAT" FontSize="18" FontWeight="Bold"/>
@@ -194,9 +147,7 @@
                                     </Grid.RowDefinitions>
                                     <ListBox x:Name="ChatMessagesList" Grid.Row="0" Margin="0,10,0,0" Background="#19000000" BorderThickness="0" FontSize="18">
                                         <ListBoxItem>
-                                            <TextBlock FontStyle="Italic" Opacity="0.7" TextWrapping="Wrap">
-                                                [Sistema]: ¡Bienvenido a la partida!
-                                            </TextBlock>
+                                            <TextBlock FontStyle="Italic" Opacity="0.7" TextWrapping="Wrap" Text="[Sistema]: ¡Bienvenido a la partida!"/>
                                         </ListBoxItem>
                                     </ListBox>
                                     <Grid Grid.Row="1" Margin="0,10,0,0">
@@ -204,7 +155,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="ChatMessageTextBox" Grid.Column="0" FontSize="18" Padding="10" VerticalContentAlignment="Center"/>
+                                        <TextBox x:Name="ChatMessageTextBox" Grid.Column="0" FontSize="18" Padding="10" VerticalContentAlignment="Center" KeyDown="ChatMessageTextBox_KeyDown"/>
                                         <Button x:Name="SendChatMessageButton" Grid.Column="1" Style="{StaticResource PrimaryButtonStyle}" Width="60" Height="50" Margin="5,0,0,0" Click="SendChatMessageButton_Click">
                                             <fa:FontAwesome Icon="Send" Foreground="White" Height="20"/>
                                         </Button>
@@ -215,61 +166,33 @@
                     </Grid>
                 </Grid>
 
-                <Button x:Name="StartMatchButton"
-                        Grid.Row="2"
-                        Content="{x:Static props:Strings.CreateMatchButton}" 
-                        Style="{StaticResource PrimaryButtonStyle}" 
-                        Margin="0,10,0,30" 
-                        FontFamily="/Assets/Fonts/#Dosis" 
-                        FontSize="40" 
-                        FontWeight="Bold" 
-                        HorizontalAlignment="Center"
-                        Width="400" 
-                        Height="80"
-                        Click="StartMatchButton_Click"/>
+                <Button x:Name="StartMatchButton" Grid.Row="2" Content="Crear Partida" 
+                        Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,30" 
+                        FontSize="40" FontWeight="Bold" HorizontalAlignment="Center" 
+                        Width="400" Height="80" Click="StartMatchButton_Click"/>
             </Grid>
         </Border>
 
-        <Button x:Name="BackButton" 
-                Content="Volver"
-                Style="{StaticResource PrimaryButtonStyle}"
-                FontFamily="/Assets/Fonts/#Dosis" 
-                FontSize="24"
-                FontWeight="Bold"
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top" 
-                Margin="20" 
-                Width="100" 
-                Height="50"
-                Cursor="Hand" 
-                Click="BackButton_Click"/>
+        <Button x:Name="BackButton" Content="Volver" Style="{StaticResource PrimaryButtonStyle}" 
+                FontSize="24" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                Margin="20" Width="100" Height="50" Click="BackButton_Click"/>
 
         <Grid x:Name="InviteFriendsOverlay" Visibility="Collapsed" Background="#7F000000">
-            <Grid.InputBindings>
-                <MouseBinding MouseAction="LeftClick" Command="{Binding CloseInviteCommand}" />
-            </Grid.InputBindings>
-
             <Border HorizontalAlignment="Right" Width="350" Background="White" BorderBrush="#FFB0B0B0" BorderThickness="1,0,0,0">
-                <Border.Effect>
-                    <DropShadowEffect Direction="180" ShadowDepth="5" BlurRadius="20" Opacity="0.3"/>
-                </Border.Effect>
-
                 <Grid Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
                         <fa:FontAwesome Icon="Users" Foreground="#333" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBlock Text="Invitar Amigos" FontSize="24" FontWeight="Bold" Foreground="#333"/>
                     </StackPanel>
-
                     <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="Transparent" BorderThickness="0" Click="CloseInviteMenu_Click" Cursor="Hand">
                         <fa:FontAwesome Icon="Times" Foreground="Gray" FontSize="20"/>
                     </Button>
 
-                    <ListBox x:Name="InviteFriendsList" Grid.Row="1" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+                    <ListBox x:Name="InviteFriendsList" Grid.Row="1" BorderThickness="0" Background="Transparent">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="#F5F5F5" CornerRadius="8" Padding="10" Margin="0,5">
@@ -279,35 +202,16 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-
-                                        <Grid>
-                                            <fa:FontAwesome Icon="UserCircle" Foreground="Gray" FontSize="30"/>
-                                            <Ellipse Width="10" Height="10" Fill="LimeGreen" 
-                                                     Visibility="{Binding IsOnline, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,0"/>
-                                        </Grid>
-
+                                        <fa:FontAwesome Icon="UserCircle" Foreground="Gray" FontSize="30"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Username}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="15,0,0,0"/>
-
-                                        <Button Grid.Column="2" 
-                                                Content="Invitar" 
-                                                FontSize="14"
-                                                Height="30" Width="70"
-                                                Style="{StaticResource PrimaryButtonStyle}"
-                                                Tag="{Binding Username}"
-                                                IsEnabled="{Binding IsOnline}" 
-                                                Click="InviteFriend_Click"/>
+                                        <Button Grid.Column="2" Content="Invitar" Height="30" Width="70" Click="InviteFriend_Click" Tag="{Binding Username}" Style="{StaticResource PrimaryButtonStyle}"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <TextBlock x:Name="NoFriendsToInviteText" Grid.Row="1" 
-                               Text="No hay amigos conectados." 
-                               FontSize="18" Foreground="Gray" 
-                               HorizontalAlignment="Center" VerticalAlignment="Center" 
-                               Visibility="Collapsed"/>
+                    <TextBlock x:Name="NoFriendsToInviteText" Grid.Row="1" Text="No hay amigos conectados." FontSize="18" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                 </Grid>
             </Border>
         </Grid>

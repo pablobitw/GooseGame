@@ -109,6 +109,17 @@
     <Compile Include="DTOs\Friendship\FriendDto.cs" />
     <Compile Include="DTOs\Friendship\GameInvitationDto.cs" />
     <Compile Include="DTOs\Friendship\RespondRequestDto.cs" />
+    <Compile Include="DTOs\Gameplay\DiceRollDTO.cs" />
+    <Compile Include="DTOs\Gameplay\GameplayRequest.cs" />
+    <Compile Include="DTOs\Gameplay\GameStateDTO.cs" />
+    <Compile Include="DTOs\Gameplay\PlayerPositionDTO.cs" />
+    <Compile Include="DTOs\Lobby\CreateLobbyRequest.cs" />
+    <Compile Include="DTOs\Lobby\JoinLobbyRequest.cs" />
+    <Compile Include="DTOs\Lobby\JoinLobbyResultDTO.cs" />
+    <Compile Include="DTOs\Lobby\LobbyCreationResultDTO.cs" />
+    <Compile Include="DTOs\Lobby\LobbySettingsDTO.cs" />
+    <Compile Include="DTOs\Lobby\LobbyStateDTO.cs" />
+    <Compile Include="DTOs\Lobby\PlayerLobbyDTO.cs" />
     <Compile Include="DTOs\User\ChangePasswordRequest.cs" />
     <Compile Include="DTOs\User\UsernameChangeResult.cs" />
     <Compile Include="DTOs\User\UserProfileDto.cs" />
@@ -141,7 +152,9 @@
     <Compile Include="Interfaces\IChatService.cs" />
     <Compile Include="Interfaces\IFriendshipService.cs" />
     <Compile Include="Interfaces\IFriendshipServiceCallback.cs" />
+    <Compile Include="Interfaces\IGameplayService.cs" />
     <Compile Include="Interfaces\IGameService.cs" />
+    <Compile Include="Interfaces\ILobbyService.cs" />
     <Compile Include="Interfaces\IUserProfileService.cs" />
     <Compile Include="Item.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
@@ -160,6 +173,8 @@
     </Compile>
     <Compile Include="Repositories\AuthRepository.cs" />
     <Compile Include="Repositories\FriendshipRepository.cs" />
+    <Compile Include="Repositories\GameplayRepository.cs" />
+    <Compile Include="Repositories\LobbyRepository.cs" />
     <Compile Include="Repositories\UserProfileRepository.cs" />
     <Compile Include="Sanction.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
@@ -174,6 +189,8 @@
     <Compile Include="Services\Logic\AuthAppService.cs" />
     <Compile Include="Services\Logic\ChatAppService.cs" />
     <Compile Include="Services\Logic\FriendshipAppService.cs" />
+    <Compile Include="Services\Logic\GameplayAppService.cs" />
+    <Compile Include="Services\Logic\LobbyAppService.cs" />
     <Compile Include="Services\Logic\UserProfileAppService.cs" />
     <Compile Include="Services\UserProfileService.cs" />
     <Compile Include="Tile.cs">

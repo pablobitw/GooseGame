@@ -9,6 +9,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using System.ServiceModel;
 using GameClient.GameplayServiceReference;
 
 namespace GameClient.Views
@@ -66,7 +67,11 @@ namespace GameClient.Views
             LoadBoardImage();
             StartGameLoop();
 
-            this.Unloaded += (s, e) => gameLoopTimer?.Stop();
+            this.Unloaded += (s, e) =>
+            {
+                gameLoopTimer?.Stop();
+                CloseClient();
+            };
         }
 
         private void LoadBoardImage()
@@ -97,7 +102,13 @@ namespace GameClient.Views
 
             try
             {
-                var state = await gameplayClient.GetGameStateAsync(lobbyCode, currentUsername);
+                var request = new GameplayRequest
+                {
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                };
+
+                var state = await gameplayClient.GetGameStateAsync(request);
 
                 if (state != null)
                 {
@@ -121,9 +132,15 @@ namespace GameClient.Views
                     UpdatePlayerAvatars(state.PlayerPositions);
                 }
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Timeout actualizando estado del juego.");
+            }
+            catch (CommunicationException)
+            {
+                Console.WriteLine("Error de comunicación actualizando estado.");
+                gameplayClient.Abort();
+                gameplayClient = new GameplayServiceClient();
             }
             finally
             {
@@ -136,10 +153,7 @@ namespace GameClient.Views
 
         private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
-            if (players == null)
-            {
-                return;
-            }
+            if (players == null) return;
 
             Player1Panel.Visibility = Visibility.Hidden;
             Player2Panel.Visibility = Visibility.Hidden;
@@ -151,8 +165,9 @@ namespace GameClient.Views
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
+
                 string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
-                    ? "pack://application:,,,/Assets/default_avatar.png"
+                    ? "default_avatar.png" 
                     : player.AvatarPath;
 
                 ImageBrush targetAvatarBrush = null;
@@ -190,11 +205,22 @@ namespace GameClient.Views
 
                     try
                     {
-                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute));
+                        string fullPath = $"pack://application:,,,/Assets/Avatar/{avatarPath}";
+                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(fullPath));
                     }
                     catch
                     {
-                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/default_avatar.png"));
+                       
+                        try
+                        {
+                            string defaultPath = "pack://application:,,,/Assets/Avatar/default_avatar.png";
+                            targetAvatarBrush.ImageSource = new BitmapImage(new Uri(defaultPath));
+                        }
+                        catch
+                        {
+                            // Excepcion
+                            
+                        }
                     }
 
                     targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
@@ -343,14 +369,25 @@ namespace GameClient.Views
 
             try
             {
-                var result = await gameplayClient.RollDiceAsync(lobbyCode, currentUsername);
+                var request = new GameplayRequest
+                {
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                };
+
+                var result = await gameplayClient.RollDiceAsync(request);
 
                 DiceOneText.Text = result.DiceOne.ToString();
                 DiceTwoText.Text = result.DiceTwo.ToString();
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                MessageBox.Show("Tiempo de espera agotado al tirar dados.");
+                RollDiceButton.IsEnabled = true;
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación al tirar dados.");
                 RollDiceButton.IsEnabled = true;
             }
         }
@@ -366,6 +403,27 @@ namespace GameClient.Views
             else if (NavigationService.CanGoBack)
             {
                 NavigationService.GoBack();
+            }
+        }
+
+        private void CloseClient()
+        {
+            if (gameplayClient == null) return;
+
+            try
+            {
+                if (gameplayClient.State == CommunicationState.Opened)
+                {
+                    gameplayClient.Close();
+                }
+                else
+                {
+                    gameplayClient.Abort();
+                }
+            }
+            catch
+            {
+                gameplayClient.Abort();
             }
         }
     }

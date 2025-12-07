@@ -1,9 +1,9 @@
 ﻿using System;
-using System.ServiceModel; 
+using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.LobbyServiceReference;
+using GameClient.LobbyServiceReference; 
 
 namespace GameClient.Views
 {
@@ -33,7 +33,13 @@ namespace GameClient.Views
 
             try
             {
-                var result = await lobbyClient.JoinLobbyAsync(code, username);
+                var request = new JoinLobbyRequest
+                {
+                    LobbyCode = code,
+                    Username = username
+                };
+
+                var result = await lobbyClient.JoinLobbyAsync(request);
 
                 if (result.Success)
                 {
@@ -66,6 +72,11 @@ namespace GameClient.Views
                 if (lobbyClient.State == CommunicationState.Opened)
                 {
                     lobbyClient.Close();
+                }
+                else
+                {
+                    lobbyClient.Abort();
+                    lobbyClient = new LobbyServiceClient();
                 }
             }
         }

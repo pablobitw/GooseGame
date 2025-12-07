@@ -1,0 +1,68 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
+                    xmlns:dto="clr-namespace:GameClient.LobbyServiceReference">
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+    <Style x:Key="LobbyToggleActiveStyle" TargetType="Button" BasedOn="{StaticResource OrangeButtonStyle}">
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Width" Value="250"/>
+        <Setter Property="Height" Value="60"/>
+    </Style>
+
+    <Style x:Key="LobbyToggleInactiveStyle" TargetType="Button" BasedOn="{StaticResource GreenButtonStyle}">
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Width" Value="250"/>
+        <Setter Property="Height" Value="60"/>
+        <Setter Property="Opacity" Value="0.6"/>
+        <Setter Property="Background" Value="#FF6B8A7A"/>
+        <Setter Property="BorderBrush" Value="#FF4E645A"/>
+    </Style>
+
+    <Style x:Key="LobbyCounterButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="FontSize" Value="30"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Width" Value="60"/>
+        <Setter Property="Height" Value="60"/>
+    </Style>
+
+    <DataTemplate x:Key="PlayerListItemTemplate" DataType="{x:Type dto:PlayerLobbyDTO}">
+        <Border Padding="10" Background="Transparent">
+            <StackPanel Orientation="Horizontal">
+                <fa:ImageAwesome x:Name="PlayerIcon" 
+                                 Icon="UserCircle" 
+                                 Foreground="#348AC7" 
+                                 Height="30" Width="30" 
+                                 Margin="0,0,15,0"/>
+
+                <TextBlock x:Name="PlayerName" 
+                           Text="{Binding Username}" 
+                           FontSize="22" 
+                           VerticalAlignment="Center"/>
+
+                <TextBlock x:Name="HostLabel" 
+                           Text=" (Host)" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           VerticalAlignment="Center"
+                           Visibility="Collapsed"/>
+            </StackPanel>
+        </Border>
+
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsHost}" Value="True">
+                <Setter TargetName="HostLabel" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="PlayerName" Property="FontWeight" Value="Bold"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding Username}" Value="Slot Vacío">
+                <Setter TargetName="PlayerIcon" Property="Icon" Value="HourglassStart"/>
+                <Setter TargetName="PlayerIcon" Property="Foreground" Value="Gray"/>
+                <Setter TargetName="PlayerName" Property="Opacity" Value="0.7"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+</ResourceDictionary>

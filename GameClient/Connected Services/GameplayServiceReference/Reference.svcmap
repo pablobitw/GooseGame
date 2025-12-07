@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="0fc73adf-e7bd-4352-a270-d8be4729139e" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="efff3d64-3afd-4d90-9b7c-8f7d560fb81f" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -22,11 +22,11 @@
     <MetadataSource Address="net.tcp://localhost:8093/mex" Protocol="mex" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="bfe06e0d-b3f8-47fe-956a-b8c5a07262b6" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
-    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="ac50c9fd-11c1-4c55-adc0-4eec9c5b68e4" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
-    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="1b40ab14-1b26-4818-9cc4-25199b6fd130" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
-    <MetadataFile FileName="GameServer.Contracts.xsd" MetadataType="Schema" ID="4b8056dc-8952-4e44-afa5-62bb1899ea42" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
-    <MetadataFile FileName="Arrays.xsd" MetadataType="Schema" ID="26cada2b-b21e-4e50-932a-62a37f902744" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="7cebb3d0-90e1-46f2-9102-7da1ff5a3e0e" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="c236603f-d113-41da-9eab-956f4ab2f2bb" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="2e0f1145-06df-47a7-8beb-1ac4b24a1d62" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="GameServer.DTOs.Gameplay.xsd" MetadataType="Schema" ID="6474313e-a645-4ea0-ac92-4ed5e2a47c61" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="Arrays.xsd" MetadataType="Schema" ID="dccdb7c2-60af-4b79-a6ce-cf9877a2cd90" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

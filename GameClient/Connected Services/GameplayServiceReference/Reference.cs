@@ -15,7 +15,68 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="DiceRollDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameplayRequest", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.SerializableAttribute()]
+    public partial class GameplayRequest : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string LobbyCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string LobbyCode {
+            get {
+                return this.LobbyCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.LobbyCodeField, value) != true)) {
+                    this.LobbyCodeField = value;
+                    this.RaisePropertyChanged("LobbyCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="DiceRollDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
     public partial class DiceRollDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -92,7 +153,7 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
     public partial class GameStateDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -249,7 +310,7 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerPositionDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Contracts")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerPositionDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
     public partial class PlayerPositionDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -361,16 +422,16 @@ namespace GameClient.GameplayServiceReference {
     public interface IGameplayService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
-        GameClient.GameplayServiceReference.DiceRollDTO RollDice(string lobbyCode, string username);
+        GameClient.GameplayServiceReference.DiceRollDTO RollDice(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
-        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(string lobbyCode, string username);
+        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
-        GameClient.GameplayServiceReference.GameStateDTO GetGameState(string lobbyCode, string requestingUsername);
+        GameClient.GameplayServiceReference.GameStateDTO GetGameState(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
-        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(string lobbyCode, string requestingUsername);
+        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -400,20 +461,20 @@ namespace GameClient.GameplayServiceReference {
                 base(binding, remoteAddress) {
         }
         
-        public GameClient.GameplayServiceReference.DiceRollDTO RollDice(string lobbyCode, string username) {
-            return base.Channel.RollDice(lobbyCode, username);
+        public GameClient.GameplayServiceReference.DiceRollDTO RollDice(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.RollDice(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(string lobbyCode, string username) {
-            return base.Channel.RollDiceAsync(lobbyCode, username);
+        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.RollDiceAsync(request);
         }
         
-        public GameClient.GameplayServiceReference.GameStateDTO GetGameState(string lobbyCode, string requestingUsername) {
-            return base.Channel.GetGameState(lobbyCode, requestingUsername);
+        public GameClient.GameplayServiceReference.GameStateDTO GetGameState(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.GetGameState(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(string lobbyCode, string requestingUsername) {
-            return base.Channel.GetGameStateAsync(lobbyCode, requestingUsername);
+        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.GetGameStateAsync(request);
         }
     }
 }
