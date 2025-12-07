@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GameClient.GameServiceReference; 
+using GameClient.UserProfileServiceReference;
+using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GameClient.UserProfileServiceReference;
-using GameClient.GameServiceReference; 
 
 namespace GameClient.Views
 {
@@ -20,24 +21,41 @@ namespace GameClient.Views
             SendVerificationCode();
         }
 
-        private async void SendVerificationCode()
+        private async Task SendVerificationCode()
         {
             var client = new UserProfileServiceClient();
+
             try
             {
                 bool sent = await client.SendPasswordChangeCodeAsync(_userEmail);
+
                 if (!sent)
                 {
                     MessageBox.Show("No se pudo enviar el código. Verifica tu conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                MessageBox.Show($"Error al conectar: {ex.Message}");
+                MessageBox.Show("El tiempo de espera se ha agotado.", "Error de Tiempo");
+            }
+            catch (EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación con el servidor.", "Error de Red");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened) client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
             }
         }
 
@@ -144,7 +162,7 @@ namespace GameClient.Views
             this.Close();
         }
 
-        private void ShowError(Border border, TextBlock label, string message)
+        private static void ShowError(Border border, TextBlock label, string message)
         {
             border.BorderBrush = new SolidColorBrush(Colors.Red);
             border.BorderThickness = new Thickness(2);
@@ -152,7 +170,7 @@ namespace GameClient.Views
             label.Visibility = Visibility.Visible;
         }
 
-        private void ClearError(Border border, TextBlock label)
+        private static void ClearError(Border border, TextBlock label)
         {
             border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCC")); 
             border.BorderThickness = new Thickness(1);

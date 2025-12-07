@@ -170,7 +170,7 @@ namespace GameClient.Views
             }
         }
 
-        private void SetupPlayerPanel((Border Panel, ImageBrush Avatar, TextBlock Name) controls, PlayerPositionDTO player)
+        private static void SetupPlayerPanel((Border Panel, ImageBrush Avatar, TextBlock Name) controls, PlayerPositionDTO player)
         {
             controls.Panel.Visibility = Visibility.Visible;
             controls.Name.Text = player.Username;
