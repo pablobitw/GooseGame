@@ -16,17 +16,17 @@ namespace GameClient.Views
 {
     public partial class BoardPage : Page
     {
-        private const string BaseAvatarUri = "pack://application:,,,/Assets/Avatar/";
+        private const string AvatarBasePath = "/Assets/Avatar/";
         private const string DefaultAvatarName = "default_avatar.png";
-        private const string BoardNormalPath = "pack://application:,,,/Assets/Boards/normal_board.png";
-        private const string BoardSpecialPath = "pack://application:,,,/Assets/Boards/special_board.png";
+        private const string BoardNormalPath = "/Assets/Boards/normal_board.png";
+        private const string BoardSpecialPath = "/Assets/Boards/special_board.png";
 
         private readonly string[] _tokenImagePaths =
         {
-            "pack://application:,,,/Assets/Game Pieces/red_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/blue_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/green_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/yellow_piece.png"
+            "/Assets/Game Pieces/red_piece.png",
+            "/Assets/Game Pieces/blue_piece.png",
+            "/Assets/Game Pieces/green_piece.png",
+            "/Assets/Game Pieces/yellow_piece.png"
         };
 
         private string lobbyCode;
@@ -80,7 +80,7 @@ namespace GameClient.Views
         private void LoadBoardImage()
         {
             string imagePath = (boardId == 1) ? BoardNormalPath : BoardSpecialPath;
-            BoardImage.Source = new BitmapImage(new Uri(imagePath));
+            BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
         }
 
         private void StartGameLoop()
@@ -145,7 +145,6 @@ namespace GameClient.Views
             }
         }
 
-
         private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
             if (players == null) return;
@@ -183,21 +182,23 @@ namespace GameClient.Views
             controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
         }
 
-        private ImageSource LoadAvatarImage(string avatarName)
+        private static ImageSource LoadAvatarImage(string avatarName)
         {
             try
             {
-                return new BitmapImage(new Uri($"{BaseAvatarUri}{avatarName}"));
+                string path = $"{AvatarBasePath}{avatarName}";
+                return new BitmapImage(new Uri(path, UriKind.Relative));
             }
             catch
             {
                 try
                 {
-                    return new BitmapImage(new Uri($"{BaseAvatarUri}{DefaultAvatarName}"));
+                    string defaultPath = $"{AvatarBasePath}{DefaultAvatarName}";
+                    return new BitmapImage(new Uri(defaultPath, UriKind.Relative));
                 }
                 catch
                 {
-                    return null; 
+                    return null;
                 }
             }
         }
@@ -209,7 +210,6 @@ namespace GameClient.Views
             Player3Panel.Visibility = visibility;
             Player4Panel.Visibility = visibility;
         }
-
 
         private void UpdateBoardVisuals(PlayerPositionDTO[] players)
         {
@@ -242,7 +242,7 @@ namespace GameClient.Views
             {
                 Width = 40,
                 Height = 40,
-                Source = new BitmapImage(new Uri(imagePath)),
+                Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)),
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
