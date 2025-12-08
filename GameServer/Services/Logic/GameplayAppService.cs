@@ -66,7 +66,10 @@ namespace GameServer.Services.Logic
                                 message = "¡HA LLEGADO A LA META!";
                                 game.GameStatus = (int)GameStatus.Finished;
                                 game.WinnerIdPlayer = player.IdPlayer;
+
+                                await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
                             }
+                            
                             else if (GooseTiles.Contains(finalPos))
                             {
                                 int nextGoose = GooseTiles.FirstOrDefault(t => t > finalPos);
@@ -121,21 +124,9 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL en RollDice.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB en RollDice.", ex);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.Error("Error de operación inválida en RollDice.", ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                Log.Error("Argumento nulo en RollDice.", ex);
+                Log.Error("Error en RollDice.", ex);
             }
 
             return result;
@@ -151,9 +142,15 @@ namespace GameServer.Services.Logic
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                 if (player == null) return false;
 
-                var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
+                if (playerWithStats != null && playerWithStats.PlayerStat != null)
+                {
+                    playerWithStats.PlayerStat.MatchesPlayed++;
+                    playerWithStats.PlayerStat.MatchesLost++;
+                }
 
-                player.GameIdGame = null;
+                var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                player.GameIdGame = null; 
 
                 var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
 
@@ -163,9 +160,17 @@ namespace GameServer.Services.Logic
 
                     if (remainingPlayers.Count == 1)
                     {
-                        game.WinnerIdPlayer = remainingPlayers[0].IdPlayer;
-                        Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}",
-                            game.LobbyCode, remainingPlayers[0].Username);
+                        var winner = remainingPlayers[0];
+                        game.WinnerIdPlayer = winner.IdPlayer;
+
+                        var winnerWithStats = await _repository.GetPlayerWithStatsByIdAsync(winner.IdPlayer);
+                        if (winnerWithStats != null && winnerWithStats.PlayerStat != null)
+                        {
+                            winnerWithStats.PlayerStat.MatchesPlayed++;
+                            winnerWithStats.PlayerStat.MatchesWon++;
+                        }
+
+                        Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}", game.LobbyCode, winner.Username);
                     }
                     else
                     {
@@ -177,25 +182,30 @@ namespace GameServer.Services.Logic
                 await _repository.SaveChangesAsync();
                 return true;
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL al abandonar juego", ex);
+                Log.Error("Error al abandonar juego.", ex);
                 return false;
             }
-            catch (DbUpdateException ex)
+        }
+
+        private async Task UpdateStatsEndGame(int gameId, int winnerId)
+        {
+            var players = await _repository.GetPlayersWithStatsInGameAsync(gameId);
+            foreach (var p in players)
             {
-                Log.Error("Error de actualización DB al abandonar juego", ex);
-                return false;
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.Error("Operación inválida al abandonar juego", ex);
-                return false;
-            }
-            catch (ArgumentNullException ex)
-            {
-                Log.Error("Argumento nulo al abandonar juego", ex);
-                return false;
+                if (p.PlayerStat != null)
+                {
+                    p.PlayerStat.MatchesPlayed++;
+                    if (p.IdPlayer == winnerId)
+                    {
+                        p.PlayerStat.MatchesWon++;
+                    }
+                    else
+                    {
+                        p.PlayerStat.MatchesLost++;
+                    }
+                }
             }
         }
 
@@ -222,7 +232,6 @@ namespace GameServer.Services.Logic
                             {
                                 var winnerPlayer = await _repository.GetPlayerByIdAsync(game.WinnerIdPlayer.Value);
                                 winner = winnerPlayer?.Username ?? "Desconocido";
-                                Log.InfoFormat("[GetGameState] Ganador encontrado por WinnerIdPlayer: {0}", winner);
                             }
                             else
                             {
@@ -231,12 +240,10 @@ namespace GameServer.Services.Logic
                                 {
                                     var winnerP = await _repository.GetPlayerByIdAsync(winningMove.PlayerIdPlayer);
                                     winner = winnerP?.Username ?? "Desconocido";
-                                    Log.InfoFormat("[GetGameState] Ganador encontrado por movimiento: {0}", winner);
                                 }
                                 else
                                 {
                                     winner = "Nadie";
-                                    Log.Warn("[GetGameState] No se encontró ganador en juego terminado.");
                                 }
                             }
 
@@ -297,21 +304,9 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL obteniendo estado de juego.", ex);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.Error("Operación inválida obteniendo estado de juego.", ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                Log.Error("Argumento nulo obteniendo estado de juego.", ex);
-            }
-            catch (NullReferenceException ex)
-            {
-                Log.Error("Referencia nula en lógica de estado de juego.", ex);
+                Log.Error("Error obteniendo estado de juego.", ex);
             }
 
             return state;

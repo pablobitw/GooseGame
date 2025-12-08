@@ -61,6 +61,21 @@ namespace GameServer.Repositories
             return await _context.MoveRecords.CountAsync(m => m.GameIdGame == gameId);
         }
 
+        public async Task<Player> GetPlayerWithStatsByIdAsync(int playerId)
+        {
+            return await _context.Players
+                .Include("PlayerStat") // Carga ansiosa explícita
+                .FirstOrDefaultAsync(p => p.IdPlayer == playerId);
+        }
+
+        public async Task<List<Player>> GetPlayersWithStatsInGameAsync(int gameId)
+        {
+            return await _context.Players
+                .Include("PlayerStat")
+                .Where(p => p.GameIdGame == gameId)
+                .ToListAsync();
+        }
+
         public int GetMoveCount(int gameId)
         {
             return _context.MoveRecords.Count(m => m.GameIdGame == gameId);
