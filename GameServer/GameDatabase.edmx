@@ -133,6 +133,7 @@
     <Property Name="LobbyCode" Type="nvarchar(max)" Nullable="false" />
     <Property Name="MaxPlayers" Type="int" Nullable="false" DefaultValue="4" />
     <Property Name="IsPublic" Type="bit" Nullable="false" DefaultValue="true" />
+    <Property Name="WinnerIdPlayer" Type="int" Nullable="true" />
   </EntityType>
   <EntityType Name="Items">
     <Key>
@@ -463,6 +464,7 @@
           <Property Name="LobbyCode" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
           <Property Name="MaxPlayers" Type="Int32" Nullable="false" DefaultValue="4" />
           <Property Name="IsPublic" Type="Boolean" Nullable="false" DefaultValue="True" />
+          <Property Name="WinnerIdPlayer" Type="Int32" Nullable="true" />
         </EntityType>
         <EntityType Name="Item">
           <Key>
@@ -867,6 +869,7 @@
           <ScalarProperty Name="LobbyCode" ColumnName="LobbyCode" />
           <ScalarProperty Name="MaxPlayers" ColumnName="MaxPlayers" />
           <ScalarProperty Name="IsPublic" ColumnName="IsPublic" />
+          <ScalarProperty Name="WinnerIdPlayer" ColumnName="WinnerIdPlayer" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

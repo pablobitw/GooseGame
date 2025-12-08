@@ -110,7 +110,6 @@
     <Compile Include="Models\FriendDisplayModel.cs" />
     <Compile Include="Models\FriendRequestDisplayModel.cs" />
     <Compile Include="ViewModels\AvatarViewModel.cs" />
-    <Compile Include="ViewModels\LobbyViewModel.cs" />
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>
     </Compile>
@@ -176,6 +175,10 @@
       <DependentUpon>VerifyRecoveryCodePage.xaml</DependentUpon>
     </Compile>
     <Page Include="Resources\LobbyResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -345,6 +348,9 @@
     </None>
     <None Include="Connected Services\GameServiceReference\item2.xsd">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LobbyServiceReference\GameClient.LobbyServiceReference.ActiveMatchDTO.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\LobbyServiceReference\GameClient.LobbyServiceReference.JoinLobbyResultDTO.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>

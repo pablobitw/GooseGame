@@ -3,51 +3,19 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="OptionsPage"
       FontFamily="/Assets/Fonts/#Dosis">
 
     <Page.Resources>
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#007ACC"/>
-        <SolidColorBrush x:Key="GreenBrush" Color="#28A745"/>
-        <SolidColorBrush x:Key="OrangeBrush" Color="#FD7E14"/>
-
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="15,10"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="0.9"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="GreenButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="{StaticResource GreenBrush}"/>
-        </Style>
-
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#444"/>
             <Setter Property="Margin" Value="0,20,0,10"/>
         </Style>
-
     </Page.Resources>
 
     <Grid>
@@ -55,16 +23,7 @@
             <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
         </Grid.Background>
 
-        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                Width="1000" Height="850"
-                Background="#F0FFFFFF" 
-                BorderBrush="#FFB0B0B0" 
-                BorderThickness="2" 
-                CornerRadius="20">
-            <Border.Effect>
-                <DropShadowEffect ShadowDepth="0" BlurRadius="40" Color="Black" Opacity="0.4"/>
-            </Border.Effect>
-
+        <Border Style="{StaticResource LobbyContainerBorderStyle}" Width="1000" Height="850" Background="#F0FFFFFF">
             <Grid Margin="60">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -72,42 +31,38 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="OPCIONES" Grid.Row="0" 
+                <TextBlock Text="{x:Static props:Strings.OptionsPageTitle}" Grid.Row="0" 
                            FontSize="48" FontWeight="Bold" 
                            Foreground="#333" HorizontalAlignment="Center" 
                            Margin="0,0,0,20"/>
 
                 <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
 
-                <!-- CONTENIDO DE OPCIONES -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,20">
                     <StackPanel>
 
-                        <!-- 1. AUDIO -->
-                        <TextBlock Text="Sonido" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="{x:Static props:Strings.SoundHeader}" Style="{StaticResource SectionHeaderStyle}"/>
 
-                        <!-- Música -->
                         <Grid Margin="0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="50"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Música" FontSize="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static props:Strings.MusicLabel}" FontSize="18" VerticalAlignment="Center"/>
                             <Slider x:Name="MusicSlider" Grid.Column="1" Minimum="0" Maximum="100" Value="50" 
                                     VerticalAlignment="Center" IsSnapToTickEnabled="True" TickFrequency="5"/>
                             <TextBlock Text="{Binding ElementName=MusicSlider, Path=Value}" Grid.Column="2" 
                                        FontSize="18" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
 
-                        <!-- SFX -->
                         <Grid Margin="0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="50"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Efectos (SFX)" FontSize="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static props:Strings.SfxLabel}" FontSize="18" VerticalAlignment="Center"/>
                             <Slider x:Name="SfxSlider" Grid.Column="1" Minimum="0" Maximum="100" Value="80" 
                                     VerticalAlignment="Center" IsSnapToTickEnabled="True" TickFrequency="5"/>
                             <TextBlock Text="{Binding ElementName=SfxSlider, Path=Value}" Grid.Column="2" 
@@ -116,35 +71,35 @@
 
                         <Separator Margin="0,20"/>
 
-                        <TextBlock Text="Video" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="{x:Static props:Strings.VideoHeader}" Style="{StaticResource SectionHeaderStyle}"/>
 
                         <Grid Margin="0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Modo de Pantalla" FontSize="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static props:Strings.ScreenModeLabel}" FontSize="18" VerticalAlignment="Center"/>
                             <ComboBox x:Name="ScreenModeComboBox" Grid.Column="1" FontSize="16" Padding="10,5" SelectedIndex="0">
-                                <ComboBoxItem Content="Pantalla Completa"/>
-                                <ComboBoxItem Content="Ventana sin Bordes"/>
-                                <ComboBoxItem Content="Ventana"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.FullScreenMode}"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.BorderlessMode}"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.WindowedMode}"/>
                             </ComboBox>
                         </Grid>
 
                         <Separator Margin="0,20"/>
 
-                        <TextBlock Text="Idioma" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="{x:Static props:Strings.LanguageHeader}" Style="{StaticResource SectionHeaderStyle}"/>
 
                         <Grid Margin="0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Idioma del Juego" FontSize="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static props:Strings.GameLanguageLabel}" FontSize="18" VerticalAlignment="Center"/>
                             <ComboBox x:Name="LanguageComboBox" Grid.Column="1" FontSize="16" Padding="10,5" SelectedIndex="0">
-                                <ComboBoxItem Content="Español (ES)"/>
-                                <ComboBoxItem Content="English (US)"/>
-                                <ComboBoxItem Content="Français (FR)"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.LanguageEs}"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.LanguageEn}"/>
+                                <ComboBoxItem Content="{x:Static props:Strings.LanguageFr}"/>
                             </ComboBox>
                         </Grid>
 
@@ -152,12 +107,12 @@
                 </ScrollViewer>
 
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button x:Name="BackButton" Content="Volver" 
+                    <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" 
                             Style="{StaticResource PrimaryButtonStyle}" 
                             Width="200" Margin="0,0,20,0"
                             Click="BackButton_Click"/>
 
-                    <Button x:Name="SaveButton" Content="Guardar Cambios" 
+                    <Button x:Name="SaveButton" Content="{x:Static props:Strings.SaveButton}" 
                             Style="{StaticResource GreenButtonStyle}" 
                             Width="250"
                             Click="SaveButton_Click"/>

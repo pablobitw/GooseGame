@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/22/2025 19:34:46
+-- Date Created: 12/07/2025 21:14:30
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -159,7 +159,8 @@ CREATE TABLE [dbo].[Games] (
     [Board_idBoard] int  NOT NULL,
     [LobbyCode] nvarchar(max)  NOT NULL,
     [MaxPlayers] int  NOT NULL,
-    [IsPublic] bit  NOT NULL
+    [IsPublic] bit  NOT NULL,
+    [WinnerIdPlayer] int  NULL
 );
 GO
 
@@ -545,22 +546,6 @@ GO
 CREATE INDEX [IX_FK_GamePlayer]
 ON [dbo].[Players]
     ([GameIdGame]);
-GO
-
-
-SET IDENTITY_INSERT [dbo].[BoardSets] ON;
-GO
-
--- Insertar Tablero 1
-INSERT INTO [dbo].[BoardSets] (idBoard, Name, Description, TileCount)
-VALUES (1, 'Tablero Clásico', 'El tablero tradicional del juego de la oca.', 64);
-
--- Insertar Tablero 2
-INSERT INTO [dbo].[BoardSets] (idBoard, Name, Description, TileCount)
-VALUES (2, 'Tablero Especial', 'Tablero oscuro con reglas avanzadas.', 64);
-
--- Desactivamos la insercion explicita
-SET IDENTITY_INSERT [dbo].[BoardSets] OFF;
 GO
 
 -- --------------------------------------------------

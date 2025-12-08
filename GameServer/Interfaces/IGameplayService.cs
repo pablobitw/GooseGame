@@ -12,5 +12,9 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<GameStateDTO> GetGameStateAsync(GameplayRequest request);
+        
+        [OperationContract]
+        Task<bool> LeaveGameAsync(GameplayRequest request);
+
     }
 }

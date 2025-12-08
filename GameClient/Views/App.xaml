@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:GameClient"
              xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
              xmlns:dto="clr-namespace:GameClient.LobbyServiceReference"
+             xmlns:props="clr-namespace:GameClient.Resources" 
              StartupUri="AuthWindow.xaml">
 
     <Application.Resources>
@@ -169,7 +170,7 @@
             <Setter Property="Height" Value="60"/>
         </Style>
 
-        <DataTemplate x:Key="PlayerListItemTemplate" DataType="{x:Type dto:PlayerLobbyDTO}">
+        <DataTemplate x:Key="PlayerListItemTemplate">
             <Border Padding="10" Background="Transparent">
                 <StackPanel Orientation="Horizontal">
 
@@ -185,7 +186,7 @@
                                VerticalAlignment="Center"/>
 
                     <TextBlock x:Name="HostLabel" 
-                               Text=" (Host)" 
+                               Text="{x:Static props:Strings.HostLabel}" 
                                FontSize="22" 
                                FontWeight="Bold" 
                                VerticalAlignment="Center"

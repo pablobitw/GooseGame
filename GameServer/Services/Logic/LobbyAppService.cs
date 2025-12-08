@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using GameServer;
 
 namespace GameServer.Services.Logic
 {
@@ -19,6 +20,20 @@ namespace GameServer.Services.Logic
         public LobbyAppService(LobbyRepository repository)
         {
             _repository = repository;
+        }
+
+        private async Task CleanPlayerStateIfNeeded(Player player)
+        {
+            if (player.GameIdGame != null)
+            {
+                var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
+                if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
+                {
+                    player.GameIdGame = null;
+                    await _repository.SaveChangesAsync();
+                    Log.InfoFormat("Limpieza automática: Jugador {0} liberado de partida fantasma/terminada.", player.Username);
+                }
+            }
         }
 
         public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
@@ -39,10 +54,12 @@ namespace GameServer.Services.Logic
                 }
                 else
                 {
+                    await CleanPlayerStateIfNeeded(hostPlayer);
+
                     if (hostPlayer.GameIdGame != null)
                     {
-                        hostPlayer.GameIdGame = null;
-                        await _repository.SaveChangesAsync();
+                        result.ErrorMessage = "Ya estás en una partida activa.";
+                        return result;
                     }
 
                     string newLobbyCode = GenerateLobbyCode();
@@ -69,15 +86,10 @@ namespace GameServer.Services.Logic
                     result.LobbyCode = newLobbyCode;
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL al crear lobby.", ex);
-                result.ErrorMessage = "Error de base de datos.";
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB al crear lobby.", ex);
-                result.ErrorMessage = "Error al guardar el lobby.";
+                Log.Error("Error al crear lobby.", ex);
+                result.ErrorMessage = "Error interno del servidor.";
             }
 
             return result;
@@ -95,9 +107,11 @@ namespace GameServer.Services.Logic
                     return result;
                 }
 
+                await CleanPlayerStateIfNeeded(player);
+
                 if (player.GameIdGame != null)
                 {
-                    result.ErrorMessage = "Ya estás en otra partida.";
+                    result.ErrorMessage = "Ya estás en otra partida activa.";
                     return result;
                 }
 
@@ -141,15 +155,10 @@ namespace GameServer.Services.Logic
                 result.IsPublic = game.IsPublic;
                 result.PlayersInLobby = dtoList;
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL al unirse al lobby.", ex);
-                result.ErrorMessage = "Error de base de datos.";
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB al unirse al lobby.", ex);
-                result.ErrorMessage = "Error al unirse.";
+                Log.Error("Error al unirse al lobby.", ex);
+                result.ErrorMessage = "Error interno al unirse.";
             }
 
             return result;
@@ -157,12 +166,13 @@ namespace GameServer.Services.Logic
 
         public async Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode)
         {
-            LobbyStateDTO result = new LobbyStateDTO { IsGameStarted = true, Players = new List<PlayerLobbyDTO>() };
+            LobbyStateDTO result = null;
+
             try
             {
                 var game = await _repository.GetGameByCodeAsync(lobbyCode);
 
-                if (game != null && game.GameStatus == (int)GameStatus.WaitingForPlayers)
+                if (game != null)
                 {
                     var players = await _repository.GetPlayersInGameAsync(game.IdGame);
                     var playerDtos = players.Select(p => new PlayerLobbyDTO
@@ -171,19 +181,33 @@ namespace GameServer.Services.Logic
                         IsHost = (p.IdPlayer == game.HostPlayerID)
                     }).ToList();
 
-                    result = new LobbyStateDTO
+                    if (game.GameStatus == (int)GameStatus.WaitingForPlayers)
                     {
-                        IsGameStarted = false,
-                        Players = playerDtos,
-                        BoardId = game.Board_idBoard,
-                        MaxPlayers = game.MaxPlayers,
-                        IsPublic = game.IsPublic
-                    };
+                        result = new LobbyStateDTO
+                        {
+                            IsGameStarted = false,
+                            Players = playerDtos,
+                            BoardId = game.Board_idBoard,
+                            MaxPlayers = game.MaxPlayers,
+                            IsPublic = game.IsPublic
+                        };
+                    }
+                    else if (game.GameStatus == (int)GameStatus.InProgress)
+                    {
+                        result = new LobbyStateDTO
+                        {
+                            IsGameStarted = true,
+                            Players = playerDtos,
+                            BoardId = game.Board_idBoard,
+                            MaxPlayers = game.MaxPlayers,
+                            IsPublic = game.IsPublic
+                        };
+                    }
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL obteniendo estado del lobby.", ex);
+                Log.Error("Error obteniendo estado del lobby.", ex);
             }
 
             return result;
@@ -197,19 +221,23 @@ namespace GameServer.Services.Logic
                 var game = await _repository.GetGameByCodeAsync(lobbyCode);
                 if (game != null)
                 {
+                    var players = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                    if (players.Count < 2)
+                    {
+                        Log.WarnFormat("Intento de iniciar juego {0} con solo {1} jugadores.", lobbyCode, players.Count);
+                        return false;
+                    }
+
                     game.GameStatus = (int)GameStatus.InProgress;
                     await _repository.SaveChangesAsync();
-                    Log.InfoFormat("Juego {0} iniciado.", lobbyCode);
+                    Log.InfoFormat("Juego {0} iniciado con {1} jugadores.", lobbyCode, players.Count);
                     success = true;
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL iniciando juego.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB iniciando juego.", ex);
+                Log.Error("Error iniciando juego.", ex);
             }
 
             return success;
@@ -238,13 +266,9 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL disolviendo lobby.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB disolviendo lobby.", ex);
+                Log.Error("Error disolviendo lobby.", ex);
             }
         }
 
@@ -256,19 +280,37 @@ namespace GameServer.Services.Logic
                 var player = await _repository.GetPlayerByUsernameAsync(username);
                 if (player != null && player.GameIdGame != null)
                 {
+                    int gameId = player.GameIdGame.Value;
+
                     player.GameIdGame = null;
                     await _repository.SaveChangesAsync();
+
                     Log.InfoFormat("Jugador {0} abandonó el lobby.", username);
                     success = true;
+
+                    var game = await _repository.GetGameByIdAsync(gameId);
+                    if (game != null)
+                    {
+                        var remainingPlayers = await _repository.GetPlayersInGameAsync(gameId);
+
+                        if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
+                        {
+                            game.GameStatus = (int)GameStatus.Finished;
+                            string winnerName = remainingPlayers.Count > 0 ? remainingPlayers[0].Username : "Nadie";
+                            Log.InfoFormat("Juego terminado por abandono desde Lobby. Ganador: {0}", winnerName);
+                            await _repository.SaveChangesAsync();
+                        }
+                        else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
+                        {
+                            _repository.DeleteGameAndCleanDependencies(game);
+                            await _repository.SaveChangesAsync();
+                        }
+                    }
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL abandonando lobby.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB abandonando lobby.", ex);
+                Log.Error("Error abandonando lobby.", ex);
             }
 
             return success;
@@ -290,6 +332,36 @@ namespace GameServer.Services.Logic
             while (!_repository.IsLobbyCodeUnique(code));
 
             return code;
+        }
+
+        public async Task<ActiveMatchDTO[]> GetPublicMatchesAsync()
+        {
+            var matchesList = new List<ActiveMatchDTO>();
+            try
+            {
+                var games = await _repository.GetActivePublicGamesAsync();
+                foreach (var game in games)
+                {
+                    int currentCount = await _repository.CountPlayersInGameAsync(game.IdGame);
+                    if (currentCount < game.MaxPlayers)
+                    {
+                        string hostName = await _repository.GetUsernameByIdAsync(game.HostPlayerID);
+                        matchesList.Add(new ActiveMatchDTO
+                        {
+                            LobbyCode = game.LobbyCode,
+                            HostUsername = hostName,
+                            BoardId = game.Board_idBoard,
+                            CurrentPlayers = currentCount,
+                            MaxPlayers = game.MaxPlayers
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error obteniendo partidas públicas.", ex);
+            }
+            return matchesList.ToArray();
         }
     }
 }

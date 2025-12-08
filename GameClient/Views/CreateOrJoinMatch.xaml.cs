@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameClient.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,7 @@ namespace GameClient.Views
 
         private void ViewMatchesButton_Click(object sender, RoutedEventArgs e)
         {
+            NavigationService.Navigate(new ListMatchesPage(_username));
 
         }
 
@@ -51,3 +53,5 @@ namespace GameClient.Views
         }
     }
 }
+
+

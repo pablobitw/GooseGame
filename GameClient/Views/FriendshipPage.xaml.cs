@@ -122,25 +122,25 @@ namespace GameClient.Views
             string target = SearchUserBox.Text.Trim();
             if (string.IsNullOrEmpty(target))
             {
-                DialogHelper.ShowWarning("Por favor escribe un nombre de usuario.");
+                MessageBox.Show(GameClient.Resources.Strings.EmptyUsernameError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (target == _currentUsername)
             {
-                DialogHelper.ShowWarning("No puedes enviarte solicitud a ti mismo.");
+                MessageBox.Show(GameClient.Resources.Strings.SelfRequestError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             bool sent = await _friendshipManager.SendFriendRequestAsync(target);
             if (sent)
             {
-                DialogHelper.ShowInfo($"Solicitud enviada a {target}.");
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.RequestSentSuccess, target), GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                 SearchUserBox.Text = string.Empty;
             }
             else
             {
-                DialogHelper.ShowWarning("No se pudo enviar (Usuario no existe o ya son amigos).");
+                MessageBox.Show(GameClient.Resources.Strings.RequestSentError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -170,12 +170,16 @@ namespace GameClient.Views
             if (btn == null) return;
             string friend = btn.Tag.ToString();
 
-            if (DialogHelper.ShowConfirmation($"¿Eliminar a {friend}?"))
+            var result = MessageBox.Show(string.Format(GameClient.Resources.Strings.DeleteConfirmation, friend),
+                                         GameClient.Resources.Strings.ConfirmationTitle,
+                                         MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
             {
                 bool deleted = await _friendshipManager.RemoveFriendAsync(friend);
                 if (deleted)
                 {
-                    DialogHelper.ShowInfo("Amigo eliminado.");
+                    MessageBox.Show(GameClient.Resources.Strings.FriendDeletedSuccess, GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadDataAsync();
                 }
             }

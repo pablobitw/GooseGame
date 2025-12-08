@@ -33,6 +33,7 @@ namespace GameServer
         public string LobbyCode { get; set; }
         public int MaxPlayers { get; set; }
         public bool IsPublic { get; set; }
+        public Nullable<int> WinnerIdPlayer { get; set; }
     
         public virtual BoardSet BoardSet { get; set; }
         public virtual ChatMessage ChatMessage { get; set; }

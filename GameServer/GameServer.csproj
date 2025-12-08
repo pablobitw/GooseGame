@@ -113,6 +113,7 @@
     <Compile Include="DTOs\Gameplay\GameplayRequest.cs" />
     <Compile Include="DTOs\Gameplay\GameStateDTO.cs" />
     <Compile Include="DTOs\Gameplay\PlayerPositionDTO.cs" />
+    <Compile Include="DTOs\Lobby\ActiveMatchDTO.cs" />
     <Compile Include="DTOs\Lobby\CreateLobbyRequest.cs" />
     <Compile Include="DTOs\Lobby\JoinLobbyRequest.cs" />
     <Compile Include="DTOs\Lobby\JoinLobbyResultDTO.cs" />

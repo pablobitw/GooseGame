@@ -65,4 +65,20 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="LobbyStateDTO" nillable="true" type="tns:LobbyStateDTO" />
+  <xs:complexType name="ArrayOfActiveMatchDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveMatchDTO" nillable="true" type="tns:ActiveMatchDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfActiveMatchDTO" nillable="true" type="tns:ArrayOfActiveMatchDTO" />
+  <xs:complexType name="ActiveMatchDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BoardId" type="xs:int" />
+      <xs:element minOccurs="0" name="CurrentPlayers" type="xs:int" />
+      <xs:element minOccurs="0" name="HostUsername" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ActiveMatchDTO" nillable="true" type="tns:ActiveMatchDTO" />
 </xs:schema>

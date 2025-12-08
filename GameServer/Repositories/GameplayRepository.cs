@@ -13,6 +13,8 @@ namespace GameServer.Repositories
         public GameplayRepository()
         {
             _context = new GameDatabase_Container();
+            _context.Configuration.LazyLoadingEnabled = false;
+            _context.Configuration.ProxyCreationEnabled = false;
         }
 
         public async Task<Game> GetGameByLobbyCodeAsync(string lobbyCode)
@@ -23,6 +25,11 @@ namespace GameServer.Repositories
         public async Task<Player> GetPlayerByUsernameAsync(string username)
         {
             return await _context.Players.FirstOrDefaultAsync(p => p.Username == username);
+        }
+
+        public async Task<Player> GetPlayerByIdAsync(int playerId)
+        {
+            return await _context.Players.FirstOrDefaultAsync(p => p.IdPlayer == playerId);
         }
 
         public async Task<List<Player>> GetPlayersInGameAsync(int gameId)
@@ -54,7 +61,7 @@ namespace GameServer.Repositories
             return await _context.MoveRecords.CountAsync(m => m.GameIdGame == gameId);
         }
 
-        public int GetMoveCount(int gameId) 
+        public int GetMoveCount(int gameId)
         {
             return _context.MoveRecords.Count(m => m.GameIdGame == gameId);
         }

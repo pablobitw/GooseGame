@@ -55,5 +55,9 @@ namespace GameServer.Services
             result = await _logic.GetLobbyStateAsync(lobbyCode);
             return result;
         }
+        public async Task<ActiveMatchDTO[]> GetPublicMatchesAsync()
+        {
+            return await _logic.GetPublicMatchesAsync();
+        }
     }
 }

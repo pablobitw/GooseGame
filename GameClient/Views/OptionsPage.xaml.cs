@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using GameClient;
-using GameClient.Helpers; 
+using GameClient.Helpers;
 
 namespace GameClient.Views
 {
@@ -44,11 +44,16 @@ namespace GameClient.Views
         {
             ApplyVideoSettings();
 
-            double musicVol = MusicSlider.Value;
-            double sfxVol = SfxSlider.Value;
-            string language = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            // Aquí puedes agregar lógica para guardar música/idioma en preferencias de usuario
+            // double musicVol = MusicSlider.Value;
+            // double sfxVol = SfxSlider.Value;
+            // string language = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            MessageBox.Show("¡Configuración aplicada correctamente!", "Opciones", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                GameClient.Resources.Strings.ConfigSavedMessage,
+                GameClient.Resources.Strings.ConfigSavedTitle,
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void ApplyVideoSettings()
@@ -66,16 +71,16 @@ namespace GameClient.Views
                     mainWindow.ResizeMode = ResizeMode.NoResize;
                     break;
 
-                case 1: 
+                case 1:
                     mainWindow.WindowStyle = WindowStyle.None;
                     mainWindow.WindowState = WindowState.Normal;
                     mainWindow.ResizeMode = ResizeMode.NoResize;
                     mainWindow.Width = 1280;
                     mainWindow.Height = 720;
-                    mainWindow.CenterWindow(); 
+                    mainWindow.CenterWindow();
                     break;
 
-                case 2: 
+                case 2:
                     mainWindow.WindowStyle = WindowStyle.SingleBorderWindow;
                     mainWindow.WindowState = WindowState.Normal;
                     mainWindow.ResizeMode = ResizeMode.CanResize;

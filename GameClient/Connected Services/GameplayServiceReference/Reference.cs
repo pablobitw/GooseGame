@@ -432,6 +432,12 @@ namespace GameClient.GameplayServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
         System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
+        bool LeaveGame(GameClient.GameplayServiceReference.GameplayRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
+        System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -475,6 +481,14 @@ namespace GameClient.GameplayServiceReference {
         
         public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.GetGameStateAsync(request);
+        }
+        
+        public bool LeaveGame(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.LeaveGame(request);
+        }
+        
+        public System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
+            return base.Channel.LeaveGameAsync(request);
         }
     }
 }

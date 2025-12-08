@@ -12,14 +12,14 @@ namespace GameServer
 
         static void Main(string[] args)
         {
+            Console.Title = "GooseGame Server";
+
             Log.Info(LogSeparator);
             Log.Info("Initializing GooseGame Server...");
             Log.Info(LogSeparator);
 
             try
             {
-                // Instanciamos todos los Hosts.
-                // Nota: Se agrega friendshipServiceHost al final de la cadena de 'using'.
                 using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
                 using (ServiceHost lobbyServiceHost = new ServiceHost(typeof(LobbyService)))
@@ -27,89 +27,95 @@ namespace GameServer
                 using (ServiceHost userProfileServiceHost = new ServiceHost(typeof(UserProfileService)))
                 using (ServiceHost friendshipServiceHost = new ServiceHost(typeof(FriendshipService)))
                 {
-                    // 1. GameService
                     gameServiceHost.Open();
-                    Log.Info("GameService is running and listening on:");
-                    foreach (var endpoint in gameServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(gameServiceHost, "GameService");
 
-                    // 2. ChatService
                     chatServiceHost.Open();
-                    Log.Info("ChatService is running and listening on:");
-                    foreach (var endpoint in chatServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(chatServiceHost, "ChatService");
 
-                    // 3. LobbyService
                     lobbyServiceHost.Open();
-                    Log.Info("LobbyService is running and listening on:");
-                    foreach (var endpoint in lobbyServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(lobbyServiceHost, "LobbyService");
 
-                    // 4. GameplayService
                     gameplayServiceHost.Open();
-                    Log.Info("GameplayService is running and listening on:");
-                    foreach (var endpoint in gameplayServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(gameplayServiceHost, "GameplayService");
 
-                    // 5. UserProfileService
                     userProfileServiceHost.Open();
-                    Log.Info("UserProfileService is running and listening on:");
-                    foreach (var endpoint in userProfileServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(userProfileServiceHost, "UserProfileService");
 
-                    // 6. FriendshipService (NUEVO)
                     friendshipServiceHost.Open();
-                    Log.Info("FriendshipService is running and listening on:");
-                    foreach (var endpoint in friendshipServiceHost.Description.Endpoints)
-                    {
-                        Log.Info($"-> {endpoint.Address}");
-                    }
+                    LogServices(friendshipServiceHost, "FriendshipService");
 
                     Log.Info(LogSeparator);
-                    Log.Warn("Server is fully operational. Press [Enter] to stop.");
+                    Log.Warn("✅ SERVER IS FULLY OPERATIONAL. Press [Enter] to stop.");
                     Log.Info(LogSeparator);
 
                     Console.ReadLine();
-                    Log.Info("Server shutdown requested.");
+
+                    Log.Info("Stopping server...");
                 }
+            }
+            catch (AddressAccessDeniedException ex)
+            {
+                Log.Fatal("❌ ERROR CRÍTICO DE PERMISOS: No se puede abrir el puerto.", ex);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n[ERROR] ACCESO DENEGADO. Necesitas ejecutar Visual Studio como ADMINISTRADOR.");
+                Console.WriteLine($"Detalle: {ex.Message}");
+                Console.ResetColor();
+                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.ReadLine();
             }
             catch (InvalidOperationException ex)
             {
-                Log.Fatal("A critical error occurred starting WCF services (InvalidOperationException). Check configuration.", ex);
-                Console.WriteLine("A fatal configuration error occurred. Press [Enter] to exit.");
+                Log.Fatal("❌ CRITICAL ERROR: Configuration invalid (InvalidOperationException).", ex);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n[ERROR] Configuración inválida (Revisa App.config o cadenas de conexión).");
+                Console.WriteLine($"Detalle: {ex.Message}");
+                Console.ResetColor();
+                Console.WriteLine("\nPresiona [Enter] para salir...");
                 Console.ReadLine();
             }
             catch (CommunicationException ex)
             {
-                Log.Fatal($"A critical error occurred starting WCF services (CommunicationException). Is the port in use?", ex);
-                Console.WriteLine("A fatal communication error occurred. Press [Enter] to exit.");
+                Log.Fatal("❌ CRITICAL ERROR: Communication error (Port in use?).", ex);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n[ERROR] Error de comunicación (¿Puerto en uso o dirección incorrecta?).");
+                Console.WriteLine($"Detalle: {ex.Message}");
+                Console.ResetColor();
+                Console.WriteLine("\nPresiona [Enter] para salir...");
                 Console.ReadLine();
             }
             catch (TimeoutException ex)
             {
-                Log.Fatal("A critical error occurred starting WCF services (TimeoutException).", ex);
-                Console.WriteLine("A fatal timeout error occurred. Press [Enter] to exit.");
+                Log.Fatal("❌ CRITICAL ERROR: Service start timeout.", ex);
+                Console.WriteLine("\n[ERROR] Timeout al iniciar servicios.");
+                Console.WriteLine($"Detalle: {ex.Message}");
+                Console.WriteLine("\nPresiona [Enter] para salir...");
                 Console.ReadLine();
             }
             catch (Exception ex)
             {
-                Log.Fatal("An unexpected critical error occurred while starting the server.", ex);
-                Console.WriteLine("A fatal error occurred. Press [Enter] to exit.");
+                Log.Fatal("❌ UNEXPECTED CRITICAL ERROR (Crash).", ex);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n[CRASH] Ocurrió un error inesperado que detuvo el servidor.");
+                Console.WriteLine($"Tipo: {ex.GetType().Name}");
+                Console.WriteLine($"Mensaje: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                Console.ResetColor();
+                Console.WriteLine("\nPresiona [Enter] para salir...");
                 Console.ReadLine();
             }
             finally
             {
                 Log.Info("Server shutdown complete.");
+            }
+        }
+
+        private static void LogServices(ServiceHost host, string serviceName)
+        {
+            Log.Info($"{serviceName} is running and listening on:");
+            foreach (var endpoint in host.Description.Endpoints)
+            {
+                Log.Info($"-> {endpoint.Address}");
             }
         }
     }

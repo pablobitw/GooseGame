@@ -62,6 +62,24 @@ namespace GameServer.Repositories
             _context.Games.Remove(game);
         }
 
+        public async Task<List<Game>> GetActivePublicGamesAsync()
+        {
+            return await _context.Games
+                .Where(g => g.IsPublic && g.GameStatus == (int)GameStatus.WaitingForPlayers)
+                .ToListAsync();
+        }
+
+        public async Task<string> GetUsernameByIdAsync(int playerId)
+        {
+            var player = await _context.Players.FindAsync(playerId);
+            return player?.Username ?? "Desconocido";
+        }
+
+        public async Task<int> CountPlayersInGameAsync(int gameId)
+        {
+            return await _context.Players.CountAsync(p => p.GameIdGame == gameId);
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

@@ -3,7 +3,7 @@ using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.LobbyServiceReference; 
+using GameClient.LobbyServiceReference;
 
 namespace GameClient.Views
 {
@@ -25,7 +25,7 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(code) || code.Length != 5)
             {
-                MessageBox.Show("Por favor, ingresa un código válido de 5 letras.", "Código Inválido");
+                MessageBox.Show(GameClient.Resources.Strings.InvalidCodeMessage, GameClient.Resources.Strings.InvalidCodeTitle);
                 return;
             }
 
@@ -47,24 +47,24 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    MessageBox.Show(result.ErrorMessage, "Error");
+                    MessageBox.Show(result.ErrorMessage, GameClient.Resources.Strings.ErrorTitle);
                 }
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("El servidor tardó demasiado en responder.", "Error de Tiempo");
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.EndpointNotFoundTitle);
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación con el servicio de lobby.", "Error de Red");
+                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.UnexpectedErrorMessage, ex.Message), GameClient.Resources.Strings.ErrorTitle);
             }
             finally
             {

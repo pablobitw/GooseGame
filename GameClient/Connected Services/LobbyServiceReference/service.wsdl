@@ -53,6 +53,12 @@
   <wsdl:message name="ILobbyService_GetLobbyState_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetLobbyStateResponse" />
   </wsdl:message>
+  <wsdl:message name="ILobbyService_GetPublicMatches_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPublicMatches" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_GetPublicMatches_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPublicMatchesResponse" />
+  </wsdl:message>
   <wsdl:portType name="ILobbyService">
     <wsdl:operation name="CreateLobby">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/CreateLobby" message="tns:ILobbyService_CreateLobby_InputMessage" />
@@ -77,6 +83,10 @@
     <wsdl:operation name="GetLobbyState">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/GetLobbyState" message="tns:ILobbyService_GetLobbyState_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/GetLobbyStateResponse" message="tns:ILobbyService_GetLobbyState_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPublicMatches">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/GetPublicMatches" message="tns:ILobbyService_GetPublicMatches_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/GetPublicMatchesResponse" message="tns:ILobbyService_GetPublicMatches_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_ILobbyService" type="tns:ILobbyService">
@@ -130,6 +140,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetLobbyState">
       <soap12:operation soapAction="http://tempuri.org/ILobbyService/GetLobbyState" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPublicMatches">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/GetPublicMatches" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

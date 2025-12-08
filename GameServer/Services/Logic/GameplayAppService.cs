@@ -14,6 +14,7 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayAppService));
         private static readonly Random RandomGenerator = new Random();
+        private static readonly object _randomLock = new object();
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private readonly GameplayRepository _repository;
 
@@ -30,7 +31,8 @@ namespace GameServer.Services.Logic
                 if (request != null)
                 {
                     var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                    if (game != null)
+
+                    if (game != null && game.GameStatus == (int)GameStatus.InProgress)
                     {
                         var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                         if (player != null)
@@ -38,8 +40,15 @@ namespace GameServer.Services.Logic
                             var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
                             int currentPos = lastMove?.FinalPosition ?? 0;
 
-                            int d1 = RandomGenerator.Next(1, 7);
-                            int d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
+                            int d1;
+                            int d2;
+
+                            lock (_randomLock)
+                            {
+                                d1 = RandomGenerator.Next(1, 7);
+                                d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
+                            }
+
                             int total = d1 + d2;
                             int finalPos = currentPos + total;
 
@@ -56,6 +65,7 @@ namespace GameServer.Services.Logic
                             {
                                 message = "¡HA LLEGADO A LA META!";
                                 game.GameStatus = (int)GameStatus.Finished;
+                                game.WinnerIdPlayer = player.IdPlayer;
                             }
                             else if (GooseTiles.Contains(finalPos))
                             {
@@ -106,11 +116,6 @@ namespace GameServer.Services.Logic
                             _repository.AddMove(move);
                             await _repository.SaveChangesAsync();
 
-                            if (game.GameStatus == (int)GameStatus.Finished)
-                            {
-                                await _repository.SaveChangesAsync();
-                            }
-
                             result = new DiceRollDTO { DiceOne = d1, DiceTwo = d2, Total = total };
                         }
                     }
@@ -124,13 +129,84 @@ namespace GameServer.Services.Logic
             {
                 Log.Error("Error DB en RollDice.", ex);
             }
+            catch (InvalidOperationException ex)
+            {
+                Log.Error("Error de operación inválida en RollDice.", ex);
+            }
+            catch (ArgumentNullException ex)
+            {
+                Log.Error("Argumento nulo en RollDice.", ex);
+            }
 
             return result;
         }
 
+        public async Task<bool> LeaveGameAsync(GameplayRequest request)
+        {
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                if (game == null) return false;
+
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+                if (player == null) return false;
+
+                var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                player.GameIdGame = null;
+
+                var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
+
+                if (remainingPlayers.Count < 2)
+                {
+                    game.GameStatus = (int)GameStatus.Finished;
+
+                    if (remainingPlayers.Count == 1)
+                    {
+                        game.WinnerIdPlayer = remainingPlayers[0].IdPlayer;
+                        Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}",
+                            game.LobbyCode, remainingPlayers[0].Username);
+                    }
+                    else
+                    {
+                        game.WinnerIdPlayer = null;
+                        Log.InfoFormat("Juego {0} terminado. Todos los jugadores abandonaron.", game.LobbyCode);
+                    }
+                }
+
+                await _repository.SaveChangesAsync();
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL al abandonar juego", ex);
+                return false;
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error de actualización DB al abandonar juego", ex);
+                return false;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Log.Error("Operación inválida al abandonar juego", ex);
+                return false;
+            }
+            catch (ArgumentNullException ex)
+            {
+                Log.Error("Argumento nulo al abandonar juego", ex);
+                return false;
+            }
+        }
+
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
         {
-            GameStateDTO state = new GameStateDTO();
+            GameStateDTO state = new GameStateDTO
+            {
+                GameLog = new List<string>(),
+                PlayerPositions = new List<PlayerPositionDTO>()
+            };
+
             try
             {
                 if (request != null)
@@ -138,23 +214,62 @@ namespace GameServer.Services.Logic
                     var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
                     if (game != null)
                     {
-                        var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-                        if (players.Count > 0)
+                        if (game.GameStatus == (int)GameStatus.Finished)
                         {
+                            string winner = "Desconocido";
+
+                            if (game.WinnerIdPlayer.HasValue)
+                            {
+                                var winnerPlayer = await _repository.GetPlayerByIdAsync(game.WinnerIdPlayer.Value);
+                                winner = winnerPlayer?.Username ?? "Desconocido";
+                                Log.InfoFormat("[GetGameState] Ganador encontrado por WinnerIdPlayer: {0}", winner);
+                            }
+                            else
+                            {
+                                var winningMove = await _repository.GetWinningMoveAsync(game.IdGame);
+                                if (winningMove != null)
+                                {
+                                    var winnerP = await _repository.GetPlayerByIdAsync(winningMove.PlayerIdPlayer);
+                                    winner = winnerP?.Username ?? "Desconocido";
+                                    Log.InfoFormat("[GetGameState] Ganador encontrado por movimiento: {0}", winner);
+                                }
+                                else
+                                {
+                                    winner = "Nadie";
+                                    Log.Warn("[GetGameState] No se encontró ganador en juego terminado.");
+                                }
+                            }
+
+                            return new GameStateDTO
+                            {
+                                IsGameOver = true,
+                                WinnerUsername = winner,
+                                GameLog = new List<string> { "La partida ha finalizado." },
+                                PlayerPositions = new List<PlayerPositionDTO>(),
+                                CurrentTurnUsername = "",
+                                IsMyTurn = false
+                            };
+                        }
+
+                        var activePlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                        if (activePlayers.Count > 0)
+                        {
+                            activePlayers = activePlayers.OrderBy(p => p.IdPlayer).ToList();
+
                             int totalMoves = await _repository.GetMoveCountAsync(game.IdGame);
                             int extraTurns = await _repository.GetExtraTurnCountAsync(game.IdGame);
 
                             int effectiveTurns = totalMoves - extraTurns;
-                            int nextPlayerIndex = effectiveTurns % players.Count;
-                            var currentTurnPlayer = players[nextPlayerIndex];
+                            int nextPlayerIndex = effectiveTurns % activePlayers.Count;
+                            var currentTurnPlayer = activePlayers[nextPlayerIndex];
 
                             var lastMove = await _repository.GetLastGlobalMoveAsync(game.IdGame);
                             var logs = await _repository.GetGameLogsAsync(game.IdGame, 20);
-
                             var cleanLogs = logs.Select(l => l.Replace("[EXTRA] ", "")).ToList();
 
                             var playerPositions = new List<PlayerPositionDTO>();
-                            foreach (var p in players)
+                            foreach (var p in activePlayers)
                             {
                                 var pLastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, p.IdPlayer);
                                 playerPositions.Add(new PlayerPositionDTO
@@ -167,19 +282,6 @@ namespace GameServer.Services.Logic
                                 });
                             }
 
-                            bool isGameOver = game.GameStatus == (int)GameStatus.Finished;
-                            string winner = null;
-
-                            if (isGameOver)
-                            {
-                                var winningMove = await _repository.GetWinningMoveAsync(game.IdGame);
-                                if (winningMove != null)
-                                {
-                                    var winnerP = players.FirstOrDefault(p => p.IdPlayer == winningMove.PlayerIdPlayer);
-                                    winner = winnerP?.Username ?? "Desconocido";
-                                }
-                            }
-
                             state = new GameStateDTO
                             {
                                 CurrentTurnUsername = currentTurnPlayer.Username,
@@ -188,8 +290,8 @@ namespace GameServer.Services.Logic
                                 LastDiceTwo = lastMove?.DiceTwo ?? 0,
                                 GameLog = cleanLogs,
                                 PlayerPositions = playerPositions,
-                                IsGameOver = isGameOver,
-                                WinnerUsername = winner
+                                IsGameOver = false,
+                                WinnerUsername = null
                             };
                         }
                     }
@@ -199,9 +301,17 @@ namespace GameServer.Services.Logic
             {
                 Log.Error("Error SQL obteniendo estado de juego.", ex);
             }
-            catch (Exception ex) 
+            catch (InvalidOperationException ex)
             {
-                Log.Error("Error en lógica de estado de juego.", ex);
+                Log.Error("Operación inválida obteniendo estado de juego.", ex);
+            }
+            catch (ArgumentNullException ex)
+            {
+                Log.Error("Argumento nulo obteniendo estado de juego.", ex);
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error("Referencia nula en lógica de estado de juego.", ex);
             }
 
             return state;

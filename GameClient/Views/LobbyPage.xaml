@@ -11,34 +11,6 @@
       Title="LobbyPage"
       FontFamily="/Assets/Fonts/#Dosis">
 
-    <Page.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
-        <Style x:Key="LobbyToggleActiveStyle" TargetType="Button" BasedOn="{StaticResource OrangeButtonStyle}">
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Width" Value="250"/>
-            <Setter Property="Height" Value="60"/>
-        </Style>
-
-        <Style x:Key="LobbyToggleInactiveStyle" TargetType="Button" BasedOn="{StaticResource GreenButtonStyle}">
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Width" Value="250"/>
-            <Setter Property="Height" Value="60"/>
-            <Setter Property="Opacity" Value="0.6"/>
-            <Setter Property="Background" Value="#FF6B8A7A"/>
-            <Setter Property="BorderBrush" Value="#FF4E645A"/>
-        </Style>
-
-        <Style x:Key="LobbyCounterButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="FontSize" Value="30"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Width" Value="60"/>
-            <Setter Property="Height" Value="60"/>
-        </Style>
-    </Page.Resources>
-
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1">
@@ -49,12 +21,8 @@
         </Grid.Background>
 
         <Border x:Name="LobbyContainerBorder"
-                HorizontalAlignment="Center" VerticalAlignment="Center"
-                Width="1400" Height="800"
-                Background="#E6FFFFFF" BorderBrush="#FFB0B0B0" BorderThickness="3" CornerRadius="20">
-            <Border.Effect>
-                <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#80000000" Opacity="0.5"/>
-            </Border.Effect>
+                Style="{StaticResource LobbyContainerBorderStyle}"
+                Width="1400" Height="800">
 
             <Grid>
                 <Grid.RowDefinitions>
@@ -64,20 +32,20 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,20">
-                    <TextBlock x:Name="TitleBlock" Text="CREAR PARTIDA" 
+                    <TextBlock x:Name="TitleBlock" Text="{x:Static props:Strings.LobbyPageTitle}" 
                                FontSize="48" FontWeight="Bold" VerticalAlignment="Center"/>
 
-                    <Button x:Name="CopyCodeButton" Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                    <Button x:Name="CopyCodeButton" Style="{StaticResource IconButtonStyle}" 
                             Margin="20,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"
-                            Click="CopyCodeButton_Click" ToolTip="Copiar Código">
-                        <fa:FontAwesome x:Name="CopyIcon" Icon="Copy" Foreground="#FF333333" Height="30"/>
+                            Click="CopyCodeButton_Click" ToolTip="{x:Static props:Strings.CopyCodeToolTip}">
+                        <fa:ImageAwesome x:Name="CopyIcon" Icon="Copy" Foreground="#FF333333" Height="30"/>
                     </Button>
                 </StackPanel>
 
                 <Button x:Name="OpenInviteMenuButton" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center"
                         Margin="0,0,40,0" Style="{StaticResource PrimaryButtonStyle}" Width="60" Height="60"
-                        ToolTip="Invitar Amigos" Click="OpenInviteMenu_Click">
-                    <fa:FontAwesome Icon="UserPlus" Foreground="White" FontSize="25"/>
+                        ToolTip="{x:Static props:Strings.InviteFriendsToolTip}" Click="OpenInviteMenu_Click">
+                    <fa:ImageAwesome Icon="UserPlus" Foreground="White" Height="25"/>
                 </Button>
 
                 <Grid Grid.Row="1">
@@ -88,33 +56,33 @@
 
                     <StackPanel x:Name="LobbySettingsPanel" Grid.Column="0" Margin="40,10,40,10" VerticalAlignment="Top" IsEnabled="True">
 
-                        <TextBlock Text="Tipo de Tablero" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="{x:Static props:Strings.BoardTypeLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="BoardTypeSpecialButton" Content="Tablero Especial" 
+                            <Button x:Name="BoardTypeSpecialButton" Content="{x:Static props:Strings.BoardTypeSpecial}" 
                                     Style="{StaticResource LobbyToggleInactiveStyle}" Margin="5"
                                     IsEnabled="False" Opacity="0.4"
                                     Click="BoardTypeSpecialButton_Click"/>
 
-                            <Button x:Name="BoardTypeNormalButton" Content="Tablero Normal" 
+                            <Button x:Name="BoardTypeNormalButton" Content="{x:Static props:Strings.BoardTypeNormal}" 
                                     Style="{StaticResource LobbyToggleActiveStyle}" Margin="5"
                                     Click="BoardTypeNormalButton_Click"/>
                         </StackPanel>
 
-                        <TextBlock Text="Cantidad de Jugadores" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <TextBlock Text="{x:Static props:Strings.PlayerCountLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button x:Name="DecreasePlayersButton" Content="-" Style="{StaticResource LobbyCounterButtonStyle}" Click="DecreasePlayersButton_Click"/>
                             <TextBlock x:Name="PlayerCountBlock" Text="4" FontSize="48" FontWeight="Bold" Margin="40,0" VerticalAlignment="Center"/>
                             <Button x:Name="IncreasePlayersButton" Content="+" Style="{StaticResource LobbyCounterButtonStyle}" Click="IncreasePlayersButton_Click"/>
                         </StackPanel>
-                        <TextBlock Text="2-4" HorizontalAlignment="Center" FontSize="18" Opacity="0.7"/>
+                        <TextBlock Text="{x:Static props:Strings.PlayerCountRange}" HorizontalAlignment="Center" FontSize="18" Opacity="0.7"/>
 
-                        <TextBlock Text="Visibilidad" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
+                        <TextBlock Text="{x:Static props:Strings.VisibilityLabel}" FontSize="24" FontWeight="SemiBold" Margin="0,30,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="VisibilityPublicButton" Content="Pública" Style="{StaticResource LobbyToggleActiveStyle}" Margin="5" Click="VisibilityPublicButton_Click"/>
+                            <Button x:Name="VisibilityPublicButton" Content="{x:Static props:Strings.VisibilityPublic}" Style="{StaticResource LobbyToggleActiveStyle}" Margin="5" Click="VisibilityPublicButton_Click"/>
                             <Button x:Name="VisibilityPrivateButton" Style="{StaticResource LobbyToggleInactiveStyle}" Margin="5" Click="VisibilityPrivateButton_Click">
                                 <StackPanel Orientation="Horizontal">
-                                    <fa:FontAwesome Icon="Lock" Foreground="White" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Privada"/>
+                                    <fa:ImageAwesome Icon="Lock" Foreground="White" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static props:Strings.VisibilityPrivate}"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -124,7 +92,7 @@
                         <TabControl x:Name="LobbyTabControl" Background="Transparent" BorderThickness="0">
                             <TabItem>
                                 <TabItem.Header>
-                                    <TextBlock x:Name="PlayersTabHeader" Text="JUGADORES (1/4)" FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock x:Name="PlayersTabHeader" Text="{x:Static props:Strings.PlayersTabHeader}" FontSize="18" FontWeight="Bold"/>
                                 </TabItem.Header>
                                 <ListBox x:Name="PlayerList" Margin="0,10,0,0" Background="#19000000" BorderThickness="0"
                                          HorizontalContentAlignment="Stretch" SelectionMode="Single">
@@ -138,7 +106,7 @@
 
                             <TabItem>
                                 <TabItem.Header>
-                                    <TextBlock Text="CHAT" FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock Text="{x:Static props:Strings.ChatTabHeader}" FontSize="18" FontWeight="Bold"/>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -147,7 +115,7 @@
                                     </Grid.RowDefinitions>
                                     <ListBox x:Name="ChatMessagesList" Grid.Row="0" Margin="0,10,0,0" Background="#19000000" BorderThickness="0" FontSize="18">
                                         <ListBoxItem>
-                                            <TextBlock FontStyle="Italic" Opacity="0.7" TextWrapping="Wrap" Text="[Sistema]: ¡Bienvenido a la partida!"/>
+                                            <TextBlock FontStyle="Italic" Opacity="0.7" TextWrapping="Wrap" Text="{x:Static props:Strings.ChatSystemWelcome}"/>
                                         </ListBoxItem>
                                     </ListBox>
                                     <Grid Grid.Row="1" Margin="0,10,0,0">
@@ -157,7 +125,7 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBox x:Name="ChatMessageTextBox" Grid.Column="0" FontSize="18" Padding="10" VerticalContentAlignment="Center" KeyDown="ChatMessageTextBox_KeyDown"/>
                                         <Button x:Name="SendChatMessageButton" Grid.Column="1" Style="{StaticResource PrimaryButtonStyle}" Width="60" Height="50" Margin="5,0,0,0" Click="SendChatMessageButton_Click">
-                                            <fa:FontAwesome Icon="Send" Foreground="White" Height="20"/>
+                                            <fa:ImageAwesome Icon="Send" Foreground="White" Height="20"/>
                                         </Button>
                                     </Grid>
                                 </Grid>
@@ -166,14 +134,14 @@
                     </Grid>
                 </Grid>
 
-                <Button x:Name="StartMatchButton" Grid.Row="2" Content="Crear Partida" 
+                <Button x:Name="StartMatchButton" Grid.Row="2" Content="{x:Static props:Strings.StartMatchButton}" 
                         Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,30" 
                         FontSize="40" FontWeight="Bold" HorizontalAlignment="Center" 
                         Width="400" Height="80" Click="StartMatchButton_Click"/>
             </Grid>
         </Border>
 
-        <Button x:Name="BackButton" Content="Volver" Style="{StaticResource PrimaryButtonStyle}" 
+        <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" Style="{StaticResource PrimaryButtonStyle}" 
                 FontSize="24" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" 
                 Margin="20" Width="100" Height="50" Click="BackButton_Click"/>
 
@@ -185,11 +153,11 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                        <fa:FontAwesome Icon="Users" Foreground="#333" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="Invitar Amigos" FontSize="24" FontWeight="Bold" Foreground="#333"/>
+                        <fa:ImageAwesome Icon="Users" Foreground="#333" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="{x:Static props:Strings.InviteFriendsTitle}" FontSize="24" FontWeight="Bold" Foreground="#333"/>
                     </StackPanel>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="Transparent" BorderThickness="0" Click="CloseInviteMenu_Click" Cursor="Hand">
-                        <fa:FontAwesome Icon="Times" Foreground="Gray" FontSize="20"/>
+                        <fa:ImageAwesome Icon="Times" Foreground="Gray" Height="20"/>
                     </Button>
 
                     <ListBox x:Name="InviteFriendsList" Grid.Row="1" BorderThickness="0" Background="Transparent">
@@ -202,16 +170,16 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <fa:FontAwesome Icon="UserCircle" Foreground="Gray" FontSize="30"/>
+                                        <fa:ImageAwesome Icon="UserCircle" Foreground="Gray" Height="30"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Username}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="15,0,0,0"/>
-                                        <Button Grid.Column="2" Content="Invitar" Height="30" Width="70" Click="InviteFriend_Click" Tag="{Binding Username}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                        <Button Grid.Column="2" Content="{x:Static props:Strings.InviteButton}" Height="30" Width="70" Click="InviteFriend_Click" Tag="{Binding Username}" Style="{StaticResource PrimaryButtonStyle}"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <TextBlock x:Name="NoFriendsToInviteText" Grid.Row="1" Text="No hay amigos conectados." FontSize="18" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    <TextBlock x:Name="NoFriendsToInviteText" Grid.Row="1" Text="{x:Static props:Strings.NoFriendsOnline}" FontSize="18" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                 </Grid>
             </Border>
         </Grid>

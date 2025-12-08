@@ -24,5 +24,8 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
+       
+        [OperationContract]
+        Task<ActiveMatchDTO[]> GetPublicMatchesAsync();
     }
 }

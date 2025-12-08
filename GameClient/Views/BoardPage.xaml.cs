@@ -9,26 +9,12 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
-using System.ServiceModel;
 using GameClient.GameplayServiceReference;
 
 namespace GameClient.Views
 {
     public partial class BoardPage : Page
     {
-        private const string AvatarBasePath = "/Assets/Avatar/";
-        private const string DefaultAvatarName = "default_avatar.png";
-        private const string BoardNormalPath = "/Assets/Boards/normal_board.png";
-        private const string BoardSpecialPath = "/Assets/Boards/special_board.png";
-
-        private readonly string[] _tokenImagePaths =
-        {
-            "/Assets/Game Pieces/red_piece.png",
-            "/Assets/Game Pieces/blue_piece.png",
-            "/Assets/Game Pieces/green_piece.png",
-            "/Assets/Game Pieces/yellow_piece.png"
-        };
-
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
@@ -36,6 +22,14 @@ namespace GameClient.Views
         private DispatcherTimer gameLoopTimer;
         private bool _isGameOverHandled = false;
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
+
+        private readonly string[] _tokenImagePaths =
+        {
+            "pack://application:,,,/Assets/Game Pieces/red_piece.png",
+            "pack://application:,,,/Assets/Game Pieces/blue_piece.png",
+            "pack://application:,,,/Assets/Game Pieces/green_piece.png",
+            "pack://application:,,,/Assets/Game Pieces/yellow_piece.png"
+        };
 
         private readonly List<Point> _tileCoordinates = new List<Point>
         {
@@ -70,17 +64,16 @@ namespace GameClient.Views
             LoadBoardImage();
             StartGameLoop();
 
-            this.Unloaded += (s, e) =>
-            {
-                gameLoopTimer?.Stop();
-                CloseClient();
-            };
+            this.Unloaded += (s, e) => gameLoopTimer?.Stop();
         }
 
         private void LoadBoardImage()
         {
-            string imagePath = (boardId == 1) ? BoardNormalPath : BoardSpecialPath;
-            BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
+            string imagePath = (boardId == 1)
+                ? "pack://application:,,,/Assets/Boards/normal_board.png"
+                : "pack://application:,,,/Assets/Boards/special_board.png";
+
+            BoardImage.Source = new BitmapImage(new Uri(imagePath));
         }
 
         private void StartGameLoop()
@@ -99,6 +92,7 @@ namespace GameClient.Views
 
             try
             {
+                // [FIX CRÍTICO 2] Usar objeto Request para cumplir con el contrato WCF
                 var request = new GameplayRequest
                 {
                     LobbyCode = lobbyCode,
@@ -129,98 +123,133 @@ namespace GameClient.Views
                     UpdatePlayerAvatars(state.PlayerPositions);
                 }
             }
-            catch (TimeoutException)
+            catch (Exception ex)
             {
-                Console.WriteLine("Timeout actualizando estado del juego.");
-            }
-            catch (CommunicationException)
-            {
-                Console.WriteLine("Error de comunicación actualizando estado.");
-                gameplayClient.Abort();
-                gameplayClient = new GameplayServiceClient();
+                Console.WriteLine(ex.Message);
             }
             finally
             {
-                if (!_isGameOverHandled) gameLoopTimer.Start();
+                if (!_isGameOverHandled)
+                {
+                    gameLoopTimer.Start();
+                }
             }
         }
+
+        // [FIX CRÍTICO 3] Lógica de Salida implementada
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("¿Seguro que quieres salir? Perderás la partida.", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            gameLoopTimer?.Stop();
+            _isGameOverHandled = true; // Evitar que el timer se reactive
+
+            try
+            {
+                var request = new GameplayRequest
+                {
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                };
+
+                await gameplayClient.LeaveGameAsync(request);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al abandonar: " + ex.Message);
+            }
+            finally
+            {
+                // Navegación local
+                var mainWindow = Window.GetWindow(this) as GameMainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.ShowMainMenu();
+                }
+                else if (NavigationService.CanGoBack)
+                {
+                    NavigationService.GoBack();
+                }
+            }
+        }
+
+        private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            RollDiceButton.IsEnabled = false;
+
+            try
+            {
+                var request = new GameplayRequest
+                {
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                };
+
+                var result = await gameplayClient.RollDiceAsync(request);
+
+                DiceOneText.Text = result.DiceOne.ToString();
+                DiceTwoText.Text = result.DiceTwo.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                RollDiceButton.IsEnabled = true;
+            }
+        }
+
+        // --- Resto de la lógica visual original ---
 
         private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
             if (players == null) return;
 
-            SetPanelsVisibility(Visibility.Hidden);
-
-            var sortedPlayers = players.OrderBy(p => p.Username).ToList();
-
-            var playerControls = new List<(Border Panel, ImageBrush Avatar, TextBlock Name)>
-            {
-                (Player1Panel, Player1Avatar, Player1Name),
-                (Player2Panel, Player2Avatar, Player2Name),
-                (Player3Panel, Player3Avatar, Player3Name),
-                (Player4Panel, Player4Avatar, Player4Name)
-            };
-
-            for (int i = 0; i < sortedPlayers.Count && i < playerControls.Count; i++)
-            {
-                var player = sortedPlayers[i];
-                var controls = playerControls[i];
-
-                SetupPlayerPanel(controls, player);
-            }
-        }
-
-        private static void SetupPlayerPanel((Border Panel, ImageBrush Avatar, TextBlock Name) controls, PlayerPositionDTO player)
-        {
-            controls.Panel.Visibility = Visibility.Visible;
-            controls.Name.Text = player.Username;
-
-            string avatarName = string.IsNullOrEmpty(player.AvatarPath) ? DefaultAvatarName : player.AvatarPath;
-            controls.Avatar.ImageSource = LoadAvatarImage(avatarName);
-
-            controls.Panel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
-            controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
-        }
-
-        private static ImageSource LoadAvatarImage(string avatarName)
-        {
-            try
-            {
-                string path = $"{AvatarBasePath}{avatarName}";
-                return new BitmapImage(new Uri(path, UriKind.Relative));
-            }
-            catch
-            {
-                try
-                {
-                    string defaultPath = $"{AvatarBasePath}{DefaultAvatarName}";
-                    return new BitmapImage(new Uri(defaultPath, UriKind.Relative));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-
-        private void SetPanelsVisibility(Visibility visibility)
-        {
-            Player1Panel.Visibility = visibility;
-            Player2Panel.Visibility = visibility;
-            Player3Panel.Visibility = visibility;
-            Player4Panel.Visibility = visibility;
-        }
-
-        private void UpdateBoardVisuals(PlayerPositionDTO[] players)
-        {
-            if (players == null) return;
+            Player1Panel.Visibility = Visibility.Hidden;
+            Player2Panel.Visibility = Visibility.Hidden;
+            Player3Panel.Visibility = Visibility.Hidden;
+            Player4Panel.Visibility = Visibility.Hidden;
 
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
 
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
+                string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
+                    ? "pack://application:,,,/Assets/default_avatar.png"
+                    : player.AvatarPath;
 
+                ImageBrush targetAvatarBrush = null;
+                TextBlock targetNameBlock = null;
+                Border targetPanel = null;
+
+                switch (i)
+                {
+                    case 0: targetAvatarBrush = Player1Avatar; targetNameBlock = Player1Name; targetPanel = Player1Panel; break;
+                    case 1: targetAvatarBrush = Player2Avatar; targetNameBlock = Player2Name; targetPanel = Player2Panel; break;
+                    case 2: targetAvatarBrush = Player3Avatar; targetNameBlock = Player3Name; targetPanel = Player3Panel; break;
+                    case 3: targetAvatarBrush = Player4Avatar; targetNameBlock = Player4Name; targetPanel = Player4Panel; break;
+                }
+
+                if (targetPanel != null)
+                {
+                    targetPanel.Visibility = Visibility.Visible;
+                    targetNameBlock.Text = player.Username;
+                    try { targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute)); }
+                    catch { targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/default_avatar.png")); }
+                    targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
+                    targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+                }
+            }
+        }
+
+        private void UpdateBoardVisuals(PlayerPositionDTO[] players)
+        {
+            if (players == null) return;
+            var sortedPlayers = players.OrderBy(p => p.Username).ToList();
+
+            for (int i = 0; i < sortedPlayers.Count; i++)
+            {
+                var player = sortedPlayers[i];
                 if (!_playerTokens.ContainsKey(player.Username))
                 {
                     string imagePath = _tokenImagePaths[i % _tokenImagePaths.Length];
@@ -228,10 +257,8 @@ namespace GameClient.Views
                     _playerTokens.Add(player.Username, token);
                     BoardCanvas.Children.Add(token);
                 }
-
                 var tokenUI = _playerTokens[player.Username];
                 MoveTokenToTile(tokenUI, player.CurrentTile);
-
                 tokenUI.Opacity = player.IsOnline ? 1.0 : 0.4;
             }
         }
@@ -242,23 +269,13 @@ namespace GameClient.Views
             {
                 Width = 40,
                 Height = 40,
-                Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)),
+                Source = new BitmapImage(new Uri(imagePath)),
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
-
-            Point startPoint = _tileCoordinates[0];
-            Canvas.SetLeft(image, startPoint.X - 20);
-            Canvas.SetTop(image, startPoint.Y - 20);
-
-            image.Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                Color = Colors.Black,
-                Direction = 320,
-                ShadowDepth = 4,
-                Opacity = 0.5
-            };
-
+            Canvas.SetLeft(image, _tileCoordinates[0].X - 20);
+            Canvas.SetTop(image, _tileCoordinates[0].Y - 20);
+            image.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, Direction = 320, ShadowDepth = 4, Opacity = 0.5 };
             return image;
         }
 
@@ -266,32 +283,16 @@ namespace GameClient.Views
         {
             if (tileIndex < 0) tileIndex = 0;
             if (tileIndex >= _tileCoordinates.Count) tileIndex = _tileCoordinates.Count - 1;
-
             Point targetPoint = _tileCoordinates[tileIndex];
-
             double left = targetPoint.X - 20;
             double top = targetPoint.Y - 20;
-
             double currentLeft = Canvas.GetLeft(token);
             double currentTop = Canvas.GetTop(token);
-
             if (double.IsNaN(currentLeft)) currentLeft = _tileCoordinates[0].X - 20;
             if (double.IsNaN(currentTop)) currentTop = _tileCoordinates[0].Y - 20;
 
-            var animX = new DoubleAnimation
-            {
-                From = currentLeft,
-                To = left,
-                Duration = TimeSpan.FromMilliseconds(500)
-            };
-
-            var animY = new DoubleAnimation
-            {
-                From = currentTop,
-                To = top,
-                Duration = TimeSpan.FromMilliseconds(500)
-            };
-
+            var animX = new DoubleAnimation { From = currentLeft, To = left, Duration = TimeSpan.FromMilliseconds(500) };
+            var animY = new DoubleAnimation { From = currentTop, To = top, Duration = TimeSpan.FromMilliseconds(500) };
             token.BeginAnimation(Canvas.LeftProperty, animX);
             token.BeginAnimation(Canvas.TopProperty, animY);
         }
@@ -315,98 +316,20 @@ namespace GameClient.Views
         private void UpdateGameLog(string[] logs)
         {
             if (logs == null) return;
-
             if (GameLogListBox.Items.Count != logs.Length)
             {
                 GameLogListBox.Items.Clear();
-                foreach (var log in logs)
-                {
-                    GameLogListBox.Items.Add(log);
-                }
-                if (GameLogListBox.Items.Count > 0)
-                {
-                    GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
-                }
+                foreach (var log in logs) GameLogListBox.Items.Add(log);
+                if (GameLogListBox.Items.Count > 0) GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
             }
         }
 
         private void HandleGameOver(string winner)
         {
             MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
-
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.ShowMainMenu();
-            }
-            else
-            {
-                if (NavigationService.CanGoBack) NavigationService.GoBack();
-            }
-        }
-
-        private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
-        {
-            RollDiceButton.IsEnabled = false;
-
-            try
-            {
-                var request = new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                };
-
-                var result = await gameplayClient.RollDiceAsync(request);
-
-                DiceOneText.Text = result.DiceOne.ToString();
-                DiceTwoText.Text = result.DiceTwo.ToString();
-            }
-            catch (TimeoutException)
-            {
-                MessageBox.Show("Tiempo de espera agotado al tirar dados.");
-                RollDiceButton.IsEnabled = true;
-            }
-            catch (CommunicationException)
-            {
-                MessageBox.Show("Error de comunicación al tirar dados.");
-                RollDiceButton.IsEnabled = true;
-            }
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            gameLoopTimer?.Stop();
-            var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.ShowMainMenu();
-            }
-            else if (NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
-        }
-
-        private void CloseClient()
-        {
-            if (gameplayClient == null) return;
-
-            try
-            {
-                if (gameplayClient.State == CommunicationState.Opened)
-                {
-                    gameplayClient.Close();
-                }
-                else
-                {
-                    gameplayClient.Abort();
-                }
-            }
-            catch
-            {
-                gameplayClient.Abort();
-            }
+            if (mainWindow != null) mainWindow.ShowMainMenu();
+            else if (NavigationService.CanGoBack) NavigationService.GoBack();
         }
     }
 }

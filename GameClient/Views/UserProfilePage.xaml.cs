@@ -68,23 +68,23 @@ namespace GameClient.Views
                     }
                     catch (UriFormatException)
                     {
-                        Console.WriteLine("Error de formato en URI de avatar.");
+                        Console.WriteLine(GameClient.Resources.Strings.AvatarFormatError);
                     }
                     catch (IOException)
                     {
-                        Console.WriteLine("Error de lectura de archivo de avatar.");
+                        Console.WriteLine(GameClient.Resources.Strings.AvatarReadError);
                     }
 
                     if (profile.UsernameChangeCount >= 3)
                     {
-                        UsernameInfoLabel.Text = "Has alcanzado el límite de cambios de nombre (3/3).";
+                        UsernameInfoLabel.Text = GameClient.Resources.Strings.LimitReachedMessage;
                         UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Red);
                         UsernameInfoLabel.Visibility = Visibility.Visible;
                         ChangeUsernameButton.IsEnabled = false;
                     }
                     else
                     {
-                        UsernameInfoLabel.Text = $"Te quedan {3 - profile.UsernameChangeCount} cambios de nombre.";
+                        UsernameInfoLabel.Text = string.Format(GameClient.Resources.Strings.ChangesLeftMessage, 3 - profile.UsernameChangeCount);
                         UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Gray);
                         UsernameInfoLabel.Visibility = Visibility.Visible;
                         ChangeUsernameButton.IsEnabled = true;
@@ -92,20 +92,20 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    MessageBox.Show("No se pudo cargar el perfil del usuario.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(GameClient.Resources.Strings.ProfileLoadError, GameClient.Resources.Strings.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("La operación ha excedido el tiempo de espera.", "Error de Tiempo");
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorTitle);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de comunicación: {ex.Message}", "Error de Red");
+                MessageBox.Show($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}", GameClient.Resources.Strings.ErrorTitle);
             }
             finally
             {
@@ -134,7 +134,7 @@ namespace GameClient.Views
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
-
+            NavigationService.Navigate(new ResetPasswordPage(userEmail));
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

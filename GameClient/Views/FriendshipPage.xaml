@@ -3,7 +3,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:GameClient.Views"
       xmlns:props="clr-namespace:GameClient.Resources"
       xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
       mc:Ignorable="d" 
@@ -13,23 +12,14 @@
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/fondo2.png" 
-                        Stretch="UniformToFill" Opacity="1">
+            <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1">
                 <ImageBrush.Viewbox>
                     <Rect>0.2, 0.2, 0.6, 0.6</Rect>
                 </ImageBrush.Viewbox>
             </ImageBrush>
         </Grid.Background>
 
-        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                Width="1000" Height="800"
-                Background="#E6FFFFFF" 
-                BorderBrush="#FFB0B0B0" 
-                BorderThickness="3" 
-                CornerRadius="20">
-            <Border.Effect>
-                <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#80000000" Opacity="0.5"/>
-            </Border.Effect>
+        <Border Style="{StaticResource LobbyContainerBorderStyle}" Width="1000" Height="800">
 
             <Grid Margin="20">
                 <Grid.RowDefinitions>
@@ -37,7 +27,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Gestión de Amigos" 
+                <TextBlock Text="{x:Static props:Strings.FriendshipTitle}" 
                            FontSize="48" FontWeight="Bold" 
                            HorizontalAlignment="Left" VerticalAlignment="Center"
                            Margin="20,10,0,20"/>
@@ -49,26 +39,17 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <fa:FontAwesome Icon="Search" Foreground="Gray" Margin="10,0,5,0" VerticalAlignment="Center"/>
+                            <fa:ImageAwesome Icon="Search" Foreground="Gray" Margin="10,0,5,0" VerticalAlignment="Center" Height="20"/>
 
-                            <TextBox x:Name="SearchUserBox" 
-                                     Grid.Column="1"
-                                     Width="250"
-                                     FontSize="18" 
-                                     VerticalContentAlignment="Center"
-                                     BorderThickness="0" 
-                                     Background="Transparent"
-                                     Tag="Buscar usuario..."/>
+                            <TextBox x:Name="SearchUserBox" Grid.Column="1" Width="250" FontSize="18" 
+                                     VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
+                                     Tag="{x:Static props:Strings.SearchUserPlaceholder}"/>
                         </Grid>
                     </Border>
 
-                    <Button x:Name="SendRequestButton"
-                            Content="Enviar Solicitud"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Height="45" Width="140"
-                            FontSize="16" FontWeight="Bold"
-                            Cursor="Hand"
-                            Click="SendFriendRequest_Click"/>
+                    <Button x:Name="SendRequestButton" Content="{x:Static props:Strings.SendRequestButton}" 
+                            Style="{StaticResource PrimaryButtonStyle}" Height="45" Width="160" 
+                            FontSize="16" FontWeight="Bold" Click="SendFriendRequest_Click"/>
                 </StackPanel>
 
                 <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
@@ -98,7 +79,7 @@
                         </Style>
                     </TabControl.Resources>
 
-                    <TabItem Header="Mis Amigos">
+                    <TabItem Header="{x:Static props:Strings.MyFriendsTab}">
                         <Grid>
                             <ListBox x:Name="FriendsListBox" Margin="20" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
                                 <ListBox.ItemTemplate>
@@ -115,7 +96,7 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <fa:FontAwesome Icon="UserCircle" Foreground="#555" Height="40" Width="40" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                                <fa:ImageAwesome Icon="UserCircle" Foreground="#555" Height="40" Width="40" VerticalAlignment="Center" Margin="0,0,15,0"/>
 
                                                 <TextBlock Grid.Column="1" Text="{Binding Username}" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
 
@@ -124,27 +105,25 @@
                                                     <Ellipse Width="15" Height="15" Fill="{Binding StatusColorBrush}"/>
                                                 </StackPanel>
 
-                                                <Button Grid.Column="3"
-                                                        Style="{StaticResource OrangeButtonStyle}" 
+                                                <Button Grid.Column="3" Style="{StaticResource OrangeButtonStyle}" 
                                                         Width="50" Height="40" 
-                                                        ToolTip="Eliminar Amigo"
-                                                        Tag="{Binding Username}"
-                                                        Click="DeleteFriend_Click">
-                                                    <fa:FontAwesome Icon="Trash" Foreground="White" FontSize="20"/>
+                                                        ToolTip="{x:Static props:Strings.DeleteFriendToolTip}"
+                                                        Tag="{Binding Username}" Click="DeleteFriend_Click">
+                                                    <fa:ImageAwesome Icon="Trash" Foreground="White" Height="20"/>
                                                 </Button>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock x:Name="NoFriendsMessage" Text="No tienes amigos aún." FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="NoFriendsMessage" Text="{x:Static props:Strings.NoFriendsMessage}" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
                     </TabItem>
 
                     <TabItem>
                         <TabItem.Header>
                             <Grid>
-                                <TextBlock Text="Solicitudes" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="{x:Static props:Strings.RequestsTab}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                 <Border Background="Red" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,-10,-15,0" MinWidth="22" Height="22" Visibility="{Binding RequestBadgeVisibility}">
                                     <TextBlock Text="{Binding RequestCount}" Foreground="White" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="4,0,4,2"/>
                                 </Border>
@@ -165,34 +144,33 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <fa:FontAwesome Icon="Envelope" Foreground="{StaticResource PrimaryBrush}" Height="30" Width="30" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                                <fa:ImageAwesome Icon="Envelope" Foreground="{StaticResource PrimaryBrush}" Height="30" Width="30" VerticalAlignment="Center" Margin="0,0,15,0"/>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Username}" FontSize="24" FontWeight="Bold"/>
-                                                    <TextBlock Text="te envió una solicitud de amistad." FontSize="14" Foreground="Gray"/>
+                                                    <TextBlock Text="{x:Static props:Strings.RequestReceivedMessage}" FontSize="14" Foreground="Gray"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                                    <Button Content="Aceptar" Style="{StaticResource GreenButtonStyle}" Width="100" Height="40" FontSize="16" Margin="0,0,10,0" Tag="{Binding Username}" Click="AcceptRequest_Click"/>
-                                                    <Button Content="Rechazar" Style="{StaticResource OrangeButtonStyle}" Width="100" Height="40" FontSize="16" Tag="{Binding Username}" Click="RejectRequest_Click"/>
+                                                    <Button Content="{x:Static props:Strings.AcceptButton}" Style="{StaticResource GreenButtonStyle}" Width="100" Height="40" FontSize="16" Margin="0,0,10,0" Tag="{Binding Username}" Click="AcceptRequest_Click"/>
+                                                    <Button Content="{x:Static props:Strings.RejectButton}" Style="{StaticResource OrangeButtonStyle}" Width="100" Height="40" FontSize="16" Tag="{Binding Username}" Click="RejectRequest_Click"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock x:Name="NoRequestsMessage" Text="No tienes solicitudes pendientes." FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="NoRequestsMessage" Text="{x:Static props:Strings.NoRequestsMessage}" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
                     </TabItem>
                 </TabControl>
             </Grid>
         </Border>
 
-        <Button x:Name="BackButton" 
-                Content="Volver"
-                Style="{StaticResource PrimaryButtonStyle}"
+        <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" 
+                Style="{StaticResource PrimaryButtonStyle}" 
                 FontFamily="/Assets/Fonts/#Dosis" FontSize="24" FontWeight="Bold"
                 HorizontalAlignment="Left" VerticalAlignment="Top" 
                 Margin="20" Width="100" Height="50"
-                Cursor="Hand" Click="BackButton_Click"/>
+                Click="BackButton_Click"/>
 
     </Grid>
 </Page>

@@ -22,7 +22,7 @@
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,50,0,0">
 
-            <TextBlock Text="Ingresa el Código de Partida" 
+            <TextBlock Text="{x:Static props:Strings.JoinMatchCodeTitle}" 
                        FontFamily="/Assets/Fonts/#Dosis" 
                        FontSize="48" 
                        FontWeight="Bold" 
@@ -43,7 +43,7 @@
                      Margin="0,0,0,30"/>
 
             <Button x:Name="JoinButton" 
-                    Content="Unirse" 
+                    Content="{x:Static props:Strings.JoinButton}" 
                     Style="{StaticResource PrimaryButtonStyle}" 
                     Width="300" 
                     Height="80"
@@ -55,7 +55,7 @@
         </StackPanel>
 
         <Button x:Name="BackButton" 
-                Content="Volver"
+                Content="{x:Static props:Strings.BackButton}"
                 Style="{StaticResource PrimaryButtonStyle}"
                 FontFamily="/Assets/Fonts/#Dosis" 
                 FontSize="24"

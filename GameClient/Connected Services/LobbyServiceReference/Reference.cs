@@ -600,6 +600,115 @@ namespace GameClient.LobbyServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ActiveMatchDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.SerializableAttribute()]
+    public partial class ActiveMatchDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int BoardIdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int CurrentPlayersField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string HostUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string LobbyCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int MaxPlayersField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int BoardId {
+            get {
+                return this.BoardIdField;
+            }
+            set {
+                if ((this.BoardIdField.Equals(value) != true)) {
+                    this.BoardIdField = value;
+                    this.RaisePropertyChanged("BoardId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int CurrentPlayers {
+            get {
+                return this.CurrentPlayersField;
+            }
+            set {
+                if ((this.CurrentPlayersField.Equals(value) != true)) {
+                    this.CurrentPlayersField = value;
+                    this.RaisePropertyChanged("CurrentPlayers");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string HostUsername {
+            get {
+                return this.HostUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.HostUsernameField, value) != true)) {
+                    this.HostUsernameField = value;
+                    this.RaisePropertyChanged("HostUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string LobbyCode {
+            get {
+                return this.LobbyCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.LobbyCodeField, value) != true)) {
+                    this.LobbyCodeField = value;
+                    this.RaisePropertyChanged("LobbyCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int MaxPlayers {
+            get {
+                return this.MaxPlayersField;
+            }
+            set {
+                if ((this.MaxPlayersField.Equals(value) != true)) {
+                    this.MaxPlayersField = value;
+                    this.RaisePropertyChanged("MaxPlayers");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LobbyServiceReference.ILobbyService")]
     public interface ILobbyService {
@@ -639,6 +748,12 @@ namespace GameClient.LobbyServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
+        GameClient.LobbyServiceReference.ActiveMatchDTO[] GetPublicMatches();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync();
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -714,6 +829,14 @@ namespace GameClient.LobbyServiceReference {
         
         public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode) {
             return base.Channel.GetLobbyStateAsync(lobbyCode);
+        }
+        
+        public GameClient.LobbyServiceReference.ActiveMatchDTO[] GetPublicMatches() {
+            return base.Channel.GetPublicMatches();
+        }
+        
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync() {
+            return base.Channel.GetPublicMatchesAsync();
         }
     }
 }

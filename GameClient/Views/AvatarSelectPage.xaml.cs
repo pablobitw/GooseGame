@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 using GameClient.UserProfileServiceReference;
 using GameClient.Models;
 
@@ -34,11 +35,12 @@ namespace GameClient.Views
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string avatarsDir = System.IO.Path.Combine(baseDir, "Assets", "Avatar");
+                string avatarsDir = Path.Combine(baseDir, "Assets", "Avatar");
 
                 if (!Directory.Exists(avatarsDir))
                 {
-                    string devPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\Assets\Avatar"));
+                    // Fallback para desarrollo
+                    string devPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\Assets\Avatar"));
                     if (Directory.Exists(devPath)) avatarsDir = devPath;
                     else return;
                 }
@@ -52,8 +54,8 @@ namespace GameClient.Views
                 {
                     avatarList.Add(new AvatarItem
                     {
-                        FileName = System.IO.Path.GetFileName(filePath),
-                        FullPath = filePath 
+                        FileName = Path.GetFileName(filePath),
+                        FullPath = filePath
                     });
                 }
 
@@ -61,7 +63,10 @@ namespace GameClient.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error cargando avatares: " + ex.Message);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.AvatarLoadError, ex.Message),
+                                GameClient.Resources.Strings.ErrorTitle,
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
             }
         }
 
@@ -86,23 +91,40 @@ namespace GameClient.Views
                 bool success = await client.ChangeAvatarAsync(userEmail, selectedAvatarFileName);
                 if (success)
                 {
-                    MessageBox.Show("¡Avatar actualizado!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(GameClient.Resources.Strings.AvatarUpdatedMessage,
+                                    GameClient.Resources.Strings.SuccessTitle,
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Information);
                     GoBack();
                 }
                 else
                 {
-                    MessageBox.Show("Error al actualizar.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(GameClient.Resources.Strings.AvatarUpdateError,
+                                    GameClient.Resources.Strings.ErrorTitle,
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
                     SaveAvatarButton.IsEnabled = true;
                 }
             }
+            catch (TimeoutException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
+                SaveAvatarButton.IsEnabled = true;
+            }
+            catch (CommunicationException ex)
+            {
+                MessageBox.Show($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}", GameClient.Resources.Strings.ErrorTitle);
+                SaveAvatarButton.IsEnabled = true;
+            }
             catch (Exception)
             {
-                MessageBox.Show("Error de conexión.");
+                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorTitle);
                 SaveAvatarButton.IsEnabled = true;
             }
             finally
             {
                 if (client.State == CommunicationState.Opened) client.Close();
+                else client.Abort();
             }
         }
 
