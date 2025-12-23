@@ -64,7 +64,6 @@
                         </Ellipse>
                         <Ellipse Stroke="White" StrokeThickness="2"/>
                     </Grid>
-
                     <TextBlock x:Name="Player1Name" Text="Player 1" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
                 </StackPanel>
@@ -125,7 +124,7 @@
             </Border>
 
             <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0" 
-                    Background="#AA000000" CornerRadius="10" Padding="10" Width="300" Height="400">
+                    Background="#AA000000" CornerRadius="10" Padding="10" Width="300" Height="274">
                 <StackPanel>
                     <TextBlock Text="Registro de Juego" Foreground="White" FontWeight="Bold" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <ListBox x:Name="GameLogListBox" Height="330" Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18"/>
@@ -155,6 +154,20 @@
                             Click="RollDiceButton_Click"/>
                 </StackPanel>
             </Border>
+
+            <Border x:Name="StartTimerPanel" Background="#E6000000" CornerRadius="20" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Padding="60,30" Visibility="Collapsed" Panel.ZIndex="100">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="La partida comienza en:" Foreground="White" FontSize="36" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="StartTimerText" Text="5" Foreground="#FFD700" FontSize="120" FontWeight="Bold" HorizontalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" ShadowDepth="5" BlurRadius="10"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
         </Grid>
     </Grid>
 </Page>

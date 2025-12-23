@@ -19,7 +19,13 @@ namespace GameClient.Views
         private int boardId;
         private string currentUsername;
         private GameplayServiceClient gameplayClient;
+
         private DispatcherTimer gameLoopTimer;
+
+        private DispatcherTimer _startCountdownTimer;
+        private int _countdownValue = 5;
+        private bool _isGameStarting = true;
+
         private bool _isGameOverHandled = false;
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
 
@@ -62,9 +68,47 @@ namespace GameClient.Views
             gameplayClient = new GameplayServiceClient();
 
             LoadBoardImage();
-            StartGameLoop();
 
-            this.Unloaded += (s, e) => gameLoopTimer?.Stop();
+            StartCountdown();
+
+            this.Unloaded += (s, e) =>
+            {
+                gameLoopTimer?.Stop();
+                _startCountdownTimer?.Stop();
+            };
+        }
+
+        private void StartCountdown()
+        {
+            _isGameStarting = true;
+            StartTimerPanel.Visibility = Visibility.Visible;
+            RollDiceButton.IsEnabled = false;
+            RollDiceButton.Opacity = 0.5;
+
+            _startCountdownTimer = new DispatcherTimer();
+            _startCountdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _startCountdownTimer.Tick += Countdown_Tick;
+            _startCountdownTimer.Start();
+
+            StartGameLoop();
+        }
+
+        private void Countdown_Tick(object sender, EventArgs e)
+        {
+            _countdownValue--;
+
+            if (_countdownValue > 0)
+            {
+                StartTimerText.Text = _countdownValue.ToString();
+            }
+            else
+            {
+                _startCountdownTimer.Stop();
+                StartTimerPanel.Visibility = Visibility.Collapsed;
+                _isGameStarting = false;
+
+                _ = UpdateGameState();
+            }
         }
 
         private void LoadBoardImage()
@@ -73,7 +117,8 @@ namespace GameClient.Views
                 ? "pack://application:,,,/Assets/Boards/normal_board.png"
                 : "pack://application:,,,/Assets/Boards/special_board.png";
 
-            BoardImage.Source = new BitmapImage(new Uri(imagePath));
+            try { BoardImage.Source = new BitmapImage(new Uri(imagePath)); }
+            catch { }
         }
 
         private void StartGameLoop()
@@ -92,7 +137,6 @@ namespace GameClient.Views
 
             try
             {
-                // [FIX CRÍTICO 2] Usar objeto Request para cumplir con el contrato WCF
                 var request = new GameplayRequest
                 {
                     LobbyCode = lobbyCode,
@@ -136,14 +180,14 @@ namespace GameClient.Views
             }
         }
 
-        // [FIX CRÍTICO 3] Lógica de Salida implementada
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show("¿Seguro que quieres salir? Perderás la partida.", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
 
             gameLoopTimer?.Stop();
-            _isGameOverHandled = true; // Evitar que el timer se reactive
+            _startCountdownTimer?.Stop();
+            _isGameOverHandled = true;
 
             try
             {
@@ -161,7 +205,6 @@ namespace GameClient.Views
             }
             finally
             {
-                // Navegación local
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
                 if (mainWindow != null)
                 {
@@ -197,8 +240,6 @@ namespace GameClient.Views
                 RollDiceButton.IsEnabled = true;
             }
         }
-
-        // --- Resto de la lógica visual original ---
 
         private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
         {
@@ -299,6 +340,14 @@ namespace GameClient.Views
 
         private void UpdateTurnUI(GameStateDTO state)
         {
+            if (_isGameStarting)
+            {
+                RollDiceButton.IsEnabled = false;
+                RollDiceButton.Content = "Esperando inicio...";
+                RollDiceButton.Opacity = 0.5;
+                return;
+            }
+
             if (state.IsMyTurn)
             {
                 RollDiceButton.IsEnabled = true;

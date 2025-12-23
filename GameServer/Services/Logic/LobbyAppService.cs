@@ -54,6 +54,12 @@ namespace GameServer.Services.Logic
                 }
                 else
                 {
+                    if (hostPlayer.IsGuest)
+                    {
+                        result.ErrorMessage = "Los invitados no pueden crear partidas.";
+                        return result;
+                    }
+
                     await CleanPlayerStateIfNeeded(hostPlayer);
 
                     if (hostPlayer.GameIdGame != null)
