@@ -4,6 +4,7 @@ using GameServer.Helpers;
 using GameServer.Repositories;
 using log4net;
 using System;
+using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -32,14 +33,20 @@ namespace GameServer.Services.Logic
 
                 if (player != null)
                 {
+                    string emailDisplay = "Invitado";
+                    if (!player.IsGuest && player.Account != null)
+                    {
+                        emailDisplay = player.Account.Email;
+                    }
+
                     profile = new UserProfileDto
                     {
                         Username = player.Username,
-                        Email = player.Account.Email,
+                        Email = emailDisplay, 
                         AvatarPath = player.Avatar,
                         Coins = player.Coins,
-                        MatchesPlayed = player.PlayerStat.MatchesPlayed,
-                        MatchesWon = player.PlayerStat.MatchesWon,
+                        MatchesPlayed = player.PlayerStat?.MatchesPlayed ?? 0,
+                        MatchesWon = player.PlayerStat?.MatchesWon ?? 0,
                         UsernameChangeCount = player.UsernameChangeCount
                     };
                 }
@@ -51,6 +58,10 @@ namespace GameServer.Services.Logic
             catch (SqlException ex)
             {
                 Log.Fatal("Error SQL al obtener perfil.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de Entity Framework al obtener perfil.", ex);
             }
             catch (TimeoutException ex)
             {
@@ -106,6 +117,16 @@ namespace GameServer.Services.Logic
                 Log.Fatal("Error SQL crítico al cambiar usuario.", ex);
                 result = UsernameChangeResult.FatalError;
             }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF al cambiar usuario.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al cambiar usuario.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
 
             return result;
         }
@@ -136,6 +157,14 @@ namespace GameServer.Services.Logic
             {
                 Log.Error($"Error DB cambiando avatar para {identifier}.", ex);
             }
+            catch (EntityException ex)
+            {
+                Log.Error($"Error EF cambiando avatar para {identifier}.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error($"Timeout cambiando avatar para {identifier}.", ex);
+            }
 
             return isSuccess;
         }
@@ -146,7 +175,8 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
-                if (player != null)
+
+                if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
                     string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
@@ -161,7 +191,7 @@ namespace GameServer.Services.Logic
                 }
                 else
                 {
-                    Log.WarnFormat("Solicitud de código fallida (Usuario no encontrado): {0}", identifier);
+                    Log.WarnFormat("Solicitud inválida (Usuario no encontrado o es Invitado): {0}", identifier);
                 }
             }
             catch (SqlException ex)
@@ -171,6 +201,14 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB enviando código pass.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF enviando código pass.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando código pass.", ex);
             }
 
             return isSent;
@@ -182,7 +220,8 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(request.Email);
-                if (player != null)
+
+                if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
 
@@ -208,6 +247,10 @@ namespace GameServer.Services.Logic
                         Log.WarnFormat("Código inválido o expirado para cambio de pass: {0}", request.Email);
                     }
                 }
+                else
+                {
+                    Log.WarnFormat("Intento de cambio de pass en cuenta inválida/invitado: {0}", request.Email);
+                }
             }
             catch (SqlException ex)
             {
@@ -216,6 +259,14 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB cambiando password con código.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF cambiando password con código.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout cambiando password con código.", ex);
             }
 
             return isChanged;

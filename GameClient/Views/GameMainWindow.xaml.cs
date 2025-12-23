@@ -1,6 +1,6 @@
 ﻿using GameClient.GameServiceReference;
 using GameClient.Helpers;
-using GameClient.LobbyServiceReference; 
+using GameClient.LobbyServiceReference;
 using GameClient.Views;
 using System;
 using System.IO;
@@ -25,6 +25,54 @@ namespace GameClient
 
             this.Closed += GameMainWindow_Closed;
         }
+
+        private bool IsGuestActionRestricted(string featureName)
+        {
+            if (UserSession.GetInstance().IsGuest)
+            {
+                string message = $"La función '{featureName}' solo está disponible para usuarios registrados.\n\n" +
+                                 "¿Te gustaría crear una cuenta ahora para disfrutar de amigos, estadísticas y más?\n" +
+                                 "(Se cerrará tu sesión actual)";
+
+                var result = MessageBox.Show(message, "Modo Invitado", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    
+                    ReturnToRegister();
+                }
+
+                return true; 
+            }
+            return false;
+        }
+
+        private void ReturnToRegister()
+        {
+            AuthWindow authWindow = new AuthWindow();
+            authWindow.Show();
+
+            authWindow.NavigateToRegister();
+
+            this.Close();
+        }
+
+        private void ProfileButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (IsGuestActionRestricted("Perfil de Usuario")) return;
+
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new UserProfilePage(_username));
+        }
+
+        private void FriendsButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (IsGuestActionRestricted("Lista de Amigos")) return;
+
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new FriendshipPage(_username));
+        }
+
 
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
         {
@@ -51,6 +99,8 @@ namespace GameClient
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {
+            
+
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new CreateOrJoinMatchPage(_username));
         }
@@ -89,26 +139,20 @@ namespace GameClient
                 {
                     await client.LogoutAsync(_username);
                 }
+
+                UserSession.GetInstance().Logout();
             }
             catch (CommunicationException) { }
             catch (TimeoutException) { }
-            catch (Exception) { } 
+            catch (Exception) { }
             finally
             {
-                Application.Current.Shutdown();
+                
+                if (Application.Current.Windows.Count == 0)
+                {
+                    Application.Current.Shutdown();
+                }
             }
-        }
-
-        private void ProfileButtonClick(object sender, RoutedEventArgs e)
-        {
-            MainMenuGrid.Visibility = Visibility.Collapsed;
-            MainFrame.Navigate(new UserProfilePage(_username));
-        }
-
-        private void FriendsButtonClick(object sender, RoutedEventArgs e)
-        {
-            MainMenuGrid.Visibility = Visibility.Collapsed;
-            MainFrame.Navigate(new FriendshipPage(_username));
         }
 
         public void ShowMainMenu()
@@ -119,6 +163,8 @@ namespace GameClient
 
         private async void HandleInvitation(string host, string code)
         {
+            if (UserSession.GetInstance().IsGuest) return;
+
             await this.Dispatcher.Invoke(async () =>
             {
                 var result = MessageBox.Show(

@@ -13,6 +13,8 @@ namespace GameServer.Repositories
         public FriendshipRepository()
         {
             _context = new GameDatabase_Container();
+            _context.Configuration.LazyLoadingEnabled = false;
+            _context.Configuration.ProxyCreationEnabled = false;
         }
 
         public async Task<Player> GetPlayerByUsernameAsync(string username)

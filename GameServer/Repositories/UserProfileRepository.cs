@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Threading.Tasks;
+using System.Data.Entity.Core; 
 
 namespace GameServer.Repositories
 {
@@ -11,6 +12,8 @@ namespace GameServer.Repositories
         public UserProfileRepository()
         {
             _context = new GameDatabase_Container();
+            _context.Configuration.LazyLoadingEnabled = false;
+            _context.Configuration.ProxyCreationEnabled = false;
         }
 
         public async Task<Player> GetPlayerWithDetailsAsync(string identifier)
@@ -18,7 +21,7 @@ namespace GameServer.Repositories
             return await _context.Players
                 .Include(p => p.Account)
                 .Include(p => p.PlayerStat)
-                .FirstOrDefaultAsync(p => p.Account.Email == identifier || p.Username == identifier);
+                .FirstOrDefaultAsync(p => (p.Account != null && p.Account.Email == identifier) || p.Username == identifier);
         }
 
         public async Task<bool> IsUsernameTakenAsync(string username)

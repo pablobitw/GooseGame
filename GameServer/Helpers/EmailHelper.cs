@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Configuration;
+using System.Configuration; 
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 using log4net;
-using System.Net.Http;
 
 namespace GameServer.Helpers
 {
@@ -14,84 +13,77 @@ namespace GameServer.Helpers
 
         public static async Task<bool> SendVerificationEmailAsync(string recipientEmail, string verificationCode)
         {
-            bool isSuccess = false;
+            string subject = "Goose Game - Código de Verificación";
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; text-align: center;'>
+                    <h2>¡Bienvenido a Goose Game!</h2>
+                    <p>Tu código de verificación es:</p>
+                    <h1 style='color: #4CAF50; letter-spacing: 5px;'>{verificationCode}</h1>
+                    <p>Introduce este código en el juego para activar tu cuenta.</p>
+                </div>";
 
-            try
-            {
-                var apiKey = ConfigurationManager.AppSettings["SendGridApiKey"];
-                var client = new SendGridClient(apiKey);
-
-                var from = new EmailAddress("dagoosegame@gmail.com", "Goose Game");
-                var to = new EmailAddress(recipientEmail);
-                var subject = "Goose Game Verification Code";
-                var plainTextContent = $"Your verification code is: {verificationCode}";
-                var htmlContent = $"<strong>Welcome to Goose Game!</strong><p>Your verification code is: <strong>{verificationCode}</strong></p>";
-
-                var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-
-                var response = await client.SendEmailAsync(msg);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Log.Info($"Verification email sent to {recipientEmail}.");
-                    isSuccess = true;
-                }
-                else
-                {
-                    Log.Warn($"Failed to send email: SendGrid returned code {response.StatusCode} for {recipientEmail}.");
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                Log.Error($"Network error sending email (HttpRequestException) to {recipientEmail}: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"General error sending email to {recipientEmail}: {ex.Message}", ex);
-            }
-
-            return isSuccess;
+            return await SendEmailInternalAsync(recipientEmail, subject, body);
         }
 
         public static async Task<bool> SendRecoveryEmailAsync(string recipientEmail, string verificationCode)
         {
-            bool isSuccess = false;
+            string subject = "Goose Game - Recuperación de Contraseña";
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; text-align: center;'>
+                    <h2>Recuperación de Contraseña</h2>
+                    <p>Has solicitado restablecer tu contraseña. Usa este código:</p>
+                    <h1 style='color: #F44336; letter-spacing: 5px;'>{verificationCode}</h1>
+                    <p>Si no fuiste tú, ignora este mensaje.</p>
+                </div>";
 
+            return await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        private static async Task<bool> SendEmailInternalAsync(string toEmail, string subject, string htmlBody)
+        {
             try
             {
-                var apiKey = ConfigurationManager.AppSettings["SendGridApiKey"];
-                var client = new SendGridClient(apiKey);
+                string gmailUser = ConfigurationManager.AppSettings["GmailUser"];
+                string gmailPass = ConfigurationManager.AppSettings["GmailPass"];
 
-                var from = new EmailAddress("dagoosegame@gmail.com", "Goose Game");
-                var to = new EmailAddress(recipientEmail);
-                var subject = "Goose Game Recovery Code";
-                var plainTextContent = $"Your recovery code is: {verificationCode}";
-                var htmlContent = $"<strong>You are about to change your password!</strong><p>Your recovery code is: <strong>{verificationCode}</strong></p>";
-
-                var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-
-                var response = await client.SendEmailAsync(msg);
-
-                if (response.IsSuccessStatusCode)
+                if (string.IsNullOrEmpty(gmailUser) || string.IsNullOrEmpty(gmailPass))
                 {
-                    Log.Info($"Recovery email sent to {recipientEmail}.");
-                    isSuccess = true;
+                    Log.Error("Faltan las credenciales de Gmail en App.config/Web.config");
+                    return false;
                 }
-                else
+
+                var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
-                    Log.Warn($"Failed to send email: SendGrid returned code {response.StatusCode} for {recipientEmail}.");
-                }
+                    Port = 587,
+                    Credentials = new NetworkCredential(gmailUser, gmailPass),
+                    EnableSsl = true, 
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(gmailUser, "Goose Game Support"),
+                    Subject = subject,
+                    Body = htmlBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMessage.To.Add(toEmail);
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+                Log.Info($"Correo enviado exitosamente a {toEmail}");
+                return true;
             }
-            catch (HttpRequestException ex)
+            catch (SmtpException smtpEx)
             {
-                Log.Error($"Network error sending recovery email (HttpRequestException) to {recipientEmail}: {ex.Message}", ex);
+                Log.Error($"Error SMTP al enviar a {toEmail}: {smtpEx.Message}", smtpEx);
+                return false;
             }
             catch (Exception ex)
             {
-                Log.Error($"General error sending recovery email to {recipientEmail}: {ex.Message}", ex);
+                Log.Error($"Error general al enviar correo a {toEmail}: {ex.Message}", ex);
+                return false;
             }
-
-            return isSuccess;
         }
     }
 }

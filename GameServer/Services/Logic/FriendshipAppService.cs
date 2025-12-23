@@ -27,6 +27,7 @@ namespace GameServer.Services.Logic
 
         public void ConnectUser(string username, IFriendshipServiceCallback callback)
         {
+            
             string key = username.ToLower();
             lock (_locker)
             {
@@ -67,25 +68,29 @@ namespace GameServer.Services.Logic
                     var sender = await _repository.GetPlayerByUsernameAsync(senderUsername);
                     var receiver = await _repository.GetPlayerByUsernameAsync(receiverUsername);
 
-                    if (sender != null && receiver != null)
+                    if (sender == null || receiver == null) return false;
+                    if (sender.IsGuest || receiver.IsGuest)
                     {
-                        var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
-                        if (existing == null) 
+                        Log.Warn($"Intento de amistad inválido con invitado: {senderUsername} -> {receiverUsername}");
+                        return false;
+                    }
+
+                    var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
+                    if (existing == null)
+                    {
+                        var newFriendship = new Friendship
                         {
-                            var newFriendship = new Friendship
-                            {
-                                PlayerIdPlayer = sender.IdPlayer,
-                                Player1_IdPlayer = receiver.IdPlayer,
-                                FriendshipStatus = (int)FriendshipStatus.Pending,
-                                RequestDate = DateTime.Now
-                            };
+                            PlayerIdPlayer = sender.IdPlayer,
+                            Player1_IdPlayer = receiver.IdPlayer,
+                            FriendshipStatus = (int)FriendshipStatus.Pending,
+                            RequestDate = DateTime.Now
+                        };
 
-                            _repository.AddFriendship(newFriendship);
-                            await _repository.SaveChangesAsync();
+                        _repository.AddFriendship(newFriendship);
+                        await _repository.SaveChangesAsync();
 
-                            NotifyUserRequestReceived(receiverUsername);
-                            success = true;
-                        }
+                        NotifyUserRequestReceived(receiverUsername);
+                        success = true;
                     }
                 }
             }
@@ -96,6 +101,10 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB enviando solicitud de amistad.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando solicitud de amistad.", ex);
             }
 
             return success;
@@ -109,27 +118,27 @@ namespace GameServer.Services.Logic
                 var responder = await _repository.GetPlayerByUsernameAsync(request.RespondingUsername);
                 var requester = await _repository.GetPlayerByUsernameAsync(request.RequesterUsername);
 
-                if (responder != null && requester != null)
+                if (responder == null || requester == null) return false;
+                if (responder.IsGuest) return false; 
+
+                var friendship = _repository.GetPendingRequest(requester.IdPlayer, responder.IdPlayer);
+
+                if (friendship != null)
                 {
-                    var friendship = _repository.GetPendingRequest(requester.IdPlayer, responder.IdPlayer);
-
-                    if (friendship != null)
+                    if (request.IsAccepted)
                     {
-                        if (request.IsAccepted)
-                        {
-                            friendship.FriendshipStatus = (int)FriendshipStatus.Accepted;
-                        }
-                        else
-                        {
-                            _repository.RemoveFriendship(friendship);
-                        }
-
-                        await _repository.SaveChangesAsync();
-
-                        NotifyUserListUpdated(request.RequesterUsername);
-                        NotifyUserListUpdated(request.RespondingUsername);
-                        success = true;
+                        friendship.FriendshipStatus = (int)FriendshipStatus.Accepted;
                     }
+                    else
+                    {
+                        _repository.RemoveFriendship(friendship);
+                    }
+
+                    await _repository.SaveChangesAsync();
+
+                    NotifyUserListUpdated(request.RequesterUsername);
+                    NotifyUserListUpdated(request.RespondingUsername);
+                    success = true;
                 }
             }
             catch (SqlException ex)
@@ -139,6 +148,10 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB respondiendo solicitud.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout respondiendo solicitud.", ex);
             }
 
             return success;
@@ -152,19 +165,19 @@ namespace GameServer.Services.Logic
                 var user1 = await _repository.GetPlayerByUsernameAsync(username);
                 var user2 = await _repository.GetPlayerByUsernameAsync(friendUsername);
 
-                if (user1 != null && user2 != null)
+                if (user1 == null || user2 == null) return false;
+                if (user1.IsGuest) return false;
+
+                var friendship = _repository.GetFriendship(user1.IdPlayer, user2.IdPlayer);
+
+                if (friendship != null && friendship.FriendshipStatus == (int)FriendshipStatus.Accepted)
                 {
-                    var friendship = _repository.GetFriendship(user1.IdPlayer, user2.IdPlayer);
+                    _repository.RemoveFriendship(friendship);
+                    await _repository.SaveChangesAsync();
 
-                    if (friendship != null && friendship.FriendshipStatus == (int)FriendshipStatus.Accepted)
-                    {
-                        _repository.RemoveFriendship(friendship);
-                        await _repository.SaveChangesAsync();
-
-                        NotifyUserListUpdated(username);
-                        NotifyUserListUpdated(friendUsername);
-                        success = true;
-                    }
+                    NotifyUserListUpdated(username);
+                    NotifyUserListUpdated(friendUsername);
+                    success = true;
                 }
             }
             catch (SqlException ex)
@@ -174,6 +187,10 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB eliminando amigo.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout eliminando amigo.", ex);
             }
 
             return success;
@@ -185,33 +202,37 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-                if (player != null)
+
+                if (player == null || player.IsGuest) return resultList;
+
+                var friendships = _repository.GetAcceptedFriendships(player.IdPlayer);
+
+                foreach (var f in friendships)
                 {
-                    var friendships = _repository.GetAcceptedFriendships(player.IdPlayer);
+                    int friendId = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
+                    var friend = _repository.GetPlayerById(friendId);
 
-                    foreach (var f in friendships)
+                    if (friend != null)
                     {
-                        int friendId = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
-                        var friend = _repository.GetPlayerById(friendId);
+                        bool isOnline;
+                        lock (_locker) { isOnline = _connectedClients.ContainsKey(friend.Username.ToLower()); }
 
-                        if (friend != null)
+                        resultList.Add(new FriendDto
                         {
-                            bool isOnline;
-                            lock (_locker) { isOnline = _connectedClients.ContainsKey(friend.Username.ToLower()); }
-
-                            resultList.Add(new FriendDto
-                            {
-                                Username = friend.Username,
-                                AvatarPath = friend.Avatar,
-                                IsOnline = isOnline
-                            });
-                        }
+                            Username = friend.Username,
+                            AvatarPath = friend.Avatar,
+                            IsOnline = isOnline
+                        });
                     }
                 }
             }
             catch (SqlException ex)
             {
                 Log.Error("Error SQL obteniendo lista de amigos.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo lista de amigos.", ex);
             }
             return resultList;
         }
@@ -222,27 +243,31 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-                if (player != null)
-                {
-                    var requests = _repository.GetIncomingPendingRequests(player.IdPlayer);
 
-                    foreach (var r in requests)
+                if (player == null || player.IsGuest) return resultList;
+
+                var requests = _repository.GetIncomingPendingRequests(player.IdPlayer);
+
+                foreach (var r in requests)
+                {
+                    var sender = _repository.GetPlayerById(r.PlayerIdPlayer);
+                    if (sender != null)
                     {
-                        var sender = _repository.GetPlayerById(r.PlayerIdPlayer);
-                        if (sender != null)
+                        resultList.Add(new FriendDto
                         {
-                            resultList.Add(new FriendDto
-                            {
-                                Username = sender.Username,
-                                AvatarPath = sender.Avatar
-                            });
-                        }
+                            Username = sender.Username,
+                            AvatarPath = sender.Avatar
+                        });
                     }
                 }
             }
             catch (SqlException ex)
             {
                 Log.Error("Error SQL obteniendo solicitudes pendientes.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo solicitudes pendientes.", ex);
             }
             return resultList;
         }
@@ -265,7 +290,6 @@ namespace GameServer.Services.Logic
                 }
             }
         }
-
 
         private void NotifyUserRequestReceived(string username)
         {
@@ -302,7 +326,8 @@ namespace GameServer.Services.Logic
                     using (var repo = new FriendshipRepository())
                     {
                         var player = await repo.GetPlayerByUsernameAsync(username);
-                        if (player != null)
+                        // Invitados no notifican a nadie
+                        if (player != null && !player.IsGuest)
                         {
                             var friendships = repo.GetAcceptedFriendships(player.IdPlayer);
                             foreach (var f in friendships)

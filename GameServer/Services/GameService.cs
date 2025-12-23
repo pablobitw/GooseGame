@@ -2,10 +2,12 @@
 using GameServer.Interfaces;
 using GameServer.Repositories;
 using GameServer.Services.Logic;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class GameService : IGameService
     {
         private readonly AuthAppService _authLogic;
@@ -16,18 +18,20 @@ namespace GameServer.Services
             _authLogic = new AuthAppService(repository);
         }
 
+
         public async Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request)
         {
-            RegistrationResult result;
-            result = await _authLogic.RegisterUserAsync(request);
-            return result;
+            return await _authLogic.RegisterUserAsync(request);
         }
 
         public async Task<bool> LogInAsync(string usernameOrEmail, string password)
         {
-            bool result;
-            result = await _authLogic.LogInAsync(usernameOrEmail, password);
-            return result;
+            return await _authLogic.LogInAsync(usernameOrEmail, password);
+        }
+
+        public async Task<GuestLoginResult> LoginAsGuestAsync()
+        {
+            return await _authLogic.LoginAsGuestAsync();
         }
 
         public void Logout(string username)
@@ -35,39 +39,30 @@ namespace GameServer.Services
             _authLogic.Logout(username);
         }
 
+
         public bool VerifyAccount(string email, string code)
         {
-            bool result;
-            result = _authLogic.VerifyAccount(email, code);
-            return result;
+            return _authLogic.VerifyAccount(email, code);
         }
 
         public async Task<bool> RequestPasswordResetAsync(string email)
         {
-            bool result;
-            result = await _authLogic.RequestPasswordResetAsync(email);
-            return result;
+            return await _authLogic.RequestPasswordResetAsync(email);
         }
 
         public bool VerifyRecoveryCode(string email, string code)
         {
-            bool result;
-            result = _authLogic.VerifyRecoveryCode(email, code);
-            return result;
+            return _authLogic.VerifyRecoveryCode(email, code);
         }
 
         public bool UpdatePassword(string email, string newPassword)
         {
-            bool result;
-            result = _authLogic.UpdatePassword(email, newPassword);
-            return result;
+            return _authLogic.UpdatePassword(email, newPassword);
         }
 
         public async Task<bool> ResendVerificationCodeAsync(string email)
         {
-            bool result;
-            result = await _authLogic.ResendVerificationCodeAsync(email);
-            return result;
+            return await _authLogic.ResendVerificationCodeAsync(email);
         }
     }
 }

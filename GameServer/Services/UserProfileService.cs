@@ -2,10 +2,13 @@
 using GameServer.Interfaces;
 using GameServer.Repositories;
 using GameServer.Services.Logic;
+using System.ServiceModel; 
 using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
+
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class UserProfileService : IUserProfileService
     {
         private readonly UserProfileAppService _logic;

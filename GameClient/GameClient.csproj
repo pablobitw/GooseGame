@@ -105,6 +105,7 @@
     <Compile Include="Helpers\AudioManager.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\FriendshipServiceManager.cs" />
+    <Compile Include="Helpers\UserSession.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\AvatarItem.cs" />
     <Compile Include="Models\FriendDisplayModel.cs" />
@@ -335,6 +336,9 @@
     </None>
     <None Include="Connected Services\GameplayServiceReference\service1.xsd">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.GuestLoginResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.RegistrationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>

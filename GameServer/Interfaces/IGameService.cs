@@ -14,6 +14,9 @@ namespace GameServer.Interfaces
         Task<bool> LogInAsync(string usernameOrEmail, string password);
 
         [OperationContract]
+        Task<GuestLoginResult> LoginAsGuestAsync();
+
+        [OperationContract]
         void Logout(string username);
 
         [OperationContract]

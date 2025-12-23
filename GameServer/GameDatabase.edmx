@@ -178,9 +178,14 @@
     <Property Name="Coins" Type="int" Nullable="false" />
     <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
     <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />
-    <Property Name="Account_IdAccount" Type="int" Nullable="false" />
+    <Property Name="Account_IdAccount" Type="int" Nullable="true" />
     <Property Name="GameIdGame" Type="int" Nullable="true" />
     <Property Name="UsernameChangeCount" Type="int" Nullable="false" DefaultValue="0" />
+    <Property Name="IsGuest" Type="bit" Nullable="false" DefaultValue="false" />
+    <Property Name="TicketCommon" Type="int" Nullable="false" DefaultValue="0" />
+    <Property Name="TicketRare" Type="int" Nullable="false" />
+    <Property Name="TicketEpic" Type="int" Nullable="false" />
+    <Property Name="TicketLegendary" Type="int" Nullable="false" />
     <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PlayerStats">
@@ -227,7 +232,7 @@
     </ReferentialConstraint>
   </Association>
   <Association Name="FK_PlayerAccount">
-    <End Role="Accounts" Type="GameServer.Store.Accounts" Multiplicity="1" />
+    <End Role="Accounts" Type="GameServer.Store.Accounts" Multiplicity="0..1" />
     <End Role="Players" Type="GameServer.Store.Players" Multiplicity="*" />
     <ReferentialConstraint>
       <Principal Role="Accounts">
@@ -514,7 +519,7 @@
           <Property Name="Coins" Type="Int32" Nullable="false" />
           <Property Name="Avatar" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="PlayerInventoryIdPlayerInventory" Type="Int32" Nullable="false" />
-          <Property Name="Account_IdAccount" Type="Int32" Nullable="false" />
+          <Property Name="Account_IdAccount" Type="Int32" Nullable="true" />
           <NavigationProperty Name="Account" Relationship="Self.FK_PlayerAccount" FromRole="Players" ToRole="Accounts" />
           <NavigationProperty Name="ChatMessages" Relationship="Self.FK_ChatMessagePlayer" FromRole="Players" ToRole="ChatMessages" />
           <NavigationProperty Name="Friendships" Relationship="Self.FK_PlayerFriendship" FromRole="Players" ToRole="Friendships" />
@@ -524,6 +529,11 @@
           <NavigationProperty Name="PlayerStat" Relationship="GameServer.PlayerPlayerStat" FromRole="Player" ToRole="PlayerStat" />
           <Property Name="GameIdGame" Type="Int32" Nullable="true" />
           <Property Name="UsernameChangeCount" Type="Int32" Nullable="false" DefaultValue="0" />
+          <Property Name="IsGuest" Type="Boolean" Nullable="false" DefaultValue="false" />
+          <Property Name="TicketCommon" Type="Int32" Nullable="false" DefaultValue="0" />
+          <Property Name="TicketRare" Type="Int32" Nullable="false" />
+          <Property Name="TicketEpic" Type="Int32" Nullable="false" />
+          <Property Name="TicketLegendary" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -573,7 +583,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_PlayerAccount">
-          <End Role="Accounts" Type="Self.Account" Multiplicity="1" />
+          <End Role="Accounts" Type="Self.Account" Multiplicity="0..1" />
           <End Role="Players" Type="Self.Player" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Accounts">
@@ -921,6 +931,11 @@
           <ScalarProperty Name="Account_IdAccount" ColumnName="Account_IdAccount" />
           <ScalarProperty Name="GameIdGame" ColumnName="GameIdGame" />
           <ScalarProperty Name="UsernameChangeCount" ColumnName="UsernameChangeCount" />
+          <ScalarProperty Name="IsGuest" ColumnName="IsGuest" />
+          <ScalarProperty Name="TicketCommon" ColumnName="TicketCommon" />
+          <ScalarProperty Name="TicketRare" ColumnName="TicketRare" />
+          <ScalarProperty Name="TicketEpic" ColumnName="TicketEpic" />
+          <ScalarProperty Name="TicketLegendary" ColumnName="TicketLegendary" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

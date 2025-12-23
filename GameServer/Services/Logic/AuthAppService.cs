@@ -16,13 +16,82 @@ namespace GameServer.Services.Logic
     public class AuthAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AuthAppService));
-        private const string DefaultAvatar = "default_avatar.png";
+
+        private const string DefaultAvatar = "pack://application:,,,/Assets/Avatar/default_avatar.png";
         private const int CodeExpirationMinutes = 15;
         private readonly AuthRepository _repository;
 
         public AuthAppService(AuthRepository repository)
         {
             _repository = repository;
+        }
+
+        public async Task<GuestLoginResult> LoginAsGuestAsync()
+        {
+            try
+            {
+                string guestName;
+                bool isTaken;
+                do
+                {
+                    guestName = "Guest_" + Guid.NewGuid().ToString().Substring(0, 6);
+                    isTaken = _repository.IsUsernameTaken(guestName);
+                } while (isTaken);
+
+                var newGuestPlayer = new Player
+                {
+                    Username = guestName,
+                    Coins = 0,
+                    Avatar = DefaultAvatar,
+                    UsernameChangeCount = 0,
+                    IsGuest = true,
+                    TicketCommon = 0,
+                    TicketRare = 0,
+                    TicketEpic = 0,
+                    TicketLegendary = 0,
+                    PlayerStat = new PlayerStat
+                    {
+                        MatchesPlayed = 0,
+                        MatchesWon = 0,
+                        MatchesLost = 0,
+                        LuckyBoxOpened = 0
+                    }
+                };
+
+
+                _repository.AddPlayer(newGuestPlayer);
+                await _repository.SaveChangesAsync();
+
+                ConnectionManager.AddUser(guestName);
+                Log.Info($"Invitado creado: {guestName}");
+
+                return new GuestLoginResult
+                {
+                    Success = true,
+                    Username = guestName,
+                    Message = "Bienvenido Invitado"
+                };
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error($"Error actualizando BD al crear invitado.", ex);
+                return new GuestLoginResult { Success = false, Message = "Error de base de datos." };
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal($"Error SQL crítico al crear invitado.", ex);
+                return new GuestLoginResult { Success = false, Message = "Error de conexión." };
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de Entity Framework al crear invitado.", ex);
+                return new GuestLoginResult { Success = false, Message = "Error interno." };
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al crear invitado.", ex);
+                return new GuestLoginResult { Success = false, Message = "Tiempo de espera agotado." };
+            }
         }
 
         public async Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request)
@@ -33,64 +102,84 @@ namespace GameServer.Services.Logic
             {
                 if (request != null)
                 {
-                    if (_repository.IsUsernameTaken(request.Username))
+                    var existingPlayer = await _repository.GetPlayerByUsernameAsync(request.Username);
+
+                    if (existingPlayer != null)
                     {
-                        Log.WarnFormat("Registro fallido: Usuario '{0}' ya existe.", request.Username);
-                        result = RegistrationResult.UsernameAlreadyExists;
-                    }
-                    else
-                    {
-                        var existingAccount = await _repository.GetAccountByEmailAsync(request.Email);
-                        if (existingAccount != null)
+                        if (existingPlayer.Account != null && existingPlayer.Account.AccountStatus == (int)AccountStatus.Pending)
                         {
-                            if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
-                            {
-                                string newCode = GenerateSecureCode();
-                                existingAccount.VerificationCode = newCode;
-                                existingAccount.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+                            string newCode = GenerateSecureCode();
+                            existingPlayer.Account.VerificationCode = newCode;
+                            existingPlayer.Account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
-                                await _repository.SaveChangesAsync();
-                                await EmailHelper.SendVerificationEmailAsync(request.Email, newCode).ConfigureAwait(false);
+                            await _repository.SaveChangesAsync();
+                            await EmailHelper.SendVerificationEmailAsync(existingPlayer.Account.Email, newCode).ConfigureAwait(false);
 
-                                result = RegistrationResult.EmailPendingVerification;
-                            }
-                            else
-                            {
-                                Log.WarnFormat("Registro fallido: Email '{0}' en uso.", request.Email);
-                                result = RegistrationResult.EmailAlreadyExists;
-                            }
+                            return RegistrationResult.EmailPendingVerification;
                         }
                         else
                         {
-                            string verifyCode = GenerateSecureCode();
-                            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-                            var newAccount = new Account
-                            {
-                                Email = request.Email,
-                                PasswordHash = hashedPassword,
-                                RegisterDate = DateTime.Now,
-                                AccountStatus = (int)AccountStatus.Pending,
-                                VerificationCode = verifyCode,
-                                CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes)
-                            };
-
-                            var newPlayer = new Player
-                            {
-                                Username = request.Username,
-                                Coins = 0,
-                                Avatar = DefaultAvatar,
-                                Account = newAccount,
-                                PlayerStat = new PlayerStat()
-                            };
-
-                            _repository.AddPlayer(newPlayer);
-                            await _repository.SaveChangesAsync();
-
-                            await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode).ConfigureAwait(false);
-
-                            result = RegistrationResult.Success;
+                            Log.WarnFormat("Registro fallido: Usuario '{0}' ya existe.", request.Username);
+                            return RegistrationResult.UsernameAlreadyExists;
                         }
+                    }
+
+                    var existingAccount = await _repository.GetAccountByEmailAsync(request.Email);
+
+                    if (existingAccount != null)
+                    {
+                        if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
+                        {
+                            string newCode = GenerateSecureCode();
+                            existingAccount.VerificationCode = newCode;
+                            existingAccount.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
+                            await _repository.SaveChangesAsync();
+                            await EmailHelper.SendVerificationEmailAsync(request.Email, newCode).ConfigureAwait(false);
+
+                            result = RegistrationResult.EmailPendingVerification;
+                        }
+                        else
+                        {
+                            Log.WarnFormat("Registro fallido: Email '{0}' en uso.", request.Email);
+                            result = RegistrationResult.EmailAlreadyExists;
+                        }
+                    }
+                    else
+                    {
+                        string verifyCode = GenerateSecureCode();
+                        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+                        var newAccount = new Account
+                        {
+                            Email = request.Email,
+                            PasswordHash = hashedPassword,
+                            RegisterDate = DateTime.Now,
+                            AccountStatus = (int)AccountStatus.Pending,
+                            VerificationCode = verifyCode,
+                            CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes)
+                        };
+
+                        var newPlayer = new Player
+                        {
+                            Username = request.Username,
+                            Coins = 0,
+                            Avatar = DefaultAvatar,
+                            Account = newAccount,
+                            PlayerStat = new PlayerStat(),
+                            IsGuest = false,
+                            TicketCommon = 0,
+                            TicketRare = 0,
+                            TicketEpic = 0,
+                            TicketLegendary = 0
+                        };
+
+                        _repository.AddPlayer(newPlayer);
+                        await _repository.SaveChangesAsync();
+
+                        await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode).ConfigureAwait(false);
+
+                        result = RegistrationResult.Success;
                     }
                 }
             }
@@ -137,17 +226,20 @@ namespace GameServer.Services.Logic
 
                     if (player != null)
                     {
-                        if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
+                        if (player.Account != null && !player.IsGuest)
                         {
-                            if (player.Account.AccountStatus == (int)AccountStatus.Active)
+                            if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
                             {
-                                if (player.GameIdGame != null)
+                                if (player.Account.AccountStatus == (int)AccountStatus.Active)
                                 {
-                                    player.GameIdGame = null;
-                                    await _repository.SaveChangesAsync();
+                                    if (player.GameIdGame != null)
+                                    {
+                                        player.GameIdGame = null;
+                                        await _repository.SaveChangesAsync();
+                                    }
+                                    ConnectionManager.AddUser(player.Username);
+                                    isSuccess = true;
                                 }
-                                ConnectionManager.AddUser(player.Username);
-                                isSuccess = true;
                             }
                         }
                     }

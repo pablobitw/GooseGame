@@ -18,6 +18,8 @@ namespace GameServer
         public Player()
         {
             this.UsernameChangeCount = 0;
+            this.IsGuest = false;
+            this.TicketCommon = 0;
             this.ChatMessages = new HashSet<ChatMessage>();
             this.Friendships = new HashSet<Friendship>();
             this.Friendships1 = new HashSet<Friendship>();
@@ -30,9 +32,14 @@ namespace GameServer
         public int Coins { get; set; }
         public string Avatar { get; set; }
         public int PlayerInventoryIdPlayerInventory { get; set; }
-        public int Account_IdAccount { get; set; }
+        public Nullable<int> Account_IdAccount { get; set; }
         public Nullable<int> GameIdGame { get; set; }
         public int UsernameChangeCount { get; set; }
+        public bool IsGuest { get; set; }
+        public int TicketCommon { get; set; }
+        public int TicketRare { get; set; }
+        public int TicketEpic { get; set; }
+        public int TicketLegendary { get; set; }
     
         public virtual Account Account { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

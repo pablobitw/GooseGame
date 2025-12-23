@@ -12,6 +12,8 @@ namespace GameServer.Repositories
         public AuthRepository()
         {
             _context = new GameDatabase_Container();
+            _context.Configuration.LazyLoadingEnabled = false;
+            _context.Configuration.ProxyCreationEnabled = false;
         }
 
         public bool IsUsernameTaken(string username)
@@ -33,7 +35,14 @@ namespace GameServer.Repositories
         {
             return await _context.Players
                 .Include(p => p.Account)
-                .FirstOrDefaultAsync(p => p.Username == usernameOrEmail || p.Account.Email == usernameOrEmail);
+                .FirstOrDefaultAsync(p => p.Username == usernameOrEmail || (p.Account != null && p.Account.Email == usernameOrEmail));
+        }
+
+        public async Task<Player> GetPlayerByUsernameAsync(string username)
+        {
+            return await _context.Players
+                .Include(p => p.Account)
+                .FirstOrDefaultAsync(p => p.Username == username);
         }
 
         public bool VerifyRecoveryCode(string email, string code)

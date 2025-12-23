@@ -102,6 +102,7 @@
     <Compile Include="Contracts\IGameplayService.cs" />
     <Compile Include="Contracts\ILobbyService.cs" />
     <Compile Include="Contracts\IUserProfileService.cs" />
+    <Compile Include="DTOs\Auth\GuestLoginResult.cs" />
     <Compile Include="DTOs\Auth\RegisterUserRequest.cs" />
     <Compile Include="DTOs\Auth\RegistrationResult.cs" />
     <Compile Include="DTOs\Chat\ChatMessageDto.cs" />
