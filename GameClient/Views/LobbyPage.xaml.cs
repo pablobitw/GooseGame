@@ -52,7 +52,6 @@ namespace GameClient.Views
             playerCount = joinResult.MaxPlayers;
             isHost = false;
 
-            // Inicializar cliente
             lobbyClient = new LobbyServiceClient();
 
             SyncLobbyVisuals(joinResult.MaxPlayers, joinResult.BoardId, joinResult.IsPublic);
@@ -61,7 +60,6 @@ namespace GameClient.Views
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
 
-            // ¡OJO AQUÍ! Iniciamos el timer del invitado
             InitializeTimer();
             ConnectToChatService();
         }
@@ -69,97 +67,68 @@ namespace GameClient.Views
         private void InitializeTimer()
         {
             pollingTimer = new DispatcherTimer();
-            pollingTimer.Interval = TimeSpan.FromSeconds(2);
+            pollingTimer.Interval = TimeSpan.FromSeconds(1);
             pollingTimer.Tick += async (s, e) => await PollLobbyState();
             pollingTimer.Start();
-            Console.WriteLine("[CLIENTE] Timer de Polling INICIADO.");
         }
 
         private async Task PollLobbyState()
         {
-            // Pausar para evitar que se amontonen las llamadas
             pollingTimer.Stop();
 
             try
             {
-                // 1. Verificar estado del cliente antes de llamar
                 if (lobbyClient == null ||
                     lobbyClient.State == CommunicationState.Faulted ||
                     lobbyClient.State == CommunicationState.Closed)
                 {
-                    Console.WriteLine("[CLIENTE] Cliente WCF muerto o nulo. Recreando...");
                     lobbyClient = new LobbyServiceClient();
                 }
 
-                Console.WriteLine($"[CLIENTE] Consultando estado del lobby {lobbyCode}...");
-
-                // 2. Llamada al servidor
                 var state = await lobbyClient.GetLobbyStateAsync(lobbyCode);
 
-                if (state == null)
+                if (state != null)
                 {
-                    Console.WriteLine("[CLIENTE] Estado recibido es NULL.");
-                }
-                else if (state.IsGameStarted)
-                {
-                    // ¡BINGO! El juego inició
-                    Console.WriteLine("[CLIENTE] ¡Juego INICIADO detectado! Navegando...");
-
-                    // 3. Matar timer para siempre
-                    pollingTimer.Stop();
-                    pollingTimer = null;
-
-                    if (isHost)
+                    if (state.IsGameStarted)
                     {
-                        // El host no debería llegar aquí normalmente, pero por si acaso
-                        Console.WriteLine("[CLIENTE] Soy Host, detecté inicio remoto.");
+                        pollingTimer.Stop();
+                        pollingTimer = null;
+
+                        if (!isHost)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                try
+                                {
+                                    NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
+                                }
+                                catch { }
+                            });
+                        }
+                        return;
                     }
                     else
                     {
-                        // 4. NAVEGACIÓN FORZADA EN HILO DE UI
-                        Dispatcher.Invoke(() =>
-                        {
-                            try
-                            {
-                                NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
-                            }
-                            catch (Exception navEx)
-                            {
-                                MessageBox.Show("Error al navegar al tablero: " + navEx.Message);
-                            }
-                        });
-                    }
-                    return; // SALIR PARA SIEMPRE
-                }
-                else
-                {
-                    // Juego no iniciado, actualizamos UI
-                    // Console.WriteLine("[CLIENTE] Juego no iniciado. Actualizando UI.");
-                    UpdatePlayerListUI(state.Players);
+                        UpdatePlayerListUI(state.Players);
 
-                    if (!isHost)
-                    {
-                        SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
+                        if (!isHost)
+                        {
+                            SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
+                        }
                     }
                 }
             }
             catch (TimeoutException)
             {
-                Console.WriteLine("[CLIENTE] Timeout en Polling. Reintentando...");
-                AbortClient(); // Matar cliente para forzar recreación limpia
+                AbortClient();
             }
-            catch (CommunicationException commEx)
+            catch (CommunicationException)
             {
-                Console.WriteLine($"[CLIENTE] Error de comunicación en Polling: {commEx.Message}");
-                AbortClient(); // Matar cliente
+                AbortClient();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[CLIENTE] Error GENERAL en Polling: {ex.Message}");
-            }
+            catch { }
             finally
             {
-                // Reactivar timer SOLO si no lo hemos matado (es decir, seguimos en el lobby)
                 if (pollingTimer != null)
                 {
                     pollingTimer.Start();
@@ -170,10 +139,8 @@ namespace GameClient.Views
         private void AbortClient()
         {
             try { lobbyClient?.Abort(); } catch { }
-            lobbyClient = null; // Forzará recreación en el siguiente tick
+            lobbyClient = null;
         }
-
-        // ... [RESTO DE TU CÓDIGO UI: SyncLobbyVisuals, BackButton_Click, etc. IGUAL QUE ANTES] ...
 
         private void SyncLobbyVisuals(int maxPlayers, int currentBoardId, bool isPublic)
         {
@@ -232,7 +199,6 @@ namespace GameClient.Views
             CloseChatClient();
         }
 
-        // --- Eventos UI ---
         private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
         {
             BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
@@ -283,7 +249,6 @@ namespace GameClient.Views
 
             try
             {
-                // Envolver en Request
                 var request = new CreateLobbyRequest { Settings = settings, HostUsername = username };
                 var result = await lobbyClient.CreateLobbyAsync(request);
 
@@ -311,16 +276,20 @@ namespace GameClient.Views
 
         private async Task HandleStartGameAsync()
         {
-            int currentPlayers = PlayerList.Items.OfType<ListBoxItem>().Count(item => !((TextBlock)((StackPanel)item.Content).Children[1]).Text.Contains("Slot Vacío"));
-
-            if (currentPlayers < 2)
-            {
-                MessageBox.Show("Se necesitan al menos 2 jugadores.");
-                return;
-            }
+            StartMatchButton.IsEnabled = false;
 
             try
             {
+                var serverState = await lobbyClient.GetLobbyStateAsync(lobbyCode);
+
+                if (serverState == null || serverState.Players.Length < 2)
+                {
+                    MessageBox.Show("Error: Se necesitan al menos 2 jugadores (Verificación de Servidor).");
+
+                    if (serverState != null) UpdatePlayerListUI(serverState.Players);
+                    return;
+                }
+
                 bool started = await lobbyClient.StartGameAsync(lobbyCode);
                 if (started)
                 {
@@ -333,7 +302,10 @@ namespace GameClient.Views
                     MessageBox.Show("Error al iniciar.");
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
 
         private void ConnectToChatService()
@@ -385,7 +357,10 @@ namespace GameClient.Views
         {
             LobbySettingsPanel.IsEnabled = false;
             StartMatchButton.Content = GameClient.Resources.Strings.StartGameButton;
-            StartMatchButton.IsEnabled = true;
+
+            StartMatchButton.IsEnabled = false;
+            StartMatchButton.Opacity = 0.5;
+
             if (LobbyTabControl.Items.Count > 1) (LobbyTabControl.Items[1] as TabItem).IsEnabled = true;
             isLobbyCreated = true;
             TitleBlock.Text = $"CÓDIGO: {lobbyCode}";
@@ -415,6 +390,14 @@ namespace GameClient.Views
             int emptySlots = playerCount - slotsFilled;
             for (int i = 0; i < emptySlots; i++) PlayerList.Items.Add(CreateEmptySlotItem());
             PlayersTabHeader.Text = $"JUGADORES ({slotsFilled}/{playerCount})";
+
+            if (isHost && isLobbyCreated)
+            {
+                bool canStart = slotsFilled >= 2;
+                StartMatchButton.IsEnabled = canStart;
+                StartMatchButton.Opacity = canStart ? 1.0 : 0.5;
+                StartMatchButton.Content = canStart ? "INICIAR PARTIDA" : "Esperando jugadores...";
+            }
         }
 
         private ListBoxItem CreatePlayerItem(PlayerLobbyDTO player)

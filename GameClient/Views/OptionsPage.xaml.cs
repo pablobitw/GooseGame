@@ -19,6 +19,11 @@ namespace GameClient.Views
             LoadCurrentSettings();
         }
 
+        private void AboutUsButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new CreditsPage());
+        }
+
         private void LoadCurrentSettings()
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
@@ -43,11 +48,6 @@ namespace GameClient.Views
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             ApplyVideoSettings();
-
-            // Aquí puedes agregar lógica para guardar música/idioma en preferencias de usuario
-            // double musicVol = MusicSlider.Value;
-            // double sfxVol = SfxSlider.Value;
-            // string language = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
             MessageBox.Show(
                 GameClient.Resources.Strings.ConfigSavedMessage,

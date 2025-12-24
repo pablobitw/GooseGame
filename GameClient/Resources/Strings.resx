@@ -352,7 +352,7 @@
     <value>Cargando...</value>
   </data>
   <data name="LobbyPageTitle" xml:space="preserve">
-    <value>Crear Partido</value>
+    <value>Crear Partida</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Iniciar Sesion</value>

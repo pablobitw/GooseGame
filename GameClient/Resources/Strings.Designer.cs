@@ -763,7 +763,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Crear Partido.
+        ///   Busca una cadena traducida similar a Crear Partida.
         /// </summary>
         public static string LobbyPageTitle {
             get {
