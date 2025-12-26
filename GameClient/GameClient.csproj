@@ -496,18 +496,27 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\chivas_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Avatar\frikiboy_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Avatar\profilepic1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Assets\Avatar\chivas_avatar.png" />
+    <Content Include="Assets\Avatar\frikiboy_avatar.png" />
+    <Content Include="Assets\Avatar\profilepic1.png" />
     <Content Include="Assets\BACKGROUND_1.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Assets\images\ticket_common.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images\ticket_epic.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images\ticket_legendary.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images\coin_pile.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images\luckybox_closed.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <None Include="Connected Services\LeaderboardServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -554,9 +563,7 @@
     <None Include="Connected Services\GameServiceReference\item.disco" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Avatar\default_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Assets\Avatar\default_avatar.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />
@@ -565,9 +572,7 @@
     <Resource Include="Assets\fondo3.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\realmadrid_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Assets\Avatar\realmadrid_avatar.png" />
     <Resource Include="Assets\Boards\special_board.png" />
     <Resource Include="Assets\Boards\normal_board.png" />
     <Content Include="Assets\BACKGROUND.mp4">

@@ -186,6 +186,7 @@
     <Property Name="TicketRare" Type="int" Nullable="false" />
     <Property Name="TicketEpic" Type="int" Nullable="false" />
     <Property Name="TicketLegendary" Type="int" Nullable="false" />
+    <Property Name="TurnsSkipped" Type="int" Nullable="false" DefaultValue="0" />
     <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PlayerStats">
@@ -534,6 +535,7 @@
           <Property Name="TicketRare" Type="Int32" Nullable="false" />
           <Property Name="TicketEpic" Type="Int32" Nullable="false" />
           <Property Name="TicketLegendary" Type="Int32" Nullable="false" />
+          <Property Name="TurnsSkipped" Type="Int32" Nullable="false" DefaultValue="0" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -936,6 +938,7 @@
           <ScalarProperty Name="TicketRare" ColumnName="TicketRare" />
           <ScalarProperty Name="TicketEpic" ColumnName="TicketEpic" />
           <ScalarProperty Name="TicketLegendary" ColumnName="TicketLegendary" />
+          <ScalarProperty Name="TurnsSkipped" ColumnName="TurnsSkipped" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

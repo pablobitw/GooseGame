@@ -16,6 +16,7 @@ namespace GameServer.Services.Logic
         private static readonly Random RandomGenerator = new Random();
         private static readonly object _randomLock = new object();
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
+        private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
         private readonly GameplayRepository _repository;
 
         public GameplayAppService(GameplayRepository repository)
@@ -37,6 +38,32 @@ namespace GameServer.Services.Logic
                         var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                         if (player != null)
                         {
+                            if (player.TurnsSkipped > 0)
+                            {
+                                player.TurnsSkipped--;
+
+                                int turnNumSkipped = await _repository.GetMoveCountAsync(game.IdGame) + 1;
+                                var prevMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
+                                int samePos = prevMove?.FinalPosition ?? 0;
+
+                                var skipMove = new MoveRecord
+                                {
+                                    GameIdGame = game.IdGame,
+                                    PlayerIdPlayer = player.IdPlayer,
+                                    DiceOne = 0,
+                                    DiceTwo = 0,
+                                    TurnNumber = turnNumSkipped,
+                                    ActionDescription = $"{request.Username} pierde el turno (Quedan {player.TurnsSkipped}).",
+                                    StartPosition = samePos,
+                                    FinalPosition = samePos
+                                };
+
+                                _repository.AddMove(skipMove);
+                                await _repository.SaveChangesAsync();
+
+                                return new DiceRollDTO { DiceOne = 0, DiceTwo = 0, Total = 0 };
+                            }
+
                             var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
                             int currentPos = lastMove?.FinalPosition ?? 0;
 
@@ -53,6 +80,7 @@ namespace GameServer.Services.Logic
                             int finalPos = currentPos + total;
 
                             string message = "";
+                            string luckyBoxTag = "";
                             bool isExtraTurn = false;
 
                             if (finalPos > 64)
@@ -69,7 +97,12 @@ namespace GameServer.Services.Logic
 
                                 await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
                             }
-
+                            else if (LuckyBoxTiles.Contains(finalPos))
+                            {
+                                var reward = ProcessLuckyBoxReward(player);
+                                luckyBoxTag = $"[LUCKYBOX:{player.Username}:{reward.Type}_{reward.Amount}]";
+                                message = $"¡CAJA DE LA SUERTE! {reward.Description}";
+                            }
                             else if (GooseTiles.Contains(finalPos))
                             {
                                 int nextGoose = GooseTiles.FirstOrDefault(t => t > finalPos);
@@ -84,9 +117,28 @@ namespace GameServer.Services.Logic
                                 }
                                 isExtraTurn = true;
                             }
-                            else if (finalPos == 6 || finalPos == 12) { message = "¡Puente! Saltas a la Posada (19)."; finalPos = 19; }
-                            else if (finalPos == 42) { message = "¡Laberinto! Retrocedes a la 30."; finalPos = 30; }
-                            else if (finalPos == 58) { message = "¡CALAVERA! Regresas al inicio (1)."; finalPos = 1; }
+                            else if (finalPos == 6)
+                            {
+                                message = "¡De Puente a Puente! Saltas al 12 y tiras de nuevo.";
+                                finalPos = 12;
+                                isExtraTurn = true;
+                            }
+                            else if (finalPos == 12)
+                            {
+                                message = "¡De Puente a Puente! Regresas al 6 y tiras de nuevo.";
+                                finalPos = 6;
+                                isExtraTurn = true;
+                            }
+                            else if (finalPos == 42)
+                            {
+                                message = "¡Laberinto! Retrocedes a la 30.";
+                                finalPos = 30;
+                            }
+                            else if (finalPos == 58)
+                            {
+                                message = "¡CALAVERA! Regresas al inicio (1).";
+                                finalPos = 1;
+                            }
                             else if (finalPos == 26 || finalPos == 53)
                             {
                                 int bonus = finalPos;
@@ -94,13 +146,27 @@ namespace GameServer.Services.Logic
                                 finalPos += bonus;
                                 if (finalPos > 64) finalPos = 64 - (finalPos - 64);
                             }
-                            else if (finalPos == 19) message = "¡Posada! Pierdes turno.";
-                            else if (finalPos == 31) message = "¡Pozo! Esperas rescate.";
-                            else if (finalPos == 56) message = "¡Cárcel! Esperas turno.";
+                            else if (finalPos == 19)
+                            {
+                                message = "¡Posada! Pierdes 1 turno.";
+                                player.TurnsSkipped = 1;
+                            }
+                            else if (finalPos == 31)
+                            {
+                                message = "¡Pozo! Esperas rescate (2 turnos).";
+                                player.TurnsSkipped = 2;
+                            }
+                            else if (finalPos == 56)
+                            {
+                                message = "¡Cárcel! Esperas 3 turnos.";
+                                player.TurnsSkipped = 3;
+                            }
 
                             string baseMsg = d2 > 0 ? $"{request.Username} tiró {d1} y {d2}." : $"{request.Username} tiró {d1}.";
                             string fullDescription = string.IsNullOrEmpty(message) ? $"{baseMsg} Avanza a {finalPos}." : $"{baseMsg} {message}";
+
                             if (isExtraTurn) fullDescription = "[EXTRA] " + fullDescription;
+                            if (!string.IsNullOrEmpty(luckyBoxTag)) fullDescription = luckyBoxTag + " " + fullDescription;
 
                             int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
 
@@ -140,6 +206,40 @@ namespace GameServer.Services.Logic
             return result;
         }
 
+        private RewardResult ProcessLuckyBoxReward(Player player)
+        {
+            int roll = RandomGenerator.Next(1, 101);
+
+            if (roll <= 50)
+            {
+                int coins = 50;
+                player.Coins += coins;
+                return new RewardResult { Type = "COINS", Amount = coins, Description = $"¡Has encontrado {coins} Monedas de Oro!" };
+            }
+            else if (roll <= 80)
+            {
+                player.TicketCommon++;
+                return new RewardResult { Type = "COMMON", Amount = 1, Description = "¡Has desbloqueado un Ticket COMÚN!" };
+            }
+            else if (roll <= 95)
+            {
+                player.TicketEpic++;
+                return new RewardResult { Type = "EPIC", Amount = 1, Description = "¡INCREÍBLE! ¡Ticket ÉPICO obtenido!" };
+            }
+            else
+            {
+                player.TicketLegendary++;
+                return new RewardResult { Type = "LEGENDARY", Amount = 1, Description = "¡JACKPOT! ¡Ticket LEGENDARIO!" };
+            }
+        }
+
+        private class RewardResult
+        {
+            public string Type { get; set; }
+            public int Amount { get; set; }
+            public string Description { get; set; }
+        }
+
         public async Task<bool> LeaveGameAsync(GameplayRequest request)
         {
             try
@@ -159,6 +259,7 @@ namespace GameServer.Services.Logic
 
                 var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                 player.GameIdGame = null;
+                player.TurnsSkipped = 0;
 
                 var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
 
@@ -201,11 +302,15 @@ namespace GameServer.Services.Logic
                 Log.Error("Error DB al abandonar juego.", ex);
                 return false;
             }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al abandonar juego.", ex);
+                return false;
+            }
         }
 
         private async Task UpdateStatsEndGame(int gameId, int winnerId)
         {
-           
             var players = await _repository.GetPlayersWithStatsInGameAsync(gameId);
             foreach (var p in players)
             {
@@ -215,15 +320,18 @@ namespace GameServer.Services.Logic
                     if (p.IdPlayer == winnerId)
                     {
                         p.PlayerStat.MatchesWon++;
-                        
                         p.TicketCommon += 1;
+                        p.Coins += 300;
                     }
                     else
                     {
                         p.PlayerStat.MatchesLost++;
                     }
                 }
+                p.GameIdGame = null;
+                p.TurnsSkipped = 0;
             }
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
@@ -290,6 +398,7 @@ namespace GameServer.Services.Logic
 
                             var lastMove = await _repository.GetLastGlobalMoveAsync(game.IdGame);
                             var logs = await _repository.GetGameLogsAsync(game.IdGame, 20);
+
                             var cleanLogs = logs.Select(l => l.Replace("[EXTRA] ", "")).ToList();
 
                             var playerPositions = new List<PlayerPositionDTO>();

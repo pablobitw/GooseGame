@@ -10,6 +10,7 @@
       Title="BoardPage"
       FontFamily="/Assets/Fonts/#Dosis"
       Background="#3E1B3C">
+
     <Grid x:Name="MainGrid">
 
         <Viewbox Stretch="Uniform">
@@ -250,5 +251,78 @@
             </Grid>
 
         </Grid>
+
+        <Grid x:Name="LuckyBoxOverlay" Visibility="Collapsed" Panel.ZIndex="300">
+            <Border Background="#CC000000" MouseDown="LuckyBoxOverlay_MouseDown"/>
+
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                <Image x:Name="LuckyBoxImage" 
+                       Source="/Assets/Images/luckybox_closed.png" 
+                       Width="300" Height="300" 
+                       RenderTransformOrigin="0.5, 0.5">
+                    <Image.RenderTransform>
+                        <RotateTransform x:Name="BoxRotation" Angle="0"/>
+                    </Image.RenderTransform>
+                </Image>
+
+                <StackPanel x:Name="RewardContainer" 
+                            Visibility="Collapsed" 
+                            VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                    <Image x:Name="RewardImage" Width="200" Height="200" Margin="0,0,0,20"/>
+
+                    <TextBlock x:Name="RewardText" 
+                               Text="+1 LEGENDARY" 
+                               FontSize="40" FontWeight="Bold" Foreground="#FFD700" 
+                               HorizontalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="4"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+
+                <Button x:Name="OpenBoxButton" 
+                        Width="320" Height="320"
+                        Cursor="Hand"
+                        Click="OpenBoxButton_Click"
+                        Background="Transparent" 
+                        BorderThickness="0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="Transparent">
+                                            <ContentPresenter/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+            </Grid>
+
+            <Grid.Resources>
+                <Storyboard x:Key="ShakeAnimation">
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BoxRotation" Storyboard.TargetProperty="Angle" Duration="0:0:0.3">
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.05" Value="-10"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.10" Value="10"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="-10"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.20" Value="10"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="-5"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="0"/>
+                    </DoubleAnimationUsingKeyFrames>
+                </Storyboard>
+
+                <Storyboard x:Key="RevealAnimation">
+                    <DoubleAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+                    <ThicknessAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Margin" From="0,50,0,0" To="0,0,0,0" Duration="0:0:0.5"/>
+                </Storyboard>
+            </Grid.Resources>
+        </Grid>
+
     </Grid>
 </Page>

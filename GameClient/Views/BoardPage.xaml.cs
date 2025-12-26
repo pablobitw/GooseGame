@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -27,12 +28,17 @@ namespace GameClient.Views
         private bool _isGameOverHandled = false;
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
 
+        private int _luckyBoxClicks = 0;
+        private string _currentRewardType = "";
+        private int _currentRewardAmount = 0;
+        private string _lastLogProcessed = "";
+
         private readonly string[] _tokenImagePaths =
         {
-            "pack://application:,,,/Assets/Game Pieces/red_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/blue_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/green_piece.png",
-            "pack://application:,,,/Assets/Game Pieces/yellow_piece.png"
+            "pack://application:,,,/GameClient;component/Assets/Game Pieces/red_piece.png",
+            "pack://application:,,,/GameClient;component/Assets/Game Pieces/blue_piece.png",
+            "pack://application:,,,/GameClient;component/Assets/Game Pieces/green_piece.png",
+            "pack://application:,,,/GameClient;component/Assets/Game Pieces/yellow_piece.png"
         };
 
         private readonly List<Point> _tileCoordinates = new List<Point>
@@ -85,7 +91,7 @@ namespace GameClient.Views
             PauseMenuOverlay.Visibility = Visibility.Collapsed;
         }
 
-        private void PauseMenuOverlay_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void PauseMenuOverlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource == sender)
             {
@@ -188,10 +194,10 @@ namespace GameClient.Views
         private void LoadBoardImage()
         {
             string imagePath = (boardId == 1)
-                ? "pack://application:,,,/Assets/Boards/normal_board.png"
-                : "pack://application:,,,/Assets/Boards/special_board.png";
+                ? "pack://application:,,,/GameClient;component/Assets/Boards/normal_board.png"
+                : "pack://application:,,,/GameClient;component/Assets/Boards/special_board.png";
 
-            try { BoardImage.Source = new BitmapImage(new Uri(imagePath)); }
+            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute)); }
             catch { }
         }
 
@@ -239,6 +245,16 @@ namespace GameClient.Views
                     UpdateGameLog(state.GameLog);
                     UpdateBoardVisuals(state.PlayerPositions);
                     UpdatePlayerAvatars(state.PlayerPositions);
+
+                    if (state.GameLog != null && state.GameLog.Any())
+                    {
+                        string latestLog = state.GameLog.First();
+                        if (latestLog != _lastLogProcessed)
+                        {
+                            _lastLogProcessed = latestLog;
+                            CheckForLuckyBox(latestLog);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -268,8 +284,12 @@ namespace GameClient.Views
 
                 var result = await gameplayClient.RollDiceAsync(request);
 
-                DiceOneText.Text = result.DiceOne.ToString();
-                DiceTwoText.Text = result.DiceTwo.ToString();
+                if (result != null)
+                {
+                    DiceOneText.Text = result.DiceOne.ToString();
+                    DiceTwoText.Text = result.DiceTwo.ToString();
+                    await UpdateGameState();
+                }
             }
             catch (Exception ex)
             {
@@ -293,7 +313,7 @@ namespace GameClient.Views
             {
                 var player = sortedPlayers[i];
                 string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
-                    ? "pack://application:,,,/Assets/default_avatar.png"
+                    ? "pack://application:,,,/GameClient;component/Assets/default_avatar.png"
                     : player.AvatarPath;
 
                 ImageBrush targetAvatarBrush = null;
@@ -312,8 +332,20 @@ namespace GameClient.Views
                 {
                     targetPanel.Visibility = Visibility.Visible;
                     targetNameBlock.Text = player.Username;
-                    try { targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute)); }
-                    catch { targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/default_avatar.png")); }
+
+                    try
+                    {
+                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute));
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/GameClient;component/Assets/default_avatar.png", UriKind.Absolute));
+                        }
+                        catch { }
+                    }
+
                     targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
                     targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
                 }
@@ -347,7 +379,7 @@ namespace GameClient.Views
             {
                 Width = 40,
                 Height = 40,
-                Source = new BitmapImage(new Uri(imagePath)),
+                Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute)),
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
@@ -402,11 +434,33 @@ namespace GameClient.Views
         private void UpdateGameLog(string[] logs)
         {
             if (logs == null) return;
+
             if (GameLogListBox.Items.Count != logs.Length)
             {
                 GameLogListBox.Items.Clear();
-                foreach (var log in logs) GameLogListBox.Items.Add(log);
-                if (GameLogListBox.Items.Count > 0) GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
+
+                foreach (var logRaw in logs)
+                {
+                    string textToShow = logRaw;
+
+                    if (textToShow.Contains("[LUCKYBOX:"))
+                    {
+                        int start = textToShow.IndexOf("[LUCKYBOX:");
+                        int end = textToShow.IndexOf("]", start);
+
+                        if (start != -1 && end != -1)
+                        {
+                            string tagToRemove = textToShow.Substring(start, end - start + 1);
+                            textToShow = textToShow.Replace(tagToRemove, "").Trim();
+                        }
+                    }
+
+                    textToShow = textToShow.Replace("[EXTRA]", "").Trim();
+                    GameLogListBox.Items.Add(textToShow);
+                }
+
+                if (GameLogListBox.Items.Count > 0)
+                    GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
             }
         }
 
@@ -416,6 +470,136 @@ namespace GameClient.Views
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
             if (mainWindow != null) mainWindow.ShowMainMenu();
             else if (NavigationService.CanGoBack) NavigationService.GoBack();
+        }
+
+        private void CheckForLuckyBox(string logDescription)
+        {
+            if (string.IsNullOrEmpty(logDescription)) return;
+
+            if (logDescription.Contains("[LUCKYBOX:"))
+            {
+                try
+                {
+                    int startIndex = logDescription.IndexOf("[LUCKYBOX:");
+                    int endIndex = logDescription.IndexOf("]", startIndex);
+
+                    if (startIndex != -1 && endIndex != -1)
+                    {
+                        string tag = logDescription.Substring(startIndex, endIndex - startIndex + 1);
+                        string data = tag.Replace("[LUCKYBOX:", "").Replace("]", "");
+                        string[] mainParts = data.Split(':');
+
+                        if (mainParts.Length == 2)
+                        {
+                            string boxOwner = mainParts[0];
+                            string rewardData = mainParts[1];
+
+                            if (boxOwner != currentUsername)
+                            {
+                                return;
+                            }
+
+                            string[] rewardParts = rewardData.Split('_');
+                            if (rewardParts.Length == 2)
+                            {
+                                _currentRewardType = rewardParts[0];
+                                _currentRewardAmount = int.Parse(rewardParts[1]);
+
+                                _luckyBoxClicks = 0;
+                                try
+                                {
+                                    LuckyBoxImage.Source = new BitmapImage(new Uri("pack://application:,,,/GameClient;component/Assets/Images/luckybox_closed.png", UriKind.Absolute));
+                                }
+                                catch { }
+
+                                LuckyBoxImage.Visibility = Visibility.Visible;
+                                RewardContainer.Visibility = Visibility.Collapsed;
+                                OpenBoxButton.IsEnabled = true;
+                                LuckyBoxOverlay.Visibility = Visibility.Visible;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error LuckyBox: " + ex.Message);
+                }
+            }
+        }
+
+        private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
+        {
+            _luckyBoxClicks++;
+            Storyboard shakeAnim = (Storyboard)LuckyBoxOverlay.Resources["ShakeAnimation"];
+
+            if (_luckyBoxClicks < 3)
+            {
+                shakeAnim.Begin();
+            }
+            else
+            {
+                OpenBoxButton.IsEnabled = false;
+                LuckyBoxImage.Visibility = Visibility.Collapsed;
+
+                SetRewardVisuals();
+
+                RewardContainer.Visibility = Visibility.Visible;
+                Storyboard revealAnim = (Storyboard)LuckyBoxOverlay.Resources["RevealAnimation"];
+                revealAnim.Begin();
+
+                await Task.Delay(3000);
+                LuckyBoxOverlay.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void SetRewardVisuals()
+        {
+            string imagePath = "";
+            string text = "";
+            SolidColorBrush textColor = Brushes.White;
+
+            switch (_currentRewardType)
+            {
+                case "COINS":
+                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/coin_pile.png";
+                    text = $"+{_currentRewardAmount} ORO";
+                    textColor = Brushes.Gold;
+                    break;
+                case "COMMON":
+                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_common.png";
+                    text = "TICKET COMÚN";
+                    textColor = Brushes.White;
+                    break;
+                case "EPIC":
+                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_epic.png";
+                    text = "TICKET ÉPICO";
+                    textColor = Brushes.Purple;
+                    break;
+                case "LEGENDARY":
+                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_legendary.png";
+                    text = "¡LEGENDARIO!";
+                    textColor = Brushes.OrangeRed;
+                    break;
+                default:
+                    text = "PREMIO";
+                    break;
+            }
+
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                try
+                {
+                    RewardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
+                }
+                catch { }
+            }
+            RewardText.Text = text;
+            RewardText.Foreground = textColor;
+        }
+
+        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

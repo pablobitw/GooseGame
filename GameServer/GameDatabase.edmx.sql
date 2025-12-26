@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 12/22/2025 01:47:05
+-- Date Created: 12/26/2025 04:11:11
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -213,6 +213,7 @@ CREATE TABLE [dbo].[Players] (
     [TicketRare] int  NOT NULL,
     [TicketEpic] int  NOT NULL,
     [TicketLegendary] int  NOT NULL,
+    [TurnsSkipped] int  NOT NULL,
     [PlayerStat_IdPlayers] int  NOT NULL
 );
 GO
