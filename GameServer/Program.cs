@@ -26,6 +26,7 @@ namespace GameServer
                 using (ServiceHost gameplayServiceHost = new ServiceHost(typeof(GameplayService)))
                 using (ServiceHost userProfileServiceHost = new ServiceHost(typeof(UserProfileService)))
                 using (ServiceHost friendshipServiceHost = new ServiceHost(typeof(FriendshipService)))
+                using (ServiceHost leaderboardServiceHost = new ServiceHost(typeof(LeaderboardService))) // <--- AGREGADO
                 {
                     gameServiceHost.Open();
                     LogServices(gameServiceHost, "GameService");
@@ -45,8 +46,11 @@ namespace GameServer
                     friendshipServiceHost.Open();
                     LogServices(friendshipServiceHost, "FriendshipService");
 
+                    leaderboardServiceHost.Open();
+                    LogServices(leaderboardServiceHost, "LeaderboardService"); 
+
                     Log.Info(LogSeparator);
-                    Log.Warn("✅ SERVER IS FULLY OPERATIONAL. Press [Enter] to stop.");
+                    Log.Warn(" SERVER IS FULLY OPERATIONAL. Press [Enter] to stop.");
                     Log.Info(LogSeparator);
 
                     Console.ReadLine();

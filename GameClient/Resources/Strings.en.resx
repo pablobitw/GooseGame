@@ -216,6 +216,9 @@
   <data name="CreateAccountButton" xml:space="preserve">
     <value>Create Account</value>
   </data>
+  <data name="CreateLobbyButton" xml:space="preserve">
+    <value>Create Lobby</value>
+  </data>
   <data name="CreateMatchButton" xml:space="preserve">
     <value>Create Match</value>
   </data>

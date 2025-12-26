@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GameClient.GameplayServiceReference;
+using GameClient.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +11,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
-using GameClient.GameplayServiceReference;
 
 namespace GameClient.Views
 {
@@ -19,13 +20,10 @@ namespace GameClient.Views
         private int boardId;
         private string currentUsername;
         private GameplayServiceClient gameplayClient;
-
         private DispatcherTimer gameLoopTimer;
-
         private DispatcherTimer _startCountdownTimer;
         private int _countdownValue = 5;
         private bool _isGameStarting = true;
-
         private bool _isGameOverHandled = false;
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
 
@@ -68,7 +66,6 @@ namespace GameClient.Views
             gameplayClient = new GameplayServiceClient();
 
             LoadBoardImage();
-
             StartCountdown();
 
             this.Unloaded += (s, e) =>
@@ -76,6 +73,83 @@ namespace GameClient.Views
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
             };
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            PauseMenuOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void ResumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            PauseMenuOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void PauseMenuOverlay_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource == sender)
+            {
+                PauseMenuOverlay.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void IngameScreenModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as GameMainWindow;
+            if (mainWindow == null || !IsLoaded) return;
+
+            int index = IngameScreenModeCombo.SelectedIndex;
+            switch (index)
+            {
+                case 0:
+                    mainWindow.WindowStyle = WindowStyle.None;
+                    mainWindow.WindowState = WindowState.Maximized;
+                    mainWindow.ResizeMode = ResizeMode.NoResize;
+                    break;
+                case 1:
+                    mainWindow.WindowStyle = WindowStyle.None;
+                    mainWindow.WindowState = WindowState.Normal;
+                    mainWindow.ResizeMode = ResizeMode.NoResize;
+                    mainWindow.Width = 1280; mainWindow.Height = 720; mainWindow.CenterWindow();
+                    break;
+                case 2:
+                    mainWindow.WindowStyle = WindowStyle.SingleBorderWindow;
+                    mainWindow.WindowState = WindowState.Normal;
+                    mainWindow.ResizeMode = ResizeMode.CanResize;
+                    break;
+            }
+        }
+
+        private async void QuitGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("¿Seguro que quieres abandonar? Perderás la partida.", "Abandonar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            PauseMenuOverlay.Visibility = Visibility.Collapsed;
+
+            gameLoopTimer?.Stop();
+            _startCountdownTimer?.Stop();
+            _isGameOverHandled = true;
+
+            try
+            {
+                var request = new GameplayRequest
+                {
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                };
+                await gameplayClient.LeaveGameAsync(request);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al abandonar: " + ex.Message);
+            }
+            finally
+            {
+                var mainWindow = Window.GetWindow(this) as GameMainWindow;
+                if (mainWindow != null) mainWindow.ShowMainMenu();
+                else if (NavigationService.CanGoBack) NavigationService.GoBack();
+            }
         }
 
         private void StartCountdown()
@@ -176,43 +250,6 @@ namespace GameClient.Views
                 if (!_isGameOverHandled)
                 {
                     gameLoopTimer.Start();
-                }
-            }
-        }
-
-        private async void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            var result = MessageBox.Show("¿Seguro que quieres salir? Perderás la partida.", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
-
-            gameLoopTimer?.Stop();
-            _startCountdownTimer?.Stop();
-            _isGameOverHandled = true;
-
-            try
-            {
-                var request = new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                };
-
-                await gameplayClient.LeaveGameAsync(request);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error al abandonar: " + ex.Message);
-            }
-            finally
-            {
-                var mainWindow = Window.GetWindow(this) as GameMainWindow;
-                if (mainWindow != null)
-                {
-                    mainWindow.ShowMainMenu();
-                }
-                else if (NavigationService.CanGoBack)
-                {
-                    NavigationService.GoBack();
                 }
             }
         }

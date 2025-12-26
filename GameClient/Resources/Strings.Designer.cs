@@ -376,6 +376,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Crear sala.
+        /// </summary>
+        public static string CreateLobbyButton {
+            get {
+                return ResourceManager.GetString("CreateLobbyButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Crear partida.
         /// </summary>
         public static string CreateMatchButton {

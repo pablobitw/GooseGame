@@ -41,6 +41,10 @@ namespace GameClient.Views
             {
                 (LobbyTabControl.Items[1] as TabItem).IsEnabled = false;
             }
+
+            StartMatchButton.IsEnabled = true;
+            StartMatchButton.Opacity = 1.0;
+            StartMatchButton.Content = GameClient.Resources.Strings.CreateLobbyButton ?? "CREAR SALA";
         }
 
         public LobbyPage(string username, string lobbyCode, JoinLobbyResultDTO joinResult)
@@ -255,7 +259,7 @@ namespace GameClient.Views
                 if (result.Success)
                 {
                     lobbyCode = result.LobbyCode;
-                    LockLobbySettings(result.LobbyCode);
+                    LockLobbySettings(result.LobbyCode); // Aquí se bloquea después de crear
                     var initialPlayers = new PlayerLobbyDTO[] { new PlayerLobbyDTO { Username = username, IsHost = true } };
                     UpdatePlayerListUI(initialPlayers);
                     InitializeTimer();
@@ -356,8 +360,11 @@ namespace GameClient.Views
         private void LockLobbySettings(string lobbyCode)
         {
             LobbySettingsPanel.IsEnabled = false;
-            StartMatchButton.Content = GameClient.Resources.Strings.StartGameButton;
 
+            // [CORRECCIÓN CRÍTICA]
+            // Cambiamos el texto a "INICIAR PARTIDA" pero lo DESHABILITAMOS
+            // hasta que entre otro jugador (manejado en UpdatePlayerListUI)
+            StartMatchButton.Content = GameClient.Resources.Strings.StartGameButton;
             StartMatchButton.IsEnabled = false;
             StartMatchButton.Opacity = 0.5;
 
@@ -391,12 +398,15 @@ namespace GameClient.Views
             for (int i = 0; i < emptySlots; i++) PlayerList.Items.Add(CreateEmptySlotItem());
             PlayersTabHeader.Text = $"JUGADORES ({slotsFilled}/{playerCount})";
 
+            // [LÓGICA DINÁMICA]
             if (isHost && isLobbyCreated)
             {
                 bool canStart = slotsFilled >= 2;
                 StartMatchButton.IsEnabled = canStart;
                 StartMatchButton.Opacity = canStart ? 1.0 : 0.5;
-                StartMatchButton.Content = canStart ? "INICIAR PARTIDA" : "Esperando jugadores...";
+                StartMatchButton.Content = canStart
+                    ? GameClient.Resources.Strings.StartGameButton // "INICIAR PARTIDA"
+                    : "Esperando jugadores...";
             }
         }
 

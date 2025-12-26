@@ -92,6 +92,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Connected Services\LeaderboardServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Connected Services\LobbyServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -146,6 +151,9 @@
     </Compile>
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ScoreboardPage.xaml.cs">
+      <DependentUpon>ScoreboardPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ShopPage.xaml.cs">
       <DependentUpon>ShopPage.xaml</DependentUpon>
@@ -249,6 +257,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ScoreboardPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ShopPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -309,6 +321,7 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Assets\Fonts\Dosis.ttf" />
+    <Resource Include="Assets\Fonts\Fredoka-Medium.ttf" />
     <None Include="Connected Services\ChatServiceReference\GameServer.DTOs.Chat.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -365,6 +378,19 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\GameServiceReference\item2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LeaderboardServiceReference\GameClient.LeaderboardServiceReference.LeaderboardDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\LeaderboardServiceReference\GameServer.DTOs.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LeaderboardServiceReference\service.wsdl" />
+    <None Include="Connected Services\LeaderboardServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\LeaderboardServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\LobbyServiceReference\GameClient.LobbyServiceReference.ActiveMatchDTO.datasource">
@@ -450,6 +476,7 @@
     <WCFMetadataStorage Include="Connected Services\FriendshipServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameplayServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
+    <WCFMetadataStorage Include="Connected Services\LeaderboardServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
   </ItemGroup>
@@ -478,6 +505,16 @@
     <Content Include="Assets\Avatar\profilepic1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\BACKGROUND_1.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Connected Services\LeaderboardServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Connected Services\LeaderboardServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\LeaderboardServiceReference\configuration91.svcinfo" />
+    <Resource Include="Assets\Icons\coins_banner.png" />
     <None Include="Connected Services\LobbyServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -533,7 +570,10 @@
     </Content>
     <Resource Include="Assets\Boards\special_board.png" />
     <Resource Include="Assets\Boards\normal_board.png" />
-    <Content Include="Assets\fondoloop.mp4">
+    <Content Include="Assets\BACKGROUND.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\backgroundloop.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\Icons\configuration_icon.png" />
@@ -556,9 +596,8 @@
     <Resource Include="Assets\Game Pieces\yellow_piece.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Content Include="Assets\logoloop.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Assets\Icons\aboutus.png" />
+    <Resource Include="Assets\Icons\coins.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

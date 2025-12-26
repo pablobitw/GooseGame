@@ -1,6 +1,7 @@
 ﻿using GameClient.GameServiceReference;
 using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
+using GameClient.UserProfileServiceReference;
 using GameClient.Views;
 using System;
 using System.IO;
@@ -24,6 +25,42 @@ namespace GameClient
             FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
 
             this.Closed += GameMainWindow_Closed;
+
+            LoadUserCurrency();
+        }
+
+        private async void LoadUserCurrency()
+        {
+            try
+            {
+                CoinCountText.Text = "...";
+
+                using (var client = new UserProfileServiceClient())
+                {
+                    var userProfile = await client.GetUserProfileAsync(_username);
+
+                    if (userProfile != null)
+                    {
+                        CoinCountText.Text = userProfile.Coins.ToString();
+                    }
+                }
+            }
+            catch (TimeoutException)
+            {
+                CoinCountText.Text = "---";
+            }
+            catch (EndpointNotFoundException)
+            {
+                CoinCountText.Text = "---";
+            }
+            catch (CommunicationException)
+            {
+                CoinCountText.Text = "---";
+            }
+            catch (Exception)
+            {
+                CoinCountText.Text = "Err";
+            }
         }
 
         private bool IsGuestActionRestricted(string featureName)
@@ -38,11 +75,10 @@ namespace GameClient
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    
                     ReturnToRegister();
                 }
 
-                return true; 
+                return true;
             }
             return false;
         }
@@ -73,17 +109,25 @@ namespace GameClient
             MainFrame.Navigate(new FriendshipPage(_username));
         }
 
-
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string videoPath = Path.Combine(baseDir, "Assets", "fondoloop.mp4");
 
-                var media = (MediaElement)sender;
-                media.Source = new Uri(videoPath, UriKind.Absolute);
-                media.Play();
+                string videoPath = Path.Combine(baseDir, "Assets", "BACKGROUND_1.mp4");
+
+                if (File.Exists(videoPath))
+                {
+                    var media = (MediaElement)sender;
+                    media.Source = new Uri(videoPath, UriKind.Absolute);
+                    media.LoadedBehavior = MediaState.Manual;
+                    media.Play();
+                }
+                else
+                {
+                    MessageBox.Show($"No se encuentra el video en: {videoPath}\n\nRevisa las propiedades del archivo en Visual Studio.", "Error de Archivo");
+                }
             }
             catch (Exception ex)
             {
@@ -93,14 +137,15 @@ namespace GameClient
 
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
-            ((MediaElement)sender).Position = TimeSpan.FromSeconds(0);
-            ((MediaElement)sender).Play();
+            var media = (MediaElement)sender;
+
+            media.Position = TimeSpan.Zero;
+
+            media.Play();
         }
 
         private void PlayButtonClick(object sender, RoutedEventArgs e)
         {
-            
-
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new CreateOrJoinMatchPage(_username));
         }
@@ -126,6 +171,16 @@ namespace GameClient
             }
         }
 
+        private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
+        {
+            
+             if (IsGuestActionRestricted("Tabla de Clasificación")) return;
+
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+
+            MainFrame.Navigate(new ScoreboardPage(_username));
+        }
+
         private async void GameMainWindow_Closed(object sender, EventArgs e)
         {
             try
@@ -147,7 +202,6 @@ namespace GameClient
             catch (Exception) { }
             finally
             {
-                
                 if (Application.Current.Windows.Count == 0)
                 {
                     Application.Current.Shutdown();
@@ -159,6 +213,7 @@ namespace GameClient
         {
             MainFrame.Content = null;
             MainMenuGrid.Visibility = Visibility.Visible;
+            LoadUserCurrency();
         }
 
         private async void HandleInvitation(string host, string code)

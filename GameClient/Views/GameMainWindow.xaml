@@ -7,7 +7,6 @@
         xmlns:props="clr-namespace:GameClient.Resources"
         mc:Ignorable="d"
         Title="GameMainWindow"
-        
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
@@ -17,170 +16,223 @@
         <Grid Width="1920" Height="1080">
 
             <Grid x:Name="MainMenuGrid">
-                <Grid.Background>
-                    <ImageBrush ImageSource="/Assets/fondo3.png" 
-                                Stretch="UniformToFill" 
-                                Opacity="1"/>
-                </Grid.Background>
 
                 <MediaElement x:Name="BackgroundVideo"
-                              LoadedBehavior="Manual"
+                              LoadedBehavior="Manual" 
                               UnloadedBehavior="Manual"
-                              Stretch="UniformToFill"
-                              IsMuted="True"
+                              Stretch="UniformToFill" 
+                              IsMuted="True" 
                               IsHitTestVisible="False"
-                              Loaded="MediaElement_Loaded"
+                              Loaded="MediaElement_Loaded" 
                               MediaEnded="MediaElement_MediaEnded" 
-                              HorizontalAlignment="Stretch"
+                              HorizontalAlignment="Stretch" 
                               VerticalAlignment="Stretch"/>
 
-                <StackPanel HorizontalAlignment="Center" Margin="0,518,0,0">
-                    <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" 
-                            Style="{StaticResource PrimaryButtonStyle}" 
-                            Margin="0,10" Width="514" Height="135"
-                            FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" 
-                            Click="PlayButtonClick"/>
-                </StackPanel>
+                <Border>
+                    <Border.Background>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#00000000" Offset="0.7"/>
+                            <GradientStop Color="#44000000" Offset="1.2"/>
+                        </RadialGradientBrush>
+                    </Border.Background>
+                </Border>
 
-                <Button x:Name="QuitButton" 
-                        Height="150" Width="150" 
-                        HorizontalAlignment="Left" VerticalAlignment="Top" 
-                        Margin="40" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Click="QuitButtonClick">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Grid>
-                                <Image Source="/Assets/Icons/exit_icon.png" Stretch="Uniform"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Opacity" Value="1"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="0.8"/>
-                                    <Setter Property="RenderTransform">
-                                        <Setter.Value>
-                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1" CenterX="50" CenterY="50"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Opacity" Value="0.6"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <Image Source="/Assets/Icons/coins_banner.png" 
+                       Stretch="Uniform"
+                       HorizontalAlignment="Right" VerticalAlignment="Top"
+                       Width="325"
+                       Margin="0,0,127,0" Height="274"/>
+
+                <TextBlock x:Name="CoinCountText" 
+                           Text="1500" 
+                           FontFamily="Fredoka Medium" 
+                           FontSize="42" FontWeight="Bold" Foreground="White"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,75,170,0" Width="177" Height="56">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="3" Opacity="1"/>
+                    </TextBlock.Effect>
+                </TextBlock>
 
                 <Button x:Name="ProfileButton" 
-                        Height="150" Width="150" 
-                        HorizontalAlignment="Right" VerticalAlignment="Top" 
-                        Margin="40" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Click="ProfileButtonClick">
+                        Width="130" Height="130" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,40,40,0"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                        Click="ProfileButtonClick" 
+                        ToolTip="Mi Perfil"
+                        Panel.ZIndex="5">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Grid>
+                                <Ellipse Fill="Black" Opacity="0.3" Margin="5"/>
                                 <Image Source="/Assets/Icons/profile_icon.png" Stretch="Uniform"/>
                             </Grid>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Setter.Value>
+                            </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="0.8"/>
                                     <Setter Property="RenderTransform">
                                         <Setter.Value>
-                                            <ScaleTransform ScaleX="1.05" ScaleY="1.05" CenterX="50" CenterY="50"/>
+                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
                                         </Setter.Value>
                                     </Setter>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Opacity" Value="0.6"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
                 </Button>
 
-                <Button x:Name="OptionsButton" 
-                        Height="150" Width="150"
-                        HorizontalAlignment="Right" VerticalAlignment="Bottom" 
-                        Margin="40" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Click="OptionsButtonClick">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Grid>
-                                <Image Source="/Assets/Icons/configuration_icon.png" Stretch="Uniform"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Opacity" Value="1"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="0.8"/>
-                                    <Setter Property="RenderTransform">
-                                        <Setter.Value>
-                                            <ScaleTransform ScaleX="1.05" ScaleY="1.05" CenterX="50" CenterY="50"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Opacity" Value="0.6"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
+                <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" 
+                        Style="{StaticResource PrimaryButtonStyle}" 
+                        Width="500" Height="140"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                        Margin="0,0,0,250"
+                        FontFamily="/Assets/Fonts/#Dosis" FontSize="70" FontWeight="Bold" 
+                        Cursor="Hand"
+                        Click="PlayButtonClick">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" Opacity="0.4" ShadowDepth="10" BlurRadius="20"/>
+                    </Button.Effect>
                 </Button>
 
-                <Button x:Name="FriendsButton" 
-                        Height="150" Width="150"
-                        HorizontalAlignment="Left" VerticalAlignment="Bottom" 
-                        Margin="40" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Click="FriendsButtonClick">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Grid>
-                                <Image Source="/Assets/Icons/friendship_icon.png" Stretch="Uniform"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Opacity" Value="1"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="0.8"/>
+                <Grid VerticalAlignment="Bottom" Margin="60,0,60,50">
+
+                    <Button x:Name="FriendsButton" 
+                            HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                            Height="110" Width="110"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                            Click="FriendsButtonClick">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Image Source="/Assets/Icons/friendship_icon.png" Stretch="Uniform"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                        <Button x:Name="OptionsButton" 
+                                Height="110" Width="110" Margin="0,0,30,0"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                                Click="OptionsButtonClick">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Image Source="/Assets/Icons/configuration_icon.png" Stretch="Uniform"/>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                                     <Setter Property="RenderTransform">
                                         <Setter.Value>
-                                            <ScaleTransform ScaleX="1.05" ScaleY="1.05" CenterX="50" CenterY="50"/>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
                                         </Setter.Value>
                                     </Setter>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Opacity" Value="0.6"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="LeaderboardButton" 
+                                Height="110" Width="110"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                                Click="LeaderboardButtonClick"
+                                ToolTip="Tabla de Clasificación">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid>
+                                        <Image Source="/Assets/Icons/leaderboards_icon.png" Stretch="Uniform"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button x:Name="QuitButton" 
+                                Height="110" Width="110"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                                Click="QuitButtonClick">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Image Source="/Assets/Icons/exit_icon.png" Stretch="Uniform"/>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
 
             </Grid>
 

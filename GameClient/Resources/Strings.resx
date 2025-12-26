@@ -222,6 +222,9 @@
   <data name="CreateAccountButton" xml:space="preserve">
     <value>Crear cuenta</value>
   </data>
+  <data name="CreateLobbyButton" xml:space="preserve">
+    <value>Crear sala</value>
+  </data>
   <data name="CreateMatchButton" xml:space="preserve">
     <value>Crear partida</value>
   </data>
