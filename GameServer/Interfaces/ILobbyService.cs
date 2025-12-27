@@ -1,10 +1,10 @@
-﻿using GameServer.DTOs.Lobby;
+﻿using GameServer.DTOs.Lobby; 
 using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Interfaces
 {
-    [ServiceContract]
+    [ServiceContract(CallbackContract = typeof(ILobbyServiceCallback))]
     public interface ILobbyService
     {
         [OperationContract]
@@ -24,8 +24,11 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
-       
+
         [OperationContract]
         Task<ActiveMatchDTO[]> GetPublicMatchesAsync();
+
+        [OperationContract]
+        Task KickPlayerAsync(KickPlayerRequest request);
     }
 }

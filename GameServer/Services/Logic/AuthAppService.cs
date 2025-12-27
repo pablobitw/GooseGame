@@ -1,6 +1,5 @@
 ﻿using GameServer.DTOs.Auth;
 using GameServer.Helpers;
-using GameServer.Managers;
 using GameServer.Repositories;
 using log4net;
 using System;
@@ -57,7 +56,6 @@ namespace GameServer.Services.Logic
                         LuckyBoxOpened = 0
                     }
                 };
-
 
                 _repository.AddPlayer(newGuestPlayer);
                 await _repository.SaveChangesAsync();
@@ -220,26 +218,29 @@ namespace GameServer.Services.Logic
             bool isSuccess = false;
             try
             {
-                if (!ConnectionManager.IsUserOnline(usernameOrEmail))
-                {
-                    var player = await _repository.GetPlayerForLoginAsync(usernameOrEmail);
+                var player = await _repository.GetPlayerForLoginAsync(usernameOrEmail);
 
-                    if (player != null)
+                if (player != null)
+                {
+                    if (ConnectionManager.IsUserOnline(player.Username))
                     {
-                        if (player.Account != null && !player.IsGuest)
+                        Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
+                        return false;
+                    }
+
+                    if (player.Account != null && !player.IsGuest)
+                    {
+                        if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
                         {
-                            if (BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash))
+                            if (player.Account.AccountStatus == (int)AccountStatus.Active)
                             {
-                                if (player.Account.AccountStatus == (int)AccountStatus.Active)
+                                if (player.GameIdGame != null)
                                 {
-                                    if (player.GameIdGame != null)
-                                    {
-                                        player.GameIdGame = null;
-                                        await _repository.SaveChangesAsync();
-                                    }
-                                    ConnectionManager.AddUser(player.Username);
-                                    isSuccess = true;
+                                    player.GameIdGame = null;
+                                    await _repository.SaveChangesAsync();
                                 }
+                                ConnectionManager.AddUser(player.Username);
+                                isSuccess = true;
                             }
                         }
                     }

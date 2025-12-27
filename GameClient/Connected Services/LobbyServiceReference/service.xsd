@@ -95,4 +95,23 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="KickPlayer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="request" nillable="true" type="q7:KickPlayerRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="KickPlayerResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnPlayerKicked">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="reason" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

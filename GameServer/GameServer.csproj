@@ -95,13 +95,6 @@
     <Compile Include="ChatMessage.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
-    <Compile Include="Contracts\IChatCallback.cs" />
-    <Compile Include="Contracts\IChatService.cs" />
-    <Compile Include="Contracts\IFriendshipService.cs" />
-    <Compile Include="Contracts\IFriendshipServiceCallback.cs" />
-    <Compile Include="Contracts\IGameplayService.cs" />
-    <Compile Include="Contracts\ILobbyService.cs" />
-    <Compile Include="Contracts\IUserProfileService.cs" />
     <Compile Include="DTOs\Auth\GuestLoginResult.cs" />
     <Compile Include="DTOs\Auth\RegisterUserRequest.cs" />
     <Compile Include="DTOs\Auth\RegistrationResult.cs" />
@@ -119,6 +112,7 @@
     <Compile Include="DTOs\Lobby\CreateLobbyRequest.cs" />
     <Compile Include="DTOs\Lobby\JoinLobbyRequest.cs" />
     <Compile Include="DTOs\Lobby\JoinLobbyResultDTO.cs" />
+    <Compile Include="DTOs\Lobby\KickPlayerRequest.cs" />
     <Compile Include="DTOs\Lobby\LobbyCreationResultDTO.cs" />
     <Compile Include="DTOs\Lobby\LobbySettingsDTO.cs" />
     <Compile Include="DTOs\Lobby\LobbyStateDTO.cs" />
@@ -159,6 +153,7 @@
     <Compile Include="Interfaces\IGameService.cs" />
     <Compile Include="Interfaces\ILeaderboardService.cs" />
     <Compile Include="Interfaces\ILobbyService.cs" />
+    <Compile Include="Interfaces\ILobbyServiceCallback.cs" />
     <Compile Include="Interfaces\IUserProfileService.cs" />
     <Compile Include="Item.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>

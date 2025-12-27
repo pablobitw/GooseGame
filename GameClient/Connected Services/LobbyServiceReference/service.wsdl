@@ -59,6 +59,15 @@
   <wsdl:message name="ILobbyService_GetPublicMatches_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetPublicMatchesResponse" />
   </wsdl:message>
+  <wsdl:message name="ILobbyService_KickPlayer_InputMessage">
+    <wsdl:part name="parameters" element="tns:KickPlayer" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_KickPlayer_OutputMessage">
+    <wsdl:part name="parameters" element="tns:KickPlayerResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILobbyService_OnPlayerKicked_OutputCallbackMessage">
+    <wsdl:part name="parameters" element="tns:OnPlayerKicked" />
+  </wsdl:message>
   <wsdl:portType name="ILobbyService">
     <wsdl:operation name="CreateLobby">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/CreateLobby" message="tns:ILobbyService_CreateLobby_InputMessage" />
@@ -87,6 +96,13 @@
     <wsdl:operation name="GetPublicMatches">
       <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/GetPublicMatches" message="tns:ILobbyService_GetPublicMatches_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/GetPublicMatchesResponse" message="tns:ILobbyService_GetPublicMatches_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="KickPlayer">
+      <wsdl:input wsaw:Action="http://tempuri.org/ILobbyService/KickPlayer" message="tns:ILobbyService_KickPlayer_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/KickPlayerResponse" message="tns:ILobbyService_KickPlayer_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="OnPlayerKicked">
+      <wsdl:output wsaw:Action="http://tempuri.org/ILobbyService/OnPlayerKicked" message="tns:ILobbyService_OnPlayerKicked_OutputCallbackMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_ILobbyService" type="tns:ILobbyService">
@@ -152,6 +168,21 @@
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KickPlayer">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/KickPlayer" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnPlayerKicked">
+      <soap12:operation soapAction="http://tempuri.org/ILobbyService/OnPlayerKicked" style="document" />
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>

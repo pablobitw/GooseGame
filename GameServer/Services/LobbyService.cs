@@ -2,12 +2,12 @@
 using GameServer.Interfaces;
 using GameServer.Repositories;
 using GameServer.Services.Logic;
-using System.ServiceModel; 
+using GameServer.Helpers;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
-
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class LobbyService : ILobbyService
     {
@@ -15,14 +15,13 @@ namespace GameServer.Services
 
         public LobbyService()
         {
-            
             var repository = new LobbyRepository();
             _logic = new LobbyAppService(repository);
         }
 
         public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            using (var repo = new LobbyRepository()) 
+            using (var repo = new LobbyRepository())
             {
                 var logic = new LobbyAppService(repo);
                 return await logic.CreateLobbyAsync(request);
@@ -61,7 +60,16 @@ namespace GameServer.Services
             using (var repo = new LobbyRepository())
             {
                 var logic = new LobbyAppService(repo);
-                return await logic.JoinLobbyAsync(request);
+
+                var result = await logic.JoinLobbyAsync(request);
+
+                if (result.Success)
+                {
+                    var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
+                    ConnectionManager.RegisterLobbyClient(request.Username, callback);
+                }
+
+                return result;
             }
         }
 
@@ -80,6 +88,15 @@ namespace GameServer.Services
             {
                 var logic = new LobbyAppService(repo);
                 return await logic.GetPublicMatchesAsync();
+            }
+        }
+
+        public async Task KickPlayerAsync(KickPlayerRequest request)
+        {
+            using (var repo = new LobbyRepository())
+            {
+                var logic = new LobbyAppService(repo);
+                await logic.KickPlayerAsync(request);
             }
         }
     }

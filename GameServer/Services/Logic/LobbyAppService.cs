@@ -1,5 +1,7 @@
 ﻿using GameServer.DTOs.Lobby;
+using GameServer.Helpers;
 using GameServer.Repositories;
+using GameServer.Interfaces;  
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -143,6 +145,8 @@ namespace GameServer.Services.Logic
 
                 player.GameIdGame = game.IdGame;
                 await _repository.SaveChangesAsync();
+
+              
 
                 Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
 
@@ -294,6 +298,8 @@ namespace GameServer.Services.Logic
                     Log.InfoFormat("Jugador {0} abandonó el lobby.", username);
                     success = true;
 
+                    ConnectionManager.UnregisterLobbyClient(username);
+
                     var game = await _repository.GetGameByIdAsync(gameId);
                     if (game != null)
                     {
@@ -368,6 +374,66 @@ namespace GameServer.Services.Logic
                 Log.Error("Error obteniendo partidas públicas.", ex);
             }
             return matchesList.ToArray();
+        }
+
+
+        public async Task KickPlayerAsync(KickPlayerRequest request)
+        {
+            if (request == null) return;
+
+            try
+            {
+                var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
+                if (game == null)
+                {
+                    Log.Warn("KickPlayer: Lobby no encontrado.");
+                    return;
+                }
+
+                var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
+                if (host == null || game.HostPlayerID != host.IdPlayer)
+                {
+                    Log.Warn($"KickPlayer: {request.RequestorUsername} intentó expulsar sin ser host.");
+                    return;
+                }
+
+                var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
+                if (target == null || target.GameIdGame != game.IdGame)
+                {
+                    Log.Warn($"KickPlayer: Jugador objetivo {request.TargetUsername} no está en el lobby.");
+                    return;
+                }
+
+                target.GameIdGame = null;
+                await _repository.SaveChangesAsync();
+
+                NotifyKickedPlayer(request.TargetUsername);
+
+                Log.Info($"Jugador {request.TargetUsername} expulsado del lobby {request.LobbyCode} por {request.RequestorUsername}.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error crítico al expulsar jugador {request.TargetUsername}", ex);
+            }
+        }
+
+        private void NotifyKickedPlayer(string username)
+        {
+            var callback = ConnectionManager.GetLobbyClient(username);
+            if (callback != null)
+            {
+                try
+                {
+                    callback.OnPlayerKicked("Has sido expulsado por el anfitrión.");
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                }
+                finally
+                {
+                    ConnectionManager.UnregisterLobbyClient(username);
+                }
+            }
         }
     }
 }

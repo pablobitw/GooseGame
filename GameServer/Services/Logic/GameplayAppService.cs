@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs.Gameplay;
+using GameServer.DTOs.Lobby;
 using GameServer.Repositories;
 using log4net;
 using System;
@@ -17,8 +18,11 @@ namespace GameServer.Services.Logic
         private static readonly Random RandomGenerator = new Random();
         private static readonly object _randomLock = new object();
         private static readonly ConcurrentDictionary<int, bool> _processingGames = new ConcurrentDictionary<int, bool>();
+        private static readonly ConcurrentDictionary<int, DateTime> _lastGameActivity = new ConcurrentDictionary<int, DateTime>();
+        private static readonly ConcurrentDictionary<string, int> _afkStrikes = new ConcurrentDictionary<string, int>();
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
+        private const int TurnTimeLimitSeconds = 60;
         private readonly GameplayRepository _repository;
 
         public GameplayAppService(GameplayRepository repository)
@@ -29,12 +33,14 @@ namespace GameServer.Services.Logic
         public async Task<DiceRollDTO> RollDiceAsync(GameplayRequest request)
         {
             DiceRollDTO result = null;
+            int gameIdForLock = 0;
 
             if (request == null) return null;
 
             var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
             if (game == null || game.GameStatus != (int)GameStatus.InProgress) return null;
 
+            gameIdForLock = game.IdGame;
             if (!_processingGames.TryAdd(game.IdGame, true))
             {
                 return null;
@@ -56,6 +62,9 @@ namespace GameServer.Services.Logic
                 {
                     return null;
                 }
+
+                _afkStrikes.TryRemove(request.Username, out _);
+                _lastGameActivity[game.IdGame] = DateTime.Now;
 
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                 if (player != null)
@@ -88,7 +97,9 @@ namespace GameServer.Services.Logic
                     var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
                     int currentPos = lastMove?.FinalPosition ?? 0;
 
-                    int d1, d2;
+                    int d1;
+                    int d2;
+
                     lock (_randomLock)
                     {
                         d1 = RandomGenerator.Next(1, 7);
@@ -114,6 +125,7 @@ namespace GameServer.Services.Logic
                         game.GameStatus = (int)GameStatus.Finished;
                         game.WinnerIdPlayer = player.IdPlayer;
                         await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
+                        _lastGameActivity.TryRemove(game.IdGame, out _);
                     }
                     else if (LuckyBoxTiles.Contains(finalPos))
                     {
@@ -220,7 +232,10 @@ namespace GameServer.Services.Logic
             }
             finally
             {
-                _processingGames.TryRemove(game.IdGame, out _);
+                if (gameIdForLock != 0)
+                {
+                    _processingGames.TryRemove(gameIdForLock, out _);
+                }
             }
 
             return result;
@@ -302,6 +317,7 @@ namespace GameServer.Services.Logic
                         }
 
                         Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}", game.LobbyCode, winner.Username);
+                        _lastGameActivity.TryRemove(game.IdGame, out _);
                     }
                     else
                     {
@@ -352,6 +368,7 @@ namespace GameServer.Services.Logic
                 p.GameIdGame = null;
                 p.TurnsSkipped = 0;
             }
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
@@ -401,6 +418,19 @@ namespace GameServer.Services.Logic
                                 CurrentTurnUsername = "",
                                 IsMyTurn = false
                             };
+                        }
+
+                        if (!_lastGameActivity.ContainsKey(game.IdGame))
+                        {
+                            _lastGameActivity[game.IdGame] = DateTime.Now;
+                        }
+                        else
+                        {
+                            TimeSpan inactivity = DateTime.Now - _lastGameActivity[game.IdGame];
+                            if (inactivity.TotalSeconds > TurnTimeLimitSeconds)
+                            {
+                                await ProcessAfkTimeout(game.IdGame);
+                            }
                         }
 
                         var activePlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
@@ -460,6 +490,75 @@ namespace GameServer.Services.Logic
             }
 
             return state;
+        }
+
+        private async Task ProcessAfkTimeout(int gameId)
+        {
+            try
+            {
+                if (!_processingGames.TryAdd(gameId, true)) return;
+
+                var game = await _repository.GetGameByIdAsync(gameId);
+                var activePlayers = await _repository.GetPlayersInGameAsync(gameId);
+                activePlayers = activePlayers.OrderBy(p => p.IdPlayer).ToList();
+
+                int totalMoves = await _repository.GetMoveCountAsync(gameId);
+                int extraTurns = await _repository.GetExtraTurnCountAsync(gameId);
+                int effectiveTurns = totalMoves - extraTurns;
+                int nextPlayerIndex = effectiveTurns % activePlayers.Count;
+                var afkPlayer = activePlayers[nextPlayerIndex];
+
+                int strikes = _afkStrikes.AddOrUpdate(afkPlayer.Username, 1, (key, oldValue) => oldValue + 1);
+
+                if (strikes >= 3)
+                {
+                    _afkStrikes.TryRemove(afkPlayer.Username, out _);
+
+                    using (var lobbyRepo = new LobbyRepository())
+                    {
+                        var lobbyLogic = new LobbyAppService(lobbyRepo);
+                        var kickReq = new KickPlayerRequest
+                        {
+                            LobbyCode = game.LobbyCode,
+                            TargetUsername = afkPlayer.Username,
+                            RequestorUsername = "SYSTEM"
+                        };
+
+                        await lobbyLogic.KickPlayerAsync(kickReq);
+                    }
+                    _lastGameActivity[gameId] = DateTime.Now;
+                    return;
+                }
+
+                var lastMove = await _repository.GetLastMoveForPlayerAsync(gameId, afkPlayer.IdPlayer);
+                int samePos = lastMove?.FinalPosition ?? 0;
+                int turnNum = totalMoves + 1;
+
+                var skipMove = new MoveRecord
+                {
+                    GameIdGame = gameId,
+                    PlayerIdPlayer = afkPlayer.IdPlayer,
+                    DiceOne = 0,
+                    DiceTwo = 0,
+                    TurnNumber = turnNum,
+                    ActionDescription = $"{afkPlayer.Username} tardó demasiado. Pierde turno ({strikes}/3).",
+                    StartPosition = samePos,
+                    FinalPosition = samePos
+                };
+
+                _repository.AddMove(skipMove);
+                await _repository.SaveChangesAsync();
+
+                _lastGameActivity[gameId] = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error procesando AFK para juego {gameId}", ex);
+            }
+            finally
+            {
+                _processingGames.TryRemove(gameId, out _);
+            }
         }
     }
 }

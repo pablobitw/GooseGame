@@ -81,4 +81,12 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ActiveMatchDTO" nillable="true" type="tns:ActiveMatchDTO" />
+  <xs:complexType name="KickPlayerRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="RequestorUsername" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="TargetUsername" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="KickPlayerRequest" nillable="true" type="tns:KickPlayerRequest" />
 </xs:schema>

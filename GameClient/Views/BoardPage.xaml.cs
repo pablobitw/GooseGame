@@ -1,9 +1,11 @@
 ﻿using GameClient.GameplayServiceReference;
+using GameClient.LobbyServiceReference;
 using GameClient.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,14 +18,19 @@ using System.Windows.Threading;
 
 namespace GameClient.Views
 {
-    public partial class BoardPage : Page
+    public partial class BoardPage : Page, ILobbyServiceCallback
     {
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
         private GameplayServiceClient gameplayClient;
+        private LobbyServiceClient _lobbyProxy;
         private DispatcherTimer gameLoopTimer;
         private DispatcherTimer _startCountdownTimer;
+        private DispatcherTimer _turnCountdownTimer;
+        private int _turnSecondsRemaining = 60;
+        private string _lastTurnUsername = "";
+
         private int _countdownValue = 5;
         private bool _isGameStarting = true;
         private bool _isGameOverHandled = false;
@@ -71,15 +78,52 @@ namespace GameClient.Views
             this.currentUsername = username;
 
             gameplayClient = new GameplayServiceClient();
+            InitializeLobbyListener();
 
             LoadBoardImage();
             StartCountdown();
+
+            _turnCountdownTimer = new DispatcherTimer();
+            _turnCountdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _turnCountdownTimer.Tick += TurnCountdown_Tick;
 
             this.Unloaded += (s, e) =>
             {
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
+                _turnCountdownTimer?.Stop();
             };
+        }
+
+        private void InitializeLobbyListener()
+        {
+            InstanceContext context = new InstanceContext(this);
+            _lobbyProxy = new LobbyServiceClient(context);
+        }
+
+        public void OnPlayerKicked(string reason)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                gameLoopTimer?.Stop();
+                _startCountdownTimer?.Stop();
+                _turnCountdownTimer?.Stop();
+                _isGameOverHandled = true;
+
+                MessageBox.Show(reason, "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                var mainWindow = Window.GetWindow(this) as GameMainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.ShowMainMenu();
+                }
+                else
+                {
+                    GameMainWindow newWindow = new GameMainWindow(currentUsername);
+                    newWindow.Show();
+                    Window.GetWindow(this)?.Close();
+                }
+            });
         }
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
@@ -136,6 +180,7 @@ namespace GameClient.Views
 
             gameLoopTimer?.Stop();
             _startCountdownTimer?.Stop();
+            _turnCountdownTimer?.Stop();
             _isGameOverHandled = true;
 
             try
@@ -192,6 +237,28 @@ namespace GameClient.Views
             }
         }
 
+        private void TurnCountdown_Tick(object sender, EventArgs e)
+        {
+            _turnSecondsRemaining--;
+
+            TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
+
+            if (_turnSecondsRemaining <= 15)
+            {
+                TurnTimerText.Foreground = Brushes.Red;
+            }
+            else
+            {
+                TurnTimerText.Foreground = Brushes.White;
+            }
+
+            if (_turnSecondsRemaining <= 0)
+            {
+                _turnCountdownTimer.Stop();
+                TurnTimerText.Text = "¡Tiempo Agotado!";
+            }
+        }
+
         private void LoadBoardImage()
         {
             string imagePath = (boardId == 1)
@@ -236,6 +303,16 @@ namespace GameClient.Views
                     }
 
                     UpdateTurnUI(state);
+
+                    if (state.CurrentTurnUsername != _lastTurnUsername)
+                    {
+                        _lastTurnUsername = state.CurrentTurnUsername;
+                        _turnSecondsRemaining = 60;
+                        TurnTimerPanel.Visibility = Visibility.Visible;
+                        TurnTimerText.Text = "Tiempo: 60s";
+                        TurnTimerText.Foreground = Brushes.White;
+                        _turnCountdownTimer.Start();
+                    }
 
                     if (state.LastDiceOne > 0)
                     {
@@ -313,48 +390,7 @@ namespace GameClient.Views
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
-
                 string avatarPath = player.AvatarPath;
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-
-                try
-                {
-                    if (string.IsNullOrEmpty(avatarPath))
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
-                    else if (avatarPath.StartsWith("pack://"))
-                    {
-                        bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
-                    }
-                    else
-                    {
-                        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                        string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
-
-                        if (!File.Exists(fullPath))
-                        {
-                            fullPath = Path.Combine(baseDir, "Assets", avatarPath);
-                        }
-
-                        if (File.Exists(fullPath))
-                        {
-                            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                        }
-                        else
-                        {
-                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                        }
-                    }
-                }
-                catch
-                {
-                    bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                }
-
-                bitmap.EndInit();
 
                 ImageBrush targetAvatarBrush = null;
                 TextBlock targetNameBlock = null;
@@ -372,6 +408,48 @@ namespace GameClient.Views
                 {
                     targetPanel.Visibility = Visibility.Visible;
                     targetNameBlock.Text = player.Username;
+
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
+                    try
+                    {
+                        if (string.IsNullOrEmpty(avatarPath))
+                        {
+                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                        }
+                        else if (avatarPath.StartsWith("pack://"))
+                        {
+                            bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
+                        }
+                        else
+                        {
+                            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
+
+                            if (!File.Exists(fullPath))
+                            {
+                                fullPath = Path.Combine(baseDir, "Assets", avatarPath);
+                            }
+
+                            if (File.Exists(fullPath))
+                            {
+                                bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                            }
+                            else
+                            {
+                                bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
+
+                    bitmap.EndInit();
 
                     targetAvatarBrush.Stretch = Stretch.UniformToFill;
                     targetAvatarBrush.ImageSource = bitmap;

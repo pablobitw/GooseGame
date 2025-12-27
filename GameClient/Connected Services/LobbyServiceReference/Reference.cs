@@ -709,8 +709,85 @@ namespace GameClient.LobbyServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="KickPlayerRequest", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.SerializableAttribute()]
+    public partial class KickPlayerRequest : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string LobbyCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string RequestorUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TargetUsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string LobbyCode {
+            get {
+                return this.LobbyCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.LobbyCodeField, value) != true)) {
+                    this.LobbyCodeField = value;
+                    this.RaisePropertyChanged("LobbyCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string RequestorUsername {
+            get {
+                return this.RequestorUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.RequestorUsernameField, value) != true)) {
+                    this.RequestorUsernameField = value;
+                    this.RaisePropertyChanged("RequestorUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string TargetUsername {
+            get {
+                return this.TargetUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TargetUsernameField, value) != true)) {
+                    this.TargetUsernameField = value;
+                    this.RaisePropertyChanged("TargetUsername");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LobbyServiceReference.ILobbyService")]
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LobbyServiceReference.ILobbyService", CallbackContract=typeof(GameClient.LobbyServiceReference.ILobbyServiceCallback))]
     public interface ILobbyService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/CreateLobby", ReplyAction="http://tempuri.org/ILobbyService/CreateLobbyResponse")]
@@ -754,6 +831,19 @@ namespace GameClient.LobbyServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
+        void KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
+        System.Threading.Tasks.Task KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request);
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    public interface ILobbyServiceCallback {
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnPlayerKicked")]
+        void OnPlayerKicked(string reason);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -762,25 +852,26 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class LobbyServiceClient : System.ServiceModel.ClientBase<GameClient.LobbyServiceReference.ILobbyService>, GameClient.LobbyServiceReference.ILobbyService {
+    public partial class LobbyServiceClient : System.ServiceModel.DuplexClientBase<GameClient.LobbyServiceReference.ILobbyService>, GameClient.LobbyServiceReference.ILobbyService {
         
-        public LobbyServiceClient() {
+        public LobbyServiceClient(System.ServiceModel.InstanceContext callbackInstance) : 
+                base(callbackInstance) {
         }
         
-        public LobbyServiceClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+        public LobbyServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName) : 
+                base(callbackInstance, endpointConfigurationName) {
         }
         
-        public LobbyServiceClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public LobbyServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, string remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public LobbyServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public LobbyServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public LobbyServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+        public LobbyServiceClient(System.ServiceModel.InstanceContext callbackInstance, System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, binding, remoteAddress) {
         }
         
         public GameClient.LobbyServiceReference.LobbyCreationResultDTO CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request) {
@@ -837,6 +928,14 @@ namespace GameClient.LobbyServiceReference {
         
         public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync() {
             return base.Channel.GetPublicMatchesAsync();
+        }
+        
+        public void KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request) {
+            base.Channel.KickPlayer(request);
+        }
+        
+        public System.Threading.Tasks.Task KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request) {
+            return base.Channel.KickPlayerAsync(request);
         }
     }
 }

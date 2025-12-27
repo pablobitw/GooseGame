@@ -21,7 +21,10 @@ namespace GameServer.Repositories
         {
             return await _context.Games.FirstOrDefaultAsync(g => g.LobbyCode == lobbyCode);
         }
-
+        public async Task<Game> GetGameByIdAsync(int gameId)
+        {
+            return await _context.Games.FindAsync(gameId);
+        }
         public async Task<Player> GetPlayerByUsernameAsync(string username)
         {
             return await _context.Players.FirstOrDefaultAsync(p => p.Username == username);

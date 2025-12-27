@@ -16,5 +16,6 @@ namespace GameServer.Interfaces
         [OperationContract]
         Task<bool> LeaveGameAsync(GameplayRequest request);
 
+
     }
 }

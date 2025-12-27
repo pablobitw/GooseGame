@@ -48,20 +48,32 @@
                 </Button.Style>
             </Button>
 
+            <Border x:Name="TurnTimerPanel" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,110,0,0" 
+                    Background="#CC000000" CornerRadius="15" Padding="20,10" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="24" Height="24" Margin="0,0,10,0">
+                        <Path Fill="White" Data="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                    </Viewbox>
+                    <TextBlock x:Name="TurnTimerText" Text="Tiempo: 60s" Foreground="White" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
             <Border x:Name="Player1Panel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,110,0,0" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
                     Visibility="Hidden" d:Visibility="Visible">
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
-
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
+                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill" TileMode="None">
+                                    <ImageBrush.RelativeTransform>
+                                        <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
+                                    </ImageBrush.RelativeTransform>
+                                </ImageBrush>
                             </Ellipse.Fill>
                         </Ellipse>
-
-                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="White" StrokeThickness="2"/>
                     </Grid>
                     <TextBlock x:Name="Player1Name" Text="Player 1" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
@@ -76,10 +88,14 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
+                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill" TileMode="None">
+                                    <ImageBrush.RelativeTransform>
+                                        <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
+                                    </ImageBrush.RelativeTransform>
+                                </ImageBrush>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="White" StrokeThickness="2"/>
                     </Grid>
                     <TextBlock x:Name="Player2Name" Text="Player 2" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
@@ -94,10 +110,14 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
+                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill" TileMode="None">
+                                    <ImageBrush.RelativeTransform>
+                                        <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
+                                    </ImageBrush.RelativeTransform>
+                                </ImageBrush>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="White" StrokeThickness="2"/>
                     </Grid>
                     <TextBlock x:Name="Player3Name" Text="Player 3" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
@@ -112,10 +132,14 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
+                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill" TileMode="None">
+                                    <ImageBrush.RelativeTransform>
+                                        <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
+                                    </ImageBrush.RelativeTransform>
+                                </ImageBrush>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
+                        <Ellipse Stroke="White" StrokeThickness="2"/>
                     </Grid>
                     <TextBlock x:Name="Player4Name" Text="Player 4" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
