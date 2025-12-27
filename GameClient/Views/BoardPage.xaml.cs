@@ -2,6 +2,7 @@
 using GameClient.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,10 +36,10 @@ namespace GameClient.Views
 
         private readonly string[] _tokenImagePaths =
         {
-            "pack://application:,,,/GameClient;component/Assets/Game Pieces/red_piece.png",
-            "pack://application:,,,/GameClient;component/Assets/Game Pieces/blue_piece.png",
-            "pack://application:,,,/GameClient;component/Assets/Game Pieces/green_piece.png",
-            "pack://application:,,,/GameClient;component/Assets/Game Pieces/yellow_piece.png"
+            "/Assets/Game Pieces/red_piece.png",
+            "/Assets/Game Pieces/blue_piece.png",
+            "/Assets/Game Pieces/green_piece.png",
+            "/Assets/Game Pieces/yellow_piece.png"
         };
 
         private readonly List<Point> _tileCoordinates = new List<Point>
@@ -194,10 +195,10 @@ namespace GameClient.Views
         private void LoadBoardImage()
         {
             string imagePath = (boardId == 1)
-                ? "pack://application:,,,/GameClient;component/Assets/Boards/normal_board.png"
-                : "pack://application:,,,/GameClient;component/Assets/Boards/special_board.png";
+                ? "/Assets/Boards/normal_board.png"
+                : "/Assets/Boards/special_board.png";
 
-            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute)); }
+            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)); }
             catch { }
         }
 
@@ -312,9 +313,48 @@ namespace GameClient.Views
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
-                string avatarPath = string.IsNullOrEmpty(player.AvatarPath)
-                    ? "pack://application:,,,/GameClient;component/Assets/default_avatar.png"
-                    : player.AvatarPath;
+
+                string avatarPath = player.AvatarPath;
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
+                try
+                {
+                    if (string.IsNullOrEmpty(avatarPath))
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
+                    else if (avatarPath.StartsWith("pack://"))
+                    {
+                        bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
+                    }
+                    else
+                    {
+                        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                        string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
+
+                        if (!File.Exists(fullPath))
+                        {
+                            fullPath = Path.Combine(baseDir, "Assets", avatarPath);
+                        }
+
+                        if (File.Exists(fullPath))
+                        {
+                            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                        }
+                        else
+                        {
+                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                        }
+                    }
+                }
+                catch
+                {
+                    bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                }
+
+                bitmap.EndInit();
 
                 ImageBrush targetAvatarBrush = null;
                 TextBlock targetNameBlock = null;
@@ -333,18 +373,8 @@ namespace GameClient.Views
                     targetPanel.Visibility = Visibility.Visible;
                     targetNameBlock.Text = player.Username;
 
-                    try
-                    {
-                        targetAvatarBrush.ImageSource = new BitmapImage(new Uri(avatarPath, UriKind.RelativeOrAbsolute));
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            targetAvatarBrush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/GameClient;component/Assets/default_avatar.png", UriKind.Absolute));
-                        }
-                        catch { }
-                    }
+                    targetAvatarBrush.Stretch = Stretch.UniformToFill;
+                    targetAvatarBrush.ImageSource = bitmap;
 
                     targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
                     targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
@@ -379,7 +409,7 @@ namespace GameClient.Views
             {
                 Width = 40,
                 Height = 40,
-                Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute)),
+                Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)),
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
@@ -508,7 +538,12 @@ namespace GameClient.Views
                                 _luckyBoxClicks = 0;
                                 try
                                 {
-                                    LuckyBoxImage.Source = new BitmapImage(new Uri("pack://application:,,,/GameClient;component/Assets/Images/luckybox_closed.png", UriKind.Absolute));
+                                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                                    string path = Path.Combine(baseDir, "Assets", "Images", "luckybox_closed.png");
+                                    if (File.Exists(path))
+                                        LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
+                                    else
+                                        LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
                                 }
                                 catch { }
 
@@ -561,22 +596,22 @@ namespace GameClient.Views
             switch (_currentRewardType)
             {
                 case "COINS":
-                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/coin_pile.png";
+                    imagePath = "coin_pile.png";
                     text = $"+{_currentRewardAmount} ORO";
                     textColor = Brushes.Gold;
                     break;
                 case "COMMON":
-                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_common.png";
+                    imagePath = "ticket_common.png";
                     text = "TICKET COMÚN";
                     textColor = Brushes.White;
                     break;
                 case "EPIC":
-                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_epic.png";
+                    imagePath = "ticket_epic.png";
                     text = "TICKET ÉPICO";
                     textColor = Brushes.Purple;
                     break;
                 case "LEGENDARY":
-                    imagePath = "pack://application:,,,/GameClient;component/Assets/Images/ticket_legendary.png";
+                    imagePath = "ticket_legendary.png";
                     text = "¡LEGENDARIO!";
                     textColor = Brushes.OrangeRed;
                     break;
@@ -589,7 +624,12 @@ namespace GameClient.Views
             {
                 try
                 {
-                    RewardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
+                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string fullPath = Path.Combine(baseDir, "Assets", "Images", imagePath);
+                    if (File.Exists(fullPath))
+                        RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute));
+                    else
+                        RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
                 }
                 catch { }
             }

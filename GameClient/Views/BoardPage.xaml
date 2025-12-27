@@ -54,19 +54,21 @@
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
+
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill"/>
+                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2"/>
+
+                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
                     </Grid>
                     <TextBlock x:Name="Player1Name" Text="Player 1" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
                 </StackPanel>
             </Border>
 
-            <Border x:Name="Player2Panel" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,340,0" 
+            <Border x:Name="Player2Panel" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,110,325,0" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
                     Visibility="Hidden" d:Visibility="Visible">
                 <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10">
@@ -74,17 +76,17 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill"/>
+                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2"/>
+                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
                     </Grid>
                     <TextBlock x:Name="Player2Name" Text="Player 2" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
                 </StackPanel>
             </Border>
 
-            <Border x:Name="Player3Panel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20" 
+            <Border x:Name="Player3Panel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60,0,0,60" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
                     Visibility="Hidden" d:Visibility="Visible">
                 <StackPanel Orientation="Horizontal" Margin="10">
@@ -92,17 +94,17 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill"/>
+                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2"/>
+                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
                     </Grid>
                     <TextBlock x:Name="Player3Name" Text="Player 3" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>
                 </StackPanel>
             </Border>
 
-            <Border x:Name="Player4Panel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" 
+            <Border x:Name="Player4Panel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,325,60" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
                     Visibility="Hidden" d:Visibility="Visible">
                 <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10">
@@ -110,10 +112,10 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill"/>
+                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill" TileMode="None" AlignmentX="Center" AlignmentY="Center"/>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse Stroke="White" StrokeThickness="2"/>
+                        <Ellipse Stroke="White" StrokeThickness="2" IsHitTestVisible="False"/>
                     </Grid>
                     <TextBlock x:Name="Player4Name" Text="Player 4" Foreground="White" 
                                VerticalAlignment="Center" Margin="15,0,0,0" FontWeight="Bold" FontSize="20"/>

@@ -496,9 +496,15 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\chivas_avatar.png" />
-    <Content Include="Assets\Avatar\frikiboy_avatar.png" />
-    <Content Include="Assets\Avatar\profilepic1.png" />
+    <Content Include="Assets\Avatar\chivas_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\frikiboy_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\profilepic1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\BACKGROUND_1.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -563,7 +569,9 @@
     <None Include="Connected Services\GameServiceReference\item.disco" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Avatar\default_avatar.png" />
+    <Content Include="Assets\Avatar\default_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />
@@ -572,7 +580,9 @@
     <Resource Include="Assets\fondo3.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\realmadrid_avatar.png" />
+    <Content Include="Assets\Avatar\realmadrid_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Assets\Boards\special_board.png" />
     <Resource Include="Assets\Boards\normal_board.png" />
     <Content Include="Assets\BACKGROUND.mp4">

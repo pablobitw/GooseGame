@@ -2,6 +2,7 @@
 using GameServer.Repositories;
 using log4net;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -15,6 +16,7 @@ namespace GameServer.Services.Logic
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayAppService));
         private static readonly Random RandomGenerator = new Random();
         private static readonly object _randomLock = new object();
+        private static readonly ConcurrentDictionary<int, bool> _processingGames = new ConcurrentDictionary<int, bool>();
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
         private readonly GameplayRepository _repository;
@@ -27,167 +29,181 @@ namespace GameServer.Services.Logic
         public async Task<DiceRollDTO> RollDiceAsync(GameplayRequest request)
         {
             DiceRollDTO result = null;
+
+            if (request == null) return null;
+
+            var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+            if (game == null || game.GameStatus != (int)GameStatus.InProgress) return null;
+
+            if (!_processingGames.TryAdd(game.IdGame, true))
+            {
+                return null;
+            }
+
             try
             {
-                if (request != null)
+                var activePlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                activePlayers = activePlayers.OrderBy(p => p.IdPlayer).ToList();
+
+                int totalMoves = await _repository.GetMoveCountAsync(game.IdGame);
+                int extraTurns = await _repository.GetExtraTurnCountAsync(game.IdGame);
+                int effectiveTurns = totalMoves - extraTurns;
+
+                int nextPlayerIndex = effectiveTurns % activePlayers.Count;
+                var currentTurnPlayer = activePlayers[nextPlayerIndex];
+
+                if (currentTurnPlayer.Username != request.Username)
                 {
-                    var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                    return null;
+                }
 
-                    if (game != null && game.GameStatus == (int)GameStatus.InProgress)
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+                if (player != null)
+                {
+                    if (player.TurnsSkipped > 0)
                     {
-                        var player = await _repository.GetPlayerByUsernameAsync(request.Username);
-                        if (player != null)
+                        player.TurnsSkipped--;
+                        int turnNumSkipped = await _repository.GetMoveCountAsync(game.IdGame) + 1;
+                        var prevMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
+                        int samePos = prevMove?.FinalPosition ?? 0;
+
+                        var skipMove = new MoveRecord
                         {
-                            if (player.TurnsSkipped > 0)
-                            {
-                                player.TurnsSkipped--;
+                            GameIdGame = game.IdGame,
+                            PlayerIdPlayer = player.IdPlayer,
+                            DiceOne = 0,
+                            DiceTwo = 0,
+                            TurnNumber = turnNumSkipped,
+                            ActionDescription = $"{request.Username} pierde el turno (Quedan {player.TurnsSkipped}).",
+                            StartPosition = samePos,
+                            FinalPosition = samePos
+                        };
 
-                                int turnNumSkipped = await _repository.GetMoveCountAsync(game.IdGame) + 1;
-                                var prevMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
-                                int samePos = prevMove?.FinalPosition ?? 0;
+                        _repository.AddMove(skipMove);
+                        await _repository.SaveChangesAsync();
 
-                                var skipMove = new MoveRecord
-                                {
-                                    GameIdGame = game.IdGame,
-                                    PlayerIdPlayer = player.IdPlayer,
-                                    DiceOne = 0,
-                                    DiceTwo = 0,
-                                    TurnNumber = turnNumSkipped,
-                                    ActionDescription = $"{request.Username} pierde el turno (Quedan {player.TurnsSkipped}).",
-                                    StartPosition = samePos,
-                                    FinalPosition = samePos
-                                };
-
-                                _repository.AddMove(skipMove);
-                                await _repository.SaveChangesAsync();
-
-                                return new DiceRollDTO { DiceOne = 0, DiceTwo = 0, Total = 0 };
-                            }
-
-                            var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
-                            int currentPos = lastMove?.FinalPosition ?? 0;
-
-                            int d1;
-                            int d2;
-
-                            lock (_randomLock)
-                            {
-                                d1 = RandomGenerator.Next(1, 7);
-                                d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
-                            }
-
-                            int total = d1 + d2;
-                            int finalPos = currentPos + total;
-
-                            string message = "";
-                            string luckyBoxTag = "";
-                            bool isExtraTurn = false;
-
-                            if (finalPos > 64)
-                            {
-                                int excess = finalPos - 64;
-                                finalPos = 64 - excess;
-                            }
-
-                            if (finalPos == 64)
-                            {
-                                message = "¡HA LLEGADO A LA META!";
-                                game.GameStatus = (int)GameStatus.Finished;
-                                game.WinnerIdPlayer = player.IdPlayer;
-
-                                await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
-                            }
-                            else if (LuckyBoxTiles.Contains(finalPos))
-                            {
-                                var reward = ProcessLuckyBoxReward(player);
-                                luckyBoxTag = $"[LUCKYBOX:{player.Username}:{reward.Type}_{reward.Amount}]";
-                                message = $"¡CAJA DE LA SUERTE! {reward.Description}";
-                            }
-                            else if (GooseTiles.Contains(finalPos))
-                            {
-                                int nextGoose = GooseTiles.FirstOrDefault(t => t > finalPos);
-                                if (nextGoose != 0)
-                                {
-                                    message = $"¡De Oca a Oca ({finalPos} -> {nextGoose})! Tira de nuevo.";
-                                    finalPos = nextGoose;
-                                }
-                                else
-                                {
-                                    message = "¡Oca (59)! Tira de nuevo.";
-                                }
-                                isExtraTurn = true;
-                            }
-                            else if (finalPos == 6)
-                            {
-                                message = "¡De Puente a Puente! Saltas al 12 y tiras de nuevo.";
-                                finalPos = 12;
-                                isExtraTurn = true;
-                            }
-                            else if (finalPos == 12)
-                            {
-                                message = "¡De Puente a Puente! Regresas al 6 y tiras de nuevo.";
-                                finalPos = 6;
-                                isExtraTurn = true;
-                            }
-                            else if (finalPos == 42)
-                            {
-                                message = "¡Laberinto! Retrocedes a la 30.";
-                                finalPos = 30;
-                            }
-                            else if (finalPos == 58)
-                            {
-                                message = "¡CALAVERA! Regresas al inicio (1).";
-                                finalPos = 1;
-                            }
-                            else if (finalPos == 26 || finalPos == 53)
-                            {
-                                int bonus = finalPos;
-                                message = $"¡Dados! Sumas {bonus} casillas extra.";
-                                finalPos += bonus;
-                                if (finalPos > 64) finalPos = 64 - (finalPos - 64);
-                            }
-                            else if (finalPos == 19)
-                            {
-                                message = "¡Posada! Pierdes 1 turno.";
-                                player.TurnsSkipped = 1;
-                            }
-                            else if (finalPos == 31)
-                            {
-                                message = "¡Pozo! Esperas rescate (2 turnos).";
-                                player.TurnsSkipped = 2;
-                            }
-                            else if (finalPos == 56)
-                            {
-                                message = "¡Cárcel! Esperas 3 turnos.";
-                                player.TurnsSkipped = 3;
-                            }
-
-                            string baseMsg = d2 > 0 ? $"{request.Username} tiró {d1} y {d2}." : $"{request.Username} tiró {d1}.";
-                            string fullDescription = string.IsNullOrEmpty(message) ? $"{baseMsg} Avanza a {finalPos}." : $"{baseMsg} {message}";
-
-                            if (isExtraTurn) fullDescription = "[EXTRA] " + fullDescription;
-                            if (!string.IsNullOrEmpty(luckyBoxTag)) fullDescription = luckyBoxTag + " " + fullDescription;
-
-                            int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
-
-                            var move = new MoveRecord
-                            {
-                                GameIdGame = game.IdGame,
-                                PlayerIdPlayer = player.IdPlayer,
-                                DiceOne = d1,
-                                DiceTwo = d2,
-                                TurnNumber = turnNum,
-                                ActionDescription = fullDescription,
-                                StartPosition = currentPos,
-                                FinalPosition = finalPos
-                            };
-
-                            _repository.AddMove(move);
-                            await _repository.SaveChangesAsync();
-
-                            result = new DiceRollDTO { DiceOne = d1, DiceTwo = d2, Total = total };
-                        }
+                        return new DiceRollDTO { DiceOne = 0, DiceTwo = 0, Total = 0 };
                     }
+
+                    var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
+                    int currentPos = lastMove?.FinalPosition ?? 0;
+
+                    int d1, d2;
+                    lock (_randomLock)
+                    {
+                        d1 = RandomGenerator.Next(1, 7);
+                        d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
+                    }
+
+                    int total = d1 + d2;
+                    int finalPos = currentPos + total;
+
+                    string message = "";
+                    string luckyBoxTag = "";
+                    bool isExtraTurn = false;
+
+                    if (finalPos > 64)
+                    {
+                        int excess = finalPos - 64;
+                        finalPos = 64 - excess;
+                    }
+
+                    if (finalPos == 64)
+                    {
+                        message = "¡HA LLEGADO A LA META!";
+                        game.GameStatus = (int)GameStatus.Finished;
+                        game.WinnerIdPlayer = player.IdPlayer;
+                        await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
+                    }
+                    else if (LuckyBoxTiles.Contains(finalPos))
+                    {
+                        var reward = ProcessLuckyBoxReward(player);
+                        luckyBoxTag = $"[LUCKYBOX:{player.Username}:{reward.Type}_{reward.Amount}]";
+                        message = $"¡CAJA DE LA SUERTE! {reward.Description}";
+                    }
+                    else if (GooseTiles.Contains(finalPos))
+                    {
+                        int nextGoose = GooseTiles.FirstOrDefault(t => t > finalPos);
+                        if (nextGoose != 0)
+                        {
+                            message = $"¡De Oca a Oca ({finalPos} -> {nextGoose})! Tira de nuevo.";
+                            finalPos = nextGoose;
+                        }
+                        else
+                        {
+                            message = "¡Oca (59)! Tira de nuevo.";
+                        }
+                        isExtraTurn = true;
+                    }
+                    else if (finalPos == 6)
+                    {
+                        message = "¡De Puente a Puente! Saltas al 12 y tiras de nuevo.";
+                        finalPos = 12;
+                        isExtraTurn = true;
+                    }
+                    else if (finalPos == 12)
+                    {
+                        message = "¡De Puente a Puente! Regresas al 6 y tiras de nuevo.";
+                        finalPos = 6;
+                        isExtraTurn = true;
+                    }
+                    else if (finalPos == 42)
+                    {
+                        message = "¡Laberinto! Retrocedes a la 30.";
+                        finalPos = 30;
+                    }
+                    else if (finalPos == 58)
+                    {
+                        message = "¡CALAVERA! Regresas al inicio (1).";
+                        finalPos = 1;
+                    }
+                    else if (finalPos == 26 || finalPos == 53)
+                    {
+                        int bonus = finalPos;
+                        message = $"¡Dados! Sumas {bonus} casillas extra.";
+                        finalPos += bonus;
+                        if (finalPos > 64) finalPos = 64 - (finalPos - 64);
+                    }
+                    else if (finalPos == 19)
+                    {
+                        message = "¡Posada! Pierdes 1 turno.";
+                        player.TurnsSkipped = 1;
+                    }
+                    else if (finalPos == 31)
+                    {
+                        message = "¡Pozo! Esperas rescate (2 turnos).";
+                        player.TurnsSkipped = 2;
+                    }
+                    else if (finalPos == 56)
+                    {
+                        message = "¡Cárcel! Esperas 3 turnos.";
+                        player.TurnsSkipped = 3;
+                    }
+
+                    string baseMsg = d2 > 0 ? $"{request.Username} tiró {d1} y {d2}." : $"{request.Username} tiró {d1}.";
+                    string fullDescription = string.IsNullOrEmpty(message) ? $"{baseMsg} Avanza a {finalPos}." : $"{baseMsg} {message}";
+
+                    if (isExtraTurn) fullDescription = "[EXTRA] " + fullDescription;
+                    if (!string.IsNullOrEmpty(luckyBoxTag)) fullDescription = luckyBoxTag + " " + fullDescription;
+
+                    int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
+
+                    var move = new MoveRecord
+                    {
+                        GameIdGame = game.IdGame,
+                        PlayerIdPlayer = player.IdPlayer,
+                        DiceOne = d1,
+                        DiceTwo = d2,
+                        TurnNumber = turnNum,
+                        ActionDescription = fullDescription,
+                        StartPosition = currentPos,
+                        FinalPosition = finalPos
+                    };
+
+                    _repository.AddMove(move);
+                    await _repository.SaveChangesAsync();
+
+                    result = new DiceRollDTO { DiceOne = d1, DiceTwo = d2, Total = total };
                 }
             }
             catch (SqlException ex)
@@ -201,6 +217,10 @@ namespace GameServer.Services.Logic
             catch (TimeoutException ex)
             {
                 Log.Error("Timeout en RollDice.", ex);
+            }
+            finally
+            {
+                _processingGames.TryRemove(game.IdGame, out _);
             }
 
             return result;
@@ -278,6 +298,7 @@ namespace GameServer.Services.Logic
                             winnerWithStats.PlayerStat.MatchesPlayed++;
                             winnerWithStats.PlayerStat.MatchesWon++;
                             winnerWithStats.TicketCommon += 1;
+                            winnerWithStats.Coins += 300;
                         }
 
                         Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}", game.LobbyCode, winner.Username);
@@ -331,7 +352,6 @@ namespace GameServer.Services.Logic
                 p.GameIdGame = null;
                 p.TurnsSkipped = 0;
             }
-            await _repository.SaveChangesAsync();
         }
 
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
