@@ -9,21 +9,27 @@ namespace GameServer.Repositories
 {
     public class LeaderboardRepository
     {
-        public async Task<List<dynamic>> GetAllPlayerStatsAsync()
+        public class PlayerStatResult
+        {
+            public string Username { get; set; }
+            public string Avatar { get; set; }
+            public int Wins { get; set; }
+        }
+
+        public async Task<List<PlayerStatResult>> GetAllPlayerStatsAsync()
         {
             using (var context = new GameDatabase_Container())
             {
-                var query = from stat in context.PlayerStats
-                            join player in context.Players
-                            on stat.IdPlayer_IdPlayer equals player.IdPlayer
-                            select new
-                            {
-                                Username = player.Username,
-                                Avatar = player.Avatar,
-                                Wins = stat.MatchesWon
-                            };
+                var query = context.Players
+                                   .Where(p => p.PlayerStat != null)
+                                   .Select(p => new PlayerStatResult
+                                   {
+                                       Username = p.Username,
+                                       Avatar = p.Avatar,
+                                       Wins = p.PlayerStat.MatchesWon
+                                   });
 
-                return await query.OrderByDescending(s => s.Wins).ToListAsync<dynamic>();
+                return await query.OrderByDescending(s => s.Wins).ToListAsync();
             }
         }
     }

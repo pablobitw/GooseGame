@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.LeaderboardServiceReference;
 
-
 namespace GameClient.Views
 {
     public partial class ScoreboardPage : Page
@@ -29,6 +28,8 @@ namespace GameClient.Views
         {
             try
             {
+                LeaderboardList.ItemsSource = null;
+
                 using (var client = new GameClient.LeaderboardServiceReference.LeaderboardServiceClient())
                 {
                     var leaderboardData = await client.GetGlobalLeaderboardAsync(_username);
