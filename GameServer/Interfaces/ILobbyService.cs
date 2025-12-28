@@ -1,4 +1,4 @@
-﻿using GameServer.DTOs.Lobby; 
+﻿using GameServer.DTOs.Lobby;
 using System.ServiceModel;
 using System.Threading.Tasks;
 

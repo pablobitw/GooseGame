@@ -6,6 +6,7 @@ using GameClient.Views;
 using System;
 using System.IO;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
@@ -22,6 +23,8 @@ namespace GameClient
             _username = loggedInUsername;
 
             FriendshipServiceManager.Initialize(_username);
+            LobbyServiceManager.Instance.Initialize(_username);
+
             FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
 
             this.Closed += GameMainWindow_Closed;
@@ -173,8 +176,8 @@ namespace GameClient
 
         private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
         {
-            
-             if (IsGuestActionRestricted("Tabla de Clasificación")) return;
+
+            if (IsGuestActionRestricted("Tabla de Clasificación")) return;
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
 
@@ -189,6 +192,8 @@ namespace GameClient
                 {
                     FriendshipServiceManager.Instance.Disconnect();
                 }
+
+                LobbyServiceManager.Instance.Dispose();
 
                 using (var client = new GameServiceClient())
                 {
@@ -230,21 +235,20 @@ namespace GameClient
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    LobbyServiceClient lobbyClient = null;
                     try
                     {
-                        lobbyClient = new LobbyServiceClient();
-
                         var request = new JoinLobbyRequest
                         {
                             LobbyCode = code,
                             Username = _username
                         };
 
-                        var joinResult = await lobbyClient.JoinLobbyAsync(request);
+                        var joinResult = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
 
                         if (joinResult.Success)
                         {
+                            await Task.Delay(200);
+
                             MainMenuGrid.Visibility = Visibility.Collapsed;
                             MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
                         }
@@ -264,14 +268,6 @@ namespace GameClient
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error");
-                    }
-                    finally
-                    {
-                        if (lobbyClient != null)
-                        {
-                            try { if (lobbyClient.State == CommunicationState.Opened) lobbyClient.Close(); }
-                            catch { lobbyClient.Abort(); }
-                        }
                     }
                 }
             });

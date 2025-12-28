@@ -107,6 +107,8 @@
     <Compile Include="DTOs\Gameplay\GameplayRequest.cs" />
     <Compile Include="DTOs\Gameplay\GameStateDTO.cs" />
     <Compile Include="DTOs\Gameplay\PlayerPositionDTO.cs" />
+    <Compile Include="DTOs\Gameplay\VoteRequestDTO.cs" />
+    <Compile Include="DTOs\Gameplay\VoteResponseDTO.cs" />
     <Compile Include="DTOs\Leaderboard\LeaderboardDto.cs" />
     <Compile Include="DTOs\Lobby\ActiveMatchDTO.cs" />
     <Compile Include="DTOs\Lobby\CreateLobbyRequest.cs" />
@@ -144,6 +146,7 @@
     </Compile>
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
+    <Compile Include="Helpers\VoteManager.cs" />
     <Compile Include="Interfaces\IChatCallback.cs" />
     <Compile Include="Interfaces\IChatNotifier.cs" />
     <Compile Include="Interfaces\IChatService.cs" />
@@ -158,6 +161,8 @@
     <Compile Include="Item.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\RewardResult.cs" />
+    <Compile Include="Models\VoteState.cs" />
     <Compile Include="MoveRecord.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
@@ -193,6 +198,7 @@
     <Compile Include="Services\Logic\GameplayAppService.cs" />
     <Compile Include="Services\Logic\LeaderboardAppService.cs" />
     <Compile Include="Services\Logic\LobbyAppService.cs" />
+    <Compile Include="Services\Logic\SanctionAppService.cs" />
     <Compile Include="Services\Logic\UserProfileAppService.cs" />
     <Compile Include="Services\UserProfileService.cs" />
     <Compile Include="Tile.cs">

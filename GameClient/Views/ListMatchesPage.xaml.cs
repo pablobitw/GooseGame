@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using GameClient.Helpers;
+using GameClient.LobbyServiceReference;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.ServiceModel;
@@ -7,21 +8,18 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.LobbyServiceReference;
 
 namespace GameClient.Views
 {
     public partial class ListMatchesPage : Page
     {
         private readonly string _username;
-        private readonly LobbyServiceClient _lobbyClient;
         public ObservableCollection<MatchItem> Matches { get; set; }
 
         public ListMatchesPage(string username)
         {
             InitializeComponent();
             _username = username;
-            _lobbyClient = new LobbyServiceClient();
             Matches = new ObservableCollection<MatchItem>();
             MatchesListBox.ItemsSource = Matches;
 
@@ -41,7 +39,7 @@ namespace GameClient.Views
 
             try
             {
-                var activeLobbies = await _lobbyClient.GetPublicMatchesAsync();
+                var activeLobbies = await LobbyServiceManager.Instance.GetPublicMatchesAsync();
 
                 if (activeLobbies != null && activeLobbies.Any())
                 {
@@ -97,6 +95,7 @@ namespace GameClient.Views
             if (MatchesListBox.SelectedItem is MatchItem selectedMatch)
             {
                 JoinButton.IsEnabled = false;
+
                 try
                 {
                     var request = new JoinLobbyRequest
@@ -105,10 +104,11 @@ namespace GameClient.Views
                         Username = _username
                     };
 
-                    var result = await _lobbyClient.JoinLobbyAsync(request);
+                    var result = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
 
                     if (result.Success)
                     {
+                        await Task.Delay(200);
                         NavigationService.Navigate(new LobbyPage(_username, selectedMatch.LobbyCode, result));
                     }
                     else

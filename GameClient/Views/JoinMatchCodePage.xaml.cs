@@ -1,28 +1,27 @@
-﻿using System;
+﻿using GameClient.Helpers;
+using GameClient.LobbyServiceReference;
+using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.LobbyServiceReference;
 
 namespace GameClient.Views
 {
     public partial class JoinMatchCodePage : Page
     {
         private string username;
-        private LobbyServiceClient lobbyClient;
 
         public JoinMatchCodePage(string username)
         {
             InitializeComponent();
             this.username = username;
-            lobbyClient = new LobbyServiceClient();
         }
 
         private async void JoinButton_Click(object sender, RoutedEventArgs e)
         {
             string code = LobbyCodeBox.Text.Trim().ToUpper();
-
             if (string.IsNullOrWhiteSpace(code) || code.Length != 5)
             {
                 MessageBox.Show(GameClient.Resources.Strings.InvalidCodeMessage, GameClient.Resources.Strings.InvalidCodeTitle);
@@ -39,10 +38,11 @@ namespace GameClient.Views
                     Username = username
                 };
 
-                var result = await lobbyClient.JoinLobbyAsync(request);
+                var result = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
 
                 if (result.Success)
                 {
+                    await Task.Delay(200);
                     NavigationService.Navigate(new LobbyPage(username, code, result));
                 }
                 else
@@ -69,15 +69,6 @@ namespace GameClient.Views
             finally
             {
                 JoinButton.IsEnabled = true;
-                if (lobbyClient.State == CommunicationState.Opened)
-                {
-                    lobbyClient.Close();
-                }
-                else
-                {
-                    lobbyClient.Abort();
-                    lobbyClient = new LobbyServiceClient();
-                }
             }
         }
 

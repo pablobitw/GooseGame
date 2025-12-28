@@ -1,7 +1,7 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Helpers;
 using GameServer.Repositories;
-using GameServer.Interfaces;  
+using GameServer.Interfaces;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -146,22 +146,21 @@ namespace GameServer.Services.Logic
                 player.GameIdGame = game.IdGame;
                 await _repository.SaveChangesAsync();
 
-              
-
                 Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
 
-                var dtoList = playersInLobby.Select(p => new PlayerLobbyDTO
+                // Refrescamos la lista de jugadores para incluir al nuevo
+                var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                var dtoList = updatedPlayers.Select(p => new PlayerLobbyDTO
                 {
                     Username = p.Username,
                     IsHost = (p.IdPlayer == game.HostPlayerID)
                 }).ToList();
 
-                dtoList.Add(new PlayerLobbyDTO { Username = request.Username, IsHost = false });
-
                 result.Success = true;
                 result.BoardId = game.Board_idBoard;
                 result.MaxPlayers = game.MaxPlayers;
-                result.IsHost = false;
+                result.IsHost = (player.IdPlayer == game.HostPlayerID);
                 result.IsPublic = game.IsPublic;
                 result.PlayersInLobby = dtoList;
             }
@@ -191,28 +190,14 @@ namespace GameServer.Services.Logic
                         IsHost = (p.IdPlayer == game.HostPlayerID)
                     }).ToList();
 
-                    if (game.GameStatus == (int)GameStatus.WaitingForPlayers)
+                    result = new LobbyStateDTO
                     {
-                        result = new LobbyStateDTO
-                        {
-                            IsGameStarted = false,
-                            Players = playerDtos,
-                            BoardId = game.Board_idBoard,
-                            MaxPlayers = game.MaxPlayers,
-                            IsPublic = game.IsPublic
-                        };
-                    }
-                    else if (game.GameStatus == (int)GameStatus.InProgress)
-                    {
-                        result = new LobbyStateDTO
-                        {
-                            IsGameStarted = true,
-                            Players = playerDtos,
-                            BoardId = game.Board_idBoard,
-                            MaxPlayers = game.MaxPlayers,
-                            IsPublic = game.IsPublic
-                        };
-                    }
+                        IsGameStarted = (game.GameStatus == (int)GameStatus.InProgress),
+                        Players = playerDtos,
+                        BoardId = game.Board_idBoard,
+                        MaxPlayers = game.MaxPlayers,
+                        IsPublic = game.IsPublic
+                    };
                 }
             }
             catch (Exception ex)
@@ -375,7 +360,6 @@ namespace GameServer.Services.Logic
             }
             return matchesList.ToArray();
         }
-
 
         public async Task KickPlayerAsync(KickPlayerRequest request)
         {

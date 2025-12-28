@@ -199,6 +199,7 @@
     <Property Name="MatchesLost" Type="int" Nullable="false" />
     <Property Name="LuckyBoxOpened" Type="int" Nullable="false" />
     <Property Name="IdPlayer_IdPlayer" Type="int" Nullable="false" />
+    <Property Name="KicksReceived" Type="int" Nullable="false" DefaultValue="0" />
   </EntityType>
   <EntityType Name="Sanctions">
     <Key>
@@ -548,6 +549,7 @@
           <Property Name="LuckyBoxOpened" Type="Int32" Nullable="false" />
           <Property Name="IdPlayer_IdPlayer" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Player" Relationship="GameServer.PlayerPlayerStat" FromRole="PlayerStat" ToRole="Player" />
+          <Property Name="KicksReceived" Type="Int32" Nullable="false" DefaultValue="0" />
         </EntityType>
         <EntityType Name="Sanction">
           <Key>
@@ -951,6 +953,7 @@
           <ScalarProperty Name="MatchesLost" ColumnName="MatchesLost" />
           <ScalarProperty Name="LuckyBoxOpened" ColumnName="LuckyBoxOpened" />
           <ScalarProperty Name="IdPlayer_IdPlayer" ColumnName="IdPlayer_IdPlayer" />
+          <ScalarProperty Name="KicksReceived" ColumnName="KicksReceived" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

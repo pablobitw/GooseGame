@@ -110,11 +110,13 @@
     <Compile Include="Helpers\AudioManager.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\FriendshipServiceManager.cs" />
+    <Compile Include="Helpers\LobbyServiceManager.cs" />
     <Compile Include="Helpers\UserSession.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\AvatarItem.cs" />
     <Compile Include="Models\FriendDisplayModel.cs" />
     <Compile Include="Models\FriendRequestDisplayModel.cs" />
+    <Compile Include="Models\MatchItem.cs" />
     <Compile Include="ViewModels\AvatarViewModel.cs" />
     <Compile Include="Views\AvatarSelectPage.xaml.cs">
       <DependentUpon>AvatarSelectPage.xaml</DependentUpon>

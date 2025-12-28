@@ -4,12 +4,35 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient.Views"
-      xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="BoardPage"
       FontFamily="/Assets/Fonts/#Dosis"
       Background="#3E1B3C">
+
+    <Page.Resources>
+        <ContextMenu x:Key="PlayerContextMenu">
+            <MenuItem Header="Inicia Votación de Expulsión" 
+                      Click="VoteKickMenuItem_Click"
+                      Foreground="Red" FontWeight="Bold"/>
+        </ContextMenu>
+
+        <Storyboard x:Key="ShakeAnimation">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BoxRotation" Storyboard.TargetProperty="Angle" Duration="0:0:0.3">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.05" Value="-10"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.10" Value="10"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="-10"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.20" Value="10"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="-5"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="RevealAnimation">
+            <DoubleAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+            <ThicknessAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Margin" From="0,50,0,0" To="0,0,0,0" Duration="0:0:0.5"/>
+        </Storyboard>
+    </Page.Resources>
 
     <Grid x:Name="MainGrid">
 
@@ -34,7 +57,10 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="{TemplateBinding Background}" CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                        <fa:ImageAwesome Icon="Bars" Foreground="{TemplateBinding Foreground}" Margin="12"/>
+                                        <Path Data="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" 
+                                              Fill="{TemplateBinding Foreground}" 
+                                              Stretch="Uniform" Width="24" Height="24" 
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -60,7 +86,8 @@
 
             <Border x:Name="Player1Panel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,110,0,0" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
-                    Visibility="Hidden" d:Visibility="Visible">
+                    Visibility="Hidden" d:Visibility="Visible"
+                    ContextMenu="{StaticResource PlayerContextMenu}">
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
@@ -82,7 +109,8 @@
 
             <Border x:Name="Player2Panel" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,110,325,0" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
-                    Visibility="Hidden" d:Visibility="Visible">
+                    Visibility="Hidden" d:Visibility="Visible"
+                    ContextMenu="{StaticResource PlayerContextMenu}">
                 <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
@@ -104,7 +132,8 @@
 
             <Border x:Name="Player3Panel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60,0,0,60" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
-                    Visibility="Hidden" d:Visibility="Visible">
+                    Visibility="Hidden" d:Visibility="Visible"
+                    ContextMenu="{StaticResource PlayerContextMenu}">
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
@@ -126,7 +155,8 @@
 
             <Border x:Name="Player4Panel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,325,60" 
                     Width="240" Height="80" Background="#CC000000" CornerRadius="10" 
-                    Visibility="Hidden" d:Visibility="Visible">
+                    Visibility="Hidden" d:Visibility="Visible"
+                    ContextMenu="{StaticResource PlayerContextMenu}">
                 <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10">
                     <Grid Width="60" Height="60">
                         <Ellipse Fill="Gray"/>
@@ -330,24 +360,39 @@
                 </Button>
 
             </Grid>
+        </Grid>
 
-            <Grid.Resources>
-                <Storyboard x:Key="ShakeAnimation">
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BoxRotation" Storyboard.TargetProperty="Angle" Duration="0:0:0.3">
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.05" Value="-10"/>
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.10" Value="10"/>
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="-10"/>
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.20" Value="10"/>
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="-5"/>
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="0"/>
-                    </DoubleAnimationUsingKeyFrames>
-                </Storyboard>
+        <Grid x:Name="VoteKickOverlay" Visibility="Collapsed" Panel.ZIndex="400">
+            <Border Background="#CC000000"/>
 
-                <Storyboard x:Key="RevealAnimation">
-                    <DoubleAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
-                    <ThicknessAnimation Storyboard.TargetName="RewardContainer" Storyboard.TargetProperty="Margin" From="0,50,0,0" To="0,0,0,0" Duration="0:0:0.5"/>
-                </Storyboard>
-            </Grid.Resources>
+            <Border Width="400" Height="250" Background="#2D2D30" 
+                    CornerRadius="15" BorderBrush="#FF4444" BorderThickness="2"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="Red"/>
+                </Border.Effect>
+
+                <StackPanel Margin="20" VerticalAlignment="Center">
+                    <TextBlock Text="¡VOTACIÓN DE EXPULSIÓN!" 
+                               Foreground="#FF4444" FontSize="24" FontWeight="Bold" 
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <TextBlock x:Name="VoteKickTargetText" 
+                               Text="¿Expulsar a 'PlayerX'?" 
+                               Foreground="White" FontSize="18" 
+                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                        <Button Content="SÍ (F1)" Width="100" Height="40" Margin="10" 
+                                Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                                Click="VoteYes_Click"/>
+
+                        <Button Content="NO (F2)" Width="100" Height="40" Margin="10" 
+                                Background="#F44336" Foreground="White" FontWeight="Bold"
+                                Click="VoteNo_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </Grid>
 
     </Grid>

@@ -11,20 +11,21 @@ namespace GameServer.Services
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class LobbyService : ILobbyService
     {
-        private readonly LobbyAppService _logic;
-
-        public LobbyService()
-        {
-            var repository = new LobbyRepository();
-            _logic = new LobbyAppService(repository);
-        }
-
         public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
         {
+            var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
+
             using (var repo = new LobbyRepository())
             {
                 var logic = new LobbyAppService(repo);
-                return await logic.CreateLobbyAsync(request);
+                var result = await logic.CreateLobbyAsync(request);
+
+                if (result.Success && callback != null)
+                {
+                    ConnectionManager.RegisterLobbyClient(request.HostUsername, callback);
+                }
+
+                return result;
             }
         }
 
@@ -57,15 +58,15 @@ namespace GameServer.Services
 
         public async Task<JoinLobbyResultDTO> JoinLobbyAsync(JoinLobbyRequest request)
         {
+            var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
+
             using (var repo = new LobbyRepository())
             {
                 var logic = new LobbyAppService(repo);
-
                 var result = await logic.JoinLobbyAsync(request);
 
-                if (result.Success)
+                if (result.Success && callback != null)
                 {
-                    var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
                     ConnectionManager.RegisterLobbyClient(request.Username, callback);
                 }
 

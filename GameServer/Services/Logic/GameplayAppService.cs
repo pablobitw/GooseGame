@@ -1,13 +1,16 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
+using GameServer.Models; 
 using GameServer.Repositories;
 using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
@@ -20,6 +23,9 @@ namespace GameServer.Services.Logic
         private static readonly ConcurrentDictionary<int, bool> _processingGames = new ConcurrentDictionary<int, bool>();
         private static readonly ConcurrentDictionary<int, DateTime> _lastGameActivity = new ConcurrentDictionary<int, DateTime>();
         private static readonly ConcurrentDictionary<string, int> _afkStrikes = new ConcurrentDictionary<string, int>();
+
+        private static readonly ConcurrentDictionary<int, VoteState> _activeVotes = new ConcurrentDictionary<int, VoteState>();
+
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
         private const int TurnTimeLimitSeconds = 60;
@@ -241,136 +247,6 @@ namespace GameServer.Services.Logic
             return result;
         }
 
-        private RewardResult ProcessLuckyBoxReward(Player player)
-        {
-            int roll = RandomGenerator.Next(1, 101);
-
-            if (roll <= 50)
-            {
-                int coins = 50;
-                player.Coins += coins;
-                return new RewardResult { Type = "COINS", Amount = coins, Description = $"¡Has encontrado {coins} Monedas de Oro!" };
-            }
-            else if (roll <= 80)
-            {
-                player.TicketCommon++;
-                return new RewardResult { Type = "COMMON", Amount = 1, Description = "¡Has desbloqueado un Ticket COMÚN!" };
-            }
-            else if (roll <= 95)
-            {
-                player.TicketEpic++;
-                return new RewardResult { Type = "EPIC", Amount = 1, Description = "¡INCREÍBLE! ¡Ticket ÉPICO obtenido!" };
-            }
-            else
-            {
-                player.TicketLegendary++;
-                return new RewardResult { Type = "LEGENDARY", Amount = 1, Description = "¡JACKPOT! ¡Ticket LEGENDARIO!" };
-            }
-        }
-
-        private class RewardResult
-        {
-            public string Type { get; set; }
-            public int Amount { get; set; }
-            public string Description { get; set; }
-        }
-
-        public async Task<bool> LeaveGameAsync(GameplayRequest request)
-        {
-            try
-            {
-                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                if (game == null) return false;
-
-                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
-                if (player == null) return false;
-
-                var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
-                if (playerWithStats != null && playerWithStats.PlayerStat != null)
-                {
-                    playerWithStats.PlayerStat.MatchesPlayed++;
-                    playerWithStats.PlayerStat.MatchesLost++;
-                }
-
-                var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-                player.GameIdGame = null;
-                player.TurnsSkipped = 0;
-
-                var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
-
-                if (remainingPlayers.Count < 2)
-                {
-                    game.GameStatus = (int)GameStatus.Finished;
-
-                    if (remainingPlayers.Count == 1)
-                    {
-                        var winner = remainingPlayers[0];
-                        game.WinnerIdPlayer = winner.IdPlayer;
-
-                        var winnerWithStats = await _repository.GetPlayerWithStatsByIdAsync(winner.IdPlayer);
-                        if (winnerWithStats != null && winnerWithStats.PlayerStat != null)
-                        {
-                            winnerWithStats.PlayerStat.MatchesPlayed++;
-                            winnerWithStats.PlayerStat.MatchesWon++;
-                            winnerWithStats.TicketCommon += 1;
-                            winnerWithStats.Coins += 300;
-                        }
-
-                        Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}", game.LobbyCode, winner.Username);
-                        _lastGameActivity.TryRemove(game.IdGame, out _);
-                    }
-                    else
-                    {
-                        game.WinnerIdPlayer = null;
-                        Log.InfoFormat("Juego {0} terminado. Todos los jugadores abandonaron.", game.LobbyCode);
-                    }
-                }
-
-                await _repository.SaveChangesAsync();
-                return true;
-            }
-            catch (SqlException ex)
-            {
-                Log.Error("Error SQL al abandonar juego.", ex);
-                return false;
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB al abandonar juego.", ex);
-                return false;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout al abandonar juego.", ex);
-                return false;
-            }
-        }
-
-        private async Task UpdateStatsEndGame(int gameId, int winnerId)
-        {
-            var players = await _repository.GetPlayersWithStatsInGameAsync(gameId);
-            foreach (var p in players)
-            {
-                if (p.PlayerStat != null)
-                {
-                    p.PlayerStat.MatchesPlayed++;
-                    if (p.IdPlayer == winnerId)
-                    {
-                        p.PlayerStat.MatchesWon++;
-                        p.TicketCommon += 1;
-                        p.Coins += 300;
-                    }
-                    else
-                    {
-                        p.PlayerStat.MatchesLost++;
-                    }
-                }
-                p.GameIdGame = null;
-                p.TurnsSkipped = 0;
-            }
-            await _repository.SaveChangesAsync();
-        }
-
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
         {
             GameStateDTO state = new GameStateDTO
@@ -492,6 +368,249 @@ namespace GameServer.Services.Logic
             return state;
         }
 
+        public async Task<bool> LeaveGameAsync(GameplayRequest request)
+        {
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                if (game == null) return false;
+
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+                if (player == null) return false;
+
+                var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
+                if (playerWithStats != null && playerWithStats.PlayerStat != null)
+                {
+                    playerWithStats.PlayerStat.MatchesPlayed++;
+                    playerWithStats.PlayerStat.MatchesLost++;
+                }
+
+                var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                player.GameIdGame = null;
+                player.TurnsSkipped = 0;
+
+                var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
+
+                if (remainingPlayers.Count < 2)
+                {
+                    game.GameStatus = (int)GameStatus.Finished;
+
+                    if (remainingPlayers.Count == 1)
+                    {
+                        var winner = remainingPlayers[0];
+                        game.WinnerIdPlayer = winner.IdPlayer;
+
+                        var winnerWithStats = await _repository.GetPlayerWithStatsByIdAsync(winner.IdPlayer);
+                        if (winnerWithStats != null && winnerWithStats.PlayerStat != null)
+                        {
+                            winnerWithStats.PlayerStat.MatchesPlayed++;
+                            winnerWithStats.PlayerStat.MatchesWon++;
+                            winnerWithStats.TicketCommon += 1;
+                            winnerWithStats.Coins += 300;
+                        }
+
+                        Log.InfoFormat("Juego {0} terminado por abandono. Ganador: {1}", game.LobbyCode, winner.Username);
+                        _lastGameActivity.TryRemove(game.IdGame, out _);
+                    }
+                    else
+                    {
+                        game.WinnerIdPlayer = null;
+                        Log.InfoFormat("Juego {0} terminado. Todos los jugadores abandonaron.", game.LobbyCode);
+                    }
+                }
+
+                await _repository.SaveChangesAsync();
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL al abandonar juego.", ex);
+                return false;
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error DB al abandonar juego.", ex);
+                return false;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al abandonar juego.", ex);
+                return false;
+            }
+        }
+
+        public async Task InitiateVoteKickAsync(VoteRequestDTO request)
+        {
+            if (string.IsNullOrWhiteSpace(request.TargetUsername))
+                throw new InvalidOperationException("Debe especificar un objetivo.");
+
+            if (request.Username == request.TargetUsername)
+                throw new InvalidOperationException("No puedes expulsarte a ti mismo.");
+
+            var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+            if (player == null || !player.GameIdGame.HasValue)
+                throw new FaultException("No estás en una partida.");
+
+            int gameId = player.GameIdGame.Value;
+
+            if (_activeVotes.ContainsKey(gameId))
+                throw new InvalidOperationException("Ya hay una votación en curso.");
+
+            var activePlayers = await _repository.GetPlayersInGameAsync(gameId);
+
+            if (activePlayers.Count < 3)
+                throw new FaultException("Se requieren al menos 3 jugadores para iniciar una votación.");
+
+            var targetPlayer = activePlayers.FirstOrDefault(p => p.Username == request.TargetUsername);
+            if (targetPlayer == null)
+                throw new FaultException("El jugador objetivo no está en la partida.");
+
+            var lastMove = await _repository.GetLastMoveForPlayerAsync(gameId, targetPlayer.IdPlayer);
+            if (lastMove != null && lastMove.FinalPosition >= 55)
+            {
+                throw new FaultException("Protección Activada: No se puede expulsar a un jugador en la recta final.");
+            }
+
+            int eligibleVoters = activePlayers.Count - 1;
+
+            var voteState = new VoteState
+            {
+                TargetUsername = request.TargetUsername,
+                InitiatorUsername = request.Username,
+                TotalEligibleVoters = eligibleVoters
+            };
+
+            voteState.VotesFor.Add(request.Username);
+
+            if (_activeVotes.TryAdd(gameId, voteState))
+            {
+                Log.Info($"Votación iniciada en juego {gameId} contra {request.TargetUsername}");
+            }
+        }
+
+        public async Task CastVoteAsync(VoteResponseDTO request)
+        {
+            var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+            if (player == null || !player.GameIdGame.HasValue) return;
+
+            int gameId = player.GameIdGame.Value;
+
+            if (!_activeVotes.TryGetValue(gameId, out VoteState state))
+                throw new FaultException("No hay votación activa en esta partida.");
+
+            if (request.Username == state.TargetUsername) return;
+
+            lock (state)
+            {
+                if (request.AcceptKick)
+                {
+                    state.VotesFor.Add(request.Username);
+                }
+                else
+                {
+                    state.VotesAgainst.Add(request.Username);
+                }
+
+                int totalVotesCast = state.VotesFor.Count + state.VotesAgainst.Count;
+
+                if (totalVotesCast >= state.TotalEligibleVoters)
+                {
+                    ProcessVoteResult(gameId, state);
+                }
+            }
+
+            await Task.CompletedTask;
+        }
+
+        private async void ProcessVoteResult(int gameId, VoteState state)
+        {
+            _activeVotes.TryRemove(gameId, out _);
+
+            bool isKicked = false;
+
+            if (state.TotalEligibleVoters == 2)
+            {
+                isKicked = (state.VotesFor.Count == 2);
+            }
+            else if (state.TotalEligibleVoters >= 3)
+            {
+                isKicked = (state.VotesFor.Count >= 2);
+            }
+
+            if (isKicked)
+            {
+                Log.Info($"Jugador {state.TargetUsername} expulsado por votación.");
+
+                using (var repo = new GameplayRepository())
+                {
+                    try
+                    {
+                        var targetP = await repo.GetPlayerByUsernameAsync(state.TargetUsername);
+                        string lobbyCodeForSanction = "";
+
+                        if (targetP != null)
+                        {
+                            var game = await repo.GetGameByIdAsync(gameId);
+                            lobbyCodeForSanction = game?.LobbyCode ?? "UNKNOWN";
+
+                            var playerStats = await repo.GetPlayerWithStatsByIdAsync(targetP.IdPlayer);
+                            if (playerStats != null && playerStats.PlayerStat != null)
+                            {
+                                playerStats.PlayerStat.MatchesPlayed++;
+                                playerStats.PlayerStat.MatchesLost++;
+                            }
+
+                            targetP.GameIdGame = null;
+                            targetP.TurnsSkipped = 0;
+                            await repo.SaveChangesAsync();
+                        }
+
+                        var sanctionLogic = new SanctionAppService(repo);
+                        await sanctionLogic.ProcessKickSanctionAsync(
+                            state.TargetUsername,
+                            lobbyCodeForSanction,
+                            "Expulsado por votación de jugadores"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("Error al ejecutar expulsión y sanción", ex);
+                    }
+                }
+            }
+            else
+            {
+                Log.Info($"Votación contra {state.TargetUsername} rechazada.");
+            }
+        }
+
+        private RewardResult ProcessLuckyBoxReward(Player player)
+        {
+            int roll = RandomGenerator.Next(1, 101);
+
+            if (roll <= 50)
+            {
+                int coins = 50;
+                player.Coins += coins;
+                return new RewardResult { Type = "COINS", Amount = coins, Description = $"¡Has encontrado {coins} Monedas de Oro!" };
+            }
+            else if (roll <= 80)
+            {
+                player.TicketCommon++;
+                return new RewardResult { Type = "COMMON", Amount = 1, Description = "¡Has desbloqueado un Ticket COMÚN!" };
+            }
+            else if (roll <= 95)
+            {
+                player.TicketEpic++;
+                return new RewardResult { Type = "EPIC", Amount = 1, Description = "¡INCREÍBLE! ¡Ticket ÉPICO obtenido!" };
+            }
+            else
+            {
+                player.TicketLegendary++;
+                return new RewardResult { Type = "LEGENDARY", Amount = 1, Description = "¡JACKPOT! ¡Ticket LEGENDARIO!" };
+            }
+        }
+
         private async Task ProcessAfkTimeout(int gameId)
         {
             try
@@ -559,6 +678,31 @@ namespace GameServer.Services.Logic
             {
                 _processingGames.TryRemove(gameId, out _);
             }
+        }
+
+        private async Task UpdateStatsEndGame(int gameId, int winnerId)
+        {
+            var players = await _repository.GetPlayersWithStatsInGameAsync(gameId);
+            foreach (var p in players)
+            {
+                if (p.PlayerStat != null)
+                {
+                    p.PlayerStat.MatchesPlayed++;
+                    if (p.IdPlayer == winnerId)
+                    {
+                        p.PlayerStat.MatchesWon++;
+                        p.TicketCommon += 1;
+                        p.Coins += 300;
+                    }
+                    else
+                    {
+                        p.PlayerStat.MatchesLost++;
+                    }
+                }
+                p.GameIdGame = null;
+                p.TurnsSkipped = 0;
+            }
+            await _repository.SaveChangesAsync();
         }
     }
 }

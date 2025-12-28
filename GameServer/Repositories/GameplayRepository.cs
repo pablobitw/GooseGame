@@ -78,6 +78,10 @@ namespace GameServer.Repositories
                 .Where(p => p.GameIdGame == gameId)
                 .ToListAsync();
         }
+        public void AddSanction(Sanction sanction)
+        {
+            _context.Sanctions.Add(sanction);
+        }
 
         public int GetMoveCount(int gameId)
         {

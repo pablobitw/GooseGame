@@ -24,7 +24,6 @@ namespace GameClient.Views
         private bool isHost = false;
         private string username;
         private string lobbyCode;
-        private LobbyServiceClient lobbyClient;
         private ChatServiceClient chatClient;
         private int playerCount = 4;
         private int boardId = 1;
@@ -35,7 +34,8 @@ namespace GameClient.Views
             InitializeComponent();
             this.username = username;
             isHost = true;
-            lobbyClient = new LobbyServiceClient();
+
+            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
 
             if (LobbyTabControl.Items.Count > 1)
             {
@@ -56,7 +56,7 @@ namespace GameClient.Views
             playerCount = joinResult.MaxPlayers;
             isHost = false;
 
-            lobbyClient = new LobbyServiceClient();
+            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
 
             SyncLobbyVisuals(joinResult.MaxPlayers, joinResult.BoardId, joinResult.IsPublic);
             LockLobbySettings(lobbyCode);
@@ -64,8 +64,31 @@ namespace GameClient.Views
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
 
-            InitializeTimer();
+            this.Loaded += async (s, e) =>
+            {
+                await Task.Delay(500);
+                InitializeTimer();
+            };
+
             ConnectToChatService();
+        }
+
+        private void OnPlayerKicked(string reason)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                pollingTimer?.Stop();
+                CloseChatClient();
+
+                LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
+
+                MessageBox.Show(reason, "Expulsado del Lobby", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                if (Window.GetWindow(this) is GameMainWindow mainWindow)
+                {
+                    mainWindow.ShowMainMenu();
+                }
+            });
         }
 
         private void InitializeTimer()
@@ -82,14 +105,7 @@ namespace GameClient.Views
 
             try
             {
-                if (lobbyClient == null ||
-                    lobbyClient.State == CommunicationState.Faulted ||
-                    lobbyClient.State == CommunicationState.Closed)
-                {
-                    lobbyClient = new LobbyServiceClient();
-                }
-
-                var state = await lobbyClient.GetLobbyStateAsync(lobbyCode);
+                var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
 
                 if (state != null)
                 {
@@ -124,11 +140,9 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                AbortClient();
             }
             catch (CommunicationException)
             {
-                AbortClient();
             }
             catch { }
             finally
@@ -138,12 +152,6 @@ namespace GameClient.Views
                     pollingTimer.Start();
                 }
             }
-        }
-
-        private void AbortClient()
-        {
-            try { lobbyClient?.Abort(); } catch { }
-            lobbyClient = null;
         }
 
         private void SyncLobbyVisuals(int maxPlayers, int currentBoardId, bool isPublic)
@@ -178,20 +186,23 @@ namespace GameClient.Views
         {
             pollingTimer?.Stop();
 
+            LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
+
             if (isLobbyCreated && isHost)
             {
                 var result = MessageBox.Show("Se disolverá la sala. ¿Seguro?", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.Yes)
                 {
                     pollingTimer?.Start();
+                    LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
                     return;
                 }
 
-                try { await lobbyClient.DisbandLobbyAsync(username); } catch { }
+                try { await LobbyServiceManager.Instance.DisbandLobbyAsync(username); } catch { }
             }
             else
             {
-                try { await lobbyClient.LeaveLobbyAsync(username); } catch { }
+                try { await LobbyServiceManager.Instance.LeaveLobbyAsync(username); } catch { }
             }
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
@@ -199,7 +210,6 @@ namespace GameClient.Views
                 mainWindow.ShowMainMenu();
             }
 
-            CloseClient();
             CloseChatClient();
         }
 
@@ -209,30 +219,36 @@ namespace GameClient.Views
             BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
             boardId = 2;
         }
+
         private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e)
         {
             BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
             BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
             boardId = 1;
         }
+
         private void DecreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
             if (playerCount > 2) { playerCount--; PlayerCountBlock.Text = playerCount.ToString(); }
         }
+
         private void IncreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
             if (playerCount < 4) { playerCount++; PlayerCountBlock.Text = playerCount.ToString(); }
         }
+
         private void VisibilityPublicButton_Click(object sender, RoutedEventArgs e)
         {
             VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
             VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
         }
+
         private void VisibilityPrivateButton_Click(object sender, RoutedEventArgs e)
         {
             VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
             VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
         }
+
         private void SendChatMessageButton_Click(object sender, RoutedEventArgs e) => SendMessage();
 
         private async void StartMatchButton_Click(object sender, RoutedEventArgs e)
@@ -254,12 +270,12 @@ namespace GameClient.Views
             try
             {
                 var request = new CreateLobbyRequest { Settings = settings, HostUsername = username };
-                var result = await lobbyClient.CreateLobbyAsync(request);
+                var result = await LobbyServiceManager.Instance.CreateLobbyAsync(request);
 
                 if (result.Success)
                 {
                     lobbyCode = result.LobbyCode;
-                    LockLobbySettings(result.LobbyCode); // Aquí se bloquea después de crear
+                    LockLobbySettings(result.LobbyCode);
                     var initialPlayers = new PlayerLobbyDTO[] { new PlayerLobbyDTO { Username = username, IsHost = true } };
                     UpdatePlayerListUI(initialPlayers);
                     InitializeTimer();
@@ -284,7 +300,7 @@ namespace GameClient.Views
 
             try
             {
-                var serverState = await lobbyClient.GetLobbyStateAsync(lobbyCode);
+                var serverState = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
 
                 if (serverState == null || serverState.Players.Length < 2)
                 {
@@ -294,7 +310,7 @@ namespace GameClient.Views
                     return;
                 }
 
-                bool started = await lobbyClient.StartGameAsync(lobbyCode);
+                bool started = await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
                 if (started)
                 {
                     pollingTimer.Stop();
@@ -309,6 +325,10 @@ namespace GameClient.Views
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message);
+            }
+            finally
+            {
+                StartMatchButton.IsEnabled = true;
             }
         }
 
@@ -355,15 +375,11 @@ namespace GameClient.Views
         }
 
         private void CloseChatClient() { try { chatClient?.Close(); } catch { chatClient?.Abort(); } }
-        private void CloseClient() { try { lobbyClient?.Close(); } catch { lobbyClient?.Abort(); } }
 
         private void LockLobbySettings(string lobbyCode)
         {
             LobbySettingsPanel.IsEnabled = false;
 
-            // [CORRECCIÓN CRÍTICA]
-            // Cambiamos el texto a "INICIAR PARTIDA" pero lo DESHABILITAMOS
-            // hasta que entre otro jugador (manejado en UpdatePlayerListUI)
             StartMatchButton.Content = GameClient.Resources.Strings.StartGameButton;
             StartMatchButton.IsEnabled = false;
             StartMatchButton.Opacity = 0.5;
@@ -398,14 +414,13 @@ namespace GameClient.Views
             for (int i = 0; i < emptySlots; i++) PlayerList.Items.Add(CreateEmptySlotItem());
             PlayersTabHeader.Text = $"JUGADORES ({slotsFilled}/{playerCount})";
 
-            // [LÓGICA DINÁMICA]
             if (isHost && isLobbyCreated)
             {
                 bool canStart = slotsFilled >= 2;
                 StartMatchButton.IsEnabled = canStart;
                 StartMatchButton.Opacity = canStart ? 1.0 : 0.5;
                 StartMatchButton.Content = canStart
-                    ? GameClient.Resources.Strings.StartGameButton // "INICIAR PARTIDA"
+                    ? GameClient.Resources.Strings.StartGameButton
                     : "Esperando jugadores...";
             }
         }
@@ -441,7 +456,9 @@ namespace GameClient.Views
                 NoFriendsToInviteText.Visibility = online.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
         }
+
         private void CloseInviteMenu_Click(object sender, RoutedEventArgs e) => InviteFriendsOverlay.Visibility = Visibility.Collapsed;
+
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;

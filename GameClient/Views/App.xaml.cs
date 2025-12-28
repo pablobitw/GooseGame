@@ -1,42 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-
-namespace GameClient
-{
-    /// <summary>
-    /// Lógica de interacción para App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-    }
-}
-
-//PASAR A INGLES
-/*using System.Globalization;
-using System.Threading;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Threading;
 
 namespace GameClient
 {
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+        // Constructor para enganchar los eventos de error global
+        public App()
         {
-            // --- ESTA LÍNEA FUERZA EL INGLÉS ---
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
-            // -----------------------------------
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        }
 
-            // Si quieres probar español de nuevo, comenta la línea de arriba o cámbiala a "es"
+        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            // ESTO ES LO QUE TE DIRÁ POR QUÉ SE CIERRA
+            string errorMessage = $"Error Crítico: {e.Exception.Message}\n\n" +
+                                  $"Detalle: {e.Exception.InnerException?.Message}\n\n" +
+                                  $"Stack Trace: {e.Exception.StackTrace}";
 
-            base.OnStartup(e);
+            MessageBox.Show(errorMessage, "Crash Report", MessageBoxButton.OK, MessageBoxImage.Error);
+            
+            e.Handled = true; // Esto evita que la app se cierre de golpe
         }
     }
 }
-*/

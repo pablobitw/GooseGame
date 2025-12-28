@@ -18,13 +18,14 @@ using System.Windows.Threading;
 
 namespace GameClient.Views
 {
-    public partial class BoardPage : Page, ILobbyServiceCallback
+    // [IMPORTANTE] Implementamos IGameplayServiceCallback
+    [CallbackBehavior(UseSynchronizationContext = false)]
+    public partial class BoardPage : Page, IGameplayServiceCallback
     {
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
         private GameplayServiceClient gameplayClient;
-        private LobbyServiceClient _lobbyProxy;
         private DispatcherTimer gameLoopTimer;
         private DispatcherTimer _startCountdownTimer;
         private DispatcherTimer _turnCountdownTimer;
@@ -77,8 +78,9 @@ namespace GameClient.Views
             this.boardId = boardId;
             this.currentUsername = username;
 
-            gameplayClient = new GameplayServiceClient();
-            InitializeLobbyListener();
+            // Ahora 'this' implementa la interfaz, así que InstanceContext no fallará
+            InstanceContext context = new InstanceContext(this);
+            gameplayClient = new GameplayServiceClient(context);
 
             LoadBoardImage();
             StartCountdown();
@@ -92,13 +94,21 @@ namespace GameClient.Views
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
                 _turnCountdownTimer?.Stop();
+                try { gameplayClient?.Close(); } catch { gameplayClient?.Abort(); }
             };
         }
 
-        private void InitializeLobbyListener()
+        // [MÉTODO DEL CALLBACK] - Implementación de IGameplayServiceCallback
+        public void OnVoteKickStarted(string targetUsername)
         {
-            InstanceContext context = new InstanceContext(this);
-            _lobbyProxy = new LobbyServiceClient(context);
+            if (targetUsername == currentUsername) return;
+
+            Dispatcher.Invoke(() =>
+            {
+                VoteKickTargetText.Text = $"¿Deseas expulsar al jugador '{targetUsername}' por inactividad/comportamiento?";
+                VoteKickTargetText.Tag = targetUsername;
+                VoteKickOverlay.Visibility = Visibility.Visible;
+            });
         }
 
         public void OnPlayerKicked(string reason)
@@ -409,6 +419,12 @@ namespace GameClient.Views
                     targetPanel.Visibility = Visibility.Visible;
                     targetNameBlock.Text = player.Username;
 
+                    targetPanel.Tag = player.Username;
+                    if (targetPanel.ContextMenu != null)
+                    {
+                        targetPanel.ContextMenu.IsEnabled = (player.Username != currentUsername);
+                    }
+
                     BitmapImage bitmap = new BitmapImage();
                     bitmap.BeginInit();
                     bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
@@ -718,6 +734,74 @@ namespace GameClient.Views
         private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private async void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            if (menuItem == null) return;
+
+            var contextMenu = menuItem.Parent as ContextMenu;
+            var panel = contextMenu.PlacementTarget as Border;
+
+            if (panel == null || panel.Tag == null) return;
+
+            string targetUser = panel.Tag.ToString();
+
+            if (targetUser == currentUsername)
+            {
+                MessageBox.Show("No puedes iniciar una votación contra ti mismo.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                var request = new VoteRequestDTO
+                {
+                    Username = currentUsername,
+                    TargetUsername = targetUser
+                };
+
+                await gameplayClient.InitiateVoteKickAsync(request);
+                MessageBox.Show($"Has iniciado una votación para expulsar a {targetUser}.", "Votación Iniciada", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void VoteYes_Click(object sender, RoutedEventArgs e)
+        {
+            await SendVote(true);
+        }
+
+        private async void VoteNo_Click(object sender, RoutedEventArgs e)
+        {
+            await SendVote(false);
+        }
+
+        private async Task SendVote(bool acceptKick)
+        {
+            VoteKickOverlay.Visibility = Visibility.Collapsed;
+            string targetUser = VoteKickTargetText.Tag?.ToString();
+
+            if (string.IsNullOrEmpty(targetUser)) return;
+
+            try
+            {
+                var response = new VoteResponseDTO
+                {
+                    Username = currentUsername,
+                    AcceptKick = acceptKick
+                };
+
+                await gameplayClient.CastVoteAsync(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error enviando voto: " + ex.Message);
+            }
         }
     }
 }

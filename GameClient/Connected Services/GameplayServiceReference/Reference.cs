@@ -417,8 +417,130 @@ namespace GameClient.GameplayServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="VoteRequestDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.SerializableAttribute()]
+    public partial class VoteRequestDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TargetUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string TargetUsername {
+            get {
+                return this.TargetUsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TargetUsernameField, value) != true)) {
+                    this.TargetUsernameField = value;
+                    this.RaisePropertyChanged("TargetUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="VoteResponseDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.SerializableAttribute()]
+    public partial class VoteResponseDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool AcceptKickField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UsernameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool AcceptKick {
+            get {
+                return this.AcceptKickField;
+            }
+            set {
+                if ((this.AcceptKickField.Equals(value) != true)) {
+                    this.AcceptKickField = value;
+                    this.RaisePropertyChanged("AcceptKick");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Username {
+            get {
+                return this.UsernameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UsernameField, value) != true)) {
+                    this.UsernameField = value;
+                    this.RaisePropertyChanged("Username");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="GameplayServiceReference.IGameplayService")]
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="GameplayServiceReference.IGameplayService", CallbackContract=typeof(GameClient.GameplayServiceReference.IGameplayServiceCallback))]
     public interface IGameplayService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
@@ -438,6 +560,25 @@ namespace GameClient.GameplayServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
         System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
+        void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDTO request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
+        System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDTO request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]
+        void CastVote(GameClient.GameplayServiceReference.VoteResponseDTO vote);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]
+        System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDTO vote);
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    public interface IGameplayServiceCallback {
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnVoteKickStarted")]
+        void OnVoteKickStarted(string targetUsername);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -446,25 +587,26 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class GameplayServiceClient : System.ServiceModel.ClientBase<GameClient.GameplayServiceReference.IGameplayService>, GameClient.GameplayServiceReference.IGameplayService {
+    public partial class GameplayServiceClient : System.ServiceModel.DuplexClientBase<GameClient.GameplayServiceReference.IGameplayService>, GameClient.GameplayServiceReference.IGameplayService {
         
-        public GameplayServiceClient() {
+        public GameplayServiceClient(System.ServiceModel.InstanceContext callbackInstance) : 
+                base(callbackInstance) {
         }
         
-        public GameplayServiceClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+        public GameplayServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName) : 
+                base(callbackInstance, endpointConfigurationName) {
         }
         
-        public GameplayServiceClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public GameplayServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, string remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public GameplayServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+        public GameplayServiceClient(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, endpointConfigurationName, remoteAddress) {
         }
         
-        public GameplayServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+        public GameplayServiceClient(System.ServiceModel.InstanceContext callbackInstance, System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+                base(callbackInstance, binding, remoteAddress) {
         }
         
         public GameClient.GameplayServiceReference.DiceRollDTO RollDice(GameClient.GameplayServiceReference.GameplayRequest request) {
@@ -489,6 +631,22 @@ namespace GameClient.GameplayServiceReference {
         
         public System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.LeaveGameAsync(request);
+        }
+        
+        public void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDTO request) {
+            base.Channel.InitiateVoteKick(request);
+        }
+        
+        public System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDTO request) {
+            return base.Channel.InitiateVoteKickAsync(request);
+        }
+        
+        public void CastVote(GameClient.GameplayServiceReference.VoteResponseDTO vote) {
+            base.Channel.CastVote(vote);
+        }
+        
+        public System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDTO vote) {
+            return base.Channel.CastVoteAsync(vote);
         }
     }
 }

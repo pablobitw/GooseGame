@@ -14,12 +14,19 @@ namespace GameServer
     
     public partial class PlayerStat
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public PlayerStat()
+        {
+            this.KicksReceived = 0;
+        }
+    
         public int IdPlayers { get; set; }
         public int MatchesPlayed { get; set; }
         public int MatchesWon { get; set; }
         public int MatchesLost { get; set; }
         public int LuckyBoxOpened { get; set; }
         public int IdPlayer_IdPlayer { get; set; }
+        public int KicksReceived { get; set; }
     
         public virtual Player Player { get; set; }
     }
