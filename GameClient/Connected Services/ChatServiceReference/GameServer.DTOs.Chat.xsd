@@ -9,9 +9,11 @@
   <xs:element name="JoinChatRequest" nillable="true" type="tns:JoinChatRequest" />
   <xs:complexType name="ChatMessageDto">
     <xs:sequence>
+      <xs:element minOccurs="0" name="IsPrivate" type="xs:boolean" />
       <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Sender" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="TargetUser" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ChatMessageDto" nillable="true" type="tns:ChatMessageDto" />

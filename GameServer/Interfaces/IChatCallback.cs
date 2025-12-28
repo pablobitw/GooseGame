@@ -1,4 +1,5 @@
-﻿using System.ServiceModel;
+﻿using GameServer.DTOs.Chat;
+using System.ServiceModel;
 
 namespace GameServer.Interfaces
 {
@@ -6,6 +7,6 @@ namespace GameServer.Interfaces
     public interface IChatCallback
     {
         [OperationContract(IsOneWay = true)]
-        void ReceiveMessage(string username, string message);
+        void ReceiveMessage(ChatMessageDto message);
     }
 }

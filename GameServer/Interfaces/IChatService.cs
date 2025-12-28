@@ -13,6 +13,9 @@ namespace GameServer.Interfaces
         void SendLobbyMessage(ChatMessageDto messageDto);
 
         [OperationContract(IsOneWay = true)]
+        void SendPrivateMessage(ChatMessageDto messageDto);
+
+        [OperationContract(IsOneWay = true)]
         void LeaveLobbyChat(JoinChatRequest request);
     }
 }

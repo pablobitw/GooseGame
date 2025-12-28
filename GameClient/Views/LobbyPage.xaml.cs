@@ -360,9 +360,10 @@ namespace GameClient.Views
             catch { AddMessageToUI("[Sistema]:", "Error enviando mensaje."); }
         }
 
-        public void ReceiveMessage(string username, string message)
+        // [CORRECCIÓN AQUI] Método actualizado para usar ChatMessageDto
+        public void ReceiveMessage(ChatMessageDto messageDto)
         {
-            Dispatcher.Invoke(() => AddMessageToUI(username + ":", message));
+            Dispatcher.Invoke(() => AddMessageToUI(messageDto.Sender + ":", messageDto.Message));
         }
 
         private void AddMessageToUI(string name, string message)

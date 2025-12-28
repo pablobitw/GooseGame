@@ -1,5 +1,5 @@
-﻿using GameClient.GameplayServiceReference;
-using GameClient.LobbyServiceReference;
+﻿using GameClient.ChatServiceReference;
+using GameClient.GameplayServiceReference;
 using GameClient.Helpers;
 using System;
 using System.Collections.Generic;
@@ -19,12 +19,15 @@ using System.Windows.Threading;
 namespace GameClient.Views
 {
     [CallbackBehavior(UseSynchronizationContext = false)]
-    public partial class BoardPage : Page, IGameplayServiceCallback
+    public partial class BoardPage : Page, IGameplayServiceCallback, IChatServiceCallback
     {
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
+
         private GameplayServiceClient gameplayClient;
+        private ChatServiceClient chatClient;
+
         private DispatcherTimer gameLoopTimer;
         private DispatcherTimer _startCountdownTimer;
         private DispatcherTimer _turnCountdownTimer;
@@ -77,8 +80,10 @@ namespace GameClient.Views
             this.boardId = boardId;
             this.currentUsername = username;
 
-            InstanceContext context = new InstanceContext(this);
-            gameplayClient = new GameplayServiceClient(context);
+            InstanceContext gameplayContext = new InstanceContext(this);
+            gameplayClient = new GameplayServiceClient(gameplayContext);
+
+            ConnectToChatService();
 
             LoadBoardImage();
             StartCountdown();
@@ -93,7 +98,145 @@ namespace GameClient.Views
                 _startCountdownTimer?.Stop();
                 _turnCountdownTimer?.Stop();
                 try { gameplayClient?.Close(); } catch { gameplayClient?.Abort(); }
+                try { chatClient?.Close(); } catch { chatClient?.Abort(); }
             };
+        }
+
+        private void ConnectToChatService()
+        {
+            try
+            {
+                InstanceContext chatContext = new InstanceContext(this);
+                chatClient = new ChatServiceClient(chatContext);
+                var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
+                chatClient.JoinLobbyChat(request);
+            }
+            catch (Exception)
+            {
+                // Silently fail or log locally, chat is optional
+            }
+        }
+
+        public void ReceiveMessage(ChatMessageDto message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                string tabName = "General";
+
+                if (message.IsPrivate)
+                {
+                    // Si recibo un privado, la pestaña es el nombre del OTRO usuario
+                    tabName = (message.Sender == currentUsername) ? message.TargetUser : message.Sender;
+                }
+
+                ListBox targetList = GetOrCreateTab(tabName);
+
+                string displayMsg = $"{message.Sender}: {message.Message}";
+                targetList.Items.Add(displayMsg);
+                targetList.ScrollIntoView(targetList.Items[targetList.Items.Count - 1]);
+            });
+        }
+
+        private ListBox GetOrCreateTab(string tabName)
+        {
+            foreach (TabItem item in ChatTabControl.Items)
+            {
+                if (item.Tag?.ToString() == tabName)
+                {
+                    return (ListBox)item.Content;
+                }
+            }
+
+            var newListBox = new ListBox
+            {
+                Background = new SolidColorBrush(Color.FromArgb(51, 0, 0, 0)),
+                BorderThickness = new Thickness(0),
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+
+            // Usamos el DataTemplate del chat general si existe, o uno default
+            if (GeneralChatList.ItemTemplate != null)
+                newListBox.ItemTemplate = GeneralChatList.ItemTemplate;
+
+            var newTab = new TabItem
+            {
+                Header = tabName,
+                Tag = tabName,
+                Content = newListBox,
+                Style = (Style)FindResource("ChatTabItemStyle")
+            };
+
+            ChatTabControl.Items.Add(newTab);
+            return newListBox;
+        }
+
+        private void SendChatButton_Click(object sender, RoutedEventArgs e)
+        {
+            string msg = ChatInputBox.Text;
+            if (string.IsNullOrWhiteSpace(msg)) return;
+
+            var selectedTab = ChatTabControl.SelectedItem as TabItem;
+            string target = selectedTab?.Tag?.ToString() ?? "General";
+
+            var dto = new ChatMessageDto
+            {
+                Sender = currentUsername,
+                LobbyCode = lobbyCode,
+                Message = msg
+            };
+
+            try
+            {
+                if (target == "General")
+                {
+                    dto.IsPrivate = false;
+                    chatClient.SendLobbyMessage(dto);
+                }
+                else
+                {
+                    dto.IsPrivate = true;
+                    dto.TargetUser = target;
+                    chatClient.SendPrivateMessage(dto);
+                }
+                ChatInputBox.Clear();
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de conexión con el chat.");
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El chat no responde.");
+            }
+        }
+
+        private void ChatInputBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) SendChatButton_Click(sender, e);
+        }
+
+        private void PrivateChatMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var panel = contextMenu?.PlacementTarget as Border;
+            string targetUser = panel?.Tag?.ToString();
+
+            if (!string.IsNullOrEmpty(targetUser) && targetUser != currentUsername)
+            {
+                GetOrCreateTab(targetUser);
+
+                foreach (TabItem item in ChatTabControl.Items)
+                {
+                    if (item.Tag?.ToString() == targetUser)
+                    {
+                        ChatTabControl.SelectedItem = item;
+                        break;
+                    }
+                }
+                ChatInputBox.Focus();
+            }
         }
 
         public void OnVoteKickStarted(string targetUsername, string reason)
@@ -121,10 +264,7 @@ namespace GameClient.Views
                 MessageBox.Show(reason, "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
-                if (mainWindow != null)
-                {
-                    mainWindow.ShowMainMenu();
-                }
+                if (mainWindow != null) mainWindow.ShowMainMenu();
                 else
                 {
                     GameMainWindow newWindow = new GameMainWindow(currentUsername);
@@ -146,10 +286,7 @@ namespace GameClient.Views
 
         private void PauseMenuOverlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource == sender)
-            {
-                PauseMenuOverlay.Visibility = Visibility.Collapsed;
-            }
+            if (e.OriginalSource == sender) PauseMenuOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void IngameScreenModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -185,7 +322,6 @@ namespace GameClient.Views
             if (result != MessageBoxResult.Yes) return;
 
             PauseMenuOverlay.Visibility = Visibility.Collapsed;
-
             gameLoopTimer?.Stop();
             _startCountdownTimer?.Stop();
             _turnCountdownTimer?.Stop();
@@ -193,17 +329,11 @@ namespace GameClient.Views
 
             try
             {
-                var request = new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                };
+                var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
                 await gameplayClient.LeaveGameAsync(request);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error al abandonar: " + ex.Message);
-            }
+            catch (CommunicationException) { }
+            catch (TimeoutException) { }
             finally
             {
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
@@ -230,17 +360,12 @@ namespace GameClient.Views
         private void Countdown_Tick(object sender, EventArgs e)
         {
             _countdownValue--;
-
-            if (_countdownValue > 0)
-            {
-                StartTimerText.Text = _countdownValue.ToString();
-            }
+            if (_countdownValue > 0) StartTimerText.Text = _countdownValue.ToString();
             else
             {
                 _startCountdownTimer.Stop();
                 StartTimerPanel.Visibility = Visibility.Collapsed;
                 _isGameStarting = false;
-
                 _ = UpdateGameState();
             }
         }
@@ -248,18 +373,8 @@ namespace GameClient.Views
         private void TurnCountdown_Tick(object sender, EventArgs e)
         {
             _turnSecondsRemaining--;
-
             TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
-
-            if (_turnSecondsRemaining <= 5)
-            {
-                TurnTimerText.Foreground = Brushes.Red;
-            }
-            else
-            {
-                TurnTimerText.Foreground = Brushes.White;
-            }
-
+            TurnTimerText.Foreground = _turnSecondsRemaining <= 5 ? Brushes.Red : Brushes.White;
             if (_turnSecondsRemaining <= 0)
             {
                 _turnCountdownTimer.Stop();
@@ -269,12 +384,8 @@ namespace GameClient.Views
 
         private void LoadBoardImage()
         {
-            string imagePath = (boardId == 1)
-                ? "/Assets/Boards/normal_board.png"
-                : "/Assets/Boards/special_board.png";
-
-            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)); }
-            catch { }
+            string imagePath = (boardId == 1) ? "/Assets/Boards/normal_board.png" : "/Assets/Boards/special_board.png";
+            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)); } catch { }
         }
 
         private void StartGameLoop()
@@ -288,17 +399,11 @@ namespace GameClient.Views
         private async Task UpdateGameState()
         {
             if (_isGameOverHandled) return;
-
             gameLoopTimer.Stop();
 
             try
             {
-                var request = new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                };
-
+                var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
                 var state = await gameplayClient.GetGameStateAsync(request);
 
                 if (state != null)
@@ -343,33 +448,22 @@ namespace GameClient.Views
                     }
                 }
             }
+            catch (CommunicationException) { }
+            catch (TimeoutException) { }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Error in Game Loop: " + ex.Message);
             }
-            finally
-            {
-                if (!_isGameOverHandled)
-                {
-                    gameLoopTimer.Start();
-                }
-            }
+            finally { if (!_isGameOverHandled) gameLoopTimer.Start(); }
         }
 
         private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
         {
             RollDiceButton.IsEnabled = false;
-
             try
             {
-                var request = new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                };
-
+                var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
                 var result = await gameplayClient.RollDiceAsync(request);
-
                 if (result != null)
                 {
                     DiceOneText.Text = result.DiceOne.ToString();
@@ -377,9 +471,19 @@ namespace GameClient.Views
                     await UpdateGameState();
                 }
             }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de conexión al tirar dados.");
+                RollDiceButton.IsEnabled = true;
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El servidor no respondió a tiempo.");
+                RollDiceButton.IsEnabled = true;
+            }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                MessageBox.Show("Error inesperado: " + ex.Message);
                 RollDiceButton.IsEnabled = true;
             }
         }
@@ -416,11 +520,11 @@ namespace GameClient.Views
                 {
                     targetPanel.Visibility = Visibility.Visible;
                     targetNameBlock.Text = player.Username;
-
                     targetPanel.Tag = player.Username;
+
                     if (targetPanel.ContextMenu != null)
                     {
-                        targetPanel.ContextMenu.IsEnabled = (player.Username != currentUsername);
+                        targetPanel.ContextMenu.IsEnabled = !string.Equals(player.Username, currentUsername, StringComparison.OrdinalIgnoreCase);
                     }
 
                     BitmapImage bitmap = new BitmapImage();
@@ -430,41 +534,19 @@ namespace GameClient.Views
 
                     try
                     {
-                        if (string.IsNullOrEmpty(avatarPath))
-                        {
-                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                        }
-                        else if (avatarPath.StartsWith("pack://"))
-                        {
-                            bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
-                        }
+                        if (string.IsNullOrEmpty(avatarPath)) bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                        else if (avatarPath.StartsWith("pack://")) bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
                         else
                         {
                             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                             string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
-
-                            if (!File.Exists(fullPath))
-                            {
-                                fullPath = Path.Combine(baseDir, "Assets", avatarPath);
-                            }
-
-                            if (File.Exists(fullPath))
-                            {
-                                bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                            }
-                            else
-                            {
-                                bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                            }
+                            if (File.Exists(fullPath)) bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                            else bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
                         }
                     }
-                    catch
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
+                    catch { bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative); }
 
                     bitmap.EndInit();
-
                     targetAvatarBrush.Stretch = Stretch.UniformToFill;
                     targetAvatarBrush.ImageSource = bitmap;
 
@@ -533,56 +615,36 @@ namespace GameClient.Views
         {
             if (_isGameStarting)
             {
-                RollDiceButton.IsEnabled = false;
-                RollDiceButton.Content = "Esperando inicio...";
-                RollDiceButton.Opacity = 0.5;
+                RollDiceButton.IsEnabled = false; RollDiceButton.Content = "Esperando inicio..."; RollDiceButton.Opacity = 0.5;
                 return;
             }
-
-            if (state.IsMyTurn)
-            {
-                RollDiceButton.IsEnabled = true;
-                RollDiceButton.Content = "¡Tirar Dados!";
-                RollDiceButton.Opacity = 1;
-            }
-            else
-            {
-                RollDiceButton.IsEnabled = false;
-                RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}";
-                RollDiceButton.Opacity = 0.6;
-            }
+            if (state.IsMyTurn) { RollDiceButton.IsEnabled = true; RollDiceButton.Content = "¡Tirar Dados!"; RollDiceButton.Opacity = 1; }
+            else { RollDiceButton.IsEnabled = false; RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}"; RollDiceButton.Opacity = 0.6; }
         }
 
         private void UpdateGameLog(string[] logs)
         {
             if (logs == null) return;
-
             if (GameLogListBox.Items.Count != logs.Length)
             {
                 GameLogListBox.Items.Clear();
-
                 foreach (var logRaw in logs)
                 {
                     string textToShow = logRaw;
-
                     if (textToShow.Contains("[LUCKYBOX:"))
                     {
                         int start = textToShow.IndexOf("[LUCKYBOX:");
                         int end = textToShow.IndexOf("]", start);
-
                         if (start != -1 && end != -1)
                         {
                             string tagToRemove = textToShow.Substring(start, end - start + 1);
                             textToShow = textToShow.Replace(tagToRemove, "").Trim();
                         }
                     }
-
                     textToShow = textToShow.Replace("[EXTRA]", "").Trim();
                     GameLogListBox.Items.Add(textToShow);
                 }
-
-                if (GameLogListBox.Items.Count > 0)
-                    GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
+                if (GameLogListBox.Items.Count > 0) GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
             }
         }
 
@@ -597,48 +659,36 @@ namespace GameClient.Views
         private void CheckForLuckyBox(string logDescription)
         {
             if (string.IsNullOrEmpty(logDescription)) return;
-
             if (logDescription.Contains("[LUCKYBOX:"))
             {
                 try
                 {
                     int startIndex = logDescription.IndexOf("[LUCKYBOX:");
                     int endIndex = logDescription.IndexOf("]", startIndex);
-
                     if (startIndex != -1 && endIndex != -1)
                     {
                         string tag = logDescription.Substring(startIndex, endIndex - startIndex + 1);
                         string data = tag.Replace("[LUCKYBOX:", "").Replace("]", "");
                         string[] mainParts = data.Split(':');
-
                         if (mainParts.Length == 2)
                         {
                             string boxOwner = mainParts[0];
                             string rewardData = mainParts[1];
-
-                            if (boxOwner != currentUsername)
-                            {
-                                return;
-                            }
-
+                            if (boxOwner != currentUsername) return;
                             string[] rewardParts = rewardData.Split('_');
                             if (rewardParts.Length == 2)
                             {
                                 _currentRewardType = rewardParts[0];
                                 _currentRewardAmount = int.Parse(rewardParts[1]);
-
                                 _luckyBoxClicks = 0;
                                 try
                                 {
                                     string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                                     string path = Path.Combine(baseDir, "Assets", "Images", "luckybox_closed.png");
-                                    if (File.Exists(path))
-                                        LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
-                                    else
-                                        LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
+                                    if (File.Exists(path)) LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
+                                    else LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
                                 }
                                 catch { }
-
                                 LuckyBoxImage.Visibility = Visibility.Visible;
                                 RewardContainer.Visibility = Visibility.Collapsed;
                                 OpenBoxButton.IsEnabled = true;
@@ -647,20 +697,14 @@ namespace GameClient.Views
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error LuckyBox: " + ex.Message);
-                }
+                catch (Exception ex) { Console.WriteLine("Error LuckyBox: " + ex.Message); }
             }
         }
 
         private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
         {
             _luckyBoxClicks++;
-
-            var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard
-                            ?? LuckyBoxOverlay.Resources["ShakeAnimation"] as Storyboard;
-
+            var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard ?? LuckyBoxOverlay.Resources["ShakeAnimation"] as Storyboard;
             if (_luckyBoxClicks < 3)
             {
                 if (shakeAnim != null) shakeAnim.Begin();
@@ -669,16 +713,10 @@ namespace GameClient.Views
             {
                 OpenBoxButton.IsEnabled = false;
                 LuckyBoxImage.Visibility = Visibility.Collapsed;
-
                 SetRewardVisuals();
-
                 RewardContainer.Visibility = Visibility.Visible;
-
-                var revealAnim = this.Resources["RevealAnimation"] as Storyboard
-                                 ?? LuckyBoxOverlay.Resources["RevealAnimation"] as Storyboard;
-
+                var revealAnim = this.Resources["RevealAnimation"] as Storyboard ?? LuckyBoxOverlay.Resources["RevealAnimation"] as Storyboard;
                 if (revealAnim != null) revealAnim.Begin();
-
                 await Task.Delay(3000);
                 LuckyBoxOverlay.Visibility = Visibility.Collapsed;
             }
@@ -686,77 +724,40 @@ namespace GameClient.Views
 
         private void SetRewardVisuals()
         {
-            string imagePath = "";
-            string text = "";
-            SolidColorBrush textColor = Brushes.White;
-
+            string imagePath = ""; string text = ""; SolidColorBrush textColor = Brushes.White;
             switch (_currentRewardType)
             {
-                case "COINS":
-                    imagePath = "coin_pile.png";
-                    text = $"+{_currentRewardAmount} ORO";
-                    textColor = Brushes.Gold;
-                    break;
-                case "COMMON":
-                    imagePath = "ticket_common.png";
-                    text = "TICKET COMÚN";
-                    textColor = Brushes.White;
-                    break;
-                case "EPIC":
-                    imagePath = "ticket_epic.png";
-                    text = "TICKET ÉPICO";
-                    textColor = Brushes.Purple;
-                    break;
-                case "LEGENDARY":
-                    imagePath = "ticket_legendary.png";
-                    text = "¡LEGENDARIO!";
-                    textColor = Brushes.OrangeRed;
-                    break;
-                default:
-                    text = "PREMIO";
-                    break;
+                case "COINS": imagePath = "coin_pile.png"; text = $"+{_currentRewardAmount} ORO"; textColor = Brushes.Gold; break;
+                case "COMMON": imagePath = "ticket_common.png"; text = "TICKET COMÚN"; textColor = Brushes.White; break;
+                case "EPIC": imagePath = "ticket_epic.png"; text = "TICKET ÉPICO"; textColor = Brushes.Purple; break;
+                case "LEGENDARY": imagePath = "ticket_legendary.png"; text = "¡LEGENDARIO!"; textColor = Brushes.OrangeRed; break;
+                default: text = "PREMIO"; break;
             }
-
             if (!string.IsNullOrEmpty(imagePath))
             {
                 try
                 {
                     string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                     string fullPath = Path.Combine(baseDir, "Assets", "Images", imagePath);
-                    if (File.Exists(fullPath))
-                        RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute));
-                    else
-                        RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
+                    if (File.Exists(fullPath)) RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute));
+                    else RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
                 }
                 catch { }
             }
-            RewardText.Text = text;
-            RewardText.Foreground = textColor;
+            RewardText.Text = text; RewardText.Foreground = textColor;
         }
 
-        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-        }
+        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e) { e.Handled = true; }
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
             if (menuItem == null) return;
-
             var contextMenu = menuItem.Parent as ContextMenu;
             var panel = contextMenu.PlacementTarget as Border;
-
             if (panel == null || panel.Tag == null) return;
-
             string targetUser = panel.Tag.ToString();
-
-            if (targetUser == currentUsername)
-            {
-                MessageBox.Show("No puedes iniciar una votación contra ti mismo.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
+            if (targetUser == currentUsername) { MessageBox.Show("No puedes iniciar una votación contra ti mismo.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); return; }
             ReasonSelectorOverlay.Tag = targetUser;
             ReasonSelectorOverlay.Visibility = Visibility.Visible;
         }
@@ -765,65 +766,34 @@ namespace GameClient.Views
         {
             string targetUser = ReasonSelectorOverlay.Tag?.ToString();
             string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Sin razón";
-
             ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
-
             if (string.IsNullOrEmpty(targetUser)) return;
-
             try
             {
-                var request = new VoteRequestDTO
-                {
-                    Username = currentUsername,
-                    TargetUsername = targetUser,
-                    Reason = reason
-                };
-
+                var request = new VoteRequestDTO { Username = currentUsername, TargetUsername = targetUser, Reason = reason };
                 await gameplayClient.InitiateVoteKickAsync(request);
                 MessageBox.Show($"Has iniciado una votación para expulsar a {targetUser}.", "Votación Iniciada", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            catch (CommunicationException) { MessageBox.Show("Error de red al iniciar votación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+            catch (Exception ex) { MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
-        private void CancelKickButton_Click(object sender, RoutedEventArgs e)
-        {
-            ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        private async void VoteYes_Click(object sender, RoutedEventArgs e)
-        {
-            await SendVote(true);
-        }
-
-        private async void VoteNo_Click(object sender, RoutedEventArgs e)
-        {
-            await SendVote(false);
-        }
+        private void CancelKickButton_Click(object sender, RoutedEventArgs e) { ReasonSelectorOverlay.Visibility = Visibility.Collapsed; }
+        private async void VoteYes_Click(object sender, RoutedEventArgs e) { await SendVote(true); }
+        private async void VoteNo_Click(object sender, RoutedEventArgs e) { await SendVote(false); }
 
         private async Task SendVote(bool acceptKick)
         {
             VoteKickOverlay.Visibility = Visibility.Collapsed;
             string targetUser = VoteKickTargetText.Tag?.ToString();
-
             if (string.IsNullOrEmpty(targetUser)) return;
-
             try
             {
-                var response = new VoteResponseDTO
-                {
-                    Username = currentUsername,
-                    AcceptKick = acceptKick
-                };
-
+                var response = new VoteResponseDTO { Username = currentUsername, AcceptKick = acceptKick };
                 await gameplayClient.CastVoteAsync(response);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error enviando voto: " + ex.Message);
-            }
+            catch (CommunicationException) { Console.WriteLine("Error de red enviando voto."); }
+            catch (Exception ex) { Console.WriteLine("Error enviando voto: " + ex.Message); }
         }
     }
 }

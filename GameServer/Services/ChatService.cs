@@ -27,7 +27,6 @@ namespace GameServer.Services
             if (callback != null && request != null)
             {
                 _callbacks[request.Username] = callback;
-
                 _logic.JoinChat(request);
             }
         }
@@ -35,6 +34,11 @@ namespace GameServer.Services
         public void SendLobbyMessage(ChatMessageDto messageDto)
         {
             _logic.SendMessage(messageDto);
+        }
+
+        public void SendPrivateMessage(ChatMessageDto messageDto)
+        {
+            _logic.SendPrivateMessage(messageDto);
         }
 
         public void LeaveLobbyChat(JoinChatRequest request)
@@ -46,17 +50,16 @@ namespace GameServer.Services
             }
         }
 
-        public void SendMessageToClient(string clientKey, string sender, string message)
+        public void SendMessageToClient(string clientKey, ChatMessageDto message)
         {
             if (_callbacks.TryGetValue(clientKey, out var callback))
             {
                 try
                 {
-                    callback.ReceiveMessage(sender, message);
+                    callback.ReceiveMessage(message);
                 }
                 catch (CommunicationException)
                 {
-                    Log.Warn($"Cliente {clientKey} desconectado. Removiendo.");
                     _callbacks.TryRemove(clientKey, out _);
                 }
                 catch (TimeoutException)
@@ -64,6 +67,11 @@ namespace GameServer.Services
                     _callbacks.TryRemove(clientKey, out _);
                 }
             }
+        }
+
+        public bool IsUserConnected(string username)
+        {
+            return _callbacks.ContainsKey(username);
         }
     }
 }

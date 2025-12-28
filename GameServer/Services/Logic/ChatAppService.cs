@@ -4,6 +4,7 @@ using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.ServiceModel; 
 
 namespace GameServer.Services.Logic
 {
@@ -25,72 +26,106 @@ namespace GameServer.Services.Logic
         {
             if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.LobbyCode))
             {
-                Log.Warn("Intento de unirse al chat con datos inválidos.");
                 return;
             }
 
-            try
-            {
-                var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, new ConcurrentDictionary<string, string>());
-                lobbyChatters[request.Username] = request.Username;
+            var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, new ConcurrentDictionary<string, string>());
+            lobbyChatters[request.Username] = request.Username;
 
-                Log.Info($"Jugador '{request.Username}' unido al chat {request.LobbyCode}");
-                BroadcastInternal(request.Username, request.LobbyCode, $"[Sistema]: {request.Username} se ha unido.");
-            }
-            catch (OverflowException ex)
+            var msg = new ChatMessageDto
             {
-                Log.Error("Desbordamiento de memoria en diccionario de chat.", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                Log.Error($"Error de argumento al unir a {request.Username}.", ex);
-            }
+                Sender = "SYSTEM",
+                LobbyCode = request.LobbyCode,
+                Message = $"{request.Username} se ha unido.",
+                IsPrivate = false
+            };
+
+            BroadcastInternal(request.Username, request.LobbyCode, msg);
         }
 
         public void SendMessage(ChatMessageDto messageDto)
         {
             if (messageDto == null || string.IsNullOrEmpty(messageDto.LobbyCode)) return;
 
-            BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto.Message);
+            messageDto.IsPrivate = false;
+            BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto);
+        }
+
+        public void SendPrivateMessage(ChatMessageDto messageDto)
+        {
+            if (messageDto == null || string.IsNullOrEmpty(messageDto.TargetUser)) return;
+
+            messageDto.IsPrivate = true;
+
+            if (_notifier.IsUserConnected(messageDto.TargetUser))
+            {
+                SafeSendMessageToClient(messageDto.TargetUser, messageDto);
+
+                SafeSendMessageToClient(messageDto.Sender, messageDto);
+            }
+            else
+            {
+                Log.Warn($"[PrivateChat] Usuario destino no encontrado o desconectado: {messageDto.TargetUser}");
+            }
         }
 
         public void LeaveChat(JoinChatRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.LobbyCode)) return;
 
-            try
+            if (_lobbies.TryGetValue(request.LobbyCode, out var lobbyChatters))
             {
-                if (_lobbies.TryGetValue(request.LobbyCode, out var lobbyChatters))
+                if (lobbyChatters.TryRemove(request.Username, out _))
                 {
-                    if (lobbyChatters.TryRemove(request.Username, out _))
+                    var msg = new ChatMessageDto
                     {
-                        Log.Info($"Jugador '{request.Username}' salió del chat {request.LobbyCode}");
-                        BroadcastInternal(request.Username, request.LobbyCode, $"[Sistema]: {request.Username} ha salido.");
-                    }
-
-                    if (lobbyChatters.IsEmpty)
-                    {
-                        _lobbies.TryRemove(request.LobbyCode, out _);
-                    }
+                        Sender = "SYSTEM",
+                        LobbyCode = request.LobbyCode,
+                        Message = $"{request.Username} ha salido.",
+                        IsPrivate = false
+                    };
+                    BroadcastInternal(request.Username, request.LobbyCode, msg);
                 }
-            }
-            catch (ArgumentNullException ex)
-            {
-                Log.Error("Error nulo al salir del chat.", ex);
+
+                if (lobbyChatters.IsEmpty)
+                {
+                    _lobbies.TryRemove(request.LobbyCode, out _);
+                }
             }
         }
 
-        private void BroadcastInternal(string senderUsername, string lobbyCode, string message)
+        private void BroadcastInternal(string senderUsername, string lobbyCode, ChatMessageDto messageDto)
         {
             if (_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
             {
-                foreach (var userKey in lobbyChatters.Keys.ToList())
+                var users = lobbyChatters.Keys.ToList();
+                foreach (var userKey in users)
                 {
-                    if (!userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase) || message.StartsWith("[Sistema]"))
+                    if (!userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase) || messageDto.Sender == "SYSTEM")
                     {
-                        _notifier.SendMessageToClient(userKey, senderUsername, message);
+                        SafeSendMessageToClient(userKey, messageDto);
                     }
                 }
+            }
+        }
+
+        private void SafeSendMessageToClient(string userKey, ChatMessageDto messageDto)
+        {
+            try
+            {
+                _notifier.SendMessageToClient(userKey, messageDto);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Warn($"[Chat] Timeout enviando a {userKey}. El cliente podría estar lento o desconectado.", ex);
+            }
+            catch (CommunicationException ex)
+            {
+                Log.Warn($"[Chat] Error de comunicación con {userKey}. Conexión interrumpida.", ex);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                Log.Warn($"[Chat] El canal de {userKey} ya ha sido eliminado/dispuesto.", ex);
             }
         }
 

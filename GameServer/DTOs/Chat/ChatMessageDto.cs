@@ -9,9 +9,15 @@ namespace GameServer.DTOs.Chat
         public string Sender { get; set; }
 
         [DataMember]
+        public string TargetUser { get; set; }
+
+        [DataMember]
         public string LobbyCode { get; set; }
 
         [DataMember]
         public string Message { get; set; }
+
+        [DataMember]
+        public bool IsPrivate { get; set; }
     }
 }

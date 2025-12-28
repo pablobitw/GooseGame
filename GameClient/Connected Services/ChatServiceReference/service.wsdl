@@ -23,6 +23,9 @@
   <wsdl:message name="IChatService_SendLobbyMessage_InputMessage">
     <wsdl:part name="parameters" element="tns:SendLobbyMessage" />
   </wsdl:message>
+  <wsdl:message name="IChatService_SendPrivateMessage_InputMessage">
+    <wsdl:part name="parameters" element="tns:SendPrivateMessage" />
+  </wsdl:message>
   <wsdl:message name="IChatService_LeaveLobbyChat_InputMessage">
     <wsdl:part name="parameters" element="tns:LeaveLobbyChat" />
   </wsdl:message>
@@ -35,6 +38,9 @@
     </wsdl:operation>
     <wsdl:operation name="SendLobbyMessage">
       <wsdl:input wsaw:Action="http://tempuri.org/IChatService/SendLobbyMessage" message="tns:IChatService_SendLobbyMessage_InputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SendPrivateMessage">
+      <wsdl:input wsaw:Action="http://tempuri.org/IChatService/SendPrivateMessage" message="tns:IChatService_SendPrivateMessage_InputMessage" />
     </wsdl:operation>
     <wsdl:operation name="LeaveLobbyChat">
       <wsdl:input wsaw:Action="http://tempuri.org/IChatService/LeaveLobbyChat" message="tns:IChatService_LeaveLobbyChat_InputMessage" />
@@ -55,6 +61,12 @@
     </wsdl:operation>
     <wsdl:operation name="SendLobbyMessage">
       <soap12:operation soapAction="http://tempuri.org/IChatService/SendLobbyMessage" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="SendPrivateMessage">
+      <soap12:operation soapAction="http://tempuri.org/IChatService/SendPrivateMessage" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

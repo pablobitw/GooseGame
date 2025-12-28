@@ -12,10 +12,36 @@
 
     <Page.Resources>
         <ContextMenu x:Key="PlayerContextMenu">
-            <MenuItem Header="Inicia Votación de Expulsión" 
-                      Click="VoteKickMenuItem_Click"
-                      Foreground="Red" FontWeight="Bold"/>
+            <MenuItem Header="Mensaje Privado" Click="PrivateChatMenuItem_Click" Foreground="Cyan" FontWeight="SemiBold"/>
+            <Separator/>
+            <MenuItem Header="Inicia Votación de Expulsión" Click="VoteKickMenuItem_Click" Foreground="Red" FontWeight="Bold"/>
         </ContextMenu>
+
+        <Style x:Key="ChatTabItemStyle" TargetType="TabItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" Padding="10,5" CornerRadius="5,5,0,0" Margin="0,0,2,0">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#444"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#333"/>
+                                <Setter Property="Foreground" Value="LightGray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Storyboard x:Key="ShakeAnimation">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BoxRotation" Storyboard.TargetProperty="Angle" Duration="0:0:0.3">
@@ -182,6 +208,39 @@
                     <TextBlock Text="Registro de Juego" Foreground="White" FontWeight="Bold" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <ListBox x:Name="GameLogListBox" Height="220" Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18"/>
                 </StackPanel>
+            </Border>
+
+            <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,310,20,0" 
+                    Background="#CC000000" CornerRadius="10" Width="300" Height="400">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+
+                    <TabControl x:Name="ChatTabControl" Grid.Row="0" Background="Transparent" BorderThickness="0">
+                        <TabItem Header="General" Style="{StaticResource ChatTabItemStyle}" Tag="General">
+                            <ListBox x:Name="GeneralChatList" Background="#33000000" BorderThickness="0" Foreground="White" Margin="0,5,0,0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </TabItem>
+                    </TabControl>
+
+                    <Grid Grid.Row="1" Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="ChatInputBox" Background="#88FFFFFF" Foreground="Black" 
+                                 VerticalContentAlignment="Center" Padding="5" KeyDown="ChatInputBox_KeyDown"/>
+                        <Button Content="Enviar" Grid.Column="1" Width="60" Margin="5,0,0,0" 
+                                Background="#4CAF50" Foreground="White" Click="SendChatButton_Click"/>
+                    </Grid>
+                </Grid>
             </Border>
 
             <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,50" 
