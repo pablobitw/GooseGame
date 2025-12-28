@@ -148,7 +148,6 @@ namespace GameServer.Services.Logic
 
                 Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
 
-                // Refrescamos la lista de jugadores para incluir al nuevo
                 var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
 
                 var dtoList = updatedPlayers.Select(p => new PlayerLobbyDTO
@@ -250,6 +249,16 @@ namespace GameServer.Services.Logic
 
                     if (game != null)
                     {
+                        var playersInLobby = await _repository.GetPlayersInGameAsync(gameId);
+
+                        foreach (var player in playersInLobby)
+                        {
+                            if (player.Username != hostUsername)
+                            {
+                                NotifyClient(player.Username, "El anfitrión ha disuelto la sala.");
+                            }
+                        }
+
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
                         Log.InfoFormat("Lobby {0} disuelto por {1}.", game.LobbyCode, hostUsername);
@@ -391,7 +400,7 @@ namespace GameServer.Services.Logic
                 target.GameIdGame = null;
                 await _repository.SaveChangesAsync();
 
-                NotifyKickedPlayer(request.TargetUsername);
+                NotifyClient(request.TargetUsername, "Has sido expulsado por el anfitrión.");
 
                 Log.Info($"Jugador {request.TargetUsername} expulsado del lobby {request.LobbyCode} por {request.RequestorUsername}.");
             }
@@ -401,14 +410,14 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private void NotifyKickedPlayer(string username)
+        private void NotifyClient(string username, string message)
         {
             var callback = ConnectionManager.GetLobbyClient(username);
             if (callback != null)
             {
                 try
                 {
-                    callback.OnPlayerKicked("Has sido expulsado por el anfitrión.");
+                    callback.OnPlayerKicked(message);
                 }
                 catch (System.ServiceModel.CommunicationException)
                 {
