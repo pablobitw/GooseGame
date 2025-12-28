@@ -10,5 +10,8 @@ namespace GameServer.DTOs.Gameplay
 
         [DataMember]
         public string TargetUsername { get; set; }
+        
+        [DataMember] 
+        public string Reason { get; set; }
     }
 }

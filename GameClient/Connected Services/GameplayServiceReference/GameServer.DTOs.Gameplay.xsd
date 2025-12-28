@@ -47,6 +47,7 @@
   <xs:element name="PlayerPositionDTO" nillable="true" type="tns:PlayerPositionDTO" />
   <xs:complexType name="VoteRequestDTO">
     <xs:sequence>
+      <xs:element minOccurs="0" name="Reason" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="TargetUsername" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>

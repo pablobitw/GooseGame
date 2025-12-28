@@ -18,7 +18,6 @@ using System.Windows.Threading;
 
 namespace GameClient.Views
 {
-    // [IMPORTANTE] Implementamos IGameplayServiceCallback
     [CallbackBehavior(UseSynchronizationContext = false)]
     public partial class BoardPage : Page, IGameplayServiceCallback
     {
@@ -29,7 +28,7 @@ namespace GameClient.Views
         private DispatcherTimer gameLoopTimer;
         private DispatcherTimer _startCountdownTimer;
         private DispatcherTimer _turnCountdownTimer;
-        private int _turnSecondsRemaining = 60;
+        private int _turnSecondsRemaining = 20;
         private string _lastTurnUsername = "";
 
         private int _countdownValue = 5;
@@ -78,7 +77,6 @@ namespace GameClient.Views
             this.boardId = boardId;
             this.currentUsername = username;
 
-            // Ahora 'this' implementa la interfaz, así que InstanceContext no fallará
             InstanceContext context = new InstanceContext(this);
             gameplayClient = new GameplayServiceClient(context);
 
@@ -98,16 +96,16 @@ namespace GameClient.Views
             };
         }
 
-        // [MÉTODO DEL CALLBACK] - Implementación de IGameplayServiceCallback
-        public void OnVoteKickStarted(string targetUsername)
+        public void OnVoteKickStarted(string targetUsername, string reason)
         {
             if (targetUsername == currentUsername) return;
 
             Dispatcher.Invoke(() =>
             {
-                VoteKickTargetText.Text = $"¿Deseas expulsar al jugador '{targetUsername}' por inactividad/comportamiento?";
+                VoteKickTargetText.Text = $"¿Expulsar a '{targetUsername}'?\nMotivo: {reason}";
                 VoteKickTargetText.Tag = targetUsername;
                 VoteKickOverlay.Visibility = Visibility.Visible;
+                Panel.SetZIndex(VoteKickOverlay, 999);
             });
         }
 
@@ -253,7 +251,7 @@ namespace GameClient.Views
 
             TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
 
-            if (_turnSecondsRemaining <= 15)
+            if (_turnSecondsRemaining <= 5)
             {
                 TurnTimerText.Foreground = Brushes.Red;
             }
@@ -317,9 +315,9 @@ namespace GameClient.Views
                     if (state.CurrentTurnUsername != _lastTurnUsername)
                     {
                         _lastTurnUsername = state.CurrentTurnUsername;
-                        _turnSecondsRemaining = 60;
+                        _turnSecondsRemaining = 20;
                         TurnTimerPanel.Visibility = Visibility.Visible;
-                        TurnTimerText.Text = "Tiempo: 60s";
+                        TurnTimerText.Text = "Tiempo: 20s";
                         TurnTimerText.Foreground = Brushes.White;
                         _turnCountdownTimer.Start();
                     }
@@ -659,11 +657,13 @@ namespace GameClient.Views
         private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
         {
             _luckyBoxClicks++;
-            Storyboard shakeAnim = (Storyboard)LuckyBoxOverlay.Resources["ShakeAnimation"];
+
+            var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard
+                            ?? LuckyBoxOverlay.Resources["ShakeAnimation"] as Storyboard;
 
             if (_luckyBoxClicks < 3)
             {
-                shakeAnim.Begin();
+                if (shakeAnim != null) shakeAnim.Begin();
             }
             else
             {
@@ -673,8 +673,11 @@ namespace GameClient.Views
                 SetRewardVisuals();
 
                 RewardContainer.Visibility = Visibility.Visible;
-                Storyboard revealAnim = (Storyboard)LuckyBoxOverlay.Resources["RevealAnimation"];
-                revealAnim.Begin();
+
+                var revealAnim = this.Resources["RevealAnimation"] as Storyboard
+                                 ?? LuckyBoxOverlay.Resources["RevealAnimation"] as Storyboard;
+
+                if (revealAnim != null) revealAnim.Begin();
 
                 await Task.Delay(3000);
                 LuckyBoxOverlay.Visibility = Visibility.Collapsed;
@@ -736,7 +739,7 @@ namespace GameClient.Views
             e.Handled = true;
         }
 
-        private async void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
+        private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
             if (menuItem == null) return;
@@ -754,12 +757,26 @@ namespace GameClient.Views
                 return;
             }
 
+            ReasonSelectorOverlay.Tag = targetUser;
+            ReasonSelectorOverlay.Visibility = Visibility.Visible;
+        }
+
+        private async void ConfirmKickButton_Click(object sender, RoutedEventArgs e)
+        {
+            string targetUser = ReasonSelectorOverlay.Tag?.ToString();
+            string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Sin razón";
+
+            ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
+
+            if (string.IsNullOrEmpty(targetUser)) return;
+
             try
             {
                 var request = new VoteRequestDTO
                 {
                     Username = currentUsername,
-                    TargetUsername = targetUser
+                    TargetUsername = targetUser,
+                    Reason = reason
                 };
 
                 await gameplayClient.InitiateVoteKickAsync(request);
@@ -769,6 +786,11 @@ namespace GameClient.Views
             {
                 MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void CancelKickButton_Click(object sender, RoutedEventArgs e)
+        {
+            ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
         }
 
         private async void VoteYes_Click(object sender, RoutedEventArgs e)

@@ -27,6 +27,9 @@ namespace GameServer.Interfaces
     public interface IGameplayServiceCallback
     {
         [OperationContract(IsOneWay = true)]
-        void OnVoteKickStarted(string targetUsername);
+        void OnVoteKickStarted(string targetUsername, string reason);
+
+        [OperationContract(IsOneWay = true)]
+        void OnPlayerKicked(string reason);
     }
 }

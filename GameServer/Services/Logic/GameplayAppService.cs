@@ -1,7 +1,8 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
-using GameServer.Models; 
+using GameServer.Models;
 using GameServer.Repositories;
+using GameServer.Helpers;
 using log4net;
 using System;
 using System.Collections.Concurrent;
@@ -28,7 +29,7 @@ namespace GameServer.Services.Logic
 
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
-        private const int TurnTimeLimitSeconds = 60;
+        private const int TurnTimeLimitSeconds = 20;
         private readonly GameplayRepository _repository;
 
         public GameplayAppService(GameplayRepository repository)
@@ -132,6 +133,8 @@ namespace GameServer.Services.Logic
                         game.WinnerIdPlayer = player.IdPlayer;
                         await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
                         _lastGameActivity.TryRemove(game.IdGame, out _);
+
+                        _activeVotes.TryRemove(game.IdGame, out _);
                     }
                     else if (LuckyBoxTiles.Contains(finalPos))
                     {
@@ -378,6 +381,8 @@ namespace GameServer.Services.Logic
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                 if (player == null) return false;
 
+                _activeVotes.TryRemove(game.IdGame, out _);
+
                 var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
                 if (playerWithStats != null && playerWithStats.PlayerStat != null)
                 {
@@ -477,6 +482,7 @@ namespace GameServer.Services.Logic
             {
                 TargetUsername = request.TargetUsername,
                 InitiatorUsername = request.Username,
+                Reason = request.Reason,
                 TotalEligibleVoters = eligibleVoters
             };
 
@@ -484,7 +490,25 @@ namespace GameServer.Services.Logic
 
             if (_activeVotes.TryAdd(gameId, voteState))
             {
-                Log.Info($"Votación iniciada en juego {gameId} contra {request.TargetUsername}");
+                Log.Info($"Votación iniciada en juego {gameId} contra {request.TargetUsername}. Razón: {request.Reason}");
+
+                foreach (var p in activePlayers)
+                {
+                    if (p.Username == request.TargetUsername) continue;
+
+                    var callback = ConnectionManager.GetGameplayClient(p.Username);
+                    if (callback != null)
+                    {
+                        try
+                        {
+                            callback.OnVoteKickStarted(request.TargetUsername, request.Reason);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warn($"No se pudo notificar voto a {p.Username}: {ex.Message}");
+                        }
+                    }
+                }
             }
         }
 
@@ -502,14 +526,13 @@ namespace GameServer.Services.Logic
 
             lock (state)
             {
-                if (request.AcceptKick)
+                if (state.VotesFor.Contains(request.Username) || state.VotesAgainst.Contains(request.Username))
                 {
-                    state.VotesFor.Add(request.Username);
+                    return;
                 }
-                else
-                {
-                    state.VotesAgainst.Add(request.Username);
-                }
+
+                if (request.AcceptKick) state.VotesFor.Add(request.Username);
+                else state.VotesAgainst.Add(request.Username);
 
                 int totalVotesCast = state.VotesFor.Count + state.VotesAgainst.Count;
 
@@ -518,7 +541,6 @@ namespace GameServer.Services.Logic
                     ProcessVoteResult(gameId, state);
                 }
             }
-
             await Task.CompletedTask;
         }
 
@@ -528,18 +550,14 @@ namespace GameServer.Services.Logic
 
             bool isKicked = false;
 
-            if (state.TotalEligibleVoters == 2)
-            {
-                isKicked = (state.VotesFor.Count == 2);
-            }
-            else if (state.TotalEligibleVoters >= 3)
-            {
-                isKicked = (state.VotesFor.Count >= 2);
-            }
+            if (state.TotalEligibleVoters == 2) isKicked = (state.VotesFor.Count == 2);
+            else if (state.TotalEligibleVoters >= 3) isKicked = (state.VotesFor.Count >= 2);
 
             if (isKicked)
             {
                 Log.Info($"Jugador {state.TargetUsername} expulsado por votación.");
+
+                NotifyGameplayKicked(state.TargetUsername, "Has sido expulsado por votación de la mayoría.");
 
                 using (var repo = new GameplayRepository())
                 {
@@ -566,10 +584,11 @@ namespace GameServer.Services.Logic
                         }
 
                         var sanctionLogic = new SanctionAppService(repo);
+
                         await sanctionLogic.ProcessKickSanctionAsync(
                             state.TargetUsername,
                             lobbyCodeForSanction,
-                            "Expulsado por votación de jugadores"
+                            state.Reason
                         );
                     }
                     catch (Exception ex)
@@ -581,6 +600,23 @@ namespace GameServer.Services.Logic
             else
             {
                 Log.Info($"Votación contra {state.TargetUsername} rechazada.");
+            }
+        }
+
+        private void NotifyGameplayKicked(string username, string reason)
+        {
+            var callback = ConnectionManager.GetGameplayClient(username);
+            if (callback != null)
+            {
+                try
+                {
+                    callback.OnPlayerKicked(reason);
+                }
+                catch (CommunicationException) { }
+                finally
+                {
+                    ConnectionManager.UnregisterGameplayClient(username);
+                }
             }
         }
 
@@ -632,6 +668,9 @@ namespace GameServer.Services.Logic
                 if (strikes >= 3)
                 {
                     _afkStrikes.TryRemove(afkPlayer.Username, out _);
+                    _activeVotes.TryRemove(gameId, out _);
+
+                    NotifyGameplayKicked(afkPlayer.Username, "Expulsado por inactividad (AFK).");
 
                     using (var lobbyRepo = new LobbyRepository())
                     {

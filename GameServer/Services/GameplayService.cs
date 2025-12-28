@@ -1,13 +1,14 @@
 ﻿using GameServer.DTOs.Gameplay;
+using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Repositories;
 using GameServer.Services.Logic;
 using log4net;
+using System;
 using System.Data.Entity.Core;
 using System.Data.SqlClient;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using System;
 
 namespace GameServer.Services
 {
@@ -28,6 +29,13 @@ namespace GameServer.Services
 
         public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
         {
+            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
+
+            if (callback != null && !string.IsNullOrEmpty(request?.Username))
+            {
+                ConnectionManager.RegisterGameplayClient(request.Username, callback);
+            }
+
             using (var repository = new GameplayRepository())
             {
                 try

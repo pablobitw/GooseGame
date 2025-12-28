@@ -180,6 +180,7 @@
     <Compile Include="Repositories\GameplayRepository.cs" />
     <Compile Include="Repositories\LeaderboardRepository.cs" />
     <Compile Include="Repositories\LobbyRepository.cs" />
+    <Compile Include="Repositories\SanctionRepository.cs" />
     <Compile Include="Repositories\UserProfileRepository.cs" />
     <Compile Include="Sanction.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>

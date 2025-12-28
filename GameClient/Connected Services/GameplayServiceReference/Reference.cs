@@ -427,6 +427,9 @@ namespace GameClient.GameplayServiceReference {
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ReasonField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string TargetUsernameField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -439,6 +442,19 @@ namespace GameClient.GameplayServiceReference {
             }
             set {
                 this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Reason {
+            get {
+                return this.ReasonField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ReasonField, value) != true)) {
+                    this.ReasonField = value;
+                    this.RaisePropertyChanged("Reason");
+                }
             }
         }
         
@@ -578,7 +594,10 @@ namespace GameClient.GameplayServiceReference {
     public interface IGameplayServiceCallback {
         
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnVoteKickStarted")]
-        void OnVoteKickStarted(string targetUsername);
+        void OnVoteKickStarted(string targetUsername, string reason);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnPlayerKicked")]
+        void OnPlayerKicked(string reason);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
