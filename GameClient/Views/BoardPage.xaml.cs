@@ -186,6 +186,9 @@ namespace GameClient.Views
                 Message = msg
             };
 
+            // CORRECCIÓN: Mostrar el mensaje localmente de inmediato
+            ReceiveMessage(dto);
+
             try
             {
                 if (target == "General")
