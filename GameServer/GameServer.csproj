@@ -95,6 +95,12 @@
     <Compile Include="ChatMessage.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="Chat\Moderation\CensorshipTracker.cs" />
+    <Compile Include="Chat\Moderation\ChatModerationResult.cs" />
+    <Compile Include="Chat\Moderation\ProfanityFilter.cs" />
+    <Compile Include="Chat\Moderation\SpamTracker.cs" />
+    <Compile Include="Chat\Moderation\WarningLevel.cs" />
+    <Compile Include="Chat\Moderation\WarningTracker.cs" />
     <Compile Include="DTOs\Auth\GuestLoginResult.cs" />
     <Compile Include="DTOs\Auth\RegisterUserRequest.cs" />
     <Compile Include="DTOs\Auth\RegistrationResult.cs" />
@@ -221,6 +227,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Chat\Moderation\profanities.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="GameDatabase.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>GameDatabase.edmx</DependentUpon>
