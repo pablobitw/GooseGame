@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,6 +25,7 @@ namespace GameClient.Views
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
+        private bool _isGuest = false;
 
         private GameplayServiceClient gameplayClient;
         private ChatServiceClient chatClient;
@@ -80,11 +82,15 @@ namespace GameClient.Views
             this.boardId = boardId;
             this.currentUsername = username;
 
+            if (username.ToLower().StartsWith("guest") || username.Contains("Invitado"))
+            {
+                _isGuest = true;
+            }
+
             InstanceContext gameplayContext = new InstanceContext(this);
             gameplayClient = new GameplayServiceClient(gameplayContext);
 
             ConnectToChatService();
-
             LoadBoardImage();
             StartCountdown();
 
@@ -111,10 +117,8 @@ namespace GameClient.Views
                 var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
                 chatClient.JoinLobbyChat(request);
             }
-            catch (Exception)
-            {
-                // Silently fail or log locally, chat is optional
-            }
+            catch (CommunicationException) { }
+            catch (TimeoutException) { }
         }
 
         public void ReceiveMessage(ChatMessageDto message)
@@ -122,15 +126,12 @@ namespace GameClient.Views
             Dispatcher.Invoke(() =>
             {
                 string tabName = "General";
-
                 if (message.IsPrivate)
                 {
-                    // Si recibo un privado, la pestaña es el nombre del OTRO usuario
                     tabName = (message.Sender == currentUsername) ? message.TargetUser : message.Sender;
                 }
 
                 ListBox targetList = GetOrCreateTab(tabName);
-
                 string displayMsg = $"{message.Sender}: {message.Message}";
                 targetList.Items.Add(displayMsg);
                 targetList.ScrollIntoView(targetList.Items[targetList.Items.Count - 1]);
@@ -155,7 +156,6 @@ namespace GameClient.Views
                 Margin = new Thickness(0, 5, 0, 0)
             };
 
-            // Usamos el DataTemplate del chat general si existe, o uno default
             if (GeneralChatList.ItemTemplate != null)
                 newListBox.ItemTemplate = GeneralChatList.ItemTemplate;
 
@@ -218,6 +218,12 @@ namespace GameClient.Views
 
         private void PrivateChatMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            if (_isGuest)
+            {
+                MessageBox.Show("Los invitados no pueden enviar mensajes privados.", "Restricción");
+                return;
+            }
+
             var menuItem = sender as MenuItem;
             var contextMenu = menuItem?.Parent as ContextMenu;
             var panel = contextMenu?.PlacementTarget as Border;
@@ -226,7 +232,6 @@ namespace GameClient.Views
             if (!string.IsNullOrEmpty(targetUser) && targetUser != currentUsername)
             {
                 GetOrCreateTab(targetUser);
-
                 foreach (TabItem item in ChatTabControl.Items)
                 {
                     if (item.Tag?.ToString() == targetUser)
@@ -236,6 +241,39 @@ namespace GameClient.Views
                     }
                 }
                 ChatInputBox.Focus();
+            }
+        }
+
+        private async void AddFriendMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isGuest)
+            {
+                MessageBox.Show("Las cuentas de invitado no pueden agregar amigos.", "Restricción", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var panel = contextMenu?.PlacementTarget as Border;
+            string targetUser = panel?.Tag?.ToString();
+
+            if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
+
+            try
+            {
+                bool sent = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
+                if (sent)
+                    MessageBox.Show($"Solicitud enviada a {targetUser}.", "Amigos");
+                else
+                    MessageBox.Show($"No se pudo enviar la solicitud a {targetUser}.", "Error");
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de conexión al agregar amigo.");
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El servidor no respondió a tiempo.");
             }
         }
 
@@ -524,7 +562,10 @@ namespace GameClient.Views
 
                     if (targetPanel.ContextMenu != null)
                     {
-                        targetPanel.ContextMenu.IsEnabled = !string.Equals(player.Username, currentUsername, StringComparison.OrdinalIgnoreCase);
+                        if (_isGuest)
+                        {
+                            targetPanel.ContextMenu = null;
+                        }
                     }
 
                     BitmapImage bitmap = new BitmapImage();
@@ -534,17 +575,45 @@ namespace GameClient.Views
 
                     try
                     {
-                        if (string.IsNullOrEmpty(avatarPath)) bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                        else if (avatarPath.StartsWith("pack://")) bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
+                        if (string.IsNullOrEmpty(avatarPath))
+                        {
+                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                        }
+                        else if (avatarPath.StartsWith("pack://"))
+                        {
+                            bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
+                        }
                         else
                         {
                             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                             string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
-                            if (File.Exists(fullPath)) bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                            else bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+
+                            if (File.Exists(fullPath))
+                            {
+                                bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                            }
+                            else
+                            {
+                                bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                            }
                         }
                     }
-                    catch { bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative); }
+                    catch (UriFormatException)
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
+                    catch (ArgumentException)
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
+                    catch (IOException)
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
+                    catch (SecurityException)
+                    {
+                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+                    }
 
                     bitmap.EndInit();
                     targetAvatarBrush.Stretch = Stretch.UniformToFill;
@@ -751,6 +820,12 @@ namespace GameClient.Views
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            if (_isGuest)
+            {
+                MessageBox.Show("Los invitados no pueden iniciar votaciones.", "Restricción");
+                return;
+            }
+
             var menuItem = sender as MenuItem;
             if (menuItem == null) return;
             var contextMenu = menuItem.Parent as ContextMenu;

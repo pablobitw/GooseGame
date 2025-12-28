@@ -12,8 +12,9 @@
 
     <Page.Resources>
         <ContextMenu x:Key="PlayerContextMenu">
+            <MenuItem Header="Agregar a Amigos" Click="AddFriendMenuItem_Click" Foreground="LightGreen" FontWeight="SemiBold"/>
             <MenuItem Header="Mensaje Privado" Click="PrivateChatMenuItem_Click" Foreground="Cyan" FontWeight="SemiBold"/>
-            <Separator/>
+            <Separator Background="Gray"/>
             <MenuItem Header="Inicia Votación de Expulsión" Click="VoteKickMenuItem_Click" Foreground="Red" FontWeight="Bold"/>
         </ContextMenu>
 
