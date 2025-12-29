@@ -11,7 +11,7 @@ namespace GameServer.Services
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class LobbyService : ILobbyService
     {
-        public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
+        public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
 
@@ -56,7 +56,7 @@ namespace GameServer.Services
             }
         }
 
-        public async Task<JoinLobbyResultDTO> JoinLobbyAsync(JoinLobbyRequest request)
+        public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
 
@@ -74,7 +74,7 @@ namespace GameServer.Services
             }
         }
 
-        public async Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode)
+        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
             using (var repo = new LobbyRepository())
             {
@@ -83,7 +83,7 @@ namespace GameServer.Services
             }
         }
 
-        public async Task<ActiveMatchDTO[]> GetPublicMatchesAsync()
+        public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
             using (var repo = new LobbyRepository())
             {

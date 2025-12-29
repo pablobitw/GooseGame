@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class PlayerLobbyDTO
+    public class PlayerLobbyDto
     {
         [DataMember]
         public string Username { get; set; }

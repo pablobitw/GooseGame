@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class LobbySettingsDTO
+    public class LobbySettingsDto
     {
         [DataMember]
         public bool IsPublic { get; set; }

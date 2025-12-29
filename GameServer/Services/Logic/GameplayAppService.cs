@@ -37,9 +37,9 @@ namespace GameServer.Services.Logic
             _repository = repository;
         }
 
-        public async Task<DiceRollDTO> RollDiceAsync(GameplayRequest request)
+        public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            DiceRollDTO result = null;
+            DiceRollDto result = null;
             int gameIdForLock = 0;
 
             if (request == null) return null;
@@ -98,7 +98,7 @@ namespace GameServer.Services.Logic
                         _repository.AddMove(skipMove);
                         await _repository.SaveChangesAsync();
 
-                        return new DiceRollDTO { DiceOne = 0, DiceTwo = 0, Total = 0 };
+                        return new DiceRollDto { DiceOne = 0, DiceTwo = 0, Total = 0 };
                     }
 
                     var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
@@ -224,7 +224,7 @@ namespace GameServer.Services.Logic
                     _repository.AddMove(move);
                     await _repository.SaveChangesAsync();
 
-                    result = new DiceRollDTO { DiceOne = d1, DiceTwo = d2, Total = total };
+                    result = new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
                 }
             }
             catch (SqlException ex)
@@ -250,12 +250,12 @@ namespace GameServer.Services.Logic
             return result;
         }
 
-        public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
+        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            GameStateDTO state = new GameStateDTO
+            GameStateDto state = new GameStateDto
             {
                 GameLog = new List<string>(),
-                PlayerPositions = new List<PlayerPositionDTO>()
+                PlayerPositions = new List<PlayerPositionDto>()
             };
 
             try
@@ -288,12 +288,12 @@ namespace GameServer.Services.Logic
                                 }
                             }
 
-                            return new GameStateDTO
+                            return new GameStateDto
                             {
                                 IsGameOver = true,
                                 WinnerUsername = winner,
                                 GameLog = new List<string> { "La partida ha finalizado." },
-                                PlayerPositions = new List<PlayerPositionDTO>(),
+                                PlayerPositions = new List<PlayerPositionDto>(),
                                 CurrentTurnUsername = "",
                                 IsMyTurn = false
                             };
@@ -330,11 +330,11 @@ namespace GameServer.Services.Logic
 
                             var cleanLogs = logs.Select(l => l.Replace("[EXTRA] ", "")).ToList();
 
-                            var playerPositions = new List<PlayerPositionDTO>();
+                            var playerPositions = new List<PlayerPositionDto>();
                             foreach (var p in activePlayers)
                             {
                                 var pLastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, p.IdPlayer);
-                                playerPositions.Add(new PlayerPositionDTO
+                                playerPositions.Add(new PlayerPositionDto
                                 {
                                     Username = p.Username,
                                     CurrentTile = pLastMove?.FinalPosition ?? 0,
@@ -344,7 +344,7 @@ namespace GameServer.Services.Logic
                                 });
                             }
 
-                            state = new GameStateDTO
+                            state = new GameStateDto
                             {
                                 CurrentTurnUsername = currentTurnPlayer.Username,
                                 IsMyTurn = (currentTurnPlayer.Username == request.Username),
@@ -444,7 +444,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        public async Task InitiateVoteKickAsync(VoteRequestDTO request)
+        public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.TargetUsername))
                 throw new InvalidOperationException("Debe especificar un objetivo.");
@@ -512,7 +512,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        public async Task CastVoteAsync(VoteResponseDTO request)
+        public async Task CastVoteAsync(VoteResponseDto request)
         {
             var player = await _repository.GetPlayerByUsernameAsync(request.Username);
             if (player == null || !player.GameIdGame.HasValue) return;

@@ -19,15 +19,14 @@ namespace GameServer.Services.Logic
             = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
 
         private static readonly SpamTracker _spamTracker = new SpamTracker();
-        private static readonly ProfanityFilter _profanityFilter = new ProfanityFilter();
-
+        
         private const int MaxMessageLength = 50;
 
         private readonly IChatNotifier _notifier;
 
         public ChatAppService(IChatNotifier notifier)
         {
-            _notifier = notifier;
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
         }
 
         public void JoinChat(JoinChatRequest request)
@@ -87,9 +86,8 @@ namespace GameServer.Services.Logic
                 return;
             }
 
-            // ---------- PROFANITY ----------
-            var profanityResult =
-                _profanityFilter.Analyze(messageDto.Message);
+          
+            var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
 
             if (profanityResult.IsBlocked)
             {
@@ -100,7 +98,6 @@ namespace GameServer.Services.Logic
                 return;
             }
 
-            // ---------- ADVERTENCIAS ----------
             if (profanityResult.IsCensored)
             {
                 var level = WarningTracker.RegisterWarning(

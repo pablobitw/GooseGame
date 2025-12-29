@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace GameServer.DTOs.Gameplay
 {
     [DataContract]
-    public class GameStateDTO
+    public class GameStateDto
     {
         [DataMember]
         public string CurrentTurnUsername { get; set; }
@@ -17,7 +17,7 @@ namespace GameServer.DTOs.Gameplay
         [DataMember]
         public List<string> GameLog { get; set; }
         [DataMember]
-        public List<PlayerPositionDTO> PlayerPositions { get; set; }
+        public List<PlayerPositionDto> PlayerPositions { get; set; }
         [DataMember]
         public bool IsGameOver { get; set; }
         [DataMember]

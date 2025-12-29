@@ -109,9 +109,9 @@
     <Compile Include="DTOs\Friendship\FriendDto.cs" />
     <Compile Include="DTOs\Friendship\GameInvitationDto.cs" />
     <Compile Include="DTOs\Friendship\RespondRequestDto.cs" />
-    <Compile Include="DTOs\Gameplay\DiceRollDTO.cs" />
+    <Compile Include="DTOs\Gameplay\DiceRollDto.cs" />
     <Compile Include="DTOs\Gameplay\GameplayRequest.cs" />
-    <Compile Include="DTOs\Gameplay\GameStateDTO.cs" />
+    <Compile Include="DTOs\Gameplay\GameStateDto.cs" />
     <Compile Include="DTOs\Gameplay\PlayerPositionDTO.cs" />
     <Compile Include="DTOs\Gameplay\VoteRequestDTO.cs" />
     <Compile Include="DTOs\Gameplay\VoteResponseDTO.cs" />

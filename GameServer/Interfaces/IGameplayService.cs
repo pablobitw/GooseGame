@@ -8,19 +8,19 @@ namespace GameServer.Interfaces
     public interface IGameplayService
     {
         [OperationContract]
-        Task<DiceRollDTO> RollDiceAsync(GameplayRequest request);
+        Task<DiceRollDto> RollDiceAsync(GameplayRequest request);
 
         [OperationContract]
-        Task<GameStateDTO> GetGameStateAsync(GameplayRequest request);
+        Task<GameStateDto> GetGameStateAsync(GameplayRequest request);
 
         [OperationContract]
         Task<bool> LeaveGameAsync(GameplayRequest request);
 
         [OperationContract]
-        Task InitiateVoteKickAsync(VoteRequestDTO request);
+        Task InitiateVoteKickAsync(VoteRequestDto request);
 
         [OperationContract]
-        Task CastVoteAsync(VoteResponseDTO vote);
+        Task CastVoteAsync(VoteResponseDto vote);
     }
 
     [ServiceContract]

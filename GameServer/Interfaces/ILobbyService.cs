@@ -8,7 +8,7 @@ namespace GameServer.Interfaces
     public interface ILobbyService
     {
         [OperationContract]
-        Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request);
+        Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request);
 
         [OperationContract]
         Task<bool> StartGameAsync(string lobbyCode);
@@ -20,13 +20,13 @@ namespace GameServer.Interfaces
         Task<bool> LeaveLobbyAsync(string username);
 
         [OperationContract]
-        Task<JoinLobbyResultDTO> JoinLobbyAsync(JoinLobbyRequest request);
+        Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request);
 
         [OperationContract]
-        Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
+        Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode);
 
         [OperationContract]
-        Task<ActiveMatchDTO[]> GetPublicMatchesAsync();
+        Task<ActiveMatchDto[]> GetPublicMatchesAsync();
 
         [OperationContract]
         Task KickPlayerAsync(KickPlayerRequest request);

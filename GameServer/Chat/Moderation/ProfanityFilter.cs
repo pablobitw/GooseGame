@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,63 +10,58 @@ namespace GameServer.Chat.Moderation
 {
     public sealed class ProfanityFilter
     {
-        private static readonly List<string> _bannedWords;
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(100);
 
-        static ProfanityFilter()
+        private static readonly IReadOnlyList<string> _bannedWords = LoadBannedWords();
+
+        public static ChatModerationResult Analyze(string message)
         {
-            var basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var filePath = Path.Combine(basePath, "Chat", "Moderation", "profanities.txt");
+            ChatModerationResult result;
 
-            if (!File.Exists(filePath))
+            var originalMessage = message ?? string.Empty;
+            var censoredMessage = originalMessage;
+            var normalizedMessage = Normalize(originalMessage);
+            var wasCensored = false;
+
+            if (!string.IsNullOrWhiteSpace(originalMessage))
             {
-                _bannedWords = new List<string>();
-                return;
-            }
-
-            _bannedWords = File.ReadAllLines(filePath)
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(line => Normalize(line))
-                .Distinct()
-                .OrderByDescending(word => word.Length)
-                .ToList();
-        }
-
-        public ChatModerationResult Analyze(string message)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return ChatModerationResult.Allowed(message);
-            }
-
-            var originalMessage = message;
-            var censoredMessage = message;
-            var normalizedMessage = Normalize(message);
-            bool wasCensored = false;
-
-            foreach (var bannedWord in _bannedWords)
-            {
-                if (!normalizedMessage.Contains(bannedWord))
-                    continue;
-
-                var regex = BuildFlexibleRegex(bannedWord);
-
-                censoredMessage = regex.Replace(censoredMessage, match =>
+                foreach (var bannedWord in _bannedWords)
                 {
-                    wasCensored = true;
-                    return new string('*', match.Value.Length);
-                });
+                    if (string.IsNullOrEmpty(bannedWord))
+                        continue;
 
-                normalizedMessage = Normalize(censoredMessage);
+                    if (!normalizedMessage.Contains(bannedWord))
+                        continue;
+
+                    var regex = BuildFlexibleRegex(bannedWord);
+
+                    censoredMessage = regex.Replace(censoredMessage, match =>
+                    {
+                        wasCensored = true;
+                        return new string('*', match.Value.Length);
+                    });
+
+                    normalizedMessage = Normalize(censoredMessage);
+                }
             }
 
-            return wasCensored
-                ? ChatModerationResult.Censored(censoredMessage)
-                : ChatModerationResult.Allowed(originalMessage);
+            if (wasCensored)
+            {
+                result = ChatModerationResult.Censored(censoredMessage);
+            }
+            else
+            {
+                result = ChatModerationResult.Allowed(originalMessage);
+            }
+
+            return result;
         }
 
         private static Regex BuildFlexibleRegex(string bannedWord)
         {
+            if (string.IsNullOrEmpty(bannedWord))
+                throw new ArgumentException("bannedWord must not be null or empty", nameof(bannedWord));
+
             var pattern = string.Join(
                 @"[\W_]*",
                 bannedWord.Select(c => $"{Regex.Escape(c.ToString())}+")
@@ -76,7 +72,15 @@ namespace GameServer.Chat.Moderation
 
         private static string Normalize(string input)
         {
-            input = input.ToLowerInvariant();
+            string result;
+
+            if (string.IsNullOrEmpty(input))
+            {
+                result = string.Empty;
+                return result;
+            }
+
+            var lower = input.ToLowerInvariant();
 
             var map = new Dictionary<char, char>
             {
@@ -90,9 +94,9 @@ namespace GameServer.Chat.Moderation
                 ['$'] = 's'
             };
 
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(lower.Length);
 
-            foreach (var c in input)
+            foreach (var c in lower)
             {
                 if (map.TryGetValue(c, out var mapped))
                 {
@@ -104,7 +108,45 @@ namespace GameServer.Chat.Moderation
                 }
             }
 
-            return sb.ToString();
+            result = sb.ToString();
+            return result;
+        }
+
+        private static IReadOnlyList<string> LoadBannedWords()
+        {
+            IReadOnlyList<string> resultList;
+
+            try
+            {
+                var basePath = AppDomain.CurrentDomain.BaseDirectory;
+                var filePath = Path.Combine(basePath, "Chat", "Moderation", "profanities.txt");
+
+                if (!File.Exists(filePath))
+                {
+                    resultList = new ReadOnlyCollection<string>(new List<string>());
+                }
+                else
+                {
+                    var lines = File.ReadAllLines(filePath)
+                        .Where(line => !string.IsNullOrWhiteSpace(line))
+                        .Select(line => Normalize(line))
+                        .Distinct()
+                        .OrderByDescending(word => word.Length)
+                        .ToList();
+
+                    resultList = new ReadOnlyCollection<string>(lines);
+                }
+            }
+            catch (IOException)
+            {
+                resultList = new ReadOnlyCollection<string>(new List<string>());
+            }
+            catch (UnauthorizedAccessException)
+            {
+                resultList = new ReadOnlyCollection<string>(new List<string>());
+            }
+
+            return resultList;
         }
     }
 }

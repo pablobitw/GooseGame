@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class JoinLobbyResultDTO
+    public class JoinLobbyResultDto
     {
         [DataMember] public bool Success { get; set; }
         [DataMember] public string ErrorMessage { get; set; }
@@ -14,11 +14,11 @@ namespace GameServer.DTOs.Lobby
         [DataMember] public bool IsPublic { get; set; }
 
         [DataMember]
-        public List<PlayerLobbyDTO> PlayersInLobby { get; set; }
+        public List<PlayerLobbyDto> PlayersInLobby { get; set; }
 
-        public JoinLobbyResultDTO()
+        public JoinLobbyResultDto()
         {
-            PlayersInLobby = new List<PlayerLobbyDTO>();
+            PlayersInLobby = new List<PlayerLobbyDto>();
         }
     }
 }

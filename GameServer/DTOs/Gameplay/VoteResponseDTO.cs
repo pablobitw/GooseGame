@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Gameplay
 {
     [DataContract]
-    public class VoteResponseDTO
+    public class VoteResponseDto
     {
         [DataMember]
         public string Username { get; set; } 

@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class LobbyCreationResultDTO
+    public class LobbyCreationResultDto
     {
         [DataMember]
         public bool Success { get; set; }

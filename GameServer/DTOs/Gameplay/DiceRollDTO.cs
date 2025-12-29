@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Gameplay
 {
     [DataContract]
-    public class DiceRollDTO
+    public class DiceRollDto
     {
         [DataMember]
         public int DiceOne { get; set; }

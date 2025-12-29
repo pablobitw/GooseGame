@@ -38,9 +38,9 @@ namespace GameServer.Services.Logic
             }
         }
 
-        public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
+        public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            LobbyCreationResultDTO result = new LobbyCreationResultDTO { Success = false };
+            LobbyCreationResultDto result = new LobbyCreationResultDto { Success = false };
             try
             {
                 if (request == null || request.Settings == null)
@@ -103,9 +103,9 @@ namespace GameServer.Services.Logic
             return result;
         }
 
-        public async Task<JoinLobbyResultDTO> JoinLobbyAsync(JoinLobbyRequest request)
+        public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
-            JoinLobbyResultDTO result = new JoinLobbyResultDTO { Success = false };
+            JoinLobbyResultDto result = new JoinLobbyResultDto { Success = false };
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
@@ -150,7 +150,7 @@ namespace GameServer.Services.Logic
 
                 var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
 
-                var dtoList = updatedPlayers.Select(p => new PlayerLobbyDTO
+                var dtoList = updatedPlayers.Select(p => new PlayerLobbyDto
                 {
                     Username = p.Username,
                     IsHost = (p.IdPlayer == game.HostPlayerID)
@@ -172,9 +172,9 @@ namespace GameServer.Services.Logic
             return result;
         }
 
-        public async Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode)
+        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
-            LobbyStateDTO result = null;
+            LobbyStateDto result = null;
 
             try
             {
@@ -183,13 +183,13 @@ namespace GameServer.Services.Logic
                 if (game != null)
                 {
                     var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-                    var playerDtos = players.Select(p => new PlayerLobbyDTO
+                    var playerDtos = players.Select(p => new PlayerLobbyDto
                     {
                         Username = p.Username,
                         IsHost = (p.IdPlayer == game.HostPlayerID)
                     }).ToList();
 
-                    result = new LobbyStateDTO
+                    result = new LobbyStateDto
                     {
                         IsGameStarted = (game.GameStatus == (int)GameStatus.InProgress),
                         Players = playerDtos,
@@ -340,9 +340,9 @@ namespace GameServer.Services.Logic
             return code;
         }
 
-        public async Task<ActiveMatchDTO[]> GetPublicMatchesAsync()
+        public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
-            var matchesList = new List<ActiveMatchDTO>();
+            var matchesList = new List<ActiveMatchDto>();
             try
             {
                 var games = await _repository.GetActivePublicGamesAsync();
@@ -352,7 +352,7 @@ namespace GameServer.Services.Logic
                     if (currentCount < game.MaxPlayers)
                     {
                         string hostName = await _repository.GetUsernameByIdAsync(game.HostPlayerID);
-                        matchesList.Add(new ActiveMatchDTO
+                        matchesList.Add(new ActiveMatchDto
                         {
                             LobbyCode = game.LobbyCode,
                             HostUsername = hostName,

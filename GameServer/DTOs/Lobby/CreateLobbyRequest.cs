@@ -6,7 +6,7 @@ namespace GameServer.DTOs.Lobby
     public class CreateLobbyRequest
     {
         [DataMember]
-        public LobbySettingsDTO Settings { get; set; }
+        public LobbySettingsDto Settings { get; set; }
         [DataMember]
         public string HostUsername { get; set; }
     }

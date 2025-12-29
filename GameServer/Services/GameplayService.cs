@@ -17,7 +17,7 @@ namespace GameServer.Services
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayService));
 
-        public async Task<DiceRollDTO> RollDiceAsync(GameplayRequest request)
+        public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
             using (var repository = new GameplayRepository())
             {
@@ -27,7 +27,7 @@ namespace GameServer.Services
             }
         }
 
-        public async Task<GameStateDTO> GetGameStateAsync(GameplayRequest request)
+        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
 
@@ -71,7 +71,7 @@ namespace GameServer.Services
         }
 
 
-        public async Task InitiateVoteKickAsync(VoteRequestDTO request)
+        public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
             using (var repository = new GameplayRepository())
             {
@@ -93,7 +93,7 @@ namespace GameServer.Services
             }
         }
 
-        public async Task CastVoteAsync(VoteResponseDTO request)
+        public async Task CastVoteAsync(VoteResponseDto request)
         {
             using (var repository = new GameplayRepository())
             {

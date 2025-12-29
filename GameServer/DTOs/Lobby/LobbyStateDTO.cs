@@ -4,10 +4,10 @@ using System.Runtime.Serialization;
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class LobbyStateDTO
+    public class LobbyStateDto
     {
         [DataMember]
-        public List<PlayerLobbyDTO> Players { get; set; }
+        public List<PlayerLobbyDto> Players { get; set; }
         [DataMember]
         public bool IsGameStarted { get; set; }
         [DataMember]
