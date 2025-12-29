@@ -28,7 +28,7 @@
         <Setter Property="Height" Value="60"/>
     </Style>
 
-    <DataTemplate x:Key="PlayerListItemTemplate" DataType="{x:Type dto:PlayerLobbyDTO}">
+    <DataTemplate x:Key="PlayerListItemTemplate" DataType="{x:Type dto:PlayerLobbyDto}">
         <Border Padding="10" Background="Transparent">
             <StackPanel Orientation="Horizontal">
                 <fa:ImageAwesome x:Name="PlayerIcon" 

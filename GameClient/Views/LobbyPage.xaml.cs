@@ -50,7 +50,7 @@ namespace GameClient.Views
             StartMatchButton.Content = GameClient.Resources.Strings.CreateLobbyButton ?? "CREAR SALA";
         }
 
-        public LobbyPage(string username, string lobbyCode, JoinLobbyResultDTO joinResult)
+        public LobbyPage(string username, string lobbyCode, JoinLobbyResultDto joinResult)
         {
             InitializeComponent();
             this.username = username;
@@ -164,7 +164,7 @@ namespace GameClient.Views
             }
         }
 
-        private void UpdateLobbyUI(LobbyStateDTO state)
+        private void UpdateLobbyUI(LobbyStateDto state)
         {
             UpdatePlayerListUI(state.Players);
 
@@ -294,7 +294,7 @@ namespace GameClient.Views
         private async Task HandleCreateLobbyAsync()
         {
             StartMatchButton.IsEnabled = false;
-            var settings = new LobbySettingsDTO
+            var settings = new LobbySettingsDto
             {
                 IsPublic = (VisibilityPublicButton.Style == (Style)FindResource(ToggleActiveStyle)),
                 MaxPlayers = playerCount,
@@ -310,7 +310,7 @@ namespace GameClient.Views
                 {
                     lobbyCode = result.LobbyCode;
                     LockLobbySettings(result.LobbyCode);
-                    var initialPlayers = new PlayerLobbyDTO[] { new PlayerLobbyDTO { Username = username, IsHost = true } };
+                    var initialPlayers = new PlayerLobbyDto[] { new PlayerLobbyDto { Username = username, IsHost = true } };
                     UpdatePlayerListUI(initialPlayers);
                     InitializeTimer();
                     ConnectToChatService();
@@ -466,7 +466,7 @@ namespace GameClient.Views
             CopyIcon.Icon = FontAwesomeIcon.Copy;
         }
 
-        private void UpdatePlayerListUI(PlayerLobbyDTO[] players)
+        private void UpdatePlayerListUI(PlayerLobbyDto[] players)
         {
             PlayerList.Items.Clear();
             int slotsFilled = 0;
@@ -493,7 +493,7 @@ namespace GameClient.Views
             }
         }
 
-        private ListBoxItem CreatePlayerItem(PlayerLobbyDTO player)
+        private ListBoxItem CreatePlayerItem(PlayerLobbyDto player)
         {
             var textBlock = new TextBlock { Text = player.Username, FontSize = 22, VerticalAlignment = VerticalAlignment.Center };
             if (player.IsHost) { textBlock.Text += " (Host)"; textBlock.FontWeight = FontWeights.Bold; }

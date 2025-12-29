@@ -535,7 +535,7 @@ namespace GameClient.Views
             }
         }
 
-        private void ProcessGameState(GameStateDTO state)
+        private void ProcessGameState(GameStateDto state)
         {
             UpdateTurnUI(state);
             UpdateTurnTimer(state.CurrentTurnUsername);
@@ -607,7 +607,7 @@ namespace GameClient.Views
             }
         }
 
-        private void UpdatePlayerAvatars(PlayerPositionDTO[] players)
+        private void UpdatePlayerAvatars(PlayerPositionDto[] players)
         {
             if (players == null) return;
 
@@ -647,7 +647,7 @@ namespace GameClient.Views
             }
         }
 
-        private void ConfigurePlayerPanel((ImageBrush Avatar, TextBlock Name, Border Panel) controls, PlayerPositionDTO player)
+        private void ConfigurePlayerPanel((ImageBrush Avatar, TextBlock Name, Border Panel) controls, PlayerPositionDto player)
         {
             controls.Panel.Visibility = Visibility.Visible;
             controls.Name.Text = player.Username;
@@ -694,7 +694,7 @@ namespace GameClient.Views
             return File.Exists(fullPath) ? new Uri(fullPath, UriKind.Absolute) : new Uri("/Assets/default_avatar.png", UriKind.Relative);
         }
 
-        private void UpdateBoardVisuals(PlayerPositionDTO[] players)
+        private void UpdateBoardVisuals(PlayerPositionDto[] players)
         {
             if (players == null) return;
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
@@ -743,7 +743,7 @@ namespace GameClient.Views
             token.BeginAnimation(Canvas.TopProperty, animY);
         }
 
-        private void UpdateTurnUI(GameStateDTO state)
+        private void UpdateTurnUI(GameStateDto state)
         {
             if (_isGameStarting)
             {
@@ -955,7 +955,7 @@ namespace GameClient.Views
 
             try
             {
-                var request = new VoteRequestDTO { Username = currentUsername, TargetUsername = targetUser, Reason = reason };
+                var request = new VoteRequestDto { Username = currentUsername, TargetUsername = targetUser, Reason = reason };
                 await gameplayClient.InitiateVoteKickAsync(request);
                 MessageBox.Show($"Has iniciado una votación para expulsar a {targetUser}.", "Votación Iniciada", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -981,7 +981,7 @@ namespace GameClient.Views
 
             try
             {
-                var response = new VoteResponseDTO { Username = currentUsername, AcceptKick = acceptKick };
+                var response = new VoteResponseDto { Username = currentUsername, AcceptKick = acceptKick };
                 await gameplayClient.CastVoteAsync(response);
             }
             catch (CommunicationException ex)

@@ -95,7 +95,7 @@ namespace GameClient.Helpers
             PlayerKicked?.Invoke(reason);
         }
 
-        public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
+        public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace GameClient.Helpers
             }
         }
 
-        public async Task<JoinLobbyResultDTO> JoinLobbyAsync(JoinLobbyRequest request)
+        public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace GameClient.Helpers
             }
         }
 
-        public async Task<LobbyStateDTO> GetLobbyStateAsync(string lobbyCode)
+        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace GameClient.Helpers
             }
         }
 
-        public async Task<ActiveMatchDTO[]> GetPublicMatchesAsync()
+        public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
             try
             {
