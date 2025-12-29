@@ -41,55 +41,8 @@ namespace GameClient.Views
 
                 if (profile != null)
                 {
-                    UsernameTextBox.Text = profile.Username;
-
-                    if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
-                    if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
-                    if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
-                    if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
-
-                    string avatarName = profile.AvatarPath;
-                    if (string.IsNullOrEmpty(avatarName)) avatarName = "default_avatar.png";
-
-                    try
-                    {
-                        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                        string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarName);
-
-                        if (File.Exists(fullPath))
-                        {
-                            var bitmap = new BitmapImage();
-                            bitmap.BeginInit();
-                            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmap.EndInit();
-
-                            CurrentAvatarBrush.ImageSource = bitmap;
-                        }
-                    }
-                    catch (UriFormatException)
-                    {
-                        Console.WriteLine(GameClient.Resources.Strings.AvatarFormatError);
-                    }
-                    catch (IOException)
-                    {
-                        Console.WriteLine(GameClient.Resources.Strings.AvatarReadError);
-                    }
-
-                    if (profile.UsernameChangeCount >= 3)
-                    {
-                        UsernameInfoLabel.Text = GameClient.Resources.Strings.LimitReachedMessage;
-                        UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Red);
-                        UsernameInfoLabel.Visibility = Visibility.Visible;
-                        ChangeUsernameButton.IsEnabled = false;
-                    }
-                    else
-                    {
-                        UsernameInfoLabel.Text = string.Format(GameClient.Resources.Strings.ChangesLeftMessage, 3 - profile.UsernameChangeCount);
-                        UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Gray);
-                        UsernameInfoLabel.Visibility = Visibility.Visible;
-                        ChangeUsernameButton.IsEnabled = true;
-                    }
+                    UpdateProfileUI(profile);
+                    LoadAvatar(profile.AvatarPath);
                 }
                 else
                 {
@@ -121,6 +74,69 @@ namespace GameClient.Views
             }
         }
 
+        private void UpdateProfileUI(UserProfileDto profile)
+        {
+            UsernameTextBox.Text = profile.Username;
+
+            if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
+            if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
+            if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
+            if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
+
+            UpdateUsernameChangeLimitUI(profile.UsernameChangeCount);
+        }
+
+        private void UpdateUsernameChangeLimitUI(int changeCount)
+        {
+            if (changeCount >= 3)
+            {
+                UsernameInfoLabel.Text = GameClient.Resources.Strings.LimitReachedMessage;
+                UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Red);
+                UsernameInfoLabel.Visibility = Visibility.Visible;
+                ChangeUsernameButton.IsEnabled = false;
+            }
+            else
+            {
+                UsernameInfoLabel.Text = string.Format(GameClient.Resources.Strings.ChangesLeftMessage, 3 - changeCount);
+                UsernameInfoLabel.Foreground = new SolidColorBrush(Colors.Gray);
+                UsernameInfoLabel.Visibility = Visibility.Visible;
+                ChangeUsernameButton.IsEnabled = true;
+            }
+        }
+
+        private void LoadAvatar(string avatarName)
+        {
+            if (string.IsNullOrEmpty(avatarName))
+            {
+                avatarName = "default_avatar.png";
+            }
+
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarName);
+
+                if (File.Exists(fullPath))
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+
+                    CurrentAvatarBrush.ImageSource = bitmap;
+                }
+            }
+            catch (UriFormatException)
+            {
+                Console.WriteLine(GameClient.Resources.Strings.AvatarFormatError);
+            }
+            catch (IOException)
+            {
+                Console.WriteLine(GameClient.Resources.Strings.AvatarReadError);
+            }
+        }
+
         private async void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
         {
             var changeWindow = new ChangeUsernameWindow(userEmail);
@@ -138,13 +154,13 @@ namespace GameClient.Views
             NavigationService.Navigate(new ResetPasswordPage(userEmail));
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
 
             if (mainWindow != null)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
         }
     }

@@ -88,13 +88,13 @@ namespace GameClient.Views
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
 
             if (mainWindow != null)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
         }
     }

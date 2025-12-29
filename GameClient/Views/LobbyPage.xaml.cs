@@ -20,6 +20,9 @@ namespace GameClient.Views
 {
     public partial class LobbyPage : Page, IChatServiceCallback
     {
+        private const string ToggleActiveStyle = "LobbyToggleActiveStyle";
+        private const string ToggleInactiveStyle = "LobbyToggleInactiveStyle";
+
         private bool isLobbyCreated = false;
         private bool isHost = false;
         private string username;
@@ -75,7 +78,7 @@ namespace GameClient.Views
 
         private async void OnPlayerKicked(string reason)
         {
-            await Dispatcher.InvokeAsync(() =>
+            await Dispatcher.InvokeAsync(async () =>
             {
                 pollingTimer?.Stop();
                 CloseChatClient();
@@ -86,7 +89,7 @@ namespace GameClient.Views
 
                 if (Window.GetWindow(this) is GameMainWindow mainWindow)
                 {
-                    mainWindow.ShowMainMenu();
+                    await mainWindow.ShowMainMenu();
                 }
             });
         }
@@ -178,24 +181,24 @@ namespace GameClient.Views
 
             if (currentBoardId == 2)
             {
-                BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-                BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+                BoardTypeSpecialButton.Style = (Style)FindResource(ToggleActiveStyle);
+                BoardTypeNormalButton.Style = (Style)FindResource(ToggleInactiveStyle);
             }
             else
             {
-                BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-                BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+                BoardTypeNormalButton.Style = (Style)FindResource(ToggleActiveStyle);
+                BoardTypeSpecialButton.Style = (Style)FindResource(ToggleInactiveStyle);
             }
 
             if (isPublic)
             {
-                VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-                VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+                VisibilityPublicButton.Style = (Style)FindResource(ToggleActiveStyle);
+                VisibilityPrivateButton.Style = (Style)FindResource(ToggleInactiveStyle);
             }
             else
             {
-                VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-                VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+                VisibilityPrivateButton.Style = (Style)FindResource(ToggleActiveStyle);
+                VisibilityPublicButton.Style = (Style)FindResource(ToggleInactiveStyle);
             }
         }
 
@@ -238,7 +241,7 @@ namespace GameClient.Views
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
 
             CloseChatClient();
@@ -246,15 +249,15 @@ namespace GameClient.Views
 
         private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
         {
-            BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-            BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            BoardTypeSpecialButton.Style = (Style)FindResource(ToggleActiveStyle);
+            BoardTypeNormalButton.Style = (Style)FindResource(ToggleInactiveStyle);
             boardId = 2;
         }
 
         private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e)
         {
-            BoardTypeNormalButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-            BoardTypeSpecialButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            BoardTypeNormalButton.Style = (Style)FindResource(ToggleActiveStyle);
+            BoardTypeSpecialButton.Style = (Style)FindResource(ToggleInactiveStyle);
             boardId = 1;
         }
 
@@ -270,14 +273,14 @@ namespace GameClient.Views
 
         private void VisibilityPublicButton_Click(object sender, RoutedEventArgs e)
         {
-            VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-            VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            VisibilityPublicButton.Style = (Style)FindResource(ToggleActiveStyle);
+            VisibilityPrivateButton.Style = (Style)FindResource(ToggleInactiveStyle);
         }
 
         private void VisibilityPrivateButton_Click(object sender, RoutedEventArgs e)
         {
-            VisibilityPrivateButton.Style = (Style)FindResource("LobbyToggleActiveStyle");
-            VisibilityPublicButton.Style = (Style)FindResource("LobbyToggleInactiveStyle");
+            VisibilityPrivateButton.Style = (Style)FindResource(ToggleActiveStyle);
+            VisibilityPublicButton.Style = (Style)FindResource(ToggleInactiveStyle);
         }
 
         private void SendChatMessageButton_Click(object sender, RoutedEventArgs e) => SendMessage();
@@ -293,7 +296,7 @@ namespace GameClient.Views
             StartMatchButton.IsEnabled = false;
             var settings = new LobbySettingsDTO
             {
-                IsPublic = (VisibilityPublicButton.Style == (Style)FindResource("LobbyToggleActiveStyle")),
+                IsPublic = (VisibilityPublicButton.Style == (Style)FindResource(ToggleActiveStyle)),
                 MaxPlayers = playerCount,
                 BoardId = boardId
             };
@@ -413,13 +416,31 @@ namespace GameClient.Views
 
         private void CloseChatClient()
         {
-            try
+            if (chatClient != null)
             {
-                chatClient?.Close();
-            }
-            catch (Exception)
-            {
-                chatClient?.Abort();
+                try
+                {
+                    if (chatClient.State == CommunicationState.Opened)
+                    {
+                        chatClient.Close();
+                    }
+                    else
+                    {
+                        chatClient.Abort();
+                    }
+                }
+                catch (CommunicationException)
+                {
+                    chatClient.Abort();
+                }
+                catch (TimeoutException)
+                {
+                    chatClient.Abort();
+                }
+                catch (Exception)
+                {
+                    chatClient.Abort();
+                }
             }
         }
 

@@ -15,7 +15,8 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
-        private string _username;
+        private const string ErrorTitle = "Error"; 
+        private readonly string _username;
 
         public GameMainWindow(string loggedInUsername)
         {
@@ -51,18 +52,22 @@ namespace GameClient
             catch (TimeoutException)
             {
                 CoinCountText.Text = "---";
+                Console.WriteLine("Timeout loading currency.");
             }
             catch (EndpointNotFoundException)
             {
                 CoinCountText.Text = "---";
+                Console.WriteLine("Endpoint not found loading currency.");
             }
             catch (CommunicationException)
             {
                 CoinCountText.Text = "---";
+                Console.WriteLine("Communication error loading currency.");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 CoinCountText.Text = "Err";
+                Console.WriteLine($"Unexpected error loading currency: {ex.Message}");
             }
         }
 
@@ -90,9 +95,7 @@ namespace GameClient
         {
             AuthWindow authWindow = new AuthWindow();
             authWindow.Show();
-
             authWindow.NavigateToRegister();
-
             this.Close();
         }
 
@@ -117,7 +120,6 @@ namespace GameClient
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
                 string videoPath = Path.Combine(baseDir, "Assets", "BACKGROUND_1.mp4");
 
                 if (File.Exists(videoPath))
@@ -198,9 +200,18 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-            catch (CommunicationException) { }
-            catch (TimeoutException) { }
-            catch (Exception) { }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"Error closing connection: {ex.Message}");
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine($"Timeout closing connection: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error during shutdown: {ex.Message}");
+            }
             finally
             {
                 if (Application.Current.Windows.Count == 0)
@@ -216,8 +227,6 @@ namespace GameClient
             MainMenuGrid.Visibility = Visibility.Visible;
             await LoadUserCurrency();
         }
-
-        // --- REFACTORED METHODS START HERE ---
 
         private async void HandleInvitation(string host, string code)
         {
@@ -258,20 +267,20 @@ namespace GameClient
                 }
                 else
                 {
-                    MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación al unirse.", "Error");
+                MessageBox.Show("Error de comunicación al unirse.", ErrorTitle);
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("Tiempo de espera agotado.", "Error");
+                MessageBox.Show("Tiempo de espera agotado.", ErrorTitle);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error");
+                MessageBox.Show($"Error al intentar unirse: {ex.Message}", ErrorTitle);
             }
         }
     }

@@ -1,21 +1,20 @@
-﻿using GameClient.UserProfileServiceReference;
-using System;
+﻿using System;
+using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 using GameClient.LeaderboardServiceReference;
 
 namespace GameClient.Views
 {
     public partial class ScoreboardPage : Page
     {
-        private string _username;
+        private readonly string _username;
 
         public ScoreboardPage(string username)
         {
             InitializeComponent();
             _username = username;
-
             this.Loaded += ScoreboardPage_Loaded;
         }
 
@@ -24,33 +23,37 @@ namespace GameClient.Views
             await LoadLeaderboardAsync();
         }
 
-        private async System.Threading.Tasks.Task LoadLeaderboardAsync()
+        private async Task LoadLeaderboardAsync()
         {
             try
             {
                 LeaderboardList.ItemsSource = null;
 
-                using (var client = new GameClient.LeaderboardServiceReference.LeaderboardServiceClient())
+                using (var client = new LeaderboardServiceClient())
                 {
                     var leaderboardData = await client.GetGlobalLeaderboardAsync(_username);
                     LeaderboardList.ItemsSource = leaderboardData;
                 }
             }
-            catch (System.ServiceModel.EndpointNotFoundException)
+            catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor de ranking.", "Error de Conexión");
+                MessageBox.Show("No se pudo conectar con el servidor de ranking.", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                MessageBox.Show("Error al cargar la tabla: " + ex.Message);
+                MessageBox.Show("El tiempo de espera se ha agotado.", "Error de Tiempo", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación con el servidor.", "Error de Red", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void BackButtonClick(object sender, RoutedEventArgs e)
+        private async void BackButtonClick(object sender, RoutedEventArgs e)
         {
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
         }
     }

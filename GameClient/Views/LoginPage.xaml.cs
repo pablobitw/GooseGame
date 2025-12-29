@@ -1,6 +1,7 @@
 ﻿using GameClient.GameServiceReference;
 using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -41,7 +42,7 @@ namespace GameClient.Views
             }
         }
 
-        private async System.Threading.Tasks.Task<bool> AttemptLoginAsync(string username, string password)
+        private static async Task<bool> AttemptLoginAsync(string username, string password)
         {
             var serviceClient = new GameServiceClient();
             bool isSuccess = false;
@@ -58,19 +59,20 @@ namespace GameClient.Views
             {
                 MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
             }
+           
             catch (CommunicationException)
             {
                 MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorTitle);
             }
             finally
             {
                 if (serviceClient.State == CommunicationState.Opened)
                 {
                     serviceClient.Close();
+                }
+                else
+                {
+                    serviceClient.Abort();
                 }
             }
 

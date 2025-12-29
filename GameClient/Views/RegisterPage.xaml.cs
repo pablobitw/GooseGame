@@ -121,7 +121,6 @@ namespace GameClient.Views
                             ShowError(EmailBox, "Este correo electrónico ya está registrado");
                             break;
 
-                        case RegistrationResult.FatalError:
                         default:
                             ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
                             break;
