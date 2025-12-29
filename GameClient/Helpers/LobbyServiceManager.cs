@@ -7,14 +7,14 @@ using System.Windows;
 namespace GameClient.Helpers
 {
     [CallbackBehavior(UseSynchronizationContext = false, ConcurrencyMode = ConcurrencyMode.Multiple)]
-    public class LobbyServiceManager : ILobbyServiceCallback, IDisposable
+    public sealed class LobbyServiceManager : ILobbyServiceCallback, IDisposable
     {
         private static LobbyServiceManager _instance;
         private static readonly object _lock = new object();
 
         private LobbyServiceClient _client;
         private string _currentUsername;
-        private bool _disposed = false; 
+        private bool _disposed = false;
 
         public event Action<string> PlayerKicked;
 
@@ -42,26 +42,7 @@ namespace GameClient.Helpers
         {
             _currentUsername = username;
 
-            if (_client != null)
-            {
-                try
-                {
-                    if (_client.State == CommunicationState.Opened)
-                        _client.Close();
-                }
-                catch (CommunicationException)
-                {
-                    _client.Abort();
-                }
-                catch (TimeoutException)
-                {
-                    _client.Abort();
-                }
-                catch (Exception)
-                {
-                    _client.Abort();
-                }
-            }
+            CloseClient(); 
 
             try
             {
@@ -75,7 +56,7 @@ namespace GameClient.Helpers
             }
         }
 
-        private void HandleInitializationError(System.Exception ex)
+        private static void HandleInitializationError(Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error al inicializar: {ex.Message}");
             MessageBox.Show(
@@ -110,7 +91,6 @@ namespace GameClient.Helpers
 
         public void OnPlayerKicked(string reason)
         {
-            
             System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerKicked llamado: {reason}");
             PlayerKicked?.Invoke(reason);
         }
@@ -125,7 +105,6 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] EndpointNotFoundException: {ex.Message}");
-                // CORRECCIÓN SONAR: Lanzar excepción específica
                 throw new EndpointNotFoundException("No se puede conectar al servidor. Verifica que esté corriendo.", ex);
             }
             catch (TimeoutException ex)
@@ -276,11 +255,11 @@ namespace GameClient.Helpers
 
         public void Dispose()
         {
-            Dispose(true);
+            DisposeInternal(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void DisposeInternal(bool disposing)
         {
             if (_disposed)
             {
@@ -290,31 +269,39 @@ namespace GameClient.Helpers
             if (disposing)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Dispose llamado");
-                if (_client != null)
-                {
-                    try
-                    {
-                        if (_client.State == CommunicationState.Opened)
-                            _client.Close();
-                        else
-                            _client.Abort();
-                    }
-                    catch (CommunicationException)
-                    {
-                        _client.Abort();
-                    }
-                    catch (TimeoutException)
-                    {
-                        _client.Abort();
-                    }
-                    catch (Exception)
-                    {
-                        _client.Abort();
-                    }
-                }
+                CloseClient();
             }
 
             _disposed = true;
+        }
+
+        private void CloseClient()
+        {
+            if (_client == null) return;
+
+            try
+            {
+                if (_client.State == CommunicationState.Opened)
+                {
+                    _client.Close();
+                }
+                else
+                {
+                    _client.Abort();
+                }
+            }
+            catch (CommunicationException)
+            {
+                _client.Abort();
+            }
+            catch (TimeoutException)
+            {
+                _client.Abort();
+            }
+            catch (Exception)
+            {
+                _client.Abort();
+            }
         }
     }
 }

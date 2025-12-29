@@ -75,7 +75,7 @@ namespace GameClient.Views
 
         private void HandleDataUpdate()
         {
-            this.Dispatcher.Invoke(async () => await LoadDataAsync());
+            this.Dispatcher.InvokeAsync(async () => await LoadDataAsync());
         }
 
         private async Task LoadDataAsync()
@@ -146,49 +146,53 @@ namespace GameClient.Views
 
         private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            if (btn == null) return;
-            string requester = btn.Tag.ToString();
-
-            await _friendshipManager.RespondToFriendRequestAsync(requester, true);
-            await LoadDataAsync();
+            if (sender is Button btn)
+            {
+                string requester = btn.Tag.ToString();
+                await _friendshipManager.RespondToFriendRequestAsync(requester, true);
+                await LoadDataAsync();
+            }
         }
 
         private async void RejectRequest_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            if (btn == null) return;
-            string requester = btn.Tag.ToString();
-
-            await _friendshipManager.RespondToFriendRequestAsync(requester, false);
-            await LoadDataAsync();
+            if (sender is Button btn)
+            {
+                string requester = btn.Tag.ToString();
+                await _friendshipManager.RespondToFriendRequestAsync(requester, false);
+                await LoadDataAsync();
+            }
         }
 
         private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            if (btn == null) return;
-            string friend = btn.Tag.ToString();
-
-            var result = MessageBox.Show(string.Format(GameClient.Resources.Strings.DeleteConfirmation, friend),
-                                         GameClient.Resources.Strings.ConfirmationTitle,
-                                         MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            if (sender is Button btn)
             {
-                bool deleted = await _friendshipManager.RemoveFriendAsync(friend);
-                if (deleted)
+                string friend = btn.Tag.ToString();
+
+                var result = MessageBox.Show(string.Format(GameClient.Resources.Strings.DeleteConfirmation, friend),
+                                             GameClient.Resources.Strings.ConfirmationTitle,
+                                             MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show(GameClient.Resources.Strings.FriendDeletedSuccess, GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-                    await LoadDataAsync();
+                    bool deleted = await _friendshipManager.RemoveFriendAsync(friend);
+                    if (deleted)
+                    {
+                        MessageBox.Show(GameClient.Resources.Strings.FriendDeletedSuccess, GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                        await LoadDataAsync();
+                    }
                 }
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null) mainWindow.ShowMainMenu();
+            if (mainWindow != null)
+            {
+                await mainWindow.ShowMainMenu();
+            }
         }
     }
 }

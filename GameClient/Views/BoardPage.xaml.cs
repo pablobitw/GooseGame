@@ -115,26 +115,13 @@ namespace GameClient.Views
                 try
                 {
                     if (gameplayClient.State == CommunicationState.Opened)
-                    {
                         gameplayClient.Close();
-                    }
                     else
-                    {
                         gameplayClient.Abort();
-                    }
                 }
-                catch (CommunicationException)
-                {
-                    gameplayClient.Abort();
-                }
-                catch (TimeoutException)
-                {
-                    gameplayClient.Abort();
-                }
-                catch (Exception)
-                {
-                    gameplayClient.Abort();
-                }
+                catch (CommunicationException) { gameplayClient.Abort(); }
+                catch (TimeoutException) { gameplayClient.Abort(); }
+                catch (Exception) { gameplayClient.Abort(); }
             }
         }
 
@@ -145,26 +132,13 @@ namespace GameClient.Views
                 try
                 {
                     if (chatClient.State == CommunicationState.Opened)
-                    {
                         chatClient.Close();
-                    }
                     else
-                    {
                         chatClient.Abort();
-                    }
                 }
-                catch (CommunicationException)
-                {
-                    chatClient.Abort();
-                }
-                catch (TimeoutException)
-                {
-                    chatClient.Abort();
-                }
-                catch (Exception)
-                {
-                    chatClient.Abort();
-                }
+                catch (CommunicationException) { chatClient.Abort(); }
+                catch (TimeoutException) { chatClient.Abort(); }
+                catch (Exception) { chatClient.Abort(); }
             }
         }
 
@@ -358,7 +332,7 @@ namespace GameClient.Views
 
         public void OnPlayerKicked(string reason)
         {
-            Dispatcher.Invoke(async () =>
+            Dispatcher.InvokeAsync(async () =>
             {
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
@@ -370,7 +344,7 @@ namespace GameClient.Views
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
                 if (mainWindow != null)
                 {
-                    mainWindow.ShowMainMenu();
+                    await mainWindow.ShowMainMenu();
                 }
                 else
                 {
@@ -378,7 +352,6 @@ namespace GameClient.Views
                     newWindow.Show();
                     Window.GetWindow(this)?.Close();
                 }
-                await Task.CompletedTask;
             });
         }
 
@@ -447,7 +420,7 @@ namespace GameClient.Views
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
                 if (mainWindow != null)
                 {
-                    mainWindow.ShowMainMenu();
+                    await mainWindow.ShowMainMenu();
                 }
                 else if (NavigationService.CanGoBack)
                 {
@@ -537,7 +510,7 @@ namespace GameClient.Views
                     if (state.IsGameOver)
                     {
                         _isGameOverHandled = true;
-                        HandleGameOver(state.WinnerUsername);
+                        await HandleGameOver(state.WinnerUsername);
                         return;
                     }
 
@@ -691,7 +664,7 @@ namespace GameClient.Views
             controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
         }
 
-        private void LoadAvatarImage(ImageBrush brush, string avatarPath)
+        private static void LoadAvatarImage(ImageBrush brush, string avatarPath)
         {
             BitmapImage bitmap = new BitmapImage();
             bitmap.BeginInit();
@@ -796,7 +769,7 @@ namespace GameClient.Views
             }
         }
 
-        private string CleanLogMessage(string raw)
+        private static string CleanLogMessage(string raw)
         {
             string clean = raw;
             if (clean.Contains(LuckyBoxTagPrefix))
@@ -812,11 +785,11 @@ namespace GameClient.Views
             return clean.Replace("[EXTRA]", "").Trim();
         }
 
-        private void HandleGameOver(string winner)
+        private async Task HandleGameOver(string winner)
         {
             MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null) mainWindow.ShowMainMenu();
+            if (mainWindow != null) await mainWindow.ShowMainMenu();
             else if (NavigationService.CanGoBack) NavigationService.GoBack();
         }
 

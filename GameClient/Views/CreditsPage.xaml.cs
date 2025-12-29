@@ -11,15 +11,18 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
             else
             {
-                NavigationService.GoBack();
+                if (NavigationService != null && NavigationService.CanGoBack)
+                {
+                    NavigationService.GoBack();
+                }
             }
         }
     }

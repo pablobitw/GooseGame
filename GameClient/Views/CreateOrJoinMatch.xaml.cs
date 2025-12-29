@@ -9,6 +9,7 @@ namespace GameClient.Views
 {
     public partial class CreateOrJoinMatchPage : Page
     {
+        private const string ErrorTitle = "Error"; 
         private readonly string _username;
 
         public CreateOrJoinMatchPage(string username)
@@ -65,11 +66,11 @@ namespace GameClient.Views
             }
             catch (TimeoutException ex)
             {
-                MessageBox.Show($"El servidor no responde: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"El servidor no responde: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de conexión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error de conexión: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -81,11 +82,11 @@ namespace GameClient.Views
             }
             catch (TimeoutException ex)
             {
-                MessageBox.Show($"El servidor no responde: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"El servidor no responde: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de conexión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error de conexión: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
