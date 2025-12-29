@@ -141,9 +141,7 @@ namespace GameClient
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
             var media = (MediaElement)sender;
-
             media.Position = TimeSpan.Zero;
-
             media.Play();
         }
 
@@ -176,11 +174,9 @@ namespace GameClient
 
         private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
         {
-
             if (IsGuestActionRestricted("Tabla de Clasificación")) return;
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
-
             MainFrame.Navigate(new ScoreboardPage(_username));
         }
 
@@ -221,11 +217,13 @@ namespace GameClient
             await LoadUserCurrency();
         }
 
+        // --- REFACTORED METHODS START HERE ---
+
         private async void HandleInvitation(string host, string code)
         {
             if (UserSession.GetInstance().IsGuest) return;
 
-            await this.Dispatcher.Invoke(async () =>
+            await this.Dispatcher.InvokeAsync(async () =>
             {
                 var result = MessageBox.Show(
                     $"{host} te ha invitado a una partida. ¿Quieres unirte?",
@@ -235,42 +233,46 @@ namespace GameClient
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    try
-                    {
-                        var request = new JoinLobbyRequest
-                        {
-                            LobbyCode = code,
-                            Username = _username
-                        };
-
-                        var joinResult = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
-
-                        if (joinResult.Success)
-                        {
-                            await Task.Delay(200);
-
-                            MainMenuGrid.Visibility = Visibility.Collapsed;
-                            MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
-                        }
-                        else
-                        {
-                            MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                    }
-                    catch (CommunicationException)
-                    {
-                        MessageBox.Show("Error de comunicación al unirse.", "Error");
-                    }
-                    catch (TimeoutException)
-                    {
-                        MessageBox.Show("Tiempo de espera agotado.", "Error");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error");
-                    }
+                    await AttemptJoinLobbyAsync(code);
                 }
             });
+        }
+
+        private async Task AttemptJoinLobbyAsync(string code)
+        {
+            try
+            {
+                var request = new JoinLobbyRequest
+                {
+                    LobbyCode = code,
+                    Username = _username
+                };
+
+                var joinResult = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
+
+                if (joinResult.Success)
+                {
+                    await Task.Delay(200);
+                    MainMenuGrid.Visibility = Visibility.Collapsed;
+                    MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
+                }
+                else
+                {
+                    MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación al unirse.", "Error");
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("Tiempo de espera agotado.", "Error");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al intentar unirse: {ex.Message}", "Error");
+            }
         }
     }
 }

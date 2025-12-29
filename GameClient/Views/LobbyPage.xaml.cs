@@ -73,9 +73,9 @@ namespace GameClient.Views
             ConnectToChatService();
         }
 
-        private void OnPlayerKicked(string reason)
+        private async void OnPlayerKicked(string reason)
         {
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 pollingTimer?.Stop();
                 CloseChatClient();
@@ -111,46 +111,63 @@ namespace GameClient.Views
                 {
                     if (state.IsGameStarted)
                     {
-                        pollingTimer.Stop();
-                        pollingTimer = null;
-
-                        if (!isHost)
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                try
-                                {
-                                    NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
-                                }
-                                catch { }
-                            });
-                        }
-                        return;
+                        await HandleGameStartAsync();
                     }
                     else
                     {
-                        UpdatePlayerListUI(state.Players);
-
-                        if (!isHost)
-                        {
-                            SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
-                        }
+                        UpdateLobbyUI(state);
                     }
                 }
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
+                Console.WriteLine(ex.Message);
             }
-            catch (CommunicationException)
+            catch (CommunicationException ex)
             {
+                Console.WriteLine(ex.Message);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             finally
             {
                 if (pollingTimer != null)
                 {
                     pollingTimer.Start();
                 }
+            }
+        }
+
+        private async Task HandleGameStartAsync()
+        {
+            pollingTimer.Stop();
+            pollingTimer = null;
+
+            if (!isHost)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    try
+                    {
+                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                });
+            }
+        }
+
+        private void UpdateLobbyUI(LobbyStateDTO state)
+        {
+            UpdatePlayerListUI(state.Players);
+
+            if (!isHost)
+            {
+                SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
             }
         }
 
@@ -198,11 +215,25 @@ namespace GameClient.Views
                     return;
                 }
 
-                try { await LobbyServiceManager.Instance.DisbandLobbyAsync(username); } catch { }
+                try
+                {
+                    await LobbyServiceManager.Instance.DisbandLobbyAsync(username);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
             else
             {
-                try { await LobbyServiceManager.Instance.LeaveLobbyAsync(username); } catch { }
+                try
+                {
+                    await LobbyServiceManager.Instance.LeaveLobbyAsync(username);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
@@ -342,7 +373,10 @@ namespace GameClient.Views
                 chatClient.JoinLobbyChat(request);
                 ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown;
             }
-            catch { AddMessageToUI("[Sistema]:", "Error conectando chat."); }
+            catch (Exception ex)
+            {
+                AddMessageToUI("[Sistema]:", "Error conectando chat: " + ex.Message);
+            }
         }
 
         private void ChatMessageTextBox_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) SendMessage(); }
@@ -357,13 +391,15 @@ namespace GameClient.Views
                 AddMessageToUI("Tú:", ChatMessageTextBox.Text);
                 ChatMessageTextBox.Clear();
             }
-            catch { AddMessageToUI("[Sistema]:", "Error enviando mensaje."); }
+            catch (Exception ex)
+            {
+                AddMessageToUI("[Sistema]:", "Error enviando mensaje: " + ex.Message);
+            }
         }
 
-        // [CORRECCIÓN AQUI] Método actualizado para usar ChatMessageDto
-        public void ReceiveMessage(ChatMessageDto messageDto)
+        public async void ReceiveMessage(ChatMessageDto message)
         {
-            Dispatcher.Invoke(() => AddMessageToUI(messageDto.Sender + ":", messageDto.Message));
+            await Dispatcher.InvokeAsync(() => AddMessageToUI(message.Sender + ":", message.Message));
         }
 
         private void AddMessageToUI(string name, string message)
@@ -375,7 +411,17 @@ namespace GameClient.Views
             ChatMessagesList.ScrollIntoView(textBlock);
         }
 
-        private void CloseChatClient() { try { chatClient?.Close(); } catch { chatClient?.Abort(); } }
+        private void CloseChatClient()
+        {
+            try
+            {
+                chatClient?.Close();
+            }
+            catch (Exception)
+            {
+                chatClient?.Abort();
+            }
+        }
 
         private void LockLobbySettings(string lobbyCode)
         {

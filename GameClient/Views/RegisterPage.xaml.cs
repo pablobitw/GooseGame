@@ -90,8 +90,6 @@ namespace GameClient.Views
                 GameServiceClient serviceClient = new GameServiceClient();
                 try
                 {
-                    // --- CAMBIO CLAVE AQUI ---
-                    // Creamos el DTO (paquete) que espera el servidor
                     var request = new RegisterUserRequest
                     {
                         Username = username,
@@ -99,9 +97,7 @@ namespace GameClient.Views
                         Password = password
                     };
 
-                    // Enviamos el paquete completo
                     RegistrationResult result = await serviceClient.RegisterUserAsync(request);
-                    // -------------------------
 
                     switch (result)
                     {
@@ -161,70 +157,94 @@ namespace GameClient.Views
         {
             ClearAllErrors();
             bool isValid = true;
-            bool isPasswordStrengthValid = true;
 
-            string email = EmailBox.Text;
-            string username = UserBox.Text;
-            string password = PasswordBox.Password;
-            string repeatPassword = RepeatBox.Password;
+            if (!ValidateEmail()) isValid = false;
+            if (!ValidateUsername()) isValid = false;
 
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                ShowError(EmailBox, "El correo no puede estar vacio");
-                isValid = false;
-            }
-            else if (!IsValidEmail(email))
-            {
-                ShowError(EmailBox, "El formato del correo no es valido");
-                isValid = false;
-            }
+            bool isPasswordStrong = ValidatePasswordStrength();
+            bool isRepeatPopulated = ValidateRepeatPasswordNotEmpty();
 
-            if (string.IsNullOrWhiteSpace(username))
+            if (isPasswordStrong && isRepeatPopulated)
             {
-                ShowError(UserBox, "El nombre de usuario no puede estar vacio");
-                isValid = false;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                ShowError(PasswordBox, "La contraseña no puede estar vacia");
-                isValid = false;
-                isPasswordStrengthValid = false;
+                if (!CheckPasswordsMatch()) isValid = false;
             }
             else
             {
-                var errorMessages = new List<string>();
-                if (password.Length < 8) { errorMessages.Add("mínimo 8 caracteres"); }
-                if (password.Length > 50) { errorMessages.Add("máximo 50 caracteres"); }
-                if (!password.Any(char.IsUpper)) { errorMessages.Add("una mayúscula"); }
-                if (!password.Any(c => !char.IsLetterOrDigit(c))) { errorMessages.Add("un símbolo (ejemplo: !#$)"); }
-
-                if (errorMessages.Count > 0)
-                {
-                    string fullErrorMessage = "La contraseña debe tener: " + string.Join(", ", errorMessages) + ".";
-                    ShowError(PasswordBox, fullErrorMessage);
-                    isValid = false;
-                    isPasswordStrengthValid = false;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(repeatPassword))
-            {
-                ShowError(RepeatBox, "Debes repetir la contraseña");
-                isValid = false;
-            }
-
-            if (isPasswordStrengthValid && !string.IsNullOrWhiteSpace(repeatPassword))
-            {
-                if (password != repeatPassword)
-                {
-                    ShowError(PasswordBox, "Las contraseñas no coinciden");
-                    ShowError(RepeatBox, "Las contraseñas no coinciden");
-                    isValid = false;
-                }
+                if (!isPasswordStrong || !isRepeatPopulated) isValid = false;
             }
 
             return isValid;
+        }
+
+        private bool ValidateEmail()
+        {
+            string email = EmailBox.Text;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ShowError(EmailBox, "El correo no puede estar vacio");
+                return false;
+            }
+            if (!IsValidEmail(email))
+            {
+                ShowError(EmailBox, "El formato del correo no es valido");
+                return false;
+            }
+            return true;
+        }
+
+        private bool ValidateUsername()
+        {
+            if (string.IsNullOrWhiteSpace(UserBox.Text))
+            {
+                ShowError(UserBox, "El nombre de usuario no puede estar vacio");
+                return false;
+            }
+            return true;
+        }
+
+        private bool ValidatePasswordStrength()
+        {
+            string password = PasswordBox.Password;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                ShowError(PasswordBox, "La contraseña no puede estar vacia");
+                return false;
+            }
+
+            var errorMessages = new List<string>();
+            if (password.Length < 8) errorMessages.Add("mínimo 8 caracteres");
+            if (password.Length > 50) errorMessages.Add("máximo 50 caracteres");
+            if (!password.Any(char.IsUpper)) errorMessages.Add("una mayúscula");
+            if (!password.Any(c => !char.IsLetterOrDigit(c))) errorMessages.Add("un símbolo (ejemplo: !#$)");
+
+            if (errorMessages.Count > 0)
+            {
+                string fullErrorMessage = "La contraseña debe tener: " + string.Join(", ", errorMessages) + ".";
+                ShowError(PasswordBox, fullErrorMessage);
+                return false;
+            }
+            return true;
+        }
+
+        private bool ValidateRepeatPasswordNotEmpty()
+        {
+            if (string.IsNullOrWhiteSpace(RepeatBox.Password))
+            {
+                ShowError(RepeatBox, "Debes repetir la contraseña");
+                return false;
+            }
+            return true;
+        }
+
+        private bool CheckPasswordsMatch()
+        {
+            if (PasswordBox.Password != RepeatBox.Password)
+            {
+                ShowError(PasswordBox, "Las contraseñas no coinciden");
+                ShowError(RepeatBox, "Las contraseñas no coinciden");
+                return false;
+            }
+            return true;
         }
 
         private void ShowError(Control field, string errorMessage)
