@@ -1,25 +1,15 @@
-﻿using GameClient.Views;
-using GameClient.Helpers; // [IMPORTANTE] Necesario para UserSession
+﻿using GameClient.Helpers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GameClient.Views
 {
     public partial class CreateOrJoinMatchPage : Page
     {
-        private string _username;
+        private readonly string _username;
 
         public CreateOrJoinMatchPage(string username)
         {
@@ -31,43 +21,79 @@ namespace GameClient.Views
         {
             if (UserSession.GetInstance().IsGuest)
             {
-                string message = "Crear partidas solo está disponible para usuarios registrados.\n\n" +
-                                 "¿Te gustaría crear una cuenta ahora?\n" +
-                                 "(Se cerrará tu sesión actual)";
-
-                var result = MessageBox.Show(message, "Modo Invitado", MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    AuthWindow authWindow = new AuthWindow();
-                    authWindow.Show();
-                    authWindow.NavigateToRegister();
-
-                    Window.GetWindow(this)?.Close();
-                }
-
+                HandleGuestAccess();
                 return;
             }
 
-            NavigationService.Navigate(new LobbyPage(_username));
+            try
+            {
+                NavigationService.Navigate(new LobbyPage(_username));
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"Tiempo de espera agotado al crear el lobby: {ex.Message}", "Error de Tiempo", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (CommunicationException ex)
+            {
+                MessageBox.Show($"Error de comunicación al crear el lobby: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void HandleGuestAccess()
+        {
+            string message = "Crear partidas solo está disponible para usuarios registrados.\n\n" +
+                             "¿Te gustaría crear una cuenta ahora?\n" +
+                             "(Se cerrará tu sesión actual)";
+
+            var result = MessageBox.Show(message, "Modo Invitado", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                AuthWindow authWindow = new AuthWindow();
+                authWindow.Show();
+                authWindow.NavigateToRegister();
+
+                Window.GetWindow(this)?.Close();
+            }
         }
 
         private void JoinMatchButton_Click(object sender, RoutedEventArgs e)
         {
-           
-            NavigationService.Navigate(new JoinMatchCodePage(_username));
+            try
+            {
+                NavigationService.Navigate(new JoinMatchCodePage(_username));
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"El servidor no responde: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (CommunicationException ex)
+            {
+                MessageBox.Show($"Error de conexión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ViewMatchesButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new ListMatchesPage(_username));
+            try
+            {
+                NavigationService.Navigate(new ListMatchesPage(_username));
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"El servidor no responde: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (CommunicationException ex)
+            {
+                MessageBox.Show($"Error de conexión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                mainWindow.ShowMainMenu();
+                await mainWindow.ShowMainMenu();
             }
         }
     }

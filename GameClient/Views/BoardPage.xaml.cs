@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +21,7 @@ namespace GameClient.Views
     [CallbackBehavior(UseSynchronizationContext = false)]
     public partial class BoardPage : Page, IGameplayServiceCallback, IChatServiceCallback
     {
+        private const string LuckyBoxTagPrefix = "[LUCKYBOX:";
         private string lobbyCode;
         private int boardId;
         private string currentUsername;
@@ -103,9 +103,69 @@ namespace GameClient.Views
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
                 _turnCountdownTimer?.Stop();
-                try { gameplayClient?.Close(); } catch { gameplayClient?.Abort(); }
-                try { chatClient?.Close(); } catch { chatClient?.Abort(); }
+                CloseGameplayClient();
+                CloseChatClient();
             };
+        }
+
+        private void CloseGameplayClient()
+        {
+            if (gameplayClient != null)
+            {
+                try
+                {
+                    if (gameplayClient.State == CommunicationState.Opened)
+                    {
+                        gameplayClient.Close();
+                    }
+                    else
+                    {
+                        gameplayClient.Abort();
+                    }
+                }
+                catch (CommunicationException)
+                {
+                    gameplayClient.Abort();
+                }
+                catch (TimeoutException)
+                {
+                    gameplayClient.Abort();
+                }
+                catch (Exception)
+                {
+                    gameplayClient.Abort();
+                }
+            }
+        }
+
+        private void CloseChatClient()
+        {
+            if (chatClient != null)
+            {
+                try
+                {
+                    if (chatClient.State == CommunicationState.Opened)
+                    {
+                        chatClient.Close();
+                    }
+                    else
+                    {
+                        chatClient.Abort();
+                    }
+                }
+                catch (CommunicationException)
+                {
+                    chatClient.Abort();
+                }
+                catch (TimeoutException)
+                {
+                    chatClient.Abort();
+                }
+                catch (Exception)
+                {
+                    chatClient.Abort();
+                }
+            }
         }
 
         private void ConnectToChatService()
@@ -117,8 +177,14 @@ namespace GameClient.Views
                 var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
                 chatClient.JoinLobbyChat(request);
             }
-            catch (CommunicationException) { }
-            catch (TimeoutException) { }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine($"Error conectando al chat: {ex.Message}");
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine($"Timeout conectando al chat: {ex.Message}");
+            }
         }
 
         public void ReceiveMessage(ChatMessageDto message)
@@ -203,8 +269,14 @@ namespace GameClient.Views
                 }
                 ChatInputBox.Clear();
             }
-            catch (CommunicationException) { MessageBox.Show("Error de conexión con el chat."); }
-            catch (TimeoutException) { MessageBox.Show("El chat no responde."); }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de conexión con el chat.");
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El chat no responde.");
+            }
         }
 
         private void ChatInputBox_KeyDown(object sender, KeyEventArgs e)
@@ -261,8 +333,14 @@ namespace GameClient.Views
                 if (sent) MessageBox.Show($"Solicitud enviada a {targetUser}.", "Amigos");
                 else MessageBox.Show($"No se pudo enviar la solicitud a {targetUser}.", "Error");
             }
-            catch (CommunicationException) { MessageBox.Show("Error de conexión al agregar amigo."); }
-            catch (TimeoutException) { MessageBox.Show("El servidor no respondió a tiempo."); }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de conexión al agregar amigo.");
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El servidor no respondió a tiempo.");
+            }
         }
 
         public void OnVoteKickStarted(string targetUsername, string reason)
@@ -280,7 +358,7 @@ namespace GameClient.Views
 
         public void OnPlayerKicked(string reason)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(async () =>
             {
                 gameLoopTimer?.Stop();
                 _startCountdownTimer?.Stop();
@@ -290,13 +368,17 @@ namespace GameClient.Views
                 MessageBox.Show(reason, "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
-                if (mainWindow != null) mainWindow.ShowMainMenu();
+                if (mainWindow != null)
+                {
+                    mainWindow.ShowMainMenu();
+                }
                 else
                 {
                     GameMainWindow newWindow = new GameMainWindow(currentUsername);
                     newWindow.Show();
                     Window.GetWindow(this)?.Close();
                 }
+                await Task.CompletedTask;
             });
         }
 
@@ -358,13 +440,19 @@ namespace GameClient.Views
                 var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
                 await gameplayClient.LeaveGameAsync(request);
             }
-            catch (CommunicationException) { }
-            catch (TimeoutException) { }
+            catch (CommunicationException) { Console.WriteLine("Communication error on Quit."); }
+            catch (TimeoutException) { Console.WriteLine("Timeout on Quit."); }
             finally
             {
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
-                if (mainWindow != null) mainWindow.ShowMainMenu();
-                else if (NavigationService.CanGoBack) NavigationService.GoBack();
+                if (mainWindow != null)
+                {
+                    mainWindow.ShowMainMenu();
+                }
+                else if (NavigationService.CanGoBack)
+                {
+                    NavigationService.GoBack();
+                }
             }
         }
 
@@ -411,7 +499,19 @@ namespace GameClient.Views
         private void LoadBoardImage()
         {
             string imagePath = (boardId == 1) ? "/Assets/Boards/normal_board.png" : "/Assets/Boards/special_board.png";
-            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)); } catch { }
+
+            try
+            {
+                BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
+            }
+            catch (UriFormatException ex)
+            {
+                Console.WriteLine($"Invalid URI for board image: {ex.Message}");
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Error loading board image: {ex.Message}");
+            }
         }
 
         private void StartGameLoop()
@@ -444,12 +544,17 @@ namespace GameClient.Views
                     ProcessGameState(state);
                 }
             }
-            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
+            catch (CommunicationException)
             {
+                Console.WriteLine("Communication error in game loop.");
+            }
+            catch (TimeoutException)
+            {
+                Console.WriteLine("Timeout in game loop.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error in Game Loop: " + ex.Message);
+                Console.WriteLine("Critical Error in Game Loop: " + ex.Message);
             }
             finally
             {
@@ -494,7 +599,7 @@ namespace GameClient.Views
         {
             if (logs != null && logs.Any())
             {
-                string latestLog = logs.First();
+                string latestLog = logs[0];
                 if (latestLog != _lastLogProcessed)
                 {
                     _lastLogProcessed = latestLog;
@@ -517,9 +622,14 @@ namespace GameClient.Views
                     await UpdateGameState();
                 }
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                MessageBox.Show("Error de red al tirar dados: " + ex.Message);
+                RollDiceButton.IsEnabled = true;
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show("El servidor no respondió al tirar dados: " + ex.Message);
                 RollDiceButton.IsEnabled = true;
             }
         }
@@ -592,7 +702,7 @@ namespace GameClient.Views
             {
                 bitmap.UriSource = GetAvatarUri(avatarPath);
             }
-            catch (Exception)
+            catch (UriFormatException)
             {
                 bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
             }
@@ -602,7 +712,7 @@ namespace GameClient.Views
             brush.ImageSource = bitmap;
         }
 
-        private Uri GetAvatarUri(string path)
+        private static Uri GetAvatarUri(string path)
         {
             if (string.IsNullOrEmpty(path)) return new Uri("/Assets/default_avatar.png", UriKind.Relative);
             if (path.StartsWith("pack://")) return new Uri(path, UriKind.RelativeOrAbsolute);
@@ -689,9 +799,9 @@ namespace GameClient.Views
         private string CleanLogMessage(string raw)
         {
             string clean = raw;
-            if (clean.Contains("[LUCKYBOX:"))
+            if (clean.Contains(LuckyBoxTagPrefix))
             {
-                int start = clean.IndexOf("[LUCKYBOX:");
+                int start = clean.IndexOf(LuckyBoxTagPrefix);
                 int end = clean.IndexOf("]", start);
                 if (start != -1 && end != -1)
                 {
@@ -717,27 +827,24 @@ namespace GameClient.Views
             string boxOwner, rewardType;
             int rewardAmount;
 
-            if (TryParseLuckyBoxTag(logDescription, out boxOwner, out rewardType, out rewardAmount))
+            if (TryParseLuckyBoxTag(logDescription, out boxOwner, out rewardType, out rewardAmount) && boxOwner == currentUsername)
             {
-                if (boxOwner == currentUsername)
-                {
-                    ShowLuckyBoxUI(rewardType, rewardAmount);
-                }
+                ShowLuckyBoxUI(rewardType, rewardAmount);
             }
         }
 
-        private bool TryParseLuckyBoxTag(string log, out string owner, out string type, out int amount)
+        private static bool TryParseLuckyBoxTag(string log, out string owner, out string type, out int amount)
         {
             owner = type = "";
             amount = 0;
-            int start = log.IndexOf("[LUCKYBOX:");
+            int start = log.IndexOf(LuckyBoxTagPrefix);
             int end = log.IndexOf("]", start);
 
             if (start == -1 || end == -1) return false;
 
             try
             {
-                string content = log.Substring(start, end - start + 1).Replace("[LUCKYBOX:", "").Replace("]", "");
+                string content = log.Substring(start, end - start + 1).Replace(LuckyBoxTagPrefix, "").Replace("]", "");
                 string[] parts = content.Split(':');
                 if (parts.Length != 2) return false;
 
@@ -749,7 +856,10 @@ namespace GameClient.Views
                 amount = int.Parse(rewardParts[1]);
                 return true;
             }
-            catch { return false; }
+            catch (FormatException)
+            {
+                return false;
+            }
         }
 
         private void ShowLuckyBoxUI(string type, int amount)
@@ -765,7 +875,14 @@ namespace GameClient.Views
                     ? new BitmapImage(new Uri(path, UriKind.Absolute))
                     : new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
             }
-            catch { }
+            catch (UriFormatException)
+            {
+                Console.WriteLine("Failed to load LuckyBox image (URI).");
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("Failed to load LuckyBox image (IO).");
+            }
 
             LuckyBoxImage.Visibility = Visibility.Visible;
             RewardContainer.Visibility = Visibility.Collapsed;
@@ -820,7 +937,10 @@ namespace GameClient.Views
                         ? new BitmapImage(new Uri(fullPath, UriKind.Absolute))
                         : new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
                 }
-                catch { }
+                catch (UriFormatException)
+                {
+                    Console.WriteLine($"Error loading reward image {imagePath}");
+                }
             }
             RewardText.Text = text;
             RewardText.Foreground = textColor;
@@ -866,9 +986,13 @@ namespace GameClient.Views
                 await gameplayClient.InitiateVoteKickAsync(request);
                 MessageBox.Show($"Has iniciado una votación para expulsar a {targetUser}.", "Votación Iniciada", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                MessageBox.Show("Error al iniciar votación: " + ex.Message);
+                MessageBox.Show("Error de red al iniciar votación: " + ex.Message);
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show("Tiempo de espera agotado al iniciar votación: " + ex.Message);
             }
         }
 
@@ -887,9 +1011,13 @@ namespace GameClient.Views
                 var response = new VoteResponseDTO { Username = currentUsername, AcceptKick = acceptKick };
                 await gameplayClient.CastVoteAsync(response);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                Console.WriteLine("Error enviando voto: " + ex.Message);
+                Console.WriteLine("Error de red enviando voto: " + ex.Message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine("Timeout enviando voto: " + ex.Message);
             }
         }
     }

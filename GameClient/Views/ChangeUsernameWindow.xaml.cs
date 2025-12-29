@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference; 
+﻿using GameClient.GameServiceReference;
 using GameClient.UserProfileServiceReference;
 using System;
 using System.ServiceModel;
@@ -17,8 +17,12 @@ namespace GameClient.Views
         {
             InitializeComponent();
             _userEmail = email;
+            this.Loaded += OnWindowLoaded;
+        }
 
-            SendVerificationCode();
+        private async void OnWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            await SendVerificationCode();
         }
 
         private async Task SendVerificationCode()
@@ -70,7 +74,7 @@ namespace GameClient.Views
             }
 
             VerifyCodeButton.IsEnabled = false;
-            var client = new GameServiceClient(); 
+            var client = new GameServiceClient();
 
             try
             {
@@ -88,13 +92,24 @@ namespace GameClient.Views
                     ShowError(CodeBorder, CodeErrorLabel, "Código incorrecto o expirado.");
                 }
             }
-            catch (Exception)
+            catch (TimeoutException)
             {
-                ShowError(CodeBorder, CodeErrorLabel, "Error de conexión.");
+                ShowError(CodeBorder, CodeErrorLabel, "El servidor tardó en responder.");
+            }
+            catch (CommunicationException)
+            {
+                ShowError(CodeBorder, CodeErrorLabel, "Error de conexión al verificar código.");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened) client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
                 VerifyCodeButton.IsEnabled = true;
             }
         }
@@ -120,7 +135,7 @@ namespace GameClient.Views
                 {
                     case UsernameChangeResult.Success:
                         MessageBox.Show("¡Nombre cambiado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                        this.Close(); 
+                        this.Close();
                         break;
 
                     case UsernameChangeResult.UsernameAlreadyExists:
@@ -140,20 +155,35 @@ namespace GameClient.Views
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (TimeoutException)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                ShowError(UsernameBorder, UsernameErrorLabel, "Tiempo de espera agotado.");
+            }
+            catch (FaultException ex)
+            {
+                ShowError(UsernameBorder, UsernameErrorLabel, $"Error del servidor: {ex.Message}");
+            }
+            catch (CommunicationException)
+            {
+                ShowError(UsernameBorder, UsernameErrorLabel, "Error de red al guardar.");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened) client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
                 SaveButton.IsEnabled = true;
             }
         }
 
-        private void ResendCode_Click(object sender, RoutedEventArgs e)
+        private async void ResendCode_Click(object sender, RoutedEventArgs e)
         {
-            SendVerificationCode();
+            await SendVerificationCode();
             MessageBox.Show("Código reenviado a tu correo.", "Información");
         }
 
@@ -172,7 +202,7 @@ namespace GameClient.Views
 
         private static void ClearError(Border border, TextBlock label)
         {
-            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCC")); 
+            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CCCCCC"));
             border.BorderThickness = new Thickness(1);
             if (label != null) label.Visibility = Visibility.Collapsed;
         }

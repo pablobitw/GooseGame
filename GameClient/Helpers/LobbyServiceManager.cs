@@ -14,6 +14,7 @@ namespace GameClient.Helpers
 
         private LobbyServiceClient _client;
         private string _currentUsername;
+        private bool _disposed = false; 
 
         public event Action<string> PlayerKicked;
 
@@ -48,7 +49,15 @@ namespace GameClient.Helpers
                     if (_client.State == CommunicationState.Opened)
                         _client.Close();
                 }
-                catch
+                catch (CommunicationException)
+                {
+                    _client.Abort();
+                }
+                catch (TimeoutException)
+                {
+                    _client.Abort();
+                }
+                catch (Exception)
                 {
                     _client.Abort();
                 }
@@ -58,22 +67,31 @@ namespace GameClient.Helpers
             {
                 InstanceContext context = new InstanceContext(this);
                 _client = new LobbyServiceClient(context);
-
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Cliente inicializado para {username}");
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error al inicializar: {ex.Message}");
-                MessageBox.Show(
-                    $"Error al conectar con el servidor:\n{ex.Message}\n\nAsegúrate de que el servidor esté corriendo.",
-                    "Error de Conexión",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                HandleInitializationError(ex);
             }
+        }
+
+        private void HandleInitializationError(System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error al inicializar: {ex.Message}");
+            MessageBox.Show(
+                $"Error al conectar con el servidor:\n{ex.Message}\n\nAsegúrate de que el servidor esté corriendo.",
+                "Error de Conexión",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
 
         public LobbyServiceClient GetClient()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(LobbyServiceManager));
+            }
+
             if (_client == null ||
                 _client.State == CommunicationState.Faulted ||
                 _client.State == CommunicationState.Closed)
@@ -84,7 +102,7 @@ namespace GameClient.Helpers
 
             if (_client == null)
             {
-                throw new Exception("No se pudo conectar con el Servicio de Lobby. Verifica tu conexión.");
+                throw new InvalidOperationException("No se pudo conectar con el Servicio de Lobby. El cliente es nulo.");
             }
 
             return _client;
@@ -92,15 +110,9 @@ namespace GameClient.Helpers
 
         public void OnPlayerKicked(string reason)
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerKicked llamado: {reason}");
-                PlayerKicked?.Invoke(reason);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en OnPlayerKicked: {ex.Message}");
-            }
+            
+            System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerKicked llamado: {reason}");
+            PlayerKicked?.Invoke(reason);
         }
 
         public async Task<LobbyCreationResultDTO> CreateLobbyAsync(CreateLobbyRequest request)
@@ -113,12 +125,18 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] EndpointNotFoundException: {ex.Message}");
-                throw new Exception("No se puede conectar al servidor. Verifica que esté corriendo.");
+                // CORRECCIÓN SONAR: Lanzar excepción específica
+                throw new EndpointNotFoundException("No se puede conectar al servidor. Verifica que esté corriendo.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] TimeoutException: {ex.Message}");
+                throw new TimeoutException("El servidor tardó demasiado en responder.", ex);
             }
             catch (CommunicationException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] CommunicationException: {ex.Message}");
-                throw new Exception($"Error de comunicación: {ex.Message}");
+                throw new CommunicationException($"Error de comunicación al crear lobby: {ex.Message}", ex);
             }
         }
 
@@ -134,12 +152,17 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] EndpointNotFoundException: {ex.Message}");
-                throw new Exception("No se puede conectar al servidor. Verifica que esté corriendo.");
+                throw new EndpointNotFoundException("No se puede conectar al servidor. Verifica que esté corriendo.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] TimeoutException: {ex.Message}");
+                throw new TimeoutException("El servidor tardó demasiado en responder.", ex);
             }
             catch (CommunicationException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] CommunicationException: {ex.Message}");
-                throw new Exception($"Error de comunicación: {ex.Message}");
+                throw new CommunicationException($"Error de comunicación al unirse: {ex.Message}", ex);
             }
         }
 
@@ -149,9 +172,14 @@ namespace GameClient.Helpers
             {
                 return await GetClient().GetLobbyStateAsync(lobbyCode);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en GetLobbyStateAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en GetLobbyStateAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en GetLobbyStateAsync: {ex.Message}");
                 throw;
             }
         }
@@ -162,9 +190,14 @@ namespace GameClient.Helpers
             {
                 return await GetClient().StartGameAsync(lobbyCode);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en StartGameAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en StartGameAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en StartGameAsync: {ex.Message}");
                 throw;
             }
         }
@@ -175,9 +208,14 @@ namespace GameClient.Helpers
             {
                 return await GetClient().LeaveLobbyAsync(username);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en LeaveLobbyAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en LeaveLobbyAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en LeaveLobbyAsync: {ex.Message}");
                 throw;
             }
         }
@@ -188,9 +226,14 @@ namespace GameClient.Helpers
             {
                 await GetClient().DisbandLobbyAsync(username);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en DisbandLobbyAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en DisbandLobbyAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en DisbandLobbyAsync: {ex.Message}");
                 throw;
             }
         }
@@ -201,9 +244,14 @@ namespace GameClient.Helpers
             {
                 return await GetClient().GetPublicMatchesAsync();
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en GetPublicMatchesAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en GetPublicMatchesAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en GetPublicMatchesAsync: {ex.Message}");
                 throw;
             }
         }
@@ -214,30 +262,59 @@ namespace GameClient.Helpers
             {
                 await GetClient().KickPlayerAsync(request);
             }
-            catch (Exception ex)
+            catch (CommunicationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en KickPlayerAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error WCF en KickPlayerAsync: {ex.Message}");
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Timeout en KickPlayerAsync: {ex.Message}");
                 throw;
             }
         }
 
         public void Dispose()
         {
-            try
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Dispose llamado");
                 if (_client != null)
                 {
-                    if (_client.State == CommunicationState.Opened)
-                        _client.Close();
-                    else
+                    try
+                    {
+                        if (_client.State == CommunicationState.Opened)
+                            _client.Close();
+                        else
+                            _client.Abort();
+                    }
+                    catch (CommunicationException)
+                    {
                         _client.Abort();
+                    }
+                    catch (TimeoutException)
+                    {
+                        _client.Abort();
+                    }
+                    catch (Exception)
+                    {
+                        _client.Abort();
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Error en Dispose: {ex.Message}");
-            }
+
+            _disposed = true;
         }
     }
 }
