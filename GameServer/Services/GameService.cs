@@ -18,7 +18,6 @@ namespace GameServer.Services
             _authLogic = new AuthAppService(repository);
         }
 
-
         public async Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request)
         {
             return await _authLogic.RegisterUserAsync(request);
@@ -36,9 +35,8 @@ namespace GameServer.Services
 
         public void Logout(string username)
         {
-            _authLogic.Logout(username);
+            AuthAppService.Logout(username);
         }
-
 
         public bool VerifyAccount(string email, string code)
         {

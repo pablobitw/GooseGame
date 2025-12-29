@@ -67,7 +67,7 @@ namespace GameServer.Services
 
         public void SendGameInvitation(GameInvitationDto invitation)
         {
-            _logic.SendGameInvitation(invitation);
+            FriendshipAppService.SendGameInvitation(invitation);
         }
     }
 }
