@@ -186,7 +186,6 @@ namespace GameClient.Views
                 Message = msg
             };
 
-            // CORRECCIÓN: Mostrar el mensaje localmente de inmediato
             ReceiveMessage(dto);
 
             try
@@ -378,8 +377,10 @@ namespace GameClient.Views
             finally
             {
                 var mainWindow = Window.GetWindow(this) as GameMainWindow;
-                if (mainWindow != null) mainWindow.ShowMainMenu();
-                else if (NavigationService.CanGoBack) NavigationService.GoBack();
+                if (mainWindow != null)
+                    _ = mainWindow.ShowMainMenu();
+                else if (NavigationService.CanGoBack)
+                    NavigationService.GoBack();
             }
         }
 
@@ -447,47 +448,15 @@ namespace GameClient.Views
                 var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
                 var state = await gameplayClient.GetGameStateAsync(request);
 
-                if (state != null)
+                if (state == null) return;
+
+                if (state.IsGameOver)
                 {
-                    if (state.IsGameOver)
-                    {
-                        _isGameOverHandled = true;
-                        HandleGameOver(state.WinnerUsername);
-                        return;
-                    }
-
-                    UpdateTurnUI(state);
-
-                    if (state.CurrentTurnUsername != _lastTurnUsername)
-                    {
-                        _lastTurnUsername = state.CurrentTurnUsername;
-                        _turnSecondsRemaining = 20;
-                        TurnTimerPanel.Visibility = Visibility.Visible;
-                        TurnTimerText.Text = "Tiempo: 20s";
-                        TurnTimerText.Foreground = Brushes.White;
-                        _turnCountdownTimer.Start();
-                    }
-
-                    if (state.LastDiceOne > 0)
-                    {
-                        DiceOneText.Text = state.LastDiceOne.ToString();
-                        DiceTwoText.Text = state.LastDiceTwo.ToString();
-                    }
-
-                    UpdateGameLog(state.GameLog);
-                    UpdateBoardVisuals(state.PlayerPositions);
-                    UpdatePlayerAvatars(state.PlayerPositions);
-
-                    if (state.GameLog != null && state.GameLog.Any())
-                    {
-                        string latestLog = state.GameLog.First();
-                        if (latestLog != _lastLogProcessed)
-                        {
-                            _lastLogProcessed = latestLog;
-                            CheckForLuckyBox(latestLog);
-                        }
-                    }
+                    HandleGameOverState(state.WinnerUsername);
+                    return;
                 }
+
+                ProcessGameState(state);
             }
             catch (CommunicationException) { }
             catch (TimeoutException) { }
@@ -495,7 +464,62 @@ namespace GameClient.Views
             {
                 Console.WriteLine("Error in Game Loop: " + ex.Message);
             }
-            finally { if (!_isGameOverHandled) gameLoopTimer.Start(); }
+            finally
+            {
+                if (!_isGameOverHandled)
+                    gameLoopTimer.Start();
+            }
+        }
+
+        private void HandleGameOverState(string winner)
+        {
+            _isGameOverHandled = true;
+            HandleGameOver(winner);
+        }
+
+        private void ProcessGameState(GameStateDTO state)
+        {
+            UpdateTurnUI(state);
+            UpdateTurnTimer(state);
+            UpdateDiceDisplay(state);
+            UpdateGameLog(state.GameLog);
+            UpdateBoardVisuals(state.PlayerPositions);
+            UpdatePlayerAvatars(state.PlayerPositions);
+            ProcessLuckyBoxFromLog(state.GameLog);
+        }
+
+        private void UpdateTurnTimer(GameStateDTO state)
+        {
+            if (state.CurrentTurnUsername != _lastTurnUsername)
+            {
+                _lastTurnUsername = state.CurrentTurnUsername;
+                _turnSecondsRemaining = 20;
+                TurnTimerPanel.Visibility = Visibility.Visible;
+                TurnTimerText.Text = "Tiempo: 20s";
+                TurnTimerText.Foreground = Brushes.White;
+                _turnCountdownTimer.Start();
+            }
+        }
+
+        private void UpdateDiceDisplay(GameStateDTO state)
+        {
+            if (state.LastDiceOne > 0)
+            {
+                DiceOneText.Text = state.LastDiceOne.ToString();
+                DiceTwoText.Text = state.LastDiceTwo.ToString();
+            }
+        }
+
+        private void ProcessLuckyBoxFromLog(string[] gameLogs)
+        {
+            if (gameLogs == null || !gameLogs.Any()) return;
+
+            string latestLog = gameLogs.First();
+            if (latestLog != _lastLogProcessed)
+            {
+                _lastLogProcessed = latestLog;
+                CheckForLuckyBox(latestLog);
+            }
         }
 
         private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
@@ -533,99 +557,102 @@ namespace GameClient.Views
         {
             if (players == null) return;
 
-            Player1Panel.Visibility = Visibility.Hidden;
-            Player2Panel.Visibility = Visibility.Hidden;
-            Player3Panel.Visibility = Visibility.Hidden;
-            Player4Panel.Visibility = Visibility.Hidden;
+            HideAllPlayerPanels();
 
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
 
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
-                var player = sortedPlayers[i];
-                string avatarPath = player.AvatarPath;
-
-                ImageBrush targetAvatarBrush = null;
-                TextBlock targetNameBlock = null;
-                Border targetPanel = null;
-
-                switch (i)
-                {
-                    case 0: targetAvatarBrush = Player1Avatar; targetNameBlock = Player1Name; targetPanel = Player1Panel; break;
-                    case 1: targetAvatarBrush = Player2Avatar; targetNameBlock = Player2Name; targetPanel = Player2Panel; break;
-                    case 2: targetAvatarBrush = Player3Avatar; targetNameBlock = Player3Name; targetPanel = Player3Panel; break;
-                    case 3: targetAvatarBrush = Player4Avatar; targetNameBlock = Player4Name; targetPanel = Player4Panel; break;
-                }
-
-                if (targetPanel != null)
-                {
-                    targetPanel.Visibility = Visibility.Visible;
-                    targetNameBlock.Text = player.Username;
-                    targetPanel.Tag = player.Username;
-
-                    if (targetPanel.ContextMenu != null)
-                    {
-                        if (_isGuest)
-                        {
-                            targetPanel.ContextMenu = null;
-                        }
-                    }
-
-                    BitmapImage bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-
-                    try
-                    {
-                        if (string.IsNullOrEmpty(avatarPath))
-                        {
-                            bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                        }
-                        else if (avatarPath.StartsWith("pack://"))
-                        {
-                            bitmap.UriSource = new Uri(avatarPath, UriKind.RelativeOrAbsolute);
-                        }
-                        else
-                        {
-                            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                            string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
-
-                            if (File.Exists(fullPath))
-                            {
-                                bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                            }
-                            else
-                            {
-                                bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                            }
-                        }
-                    }
-                    catch (UriFormatException)
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
-                    catch (ArgumentException)
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
-                    catch (IOException)
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
-                    catch (SecurityException)
-                    {
-                        bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
-                    }
-
-                    bitmap.EndInit();
-                    targetAvatarBrush.Stretch = Stretch.UniformToFill;
-                    targetAvatarBrush.ImageSource = bitmap;
-
-                    targetPanel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
-                    targetPanel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
-                }
+                UpdateSinglePlayerAvatar(sortedPlayers[i], i);
             }
+        }
+
+        private void HideAllPlayerPanels()
+        {
+            Player1Panel.Visibility = Visibility.Hidden;
+            Player2Panel.Visibility = Visibility.Hidden;
+            Player3Panel.Visibility = Visibility.Hidden;
+            Player4Panel.Visibility = Visibility.Hidden;
+        }
+
+        private void UpdateSinglePlayerAvatar(PlayerPositionDTO player, int index)
+        {
+            var (avatarBrush, nameBlock, panel) = GetPlayerUIElements(index);
+            if (panel == null) return;
+
+            ConfigurePlayerPanel(panel, player);
+            LoadPlayerAvatar(avatarBrush, player.AvatarPath);
+            nameBlock.Text = player.Username;
+        }
+
+        private (ImageBrush avatar, TextBlock name, Border panel) GetPlayerUIElements(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    return (Player1Avatar, Player1Name, Player1Panel);
+                case 1:
+                    return (Player2Avatar, Player2Name, Player2Panel);
+                case 2:
+                    return (Player3Avatar, Player3Name, Player3Panel);
+                case 3:
+                    return (Player4Avatar, Player4Name, Player4Panel);
+                default:
+                    return (null, null, null);
+            }
+        }
+
+        private void ConfigurePlayerPanel(Border panel, PlayerPositionDTO player)
+        {
+            panel.Visibility = Visibility.Visible;
+            panel.Tag = player.Username;
+
+            if (_isGuest && panel.ContextMenu != null)
+            {
+                panel.ContextMenu = null;
+            }
+
+            panel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
+            panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+        }
+
+        private void LoadPlayerAvatar(ImageBrush targetBrush, string avatarPath)
+        {
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
+            try
+            {
+                Uri avatarUri = ResolveAvatarUri(avatarPath);
+                bitmap.UriSource = avatarUri;
+            }
+            catch
+            {
+                bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative);
+            }
+
+            bitmap.EndInit();
+            targetBrush.Stretch = Stretch.UniformToFill;
+            targetBrush.ImageSource = bitmap;
+        }
+
+        private Uri ResolveAvatarUri(string avatarPath)
+        {
+            if (string.IsNullOrEmpty(avatarPath))
+                return new Uri("/Assets/default_avatar.png", UriKind.Relative);
+
+            if (avatarPath.StartsWith("pack://"))
+                return new Uri(avatarPath, UriKind.RelativeOrAbsolute);
+
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string fullPath = Path.Combine(baseDir, "Assets", "Avatar", avatarPath);
+
+            if (File.Exists(fullPath))
+                return new Uri(fullPath, UriKind.Absolute);
+
+            return new Uri("/Assets/default_avatar.png", UriKind.Relative);
         }
 
         private void UpdateBoardVisuals(PlayerPositionDTO[] players)
@@ -687,11 +714,24 @@ namespace GameClient.Views
         {
             if (_isGameStarting)
             {
-                RollDiceButton.IsEnabled = false; RollDiceButton.Content = "Esperando inicio..."; RollDiceButton.Opacity = 0.5;
+                RollDiceButton.IsEnabled = false;
+                RollDiceButton.Content = "Esperando inicio...";
+                RollDiceButton.Opacity = 0.5;
                 return;
             }
-            if (state.IsMyTurn) { RollDiceButton.IsEnabled = true; RollDiceButton.Content = "¡Tirar Dados!"; RollDiceButton.Opacity = 1; }
-            else { RollDiceButton.IsEnabled = false; RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}"; RollDiceButton.Opacity = 0.6; }
+
+            if (state.IsMyTurn)
+            {
+                RollDiceButton.IsEnabled = true;
+                RollDiceButton.Content = "¡Tirar Dados!";
+                RollDiceButton.Opacity = 1;
+            }
+            else
+            {
+                RollDiceButton.IsEnabled = false;
+                RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}";
+                RollDiceButton.Opacity = 0.6;
+            }
         }
 
         private void UpdateGameLog(string[] logs)
@@ -702,75 +742,117 @@ namespace GameClient.Views
                 GameLogListBox.Items.Clear();
                 foreach (var logRaw in logs)
                 {
-                    string textToShow = logRaw;
-                    if (textToShow.Contains("[LUCKYBOX:"))
-                    {
-                        int start = textToShow.IndexOf("[LUCKYBOX:");
-                        int end = textToShow.IndexOf("]", start);
-                        if (start != -1 && end != -1)
-                        {
-                            string tagToRemove = textToShow.Substring(start, end - start + 1);
-                            textToShow = textToShow.Replace(tagToRemove, "").Trim();
-                        }
-                    }
-                    textToShow = textToShow.Replace("[EXTRA]", "").Trim();
+                    string textToShow = CleanLogText(logRaw);
                     GameLogListBox.Items.Add(textToShow);
                 }
-                if (GameLogListBox.Items.Count > 0) GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
+                if (GameLogListBox.Items.Count > 0)
+                    GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
             }
+        }
+
+        private string CleanLogText(string logText)
+        {
+            string cleaned = logText;
+
+            if (cleaned.Contains("[LUCKYBOX:"))
+            {
+                int start = cleaned.IndexOf("[LUCKYBOX:");
+                int end = cleaned.IndexOf("]", start);
+                if (start != -1 && end != -1)
+                {
+                    string tagToRemove = cleaned.Substring(start, end - start + 1);
+                    cleaned = cleaned.Replace(tagToRemove, "").Trim();
+                }
+            }
+
+            cleaned = cleaned.Replace("[EXTRA]", "").Trim();
+            return cleaned;
         }
 
         private void HandleGameOver(string winner)
         {
             MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow != null) mainWindow.ShowMainMenu();
-            else if (NavigationService.CanGoBack) NavigationService.GoBack();
+            if (mainWindow != null)
+                _ = mainWindow.ShowMainMenu();
+            else if (NavigationService.CanGoBack)
+                NavigationService.GoBack();
         }
 
         private void CheckForLuckyBox(string logDescription)
         {
-            if (string.IsNullOrEmpty(logDescription)) return;
-            if (logDescription.Contains("[LUCKYBOX:"))
+            if (string.IsNullOrEmpty(logDescription) || !logDescription.Contains("[LUCKYBOX:"))
+                return;
+
+            try
             {
-                try
-                {
-                    int startIndex = logDescription.IndexOf("[LUCKYBOX:");
-                    int endIndex = logDescription.IndexOf("]", startIndex);
-                    if (startIndex != -1 && endIndex != -1)
-                    {
-                        string tag = logDescription.Substring(startIndex, endIndex - startIndex + 1);
-                        string data = tag.Replace("[LUCKYBOX:", "").Replace("]", "");
-                        string[] mainParts = data.Split(':');
-                        if (mainParts.Length == 2)
-                        {
-                            string boxOwner = mainParts[0];
-                            string rewardData = mainParts[1];
-                            if (boxOwner != currentUsername) return;
-                            string[] rewardParts = rewardData.Split('_');
-                            if (rewardParts.Length == 2)
-                            {
-                                _currentRewardType = rewardParts[0];
-                                _currentRewardAmount = int.Parse(rewardParts[1]);
-                                _luckyBoxClicks = 0;
-                                try
-                                {
-                                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                                    string path = Path.Combine(baseDir, "Assets", "Images", "luckybox_closed.png");
-                                    if (File.Exists(path)) LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
-                                    else LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
-                                }
-                                catch { }
-                                LuckyBoxImage.Visibility = Visibility.Visible;
-                                RewardContainer.Visibility = Visibility.Collapsed;
-                                OpenBoxButton.IsEnabled = true;
-                                LuckyBoxOverlay.Visibility = Visibility.Visible;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex) { Console.WriteLine("Error LuckyBox: " + ex.Message); }
+                var luckyBoxData = ExtractLuckyBoxData(logDescription);
+                if (luckyBoxData == null || luckyBoxData.Value.owner != currentUsername)
+                    return;
+
+                InitializeLuckyBox(luckyBoxData.Value.rewardType, luckyBoxData.Value.rewardAmount);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error LuckyBox: " + ex.Message);
+            }
+        }
+
+        private (string owner, string rewardType, int rewardAmount)? ExtractLuckyBoxData(string logDescription)
+        {
+            int startIndex = logDescription.IndexOf("[LUCKYBOX:");
+            int endIndex = logDescription.IndexOf("]", startIndex);
+
+            if (startIndex == -1 || endIndex == -1)
+                return null;
+
+            string tag = logDescription.Substring(startIndex, endIndex - startIndex + 1);
+            string data = tag.Replace("[LUCKYBOX:", "").Replace("]", "");
+            string[] mainParts = data.Split(':');
+
+            if (mainParts.Length != 2)
+                return null;
+
+            string boxOwner = mainParts[0];
+            string[] rewardParts = mainParts[1].Split('_');
+
+            if (rewardParts.Length != 2)
+                return null;
+
+            return (boxOwner, rewardParts[0], int.Parse(rewardParts[1]));
+        }
+
+        private void InitializeLuckyBox(string rewardType, int rewardAmount)
+        {
+            _currentRewardType = rewardType;
+            _currentRewardAmount = rewardAmount;
+            _luckyBoxClicks = 0;
+
+            LoadLuckyBoxImage();
+            ShowLuckyBoxOverlay();
+        }
+
+        private void LoadLuckyBoxImage()
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string path = Path.Combine(baseDir, "Assets", "Images", "luckybox_closed.png");
+
+                if (File.Exists(path))
+                    LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
+                else
+                    LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
+            }
+            catch { }
+        }
+
+        private void ShowLuckyBoxOverlay()
+        {
+            LuckyBoxImage.Visibility = Visibility.Visible;
+            RewardContainer.Visibility = Visibility.Collapsed;
+            OpenBoxButton.IsEnabled = true;
+            LuckyBoxOverlay.Visibility = Visibility.Visible;
         }
 
         private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
@@ -796,30 +878,65 @@ namespace GameClient.Views
 
         private void SetRewardVisuals()
         {
-            string imagePath = ""; string text = ""; SolidColorBrush textColor = Brushes.White;
+            string imagePath = "";
+            string text = "";
+            SolidColorBrush textColor = Brushes.White;
+
             switch (_currentRewardType)
             {
-                case "COINS": imagePath = "coin_pile.png"; text = $"+{_currentRewardAmount} ORO"; textColor = Brushes.Gold; break;
-                case "COMMON": imagePath = "ticket_common.png"; text = "TICKET COMÚN"; textColor = Brushes.White; break;
-                case "EPIC": imagePath = "ticket_epic.png"; text = "TICKET ÉPICO"; textColor = Brushes.Purple; break;
-                case "LEGENDARY": imagePath = "ticket_legendary.png"; text = "¡LEGENDARIO!"; textColor = Brushes.OrangeRed; break;
-                default: text = "PREMIO"; break;
+                case "COINS":
+                    imagePath = "coin_pile.png";
+                    text = $"+{_currentRewardAmount} ORO";
+                    textColor = Brushes.Gold;
+                    break;
+                case "COMMON":
+                    imagePath = "ticket_common.png";
+                    text = "TICKET COMÚN";
+                    textColor = Brushes.White;
+                    break;
+                case "EPIC":
+                    imagePath = "ticket_epic.png";
+                    text = "TICKET ÉPICO";
+                    textColor = Brushes.Purple;
+                    break;
+                case "LEGENDARY":
+                    imagePath = "ticket_legendary.png";
+                    text = "¡LEGENDARIO!";
+                    textColor = Brushes.OrangeRed;
+                    break;
+                default:
+                    text = "PREMIO";
+                    break;
             }
+
             if (!string.IsNullOrEmpty(imagePath))
             {
-                try
-                {
-                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                    string fullPath = Path.Combine(baseDir, "Assets", "Images", imagePath);
-                    if (File.Exists(fullPath)) RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute));
-                    else RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
-                }
-                catch { }
+                LoadRewardImage(imagePath);
             }
-            RewardText.Text = text; RewardText.Foreground = textColor;
+
+            RewardText.Text = text;
+            RewardText.Foreground = textColor;
         }
 
-        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e) { e.Handled = true; }
+        private void LoadRewardImage(string imagePath)
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string fullPath = Path.Combine(baseDir, "Assets", "Images", imagePath);
+
+                if (File.Exists(fullPath))
+                    RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute));
+                else
+                    RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
+            }
+            catch { }
+        }
+
+        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -832,10 +949,14 @@ namespace GameClient.Views
             var menuItem = sender as MenuItem;
             if (menuItem == null) return;
             var contextMenu = menuItem.Parent as ContextMenu;
-            var panel = contextMenu.PlacementTarget as Border;
+            var panel = contextMenu?.PlacementTarget as Border;
             if (panel == null || panel.Tag == null) return;
             string targetUser = panel.Tag.ToString();
-            if (targetUser == currentUsername) { MessageBox.Show("No puedes iniciar una votación contra ti mismo.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); return; }
+            if (targetUser == currentUsername)
+            {
+                MessageBox.Show("No puedes iniciar una votación contra ti mismo.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             ReasonSelectorOverlay.Tag = targetUser;
             ReasonSelectorOverlay.Visibility = Visibility.Visible;
         }
@@ -852,13 +973,30 @@ namespace GameClient.Views
                 await gameplayClient.InitiateVoteKickAsync(request);
                 MessageBox.Show($"Has iniciado una votación para expulsar a {targetUser}.", "Votación Iniciada", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (CommunicationException) { MessageBox.Show("Error de red al iniciar votación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
-            catch (Exception ex) { MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de red al iniciar votación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al iniciar votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void CancelKickButton_Click(object sender, RoutedEventArgs e) { ReasonSelectorOverlay.Visibility = Visibility.Collapsed; }
-        private async void VoteYes_Click(object sender, RoutedEventArgs e) { await SendVote(true); }
-        private async void VoteNo_Click(object sender, RoutedEventArgs e) { await SendVote(false); }
+        private void CancelKickButton_Click(object sender, RoutedEventArgs e)
+        {
+            ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void VoteYes_Click(object sender, RoutedEventArgs e)
+        {
+            await SendVote(true);
+        }
+
+        private async void VoteNo_Click(object sender, RoutedEventArgs e)
+        {
+            await SendVote(false);
+        }
 
         private async Task SendVote(bool acceptKick)
         {
@@ -870,8 +1008,14 @@ namespace GameClient.Views
                 var response = new VoteResponseDTO { Username = currentUsername, AcceptKick = acceptKick };
                 await gameplayClient.CastVoteAsync(response);
             }
-            catch (CommunicationException) { Console.WriteLine("Error de red enviando voto."); }
-            catch (Exception ex) { Console.WriteLine("Error enviando voto: " + ex.Message); }
+            catch (CommunicationException)
+            {
+                Console.WriteLine("Error de red enviando voto.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error enviando voto: " + ex.Message);
+            }
         }
     }
 }

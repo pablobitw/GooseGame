@@ -10,6 +10,7 @@ namespace GameServer.Chat.Moderation
     public sealed class ProfanityFilter
     {
         private static readonly List<string> _bannedWords;
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(100);
 
         static ProfanityFilter()
         {
@@ -40,7 +41,6 @@ namespace GameServer.Chat.Moderation
             var originalMessage = message;
             var censoredMessage = message;
             var normalizedMessage = Normalize(message);
-
             bool wasCensored = false;
 
             foreach (var bannedWord in _bannedWords)
@@ -71,9 +71,8 @@ namespace GameServer.Chat.Moderation
                 bannedWord.Select(c => $"{Regex.Escape(c.ToString())}+")
             );
 
-            return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
         }
-
 
         private static string Normalize(string input)
         {

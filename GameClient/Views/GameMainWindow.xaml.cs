@@ -214,7 +214,7 @@ namespace GameClient
             }
         }
 
-        public async void ShowMainMenu()
+        public async Task ShowMainMenu()
         {
             MainFrame.Content = null;
             MainMenuGrid.Visibility = Visibility.Visible;

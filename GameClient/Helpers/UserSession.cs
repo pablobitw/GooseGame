@@ -5,6 +5,7 @@ namespace GameClient.Helpers
     public class UserSession
     {
         private static UserSession _instance;
+        private static readonly object _lock = new object();
 
         public string Username { get; private set; }
         public bool IsGuest { get; private set; }
@@ -16,7 +17,13 @@ namespace GameClient.Helpers
         {
             if (_instance == null)
             {
-                _instance = new UserSession();
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new UserSession();
+                    }
+                }
             }
             return _instance;
         }
@@ -33,7 +40,6 @@ namespace GameClient.Helpers
             Username = null;
             IsGuest = false;
             Email = null;
-            _instance = null;
         }
     }
 }
