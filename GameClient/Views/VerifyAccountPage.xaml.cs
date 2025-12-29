@@ -27,67 +27,87 @@ namespace GameClient
         {
             string codeTyped = CodeTextBox.Text.Trim();
 
-            if (string.IsNullOrEmpty(codeTyped) || codeTyped.Length != 6 || !int.TryParse(codeTyped, out _))
+            if (!IsCodeValid(codeTyped))
             {
                 MessageBox.Show("El código de verificación debe tener 6 dígitos numéricos.", "Error de Formato");
+                return;
+            }
+
+            var client = new GameServiceClient();
+            bool verificationResult = false;
+            bool connectionError = false;
+
+            try
+            {
+                verificationResult = await client.VerifyAccountAsync(userEmail, codeTyped);
+            }
+            catch (Exception ex)
+            {
+                connectionError = HandleConnectionException(ex);
+            }
+            finally
+            {
+                CloseClientSafely(client);
+            }
+
+            if (!connectionError)
+            {
+                HandleVerificationResult(verificationResult);
+            }
+        }
+
+        private bool IsCodeValid(string code)
+        {
+            return !string.IsNullOrEmpty(code) && code.Length == 6 && int.TryParse(code, out _);
+        }
+
+        private bool HandleConnectionException(Exception ex)
+        {
+            if (ex is EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                return true;
+            }
+            if (ex is TimeoutException)
+            {
+                MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                return true;
+            }
+            if (ex is CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                return true;
+            }
+
+            MessageBox.Show("Error al contactar el servidor: " + ex.Message, "Error");
+            return true;
+        }
+
+        private void CloseClientSafely(GameServiceClient client)
+        {
+            if (client.State == CommunicationState.Opened)
+            {
+                client.Close();
+            }
+        }
+
+        private void HandleVerificationResult(bool verificationResult)
+        {
+            if (verificationResult)
+            {
+                MessageBox.Show("¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.", "Éxito");
+                NavigationService.Navigate(new LoginPage());
             }
             else
             {
-                var client = new GameServiceClient();
-                bool verificationResult = false;
-                bool connectionError = false;
-
-                try
-                {
-                    verificationResult = await client.VerifyAccountAsync(userEmail, codeTyped);
-                }
-                catch (EndpointNotFoundException)
-                {
-                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-                    connectionError = true;
-                }
-                catch (TimeoutException)
-                {
-                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (CommunicationException)
-                {
-                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error al contactar el servidor: " + ex.Message, "Error");
-                    connectionError = true;
-                }
-                finally
-                {
-                    if (client.State == CommunicationState.Opened)
-                    {
-                        client.Close();
-                    }
-                }
-
-                if (!connectionError)
-                {
-                    if (verificationResult)
-                    {
-                        MessageBox.Show("¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.", "Éxito");
-                        NavigationService.Navigate(new LoginPage());
-                    }
-                    else
-                    {
-                        MessageBox.Show("El código es incorrecto, ha expirado o la cuenta ya ha sido verificada.", "Verificación Fallida");
-                    }
-                }
+                MessageBox.Show("El código es incorrecto, ha expirado o la cuenta ya ha sido verificada.", "Verificación Fallida");
             }
         }
 
         private async void ResendCodeButton(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button != null) button.IsEnabled = false; 
+            if (button != null) button.IsEnabled = false;
 
             var client = new GameServiceClient();
             bool requestSent = false;
@@ -120,11 +140,8 @@ namespace GameClient
             }
             finally
             {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
-                if (button != null) button.IsEnabled = true; 
+                CloseClientSafely(client);
+                if (button != null) button.IsEnabled = true;
             }
 
             if (connectionError)

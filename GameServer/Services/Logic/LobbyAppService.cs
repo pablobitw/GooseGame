@@ -5,12 +5,12 @@ using GameServer.Interfaces;
 using log4net;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core; 
+using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient; 
+using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography;
-using System.ServiceModel; 
+using System.ServiceModel;
 using System.Threading.Tasks;
 using GameServer;
 
@@ -30,7 +30,6 @@ namespace GameServer.Services.Logic
         {
             if (player.GameIdGame != null)
             {
-              
                 var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
                 if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
                 {
@@ -349,37 +348,22 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-                if (player != null && player.GameIdGame != null)
+                if (player == null || player.GameIdGame == null)
                 {
-                    int gameId = player.GameIdGame.Value;
-
-                    player.GameIdGame = null;
-                    await _repository.SaveChangesAsync();
-
-                    Log.InfoFormat("Jugador {0} abandonó el lobby.", username);
-                    success = true;
-
-                    ConnectionManager.UnregisterLobbyClient(username);
-
-                    var game = await _repository.GetGameByIdAsync(gameId);
-                    if (game != null)
-                    {
-                        var remainingPlayers = await _repository.GetPlayersInGameAsync(gameId);
-
-                        if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
-                        {
-                            game.GameStatus = (int)GameStatus.Finished;
-                            string winnerName = remainingPlayers.Count > 0 ? remainingPlayers[0].Username : "Nadie";
-                            Log.InfoFormat("Juego terminado por abandono desde Lobby. Ganador: {0}", winnerName);
-                            await _repository.SaveChangesAsync();
-                        }
-                        else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
-                        {
-                            _repository.DeleteGameAndCleanDependencies(game);
-                            await _repository.SaveChangesAsync();
-                        }
-                    }
+                    return false;
                 }
+
+                int gameId = player.GameIdGame.Value;
+
+                player.GameIdGame = null;
+                await _repository.SaveChangesAsync();
+
+                Log.InfoFormat("Jugador {0} abandonó el lobby.", username);
+                success = true;
+
+                ConnectionManager.UnregisterLobbyClient(username);
+
+                await CheckLobbyStatusAfterLeaveAsync(gameId);
             }
             catch (DbUpdateException ex)
             {
@@ -399,6 +383,27 @@ namespace GameServer.Services.Logic
             }
 
             return success;
+        }
+
+        private async Task CheckLobbyStatusAfterLeaveAsync(int gameId)
+        {
+            var game = await _repository.GetGameByIdAsync(gameId);
+            if (game == null) return;
+
+            var remainingPlayers = await _repository.GetPlayersInGameAsync(gameId);
+
+            if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
+            {
+                game.GameStatus = (int)GameStatus.Finished;
+                string winnerName = remainingPlayers.Count > 0 ? remainingPlayers[0].Username : "Nadie";
+                Log.InfoFormat("Juego terminado por abandono desde Lobby. Ganador: {0}", winnerName);
+                await _repository.SaveChangesAsync();
+            }
+            else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
+            {
+                _repository.DeleteGameAndCleanDependencies(game);
+                await _repository.SaveChangesAsync();
+            }
         }
 
         private string GenerateLobbyCode()

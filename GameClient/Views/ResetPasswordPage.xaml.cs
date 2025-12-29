@@ -24,58 +24,73 @@ namespace GameClient.Views
 
         private async void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsFormValid())
+            if (!IsFormValid()) return;
+
+            string newPassword = NewPasswordBox.Password;
+            var client = new GameServiceClient();
+            bool updateSuccess = false;
+            bool connectionError = false;
+
+            try
             {
-                string newPassword = NewPasswordBox.Password;
-                var client = new GameServiceClient();
-                bool updateSuccess = false;
-                bool connectionError = false;
+                updateSuccess = await client.UpdatePasswordAsync(userEmail, newPassword);
+            }
+            catch (Exception ex)
+            {
+                connectionError = HandleConnectionException(ex);
+            }
+            finally
+            {
+                CloseClientSafely(client);
+            }
 
-                try
-                {
-                    updateSuccess = await client.UpdatePasswordAsync(userEmail, newPassword);
-                }
-                catch (EndpointNotFoundException)
-                {
-                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-                    connectionError = true;
-                }
-                catch (TimeoutException)
-                {
-                    MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (CommunicationException)
-                {
-                    MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
-                    connectionError = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
-                    connectionError = true;
-                }
-                finally
-                {
-                    if (client.State == CommunicationState.Opened)
-                    {
-                        client.Close();
-                    }
-                }
+            if (!connectionError)
+            {
+                HandleUpdateResult(updateSuccess);
+            }
+        }
 
-                if (!connectionError)
-                {
-                    if (updateSuccess)
-                    {
-                        MessageBox.Show("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "Éxito");
-                        NavigationService.Navigate(new LoginPage());
-                    }
-                    else
-                    {
-                        ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
-                        ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
-                    }
-                }
+        private bool HandleConnectionException(Exception ex)
+        {
+            if (ex is EndpointNotFoundException)
+            {
+                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                return true;
+            }
+            if (ex is TimeoutException)
+            {
+                MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                return true;
+            }
+            if (ex is CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                return true;
+            }
+
+            MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+            return true;
+        }
+
+        private void CloseClientSafely(GameServiceClient client)
+        {
+            if (client.State == CommunicationState.Opened)
+            {
+                client.Close();
+            }
+        }
+
+        private void HandleUpdateResult(bool updateSuccess)
+        {
+            if (updateSuccess)
+            {
+                MessageBox.Show("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "Éxito");
+                NavigationService.Navigate(new LoginPage());
+            }
+            else
+            {
+                ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
+                ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
             }
         }
 
@@ -147,12 +162,9 @@ namespace GameClient.Views
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
 
-            if (placeholder != null)
+            if (placeholder != null && string.IsNullOrWhiteSpace(passwordBox.Password))
             {
-                if (string.IsNullOrWhiteSpace(passwordBox.Password))
-                {
-                    placeholder.Visibility = Visibility.Visible;
-                }
+                placeholder.Visibility = Visibility.Visible;
             }
         }
 
@@ -163,7 +175,6 @@ namespace GameClient.Views
 
             if (placeholder != null)
             {
-                // Optimización con ternario como te gustó
                 placeholder.Visibility = string.IsNullOrEmpty(passwordBox.Password)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
