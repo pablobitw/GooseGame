@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Configuration; 
+using System.Configuration;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -21,7 +21,6 @@ namespace GameServer.Helpers
                     <h1 style='color: #4CAF50; letter-spacing: 5px;'>{verificationCode}</h1>
                     <p>Introduce este código en el juego para activar tu cuenta.</p>
                 </div>";
-
             return await SendEmailInternalAsync(recipientEmail, subject, body);
         }
 
@@ -35,7 +34,6 @@ namespace GameServer.Helpers
                     <h1 style='color: #F44336; letter-spacing: 5px;'>{verificationCode}</h1>
                     <p>Si no fuiste tú, ignora este mensaje.</p>
                 </div>";
-
             return await SendEmailInternalAsync(recipientEmail, subject, body);
         }
 
@@ -45,43 +43,42 @@ namespace GameServer.Helpers
             {
                 string gmailUser = ConfigurationManager.AppSettings["GmailUser"];
                 string gmailPass = ConfigurationManager.AppSettings["GmailPass"];
-
                 if (string.IsNullOrEmpty(gmailUser) || string.IsNullOrEmpty(gmailPass))
                 {
                     Log.Error("Faltan las credenciales de Gmail en App.config/Web.config");
                     return false;
                 }
 
-                var smtpClient = new SmtpClient("smtp.gmail.com")
+                using (var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
                     Credentials = new NetworkCredential(gmailUser, gmailPass),
-                    EnableSsl = true, 
-                };
-
-                var mailMessage = new MailMessage
+                    EnableSsl = true,
+                })
+                using (var mailMessage = new MailMessage
                 {
                     From = new MailAddress(gmailUser, "Goose Game Support"),
                     Subject = subject,
                     Body = htmlBody,
                     IsBodyHtml = true,
-                };
+                })
+                {
+                    mailMessage.To.Add(toEmail);
+                    await smtpClient.SendMailAsync(mailMessage);
 
-                mailMessage.To.Add(toEmail);
+                    Log.InfoFormat("Correo enviado exitosamente a {0}", toEmail);
 
-                await smtpClient.SendMailAsync(mailMessage);
-
-                Log.Info($"Correo enviado exitosamente a {toEmail}");
-                return true;
+                    return true;
+                }
             }
             catch (SmtpException smtpEx)
             {
-                Log.Error($"Error SMTP al enviar a {toEmail}: {smtpEx.Message}", smtpEx);
+                Log.Error(string.Format("Error SMTP al enviar a {0}: {1}", toEmail, smtpEx.Message), smtpEx);
                 return false;
             }
             catch (Exception ex)
             {
-                Log.Error($"Error general al enviar correo a {toEmail}: {ex.Message}", ex);
+                Log.Error(string.Format("Error general al enviar correo a {0}: {1}", toEmail, ex.Message), ex);
                 return false;
             }
         }

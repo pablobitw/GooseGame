@@ -2,6 +2,7 @@
 
 namespace GameServer.Interfaces
 {
+    [ServiceContract]
     public interface ILobbyServiceCallback
     {
         [OperationContract(IsOneWay = true)]

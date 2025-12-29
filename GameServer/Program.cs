@@ -26,7 +26,7 @@ namespace GameServer
                 using (ServiceHost gameplayServiceHost = new ServiceHost(typeof(GameplayService)))
                 using (ServiceHost userProfileServiceHost = new ServiceHost(typeof(UserProfileService)))
                 using (ServiceHost friendshipServiceHost = new ServiceHost(typeof(FriendshipService)))
-                using (ServiceHost leaderboardServiceHost = new ServiceHost(typeof(LeaderboardService))) // <--- AGREGADO
+                using (ServiceHost leaderboardServiceHost = new ServiceHost(typeof(LeaderboardService)))
                 {
                     gameServiceHost.Open();
                     LogServices(gameServiceHost, "GameService");
@@ -47,7 +47,7 @@ namespace GameServer
                     LogServices(friendshipServiceHost, "FriendshipService");
 
                     leaderboardServiceHost.Open();
-                    LogServices(leaderboardServiceHost, "LeaderboardService"); 
+                    LogServices(leaderboardServiceHost, "LeaderboardService");
 
                     Log.Info(LogSeparator);
                     Log.Warn(" SERVER IS FULLY OPERATIONAL. Press [Enter] to stop.");
@@ -116,12 +116,11 @@ namespace GameServer
 
         private static void LogServices(ServiceHost host, string serviceName)
         {
-            Log.Info($"{serviceName} is running and listening on:");
+            Log.InfoFormat("{0} is running and listening on:", serviceName);
             foreach (var endpoint in host.Description.Endpoints)
             {
-                Log.Info($"-> {endpoint.Address}");
+                Log.InfoFormat("-> {0}", endpoint.Address);
             }
         }
     }
-
 }

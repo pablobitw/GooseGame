@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace GameServer.Chat.Moderation
 {
-    public sealed class ProfanityFilter
+    public static class ProfanityFilter
     {
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(100);
 
@@ -72,43 +72,41 @@ namespace GameServer.Chat.Moderation
 
         private static string Normalize(string input)
         {
-            string result;
+            string result = string.Empty;
 
-            if (string.IsNullOrEmpty(input))
+            if (!string.IsNullOrEmpty(input))
             {
-                result = string.Empty;
-                return result;
+                var lower = input.ToLowerInvariant();
+
+                var map = new Dictionary<char, char>
+                {
+                    ['0'] = 'o',
+                    ['1'] = 'i',
+                    ['3'] = 'e',
+                    ['4'] = 'a',
+                    ['5'] = 's',
+                    ['7'] = 't',
+                    ['@'] = 'a',
+                    ['$'] = 's'
+                };
+
+                var sb = new StringBuilder(lower.Length);
+
+                foreach (var c in lower)
+                {
+                    if (map.TryGetValue(c, out var mapped))
+                    {
+                        sb.Append(mapped);
+                    }
+                    else if (char.IsLetter(c))
+                    {
+                        sb.Append(c);
+                    }
+                }
+
+                result = sb.ToString();
             }
 
-            var lower = input.ToLowerInvariant();
-
-            var map = new Dictionary<char, char>
-            {
-                ['0'] = 'o',
-                ['1'] = 'i',
-                ['3'] = 'e',
-                ['4'] = 'a',
-                ['5'] = 's',
-                ['7'] = 't',
-                ['@'] = 'a',
-                ['$'] = 's'
-            };
-
-            var sb = new StringBuilder(lower.Length);
-
-            foreach (var c in lower)
-            {
-                if (map.TryGetValue(c, out var mapped))
-                {
-                    sb.Append(mapped);
-                }
-                else if (char.IsLetter(c))
-                {
-                    sb.Append(c);
-                }
-            }
-
-            result = sb.ToString();
             return result;
         }
 
