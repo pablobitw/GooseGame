@@ -76,9 +76,9 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="DiceRollDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="DiceRollDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
-    public partial class DiceRollDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class DiceRollDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -153,9 +153,9 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
-    public partial class GameStateDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class GameStateDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -179,7 +179,7 @@ namespace GameClient.GameplayServiceReference {
         private int LastDiceTwoField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private GameClient.GameplayServiceReference.PlayerPositionDTO[] PlayerPositionsField;
+        private GameClient.GameplayServiceReference.PlayerPositionDto[] PlayerPositionsField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string WinnerUsernameField;
@@ -273,7 +273,7 @@ namespace GameClient.GameplayServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public GameClient.GameplayServiceReference.PlayerPositionDTO[] PlayerPositions {
+        public GameClient.GameplayServiceReference.PlayerPositionDto[] PlayerPositions {
             get {
                 return this.PlayerPositionsField;
             }
@@ -310,9 +310,9 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerPositionDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerPositionDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
-    public partial class PlayerPositionDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class PlayerPositionDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -419,9 +419,9 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="VoteRequestDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="VoteRequestDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
-    public partial class VoteRequestDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class VoteRequestDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -496,9 +496,9 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="VoteResponseDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="VoteResponseDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
-    public partial class VoteResponseDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class VoteResponseDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -560,16 +560,16 @@ namespace GameClient.GameplayServiceReference {
     public interface IGameplayService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
-        GameClient.GameplayServiceReference.DiceRollDTO RollDice(GameClient.GameplayServiceReference.GameplayRequest request);
+        GameClient.GameplayServiceReference.DiceRollDto RollDice(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
-        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request);
+        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDto> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
-        GameClient.GameplayServiceReference.GameStateDTO GetGameState(GameClient.GameplayServiceReference.GameplayRequest request);
+        GameClient.GameplayServiceReference.GameStateDto GetGameState(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
-        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request);
+        System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDto> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
         bool LeaveGame(GameClient.GameplayServiceReference.GameplayRequest request);
@@ -578,16 +578,16 @@ namespace GameClient.GameplayServiceReference {
         System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
-        void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDTO request);
+        void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
-        System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDTO request);
+        System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]
-        void CastVote(GameClient.GameplayServiceReference.VoteResponseDTO vote);
+        void CastVote(GameClient.GameplayServiceReference.VoteResponseDto vote);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]
-        System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDTO vote);
+        System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDto vote);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -628,19 +628,19 @@ namespace GameClient.GameplayServiceReference {
                 base(callbackInstance, binding, remoteAddress) {
         }
         
-        public GameClient.GameplayServiceReference.DiceRollDTO RollDice(GameClient.GameplayServiceReference.GameplayRequest request) {
+        public GameClient.GameplayServiceReference.DiceRollDto RollDice(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.RollDice(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDTO> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
+        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDto> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.RollDiceAsync(request);
         }
         
-        public GameClient.GameplayServiceReference.GameStateDTO GetGameState(GameClient.GameplayServiceReference.GameplayRequest request) {
+        public GameClient.GameplayServiceReference.GameStateDto GetGameState(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.GetGameState(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDTO> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
+        public System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDto> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request) {
             return base.Channel.GetGameStateAsync(request);
         }
         
@@ -652,19 +652,19 @@ namespace GameClient.GameplayServiceReference {
             return base.Channel.LeaveGameAsync(request);
         }
         
-        public void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDTO request) {
+        public void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDto request) {
             base.Channel.InitiateVoteKick(request);
         }
         
-        public System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDTO request) {
+        public System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDto request) {
             return base.Channel.InitiateVoteKickAsync(request);
         }
         
-        public void CastVote(GameClient.GameplayServiceReference.VoteResponseDTO vote) {
+        public void CastVote(GameClient.GameplayServiceReference.VoteResponseDto vote) {
             base.Channel.CastVote(vote);
         }
         
-        public System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDTO vote) {
+        public System.Threading.Tasks.Task CastVoteAsync(GameClient.GameplayServiceReference.VoteResponseDto vote) {
             return base.Channel.CastVoteAsync(vote);
         }
     }

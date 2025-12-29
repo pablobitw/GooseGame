@@ -26,7 +26,7 @@ namespace GameClient.LobbyServiceReference {
         private string HostUsernameField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private GameClient.LobbyServiceReference.LobbySettingsDTO SettingsField;
+        private GameClient.LobbyServiceReference.LobbySettingsDto SettingsField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
@@ -52,7 +52,7 @@ namespace GameClient.LobbyServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public GameClient.LobbyServiceReference.LobbySettingsDTO Settings {
+        public GameClient.LobbyServiceReference.LobbySettingsDto Settings {
             get {
                 return this.SettingsField;
             }
@@ -76,9 +76,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="LobbySettingsDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LobbySettingsDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class LobbySettingsDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class LobbySettingsDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -153,9 +153,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyCreationResultDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyCreationResultDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class LobbyCreationResultDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class LobbyCreationResultDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -291,9 +291,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="JoinLobbyResultDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="JoinLobbyResultDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class JoinLobbyResultDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class JoinLobbyResultDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -314,7 +314,7 @@ namespace GameClient.LobbyServiceReference {
         private int MaxPlayersField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersInLobbyField;
+        private GameClient.LobbyServiceReference.PlayerLobbyDto[] PlayersInLobbyField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool SuccessField;
@@ -395,7 +395,7 @@ namespace GameClient.LobbyServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersInLobby {
+        public GameClient.LobbyServiceReference.PlayerLobbyDto[] PlayersInLobby {
             get {
                 return this.PlayersInLobbyField;
             }
@@ -432,9 +432,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerLobbyDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerLobbyDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class PlayerLobbyDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class PlayerLobbyDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -493,9 +493,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyStateDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyStateDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class LobbyStateDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class LobbyStateDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -513,7 +513,7 @@ namespace GameClient.LobbyServiceReference {
         private int MaxPlayersField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private GameClient.LobbyServiceReference.PlayerLobbyDTO[] PlayersField;
+        private GameClient.LobbyServiceReference.PlayerLobbyDto[] PlayersField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
@@ -578,7 +578,7 @@ namespace GameClient.LobbyServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public GameClient.LobbyServiceReference.PlayerLobbyDTO[] Players {
+        public GameClient.LobbyServiceReference.PlayerLobbyDto[] Players {
             get {
                 return this.PlayersField;
             }
@@ -602,9 +602,9 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ActiveMatchDTO", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ActiveMatchDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
-    public partial class ActiveMatchDTO : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ActiveMatchDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
@@ -791,10 +791,10 @@ namespace GameClient.LobbyServiceReference {
     public interface ILobbyService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/CreateLobby", ReplyAction="http://tempuri.org/ILobbyService/CreateLobbyResponse")]
-        GameClient.LobbyServiceReference.LobbyCreationResultDTO CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request);
+        GameClient.LobbyServiceReference.LobbyCreationResultDto CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/CreateLobby", ReplyAction="http://tempuri.org/ILobbyService/CreateLobbyResponse")]
-        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyCreationResultDTO> CreateLobbyAsync(GameClient.LobbyServiceReference.CreateLobbyRequest request);
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyCreationResultDto> CreateLobbyAsync(GameClient.LobbyServiceReference.CreateLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/StartGame", ReplyAction="http://tempuri.org/ILobbyService/StartGameResponse")]
         bool StartGame(string lobbyCode);
@@ -815,22 +815,22 @@ namespace GameClient.LobbyServiceReference {
         System.Threading.Tasks.Task<bool> LeaveLobbyAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
-        GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(GameClient.LobbyServiceReference.JoinLobbyRequest request);
+        GameClient.LobbyServiceReference.JoinLobbyResultDto JoinLobby(GameClient.LobbyServiceReference.JoinLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
-        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDTO> JoinLobbyAsync(GameClient.LobbyServiceReference.JoinLobbyRequest request);
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDto> JoinLobbyAsync(GameClient.LobbyServiceReference.JoinLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
-        GameClient.LobbyServiceReference.LobbyStateDTO GetLobbyState(string lobbyCode);
+        GameClient.LobbyServiceReference.LobbyStateDto GetLobbyState(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
-        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode);
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDto> GetLobbyStateAsync(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
-        GameClient.LobbyServiceReference.ActiveMatchDTO[] GetPublicMatches();
+        GameClient.LobbyServiceReference.ActiveMatchDto[] GetPublicMatches();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
-        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync();
+        System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDto[]> GetPublicMatchesAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
         void KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request);
@@ -874,11 +874,11 @@ namespace GameClient.LobbyServiceReference {
                 base(callbackInstance, binding, remoteAddress) {
         }
         
-        public GameClient.LobbyServiceReference.LobbyCreationResultDTO CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request) {
+        public GameClient.LobbyServiceReference.LobbyCreationResultDto CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request) {
             return base.Channel.CreateLobby(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyCreationResultDTO> CreateLobbyAsync(GameClient.LobbyServiceReference.CreateLobbyRequest request) {
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyCreationResultDto> CreateLobbyAsync(GameClient.LobbyServiceReference.CreateLobbyRequest request) {
             return base.Channel.CreateLobbyAsync(request);
         }
         
@@ -906,27 +906,27 @@ namespace GameClient.LobbyServiceReference {
             return base.Channel.LeaveLobbyAsync(username);
         }
         
-        public GameClient.LobbyServiceReference.JoinLobbyResultDTO JoinLobby(GameClient.LobbyServiceReference.JoinLobbyRequest request) {
+        public GameClient.LobbyServiceReference.JoinLobbyResultDto JoinLobby(GameClient.LobbyServiceReference.JoinLobbyRequest request) {
             return base.Channel.JoinLobby(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDTO> JoinLobbyAsync(GameClient.LobbyServiceReference.JoinLobbyRequest request) {
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDto> JoinLobbyAsync(GameClient.LobbyServiceReference.JoinLobbyRequest request) {
             return base.Channel.JoinLobbyAsync(request);
         }
         
-        public GameClient.LobbyServiceReference.LobbyStateDTO GetLobbyState(string lobbyCode) {
+        public GameClient.LobbyServiceReference.LobbyStateDto GetLobbyState(string lobbyCode) {
             return base.Channel.GetLobbyState(lobbyCode);
         }
         
-        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDTO> GetLobbyStateAsync(string lobbyCode) {
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDto> GetLobbyStateAsync(string lobbyCode) {
             return base.Channel.GetLobbyStateAsync(lobbyCode);
         }
         
-        public GameClient.LobbyServiceReference.ActiveMatchDTO[] GetPublicMatches() {
+        public GameClient.LobbyServiceReference.ActiveMatchDto[] GetPublicMatches() {
             return base.Channel.GetPublicMatches();
         }
         
-        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDTO[]> GetPublicMatchesAsync() {
+        public System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDto[]> GetPublicMatchesAsync() {
             return base.Channel.GetPublicMatchesAsync();
         }
         

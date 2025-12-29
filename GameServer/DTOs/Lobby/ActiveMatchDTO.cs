@@ -3,7 +3,7 @@
 namespace GameServer.DTOs.Lobby
 {
     [DataContract]
-    public class ActiveMatchDTO
+    public class ActiveMatchDto
     {
         [DataMember]
         public string LobbyCode { get; set; }

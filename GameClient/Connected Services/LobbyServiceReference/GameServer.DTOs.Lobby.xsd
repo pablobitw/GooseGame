@@ -3,26 +3,26 @@
   <xs:complexType name="CreateLobbyRequest">
     <xs:sequence>
       <xs:element minOccurs="0" name="HostUsername" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Settings" nillable="true" type="tns:LobbySettingsDTO" />
+      <xs:element minOccurs="0" name="Settings" nillable="true" type="tns:LobbySettingsDto" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="CreateLobbyRequest" nillable="true" type="tns:CreateLobbyRequest" />
-  <xs:complexType name="LobbySettingsDTO">
+  <xs:complexType name="LobbySettingsDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="IsPublic" type="xs:boolean" />
       <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="LobbySettingsDTO" nillable="true" type="tns:LobbySettingsDTO" />
-  <xs:complexType name="LobbyCreationResultDTO">
+  <xs:element name="LobbySettingsDto" nillable="true" type="tns:LobbySettingsDto" />
+  <xs:complexType name="LobbyCreationResultDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Success" type="xs:boolean" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="LobbyCreationResultDTO" nillable="true" type="tns:LobbyCreationResultDTO" />
+  <xs:element name="LobbyCreationResultDto" nillable="true" type="tns:LobbyCreationResultDto" />
   <xs:complexType name="JoinLobbyRequest">
     <xs:sequence>
       <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />
@@ -30,48 +30,48 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="JoinLobbyRequest" nillable="true" type="tns:JoinLobbyRequest" />
-  <xs:complexType name="JoinLobbyResultDTO">
+  <xs:complexType name="JoinLobbyResultDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="IsHost" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsPublic" type="xs:boolean" />
       <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
-      <xs:element minOccurs="0" name="PlayersInLobby" nillable="true" type="tns:ArrayOfPlayerLobbyDTO" />
+      <xs:element minOccurs="0" name="PlayersInLobby" nillable="true" type="tns:ArrayOfPlayerLobbyDto" />
       <xs:element minOccurs="0" name="Success" type="xs:boolean" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="JoinLobbyResultDTO" nillable="true" type="tns:JoinLobbyResultDTO" />
-  <xs:complexType name="ArrayOfPlayerLobbyDTO">
+  <xs:element name="JoinLobbyResultDto" nillable="true" type="tns:JoinLobbyResultDto" />
+  <xs:complexType name="ArrayOfPlayerLobbyDto">
     <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerLobbyDTO" nillable="true" type="tns:PlayerLobbyDTO" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerLobbyDto" nillable="true" type="tns:PlayerLobbyDto" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="ArrayOfPlayerLobbyDTO" nillable="true" type="tns:ArrayOfPlayerLobbyDTO" />
-  <xs:complexType name="PlayerLobbyDTO">
+  <xs:element name="ArrayOfPlayerLobbyDto" nillable="true" type="tns:ArrayOfPlayerLobbyDto" />
+  <xs:complexType name="PlayerLobbyDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="IsHost" type="xs:boolean" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="PlayerLobbyDTO" nillable="true" type="tns:PlayerLobbyDTO" />
-  <xs:complexType name="LobbyStateDTO">
+  <xs:element name="PlayerLobbyDto" nillable="true" type="tns:PlayerLobbyDto" />
+  <xs:complexType name="LobbyStateDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="IsGameStarted" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsPublic" type="xs:boolean" />
       <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
-      <xs:element minOccurs="0" name="Players" nillable="true" type="tns:ArrayOfPlayerLobbyDTO" />
+      <xs:element minOccurs="0" name="Players" nillable="true" type="tns:ArrayOfPlayerLobbyDto" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="LobbyStateDTO" nillable="true" type="tns:LobbyStateDTO" />
-  <xs:complexType name="ArrayOfActiveMatchDTO">
+  <xs:element name="LobbyStateDto" nillable="true" type="tns:LobbyStateDto" />
+  <xs:complexType name="ArrayOfActiveMatchDto">
     <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveMatchDTO" nillable="true" type="tns:ActiveMatchDTO" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveMatchDto" nillable="true" type="tns:ActiveMatchDto" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="ArrayOfActiveMatchDTO" nillable="true" type="tns:ArrayOfActiveMatchDTO" />
-  <xs:complexType name="ActiveMatchDTO">
+  <xs:element name="ArrayOfActiveMatchDto" nillable="true" type="tns:ArrayOfActiveMatchDto" />
+  <xs:complexType name="ActiveMatchDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="BoardId" type="xs:int" />
       <xs:element minOccurs="0" name="CurrentPlayers" type="xs:int" />
@@ -80,7 +80,7 @@
       <xs:element minOccurs="0" name="MaxPlayers" type="xs:int" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="ActiveMatchDTO" nillable="true" type="tns:ActiveMatchDTO" />
+  <xs:element name="ActiveMatchDto" nillable="true" type="tns:ActiveMatchDto" />
   <xs:complexType name="KickPlayerRequest">
     <xs:sequence>
       <xs:element minOccurs="0" name="LobbyCode" nillable="true" type="xs:string" />

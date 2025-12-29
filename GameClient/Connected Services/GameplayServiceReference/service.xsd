@@ -11,7 +11,7 @@
   <xs:element name="RollDiceResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="RollDiceResult" nillable="true" type="q2:DiceRollDTO" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="RollDiceResult" nillable="true" type="q2:DiceRollDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -25,7 +25,7 @@
   <xs:element name="GetGameStateResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="GetGameStateResult" nillable="true" type="q4:GameStateDTO" />
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="GetGameStateResult" nillable="true" type="q4:GameStateDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -46,7 +46,7 @@
   <xs:element name="InitiateVoteKick">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="request" nillable="true" type="q6:VoteRequestDTO" />
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="request" nillable="true" type="q6:VoteRequestDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -58,7 +58,7 @@
   <xs:element name="CastVote">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="vote" nillable="true" type="q7:VoteResponseDTO" />
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" minOccurs="0" name="vote" nillable="true" type="q7:VoteResponseDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

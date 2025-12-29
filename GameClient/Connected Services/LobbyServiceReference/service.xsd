@@ -11,7 +11,7 @@
   <xs:element name="CreateLobbyResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="CreateLobbyResult" nillable="true" type="q2:LobbyCreationResultDTO" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="CreateLobbyResult" nillable="true" type="q2:LobbyCreationResultDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -65,7 +65,7 @@
   <xs:element name="JoinLobbyResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="JoinLobbyResult" nillable="true" type="q4:JoinLobbyResultDTO" />
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="JoinLobbyResult" nillable="true" type="q4:JoinLobbyResultDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -79,7 +79,7 @@
   <xs:element name="GetLobbyStateResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="GetLobbyStateResult" nillable="true" type="q5:LobbyStateDTO" />
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="GetLobbyStateResult" nillable="true" type="q5:LobbyStateDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -91,7 +91,7 @@
   <xs:element name="GetPublicMatchesResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="GetPublicMatchesResult" nillable="true" type="q6:ArrayOfActiveMatchDTO" />
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="GetPublicMatchesResult" nillable="true" type="q6:ArrayOfActiveMatchDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

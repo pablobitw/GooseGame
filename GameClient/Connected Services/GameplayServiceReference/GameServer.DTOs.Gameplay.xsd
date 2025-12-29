@@ -8,15 +8,15 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="GameplayRequest" nillable="true" type="tns:GameplayRequest" />
-  <xs:complexType name="DiceRollDTO">
+  <xs:complexType name="DiceRollDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="DiceOne" type="xs:int" />
       <xs:element minOccurs="0" name="DiceTwo" type="xs:int" />
       <xs:element minOccurs="0" name="Total" type="xs:int" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="DiceRollDTO" nillable="true" type="tns:DiceRollDTO" />
-  <xs:complexType name="GameStateDTO">
+  <xs:element name="DiceRollDto" nillable="true" type="tns:DiceRollDto" />
+  <xs:complexType name="GameStateDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="CurrentTurnUsername" nillable="true" type="xs:string" />
       <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="GameLog" nillable="true" type="q1:ArrayOfstring" />
@@ -24,18 +24,18 @@
       <xs:element minOccurs="0" name="IsMyTurn" type="xs:boolean" />
       <xs:element minOccurs="0" name="LastDiceOne" type="xs:int" />
       <xs:element minOccurs="0" name="LastDiceTwo" type="xs:int" />
-      <xs:element minOccurs="0" name="PlayerPositions" nillable="true" type="tns:ArrayOfPlayerPositionDTO" />
+      <xs:element minOccurs="0" name="PlayerPositions" nillable="true" type="tns:ArrayOfPlayerPositionDto" />
       <xs:element minOccurs="0" name="WinnerUsername" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="GameStateDTO" nillable="true" type="tns:GameStateDTO" />
-  <xs:complexType name="ArrayOfPlayerPositionDTO">
+  <xs:element name="GameStateDto" nillable="true" type="tns:GameStateDto" />
+  <xs:complexType name="ArrayOfPlayerPositionDto">
     <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerPositionDTO" nillable="true" type="tns:PlayerPositionDTO" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerPositionDto" nillable="true" type="tns:PlayerPositionDto" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="ArrayOfPlayerPositionDTO" nillable="true" type="tns:ArrayOfPlayerPositionDTO" />
-  <xs:complexType name="PlayerPositionDTO">
+  <xs:element name="ArrayOfPlayerPositionDto" nillable="true" type="tns:ArrayOfPlayerPositionDto" />
+  <xs:complexType name="PlayerPositionDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="AvatarPath" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="CurrentTile" type="xs:int" />
@@ -44,20 +44,20 @@
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="PlayerPositionDTO" nillable="true" type="tns:PlayerPositionDTO" />
-  <xs:complexType name="VoteRequestDTO">
+  <xs:element name="PlayerPositionDto" nillable="true" type="tns:PlayerPositionDto" />
+  <xs:complexType name="VoteRequestDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="Reason" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="TargetUsername" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="VoteRequestDTO" nillable="true" type="tns:VoteRequestDTO" />
-  <xs:complexType name="VoteResponseDTO">
+  <xs:element name="VoteRequestDto" nillable="true" type="tns:VoteRequestDto" />
+  <xs:complexType name="VoteResponseDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="AcceptKick" type="xs:boolean" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="VoteResponseDTO" nillable="true" type="tns:VoteResponseDTO" />
+  <xs:element name="VoteResponseDto" nillable="true" type="tns:VoteResponseDto" />
 </xs:schema>
