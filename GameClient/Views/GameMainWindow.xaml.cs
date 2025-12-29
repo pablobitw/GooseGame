@@ -29,10 +29,10 @@ namespace GameClient
 
             this.Closed += GameMainWindow_Closed;
 
-            LoadUserCurrency();
+            _ = LoadUserCurrency();
         }
 
-        private async void LoadUserCurrency()
+        private async Task LoadUserCurrency()
         {
             try
             {
@@ -214,11 +214,11 @@ namespace GameClient
             }
         }
 
-        public void ShowMainMenu()
+        public async void ShowMainMenu()
         {
             MainFrame.Content = null;
             MainMenuGrid.Visibility = Visibility.Visible;
-            LoadUserCurrency();
+            await LoadUserCurrency();
         }
 
         private async void HandleInvitation(string host, string code)

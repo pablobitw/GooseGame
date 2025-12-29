@@ -538,13 +538,13 @@ namespace GameServer.Services.Logic
 
                 if (totalVotesCast >= state.TotalEligibleVoters)
                 {
-                    ProcessVoteResult(gameId, state);
+                    _ = ProcessVoteResult(gameId, state);
                 }
             }
             await Task.CompletedTask;
         }
 
-        private async void ProcessVoteResult(int gameId, VoteState state)
+        private async Task ProcessVoteResult(int gameId, VoteState state)
         {
             _activeVotes.TryRemove(gameId, out _);
 

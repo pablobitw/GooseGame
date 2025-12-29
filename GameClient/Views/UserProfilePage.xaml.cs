@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -25,12 +26,12 @@ namespace GameClient.Views
         {
         }
 
-        private void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
+        private async void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadUserProfile();
+            await LoadUserProfile();
         }
 
-        private async void LoadUserProfile()
+        private async Task LoadUserProfile()
         {
             var client = new UserProfileServiceClient();
 
@@ -120,11 +121,11 @@ namespace GameClient.Views
             }
         }
 
-        private void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
+        private async void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
         {
             var changeWindow = new ChangeUsernameWindow(userEmail);
             changeWindow.ShowDialog();
-            LoadUserProfile();
+            await LoadUserProfile();
         }
 
         private void ChangeAvatarButton_Click(object sender, RoutedEventArgs e)
