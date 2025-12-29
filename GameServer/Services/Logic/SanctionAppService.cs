@@ -22,79 +22,93 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-                if (player == null)
-                {
-                    Log.Warn($"[Sanction] Jugador no encontrado: {username}");
-                    return;
-                }
-
-                if (player.Account_IdAccount == null)
-                {
-                    Log.Error($"[Sanction] Error crítico: El jugador {username} no tiene Account_IdAccount. No se puede sancionar.");
-                    return;
-                }
+                if (!ValidatePlayer(player, username)) return;
 
                 var game = await _repository.GetGameByLobbyCodeAsync(lobbyCode);
-                if (game == null)
-                {
-                    Log.Error($"[Sanction] No se pudo encontrar el juego {lobbyCode}. La sanción requiere un ID de juego válido.");
-                    return;
-                }
+                if (!ValidateGame(game, lobbyCode)) return;
 
                 var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
+                if (playerWithStats?.PlayerStat == null) return;
 
-                if (playerWithStats != null && playerWithStats.PlayerStat != null)
+                playerWithStats.PlayerStat.KicksReceived++;
+                int kicks = playerWithStats.PlayerStat.KicksReceived;
+
+                if (kicks >= 10 || kicks % 3 == 0)
                 {
-                    playerWithStats.PlayerStat.KicksReceived++;
-                    int kicks = playerWithStats.PlayerStat.KicksReceived;
-
-                    if (kicks >= 10 || kicks % 3 == 0)
-                    {
-                        var sanction = new Sanction
-                        {
-                            Account_IdAccount = (int)player.Account_IdAccount,
-
-                            Game_IdGame = game.IdGame,
-
-                            StartDate = DateTime.Now,
-                            Reason = $"{reason} (Acumulación #{kicks})"
-                        };
-
-                        if (kicks >= 10)
-                        {
-                            sanction.SanctionType = 2;
-                            sanction.EndDate = DateTime.Now.AddYears(999);
-                            Log.Info($"[Sanction] BAN PERMANENTE (Tipo 2) aplicado a {username}.");
-                        }
-                        else
-                        {
-                            sanction.SanctionType = 1;
-                            sanction.EndDate = DateTime.Now.AddDays(1);
-                            Log.Info($"[Sanction] SUSPENSIÓN (Tipo 1) aplicada a {username}.");
-                        }
-
-                        _repository.AddSanction(sanction);
-                    }
-
-                    await _repository.SaveChangesAsync();
+                    ApplySanction(player, game, reason, kicks);
                 }
+
+                await _repository.SaveChangesAsync();
             }
             catch (EntityException ex)
             {
-                Log.Error($"[Sanction] Error de Entity Framework al sancionar a {username}", ex);
+                Log.ErrorFormat("[Sanction] Error de Entity Framework al sancionar a {0}", username, ex);
             }
             catch (SqlException ex)
             {
-                Log.Error($"[Sanction] Error SQL al sancionar a {username}", ex);
+                Log.ErrorFormat("[Sanction] Error SQL al sancionar a {0}", username, ex);
             }
             catch (TimeoutException ex)
             {
-                Log.Error($"[Sanction] Timeout al guardar sanción de {username}", ex);
+                Log.ErrorFormat("[Sanction] Timeout al guardar sanción de {0}", username, ex);
             }
             catch (Exception ex)
             {
-                Log.Error($"[Sanction] Error general al sancionar a {username}", ex);
+                Log.ErrorFormat("[Sanction] Error general al sancionar a {0}", username, ex);
             }
+        }
+
+        private bool ValidatePlayer(Player player, string username)
+        {
+            if (player == null)
+            {
+                Log.WarnFormat("[Sanction] Jugador no encontrado: {0}", username);
+                return false;
+            }
+
+            if (player.Account_IdAccount == null)
+            {
+                Log.ErrorFormat("[Sanction] Error crítico: El jugador {0} no tiene Account_IdAccount. No se puede sancionar.", username);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateGame(Game game, string lobbyCode)
+        {
+            if (game == null)
+            {
+                Log.ErrorFormat("[Sanction] No se pudo encontrar el juego {0}. La sanción requiere un ID de juego válido.", lobbyCode);
+                return false;
+            }
+            return true;
+        }
+
+        private void ApplySanction(Player player, Game game, string reason, int kicks)
+        {
+            var sanction = new Sanction
+            {
+                Account_IdAccount = (int)player.Account_IdAccount,
+                Game_IdGame = game.IdGame,
+                StartDate = DateTime.UtcNow,
+                Reason = string.Format("{0} (Acumulación #{1})", reason, kicks)
+            };
+
+            if (kicks >= 10)
+            {
+                sanction.SanctionType = 2;
+                sanction.EndDate = DateTime.UtcNow.AddYears(999);
+                Log.InfoFormat("[Sanction] BAN PERMANENTE (Tipo 2) aplicado a {0}.", player.Username);
+            }
+            else
+            {
+                sanction.SanctionType = 1;
+                sanction.EndDate = DateTime.UtcNow.AddDays(1);
+                Log.InfoFormat("[Sanction] SUSPENSIÓN (Tipo 1) aplicada a {0}.", player.Username);
+            }
+
+            _repository.AddSanction(sanction);
         }
     }
 }

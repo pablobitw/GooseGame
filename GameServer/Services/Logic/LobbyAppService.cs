@@ -5,10 +5,12 @@ using GameServer.Interfaces;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core; 
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
+using System.Data.SqlClient; 
 using System.Linq;
 using System.Security.Cryptography;
+using System.ServiceModel; 
 using System.Threading.Tasks;
 using GameServer;
 
@@ -28,6 +30,7 @@ namespace GameServer.Services.Logic
         {
             if (player.GameIdGame != null)
             {
+              
                 var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
                 if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
                 {
@@ -80,7 +83,7 @@ namespace GameServer.Services.Logic
                         IsPublic = request.Settings.IsPublic,
                         MaxPlayers = request.Settings.MaxPlayers,
                         LobbyCode = newLobbyCode,
-                        StartTime = DateTime.Now
+                        StartTime = DateTime.UtcNow
                     };
 
                     _repository.AddGame(newGame);
@@ -94,10 +97,25 @@ namespace GameServer.Services.Logic
                     result.LobbyCode = newLobbyCode;
                 }
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error("Error al crear lobby.", ex);
-                result.ErrorMessage = "Error interno del servidor.";
+                Log.Error("Error de integridad referencial al crear lobby.", ex);
+                result.ErrorMessage = "Error de base de datos.";
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL crítico al crear lobby.", ex);
+                result.ErrorMessage = "Error de conexión.";
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de Entity Framework al crear lobby.", ex);
+                result.ErrorMessage = "Error interno.";
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Tiempo de espera agotado al crear lobby.", ex);
+                result.ErrorMessage = "El servidor tardó demasiado en responder.";
             }
 
             return result;
@@ -163,10 +181,25 @@ namespace GameServer.Services.Logic
                 result.IsPublic = game.IsPublic;
                 result.PlayersInLobby = dtoList;
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error("Error al unirse al lobby.", ex);
-                result.ErrorMessage = "Error interno al unirse.";
+                Log.Error("Error al actualizar estado del jugador al unirse.", ex);
+                result.ErrorMessage = "Error al unirse a la partida.";
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL al unirse al lobby.", ex);
+                result.ErrorMessage = "Error de conexión.";
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de entidad al unirse al lobby.", ex);
+                result.ErrorMessage = "Error interno.";
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al unirse al lobby.", ex);
+                result.ErrorMessage = "Tiempo de espera agotado.";
             }
 
             return result;
@@ -199,9 +232,17 @@ namespace GameServer.Services.Logic
                     };
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
-                Log.Error("Error obteniendo estado del lobby.", ex);
+                Log.Error("Error SQL obteniendo estado del lobby.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF obteniendo estado del lobby.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo estado del lobby.", ex);
             }
 
             return result;
@@ -229,9 +270,21 @@ namespace GameServer.Services.Logic
                     success = true;
                 }
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error("Error iniciando juego.", ex);
+                Log.Error("Error actualizando estado de juego a Iniciado.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL iniciando juego.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF iniciando juego.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout iniciando juego.", ex);
             }
 
             return success;
@@ -251,12 +304,14 @@ namespace GameServer.Services.Logic
                     {
                         var playersInLobby = await _repository.GetPlayersInGameAsync(gameId);
 
-                        foreach (var player in playersInLobby)
+                        var playersToNotify = playersInLobby
+                                                .Select(p => p.Username)
+                                                .Where(u => u != hostUsername)
+                                                .ToList();
+
+                        foreach (var username in playersToNotify)
                         {
-                            if (player.Username != hostUsername)
-                            {
-                                NotifyClient(player.Username, "El anfitrión ha disuelto la sala.");
-                            }
+                            NotifyClient(username, "El anfitrión ha disuelto la sala.");
                         }
 
                         _repository.DeleteGameAndCleanDependencies(game);
@@ -270,9 +325,21 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error("Error disolviendo lobby.", ex);
+                Log.Error("Error DB al disolver lobby.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL al disolver lobby.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF al disolver lobby.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al disolver lobby.", ex);
             }
         }
 
@@ -314,9 +381,21 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error("Error abandonando lobby.", ex);
+                Log.Error("Error DB al abandonar lobby.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL al abandonar lobby.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF al abandonar lobby.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al abandonar lobby.", ex);
             }
 
             return success;
@@ -363,9 +442,17 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
-                Log.Error("Error obteniendo partidas públicas.", ex);
+                Log.Error("Error SQL obteniendo partidas públicas.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF obteniendo partidas públicas.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo partidas públicas.", ex);
             }
             return matchesList.ToArray();
         }
@@ -386,14 +473,14 @@ namespace GameServer.Services.Logic
                 var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
                 if (host == null || game.HostPlayerID != host.IdPlayer)
                 {
-                    Log.Warn($"KickPlayer: {request.RequestorUsername} intentó expulsar sin ser host.");
+                    Log.WarnFormat("KickPlayer: {0} intentó expulsar sin ser host.", request.RequestorUsername);
                     return;
                 }
 
                 var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
                 if (target == null || target.GameIdGame != game.IdGame)
                 {
-                    Log.Warn($"KickPlayer: Jugador objetivo {request.TargetUsername} no está en el lobby.");
+                    Log.WarnFormat("KickPlayer: Jugador objetivo {0} no está en el lobby.", request.TargetUsername);
                     return;
                 }
 
@@ -402,15 +489,27 @@ namespace GameServer.Services.Logic
 
                 NotifyClient(request.TargetUsername, "Has sido expulsado por el anfitrión.");
 
-                Log.Info($"Jugador {request.TargetUsername} expulsado del lobby {request.LobbyCode} por {request.RequestorUsername}.");
+                Log.InfoFormat("Jugador {0} expulsado del lobby {1} por {2}.", request.TargetUsername, request.LobbyCode, request.RequestorUsername);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Log.Error($"Error crítico al expulsar jugador {request.TargetUsername}", ex);
+                Log.Error("Error DB al expulsar jugador.", ex);
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("Error SQL al expulsar jugador.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF al expulsar jugador.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout al expulsar jugador.", ex);
             }
         }
 
-        private void NotifyClient(string username, string message)
+        private static void NotifyClient(string username, string message)
         {
             var callback = ConnectionManager.GetLobbyClient(username);
             if (callback != null)
@@ -419,8 +518,13 @@ namespace GameServer.Services.Logic
                 {
                     callback.OnPlayerKicked(message);
                 }
-                catch (System.ServiceModel.CommunicationException)
+                catch (CommunicationException ex)
                 {
+                    Log.WarnFormat("Error de comunicación notificando a {0}: {1}", username, ex.Message);
+                }
+                catch (TimeoutException ex)
+                {
+                    Log.WarnFormat("Timeout notificando a {0}: {1}", username, ex.Message);
                 }
                 finally
                 {

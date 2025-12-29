@@ -27,7 +27,6 @@ namespace GameServer.Services.Logic
 
         public void ConnectUser(string username, IFriendshipServiceCallback callback)
         {
-            
             string key = username.ToLower();
             lock (_locker)
             {
@@ -71,7 +70,7 @@ namespace GameServer.Services.Logic
                     if (sender == null || receiver == null) return false;
                     if (sender.IsGuest || receiver.IsGuest)
                     {
-                        Log.Warn($"Intento de amistad inválido con invitado: {senderUsername} -> {receiverUsername}");
+                        Log.WarnFormat("Intento de amistad inválido con invitado: {0} -> {1}", senderUsername, receiverUsername);
                         return false;
                     }
 
@@ -119,7 +118,7 @@ namespace GameServer.Services.Logic
                 var requester = await _repository.GetPlayerByUsernameAsync(request.RequesterUsername);
 
                 if (responder == null || requester == null) return false;
-                if (responder.IsGuest) return false; 
+                if (responder.IsGuest) return false;
 
                 var friendship = _repository.GetPendingRequest(requester.IdPlayer, responder.IdPlayer);
 
@@ -272,7 +271,7 @@ namespace GameServer.Services.Logic
             return resultList;
         }
 
-        public void SendGameInvitation(GameInvitationDto invitation)
+        public static void SendGameInvitation(GameInvitationDto invitation)
         {
             string key = invitation.TargetUsername.ToLower();
             lock (_locker)
@@ -291,7 +290,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private void NotifyUserRequestReceived(string username)
+        private static void NotifyUserRequestReceived(string username)
         {
             string key = username.ToLower();
             lock (_locker)
@@ -304,7 +303,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private void NotifyUserListUpdated(string username)
+        private static void NotifyUserListUpdated(string username)
         {
             string key = username.ToLower();
             lock (_locker)
@@ -326,27 +325,32 @@ namespace GameServer.Services.Logic
                     using (var repo = new FriendshipRepository())
                     {
                         var player = await repo.GetPlayerByUsernameAsync(username);
-                        // Invitados no notifican a nadie
                         if (player != null && !player.IsGuest)
                         {
-                            var friendships = repo.GetAcceptedFriendships(player.IdPlayer);
-                            foreach (var f in friendships)
-                            {
-                                int fid = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
-                                var friend = repo.GetPlayerById(fid);
-                                if (friend != null)
-                                {
-                                    NotifyUserListUpdated(friend.Username);
-                                }
-                            }
+                            await NotifyFriendsAsync(player, repo);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error notificando estado de {username}", ex);
+                    Log.ErrorFormat("Error notificando estado de {0}", username, ex);
                 }
             });
+        }
+
+        private static async Task NotifyFriendsAsync(Player player, FriendshipRepository repo)
+        {
+            var friendships = repo.GetAcceptedFriendships(player.IdPlayer);
+            foreach (var f in friendships)
+            {
+                int fid = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
+                var friend = repo.GetPlayerById(fid);
+                if (friend != null)
+                {
+                    NotifyUserListUpdated(friend.Username);
+                }
+            }
+            await Task.CompletedTask;
         }
     }
 }

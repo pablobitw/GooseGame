@@ -19,7 +19,7 @@ namespace GameServer.Services.Logic
             = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
 
         private static readonly SpamTracker _spamTracker = new SpamTracker();
-        
+
         private const int MaxMessageLength = 50;
 
         private readonly IChatNotifier _notifier;
@@ -66,7 +66,6 @@ namespace GameServer.Services.Logic
                 return;
             }
 
-            // ---------- SPAM ----------
             var spamResult = _spamTracker.Analyze(
                 messageDto.LobbyCode,
                 messageDto.Sender
@@ -86,7 +85,6 @@ namespace GameServer.Services.Logic
                 return;
             }
 
-          
             var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
 
             if (profanityResult.IsBlocked)
@@ -155,7 +153,7 @@ namespace GameServer.Services.Logic
             }
             else
             {
-                Log.Warn($"[PrivateChat] Usuario destino no encontrado: {messageDto.TargetUser}");
+                Log.WarnFormat("[PrivateChat] Usuario destino no encontrado: {0}", messageDto.TargetUser);
             }
         }
 
@@ -192,13 +190,14 @@ namespace GameServer.Services.Logic
         {
             if (_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
             {
-                foreach (var userKey in lobbyChatters.Keys.ToList())
+                var recipients = lobbyChatters.Keys
+                    .Where(userKey => senderUsername == "SYSTEM" ||
+                                      !userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var userKey in recipients)
                 {
-                    if (senderUsername == "SYSTEM" ||
-                        !userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase))
-                    {
-                        SafeSendMessageToClient(userKey, messageDto);
-                    }
+                    SafeSendMessageToClient(userKey, messageDto);
                 }
             }
         }
@@ -211,19 +210,19 @@ namespace GameServer.Services.Logic
             }
             catch (TimeoutException ex)
             {
-                Log.Warn($"[Chat] Timeout enviando a {userKey}", ex);
+                Log.WarnFormat("[Chat] Timeout enviando a {0}", userKey, ex);
             }
             catch (CommunicationException ex)
             {
-                Log.Warn($"[Chat] Comunicación interrumpida con {userKey}", ex);
+                Log.WarnFormat("[Chat] Comunicación interrumpida con {0}", userKey, ex);
             }
             catch (ObjectDisposedException ex)
             {
-                Log.Warn($"[Chat] Canal ya eliminado para {userKey}", ex);
+                Log.WarnFormat("[Chat] Canal ya eliminado para {0}", userKey, ex);
             }
         }
 
-        public void RemoveClient(string lobbyCode, string username)
+        public static void RemoveClient(string lobbyCode, string username)
         {
             if (!string.IsNullOrEmpty(lobbyCode) &&
                 _lobbies.TryGetValue(lobbyCode, out var lobbyChatters))

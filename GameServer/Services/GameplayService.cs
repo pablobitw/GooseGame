@@ -6,7 +6,6 @@ using GameServer.Services.Logic;
 using log4net;
 using System;
 using System.Data.Entity.Core;
-using System.Data.SqlClient;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
@@ -21,9 +20,8 @@ namespace GameServer.Services
         {
             using (var repository = new GameplayRepository())
             {
-              
                 var logic = new GameplayAppService(repository);
-                return await logic.RollDiceAsync(request);
+                return await logic.RollDiceAsync(request).ConfigureAwait(false);
             }
         }
 
@@ -41,22 +39,25 @@ namespace GameServer.Services
                 try
                 {
                     var logic = new GameplayAppService(repository);
-                    return await logic.GetGameStateAsync(request);
+                    return await logic.GetGameStateAsync(request).ConfigureAwait(false);
                 }
                 catch (EntityException ex)
                 {
-                    Log.Error($"Database error getting game state for {request?.Username}", ex);
-                    throw new FaultException("Database error occurred.");
+                    Log.ErrorFormat("Error de base de datos al obtener estado de juego para {0}", request?.Username);
+                    Log.Error("Detalle de la excepción:", ex);
+                    throw new FaultException("Ocurrió un error de base de datos.");
                 }
                 catch (TimeoutException ex)
                 {
-                    Log.Error($"Timeout getting game state for {request?.Username}", ex);
-                    throw new FaultException("The operation timed out.");
+                    Log.ErrorFormat("Timeout al obtener estado de juego para {0}", request?.Username);
+                    Log.Error("Detalle de la excepción:", ex);
+                    throw new FaultException("La operación excedió el tiempo de espera.");
                 }
                 catch (Exception ex)
                 {
-                    Log.Fatal($"CRASH PREVENTED in GetGameState for {request?.Username}: {ex.Message}", ex);
-                    throw new FaultException("Internal server error fetching game state.");
+                    Log.FatalFormat("CRASH PREVENIDO en GetGameState para {0}: {1}", request?.Username, ex.Message);
+                    Log.Fatal("Detalle de la excepción:", ex);
+                    throw new FaultException("Error interno al obtener el estado del juego.");
                 }
             }
         }
@@ -66,10 +67,9 @@ namespace GameServer.Services
             using (var repository = new GameplayRepository())
             {
                 var logic = new GameplayAppService(repository);
-                return await logic.LeaveGameAsync(request);
+                return await logic.LeaveGameAsync(request).ConfigureAwait(false);
             }
         }
-
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
@@ -78,39 +78,43 @@ namespace GameServer.Services
                 try
                 {
                     var logic = new GameplayAppService(repository);
-                    await logic.InitiateVoteKickAsync(request);
+                    await logic.InitiateVoteKickAsync(request).ConfigureAwait(false);
                 }
                 catch (EntityException ex)
                 {
-                    Log.Error($"Database error initiating vote kick by {request?.Username}", ex);
-                    throw new FaultException("Unable to access data to initiate vote.");
+                    Log.ErrorFormat("Error de base de datos al iniciar votación de expulsión por {0}", request?.Username);
+                    Log.Error("Detalle de la excepción:", ex);
+                    throw new FaultException("No se pudo acceder a los datos para iniciar la votación.");
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Log.Warn($"Invalid vote attempt by {request?.Username}: {ex.Message}");
-                    throw new FaultException(ex.Message); 
+                    Log.WarnFormat("Intento de voto inválido por {0}: {1}", request?.Username, ex.Message);
+                    Log.Warn("Detalle de la excepción:", ex);
+                    throw new FaultException(ex.Message);
                 }
             }
         }
 
-        public async Task CastVoteAsync(VoteResponseDto request)
+        public async Task CastVoteAsync(VoteResponseDto vote)
         {
             using (var repository = new GameplayRepository())
             {
                 try
                 {
                     var logic = new GameplayAppService(repository);
-                    await logic.CastVoteAsync(request);
+                    await logic.CastVoteAsync(vote).ConfigureAwait(false);
                 }
                 catch (EntityException ex)
                 {
-                    Log.Error($"Database error casting vote by {request?.Username}", ex);
-                    throw new FaultException("Unable to submit vote.");
+                    Log.ErrorFormat("Error de base de datos al emitir voto por {0}", vote?.Username);
+                    Log.Error("Detalle de la excepción:", ex);
+                    throw new FaultException("No se pudo registrar el voto.");
                 }
                 catch (TimeoutException ex)
                 {
-                    Log.Error($"Timeout casting vote by {request?.Username}", ex);
-                    throw new FaultException("Vote submission timed out.");
+                    Log.ErrorFormat("Timeout al emitir voto por {0}", vote?.Username);
+                    Log.Error("Detalle de la excepción:", ex);
+                    throw new FaultException("El envío del voto excedió el tiempo de espera.");
                 }
             }
         }
