@@ -26,6 +26,39 @@ namespace GameServer.Services.Logic
             _repository = repository;
         }
 
+        private async Task NotifyAllInLobby(int gameId, string excludeUsername, Action<ILobbyServiceCallback> notificationAction)
+        {
+            try
+            {
+                var players = await _repository.GetPlayersInGameAsync(gameId);
+                foreach (var player in players)
+                {
+                    if (player.Username == excludeUsername) continue;
+
+                    var client = ConnectionManager.GetLobbyClient(player.Username);
+                    if (client != null)
+                    {
+                        try
+                        {
+                            notificationAction(client);
+                        }
+                        catch (CommunicationException)
+                        {
+                            ConnectionManager.UnregisterLobbyClient(player.Username);
+                        }
+                        catch (TimeoutException)
+                        {
+                            ConnectionManager.UnregisterLobbyClient(player.Username);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WarnFormat("Error enviando notificación push al lobby {0}: {1}", gameId, ex.Message);
+            }
+        }
+
         private async Task CleanPlayerStateIfNeeded(Player player)
         {
             if (player.GameIdGame != null)
@@ -179,6 +212,9 @@ namespace GameServer.Services.Logic
                 result.IsHost = (player.IdPlayer == game.HostPlayerID);
                 result.IsPublic = game.IsPublic;
                 result.PlayersInLobby = dtoList;
+
+                var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = false };
+                await NotifyAllInLobby(game.IdGame, request.Username, client => client.OnPlayerJoined(newPlayerDto));
             }
             catch (DbUpdateException ex)
             {
@@ -267,6 +303,8 @@ namespace GameServer.Services.Logic
                     await _repository.SaveChangesAsync();
                     Log.InfoFormat("Juego {0} iniciado con {1} jugadores.", lobbyCode, players.Count);
                     success = true;
+
+                    await NotifyAllInLobby(game.IdGame, null, client => client.OnGameStarted());
                 }
             }
             catch (DbUpdateException ex)
@@ -301,17 +339,7 @@ namespace GameServer.Services.Logic
 
                     if (game != null)
                     {
-                        var playersInLobby = await _repository.GetPlayersInGameAsync(gameId);
-
-                        var playersToNotify = playersInLobby
-                                                .Select(p => p.Username)
-                                                .Where(u => u != hostUsername)
-                                                .ToList();
-
-                        foreach (var username in playersToNotify)
-                        {
-                            NotifyClient(username, "El anfitrión ha disuelto la sala.");
-                        }
+                        await NotifyAllInLobby(gameId, hostUsername, client => client.OnLobbyDisbanded());
 
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
@@ -363,7 +391,12 @@ namespace GameServer.Services.Logic
 
                 ConnectionManager.UnregisterLobbyClient(username);
 
-                await CheckLobbyStatusAfterLeaveAsync(gameId);
+                bool gameClosed = await HandleGameShutdownIfNeeded(gameId);
+
+                if (!gameClosed)
+                {
+                    await NotifyAllInLobby(gameId, username, client => client.OnPlayerLeft(username));
+                }
             }
             catch (DbUpdateException ex)
             {
@@ -385,10 +418,10 @@ namespace GameServer.Services.Logic
             return success;
         }
 
-        private async Task CheckLobbyStatusAfterLeaveAsync(int gameId)
+        private async Task<bool> HandleGameShutdownIfNeeded(int gameId)
         {
             var game = await _repository.GetGameByIdAsync(gameId);
-            if (game == null) return;
+            if (game == null) return true;
 
             var remainingPlayers = await _repository.GetPlayersInGameAsync(gameId);
 
@@ -398,12 +431,15 @@ namespace GameServer.Services.Logic
                 string winnerName = remainingPlayers.Count > 0 ? remainingPlayers[0].Username : "Nadie";
                 Log.InfoFormat("Juego terminado por abandono desde Lobby. Ganador: {0}", winnerName);
                 await _repository.SaveChangesAsync();
+                return true;
             }
             else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
             {
                 _repository.DeleteGameAndCleanDependencies(game);
                 await _repository.SaveChangesAsync();
+                return true;
             }
+            return false;
         }
 
         private string GenerateLobbyCode()
@@ -493,6 +529,7 @@ namespace GameServer.Services.Logic
                 await _repository.SaveChangesAsync();
 
                 NotifyClient(request.TargetUsername, "Has sido expulsado por el anfitrión.");
+                await NotifyAllInLobby(game.IdGame, request.TargetUsername, client => client.OnPlayerLeft(request.TargetUsername));
 
                 Log.InfoFormat("Jugador {0} expulsado del lobby {1} por {2}.", request.TargetUsername, request.LobbyCode, request.RequestorUsername);
             }

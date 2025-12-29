@@ -22,6 +22,7 @@ namespace GameServer.Repositories
             {
                 var query = context.Players
                                    .Where(p => p.PlayerStat != null)
+                                   .Where(p => p.IsGuest == false) 
                                    .Select(p => new PlayerStatResult
                                    {
                                        Username = p.Username,

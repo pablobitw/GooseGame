@@ -1,4 +1,5 @@
 ﻿using GameClient.GameServiceReference;
+using GameClient.GameplayServiceReference;
 using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
 using GameClient.UserProfileServiceReference;
@@ -15,7 +16,7 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
-        private const string ErrorTitle = "Error"; 
+        private const string ErrorTitle = "Error";
         private readonly string _username;
 
         public GameMainWindow(string loggedInUsername)
@@ -25,12 +26,29 @@ namespace GameClient
 
             FriendshipServiceManager.Initialize(_username);
             LobbyServiceManager.Instance.Initialize(_username);
+            GameplayServiceManager.Instance.Initialize(_username);
 
             FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
+            LobbyServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
+            GameplayServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
 
             this.Closed += GameMainWindow_Closed;
 
             _ = LoadUserCurrency();
+        }
+
+        private void OnGlobalPlayerKicked(string reason)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (MainFrame.Content is BoardPage boardPage)
+                {
+                    boardPage.StopTimers();
+                }
+
+                MessageBox.Show($"Has sido expulsado de la sesión: {reason}", "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _ = ShowMainMenu();
+            });
         }
 
         private async Task LoadUserCurrency()
@@ -52,22 +70,18 @@ namespace GameClient
             catch (TimeoutException)
             {
                 CoinCountText.Text = "---";
-                Console.WriteLine("Timeout loading currency.");
             }
             catch (EndpointNotFoundException)
             {
                 CoinCountText.Text = "---";
-                Console.WriteLine("Endpoint not found loading currency.");
             }
             catch (CommunicationException)
             {
                 CoinCountText.Text = "---";
-                Console.WriteLine("Communication error loading currency.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 CoinCountText.Text = "Err";
-                Console.WriteLine($"Unexpected error loading currency: {ex.Message}");
             }
         }
 
@@ -129,15 +143,11 @@ namespace GameClient
                     media.LoadedBehavior = MediaState.Manual;
                     media.Play();
                 }
-                else
-                {
-                    MessageBox.Show($"No se encuentra el video en: {videoPath}\n\nRevisa las propiedades del archivo en Visual Studio.", "Error de Archivo");
-                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error cargando video: " + ex.Message);
-            }
+            catch (ArgumentException) { }
+            catch (UriFormatException) { }
+            catch (IOException) { }
+            catch (Exception) { }
         }
 
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
@@ -186,12 +196,16 @@ namespace GameClient
         {
             try
             {
+                if (LobbyServiceManager.Instance != null) LobbyServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                if (GameplayServiceManager.Instance != null) GameplayServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+
                 if (FriendshipServiceManager.Instance != null)
                 {
                     FriendshipServiceManager.Instance.Disconnect();
                 }
 
                 LobbyServiceManager.Instance.Dispose();
+                GameplayServiceManager.Instance.Dispose();
 
                 using (var client = new GameServiceClient())
                 {
@@ -200,18 +214,9 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-            catch (CommunicationException ex)
-            {
-                Console.WriteLine($"Error closing connection: {ex.Message}");
-            }
-            catch (TimeoutException ex)
-            {
-                Console.WriteLine($"Timeout closing connection: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error during shutdown: {ex.Message}");
-            }
+            catch (CommunicationException) { }
+            catch (TimeoutException) { }
+            catch (Exception) { }
             finally
             {
                 if (Application.Current.Windows.Count == 0)
@@ -224,6 +229,7 @@ namespace GameClient
         public async Task ShowMainMenu()
         {
             MainFrame.Content = null;
+            while (MainFrame.CanGoBack) MainFrame.RemoveBackEntry();
             MainMenuGrid.Visibility = Visibility.Visible;
             await LoadUserCurrency();
         }

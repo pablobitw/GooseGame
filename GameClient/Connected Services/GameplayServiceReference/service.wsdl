@@ -54,6 +54,12 @@
   <wsdl:message name="IGameplayService_OnPlayerKicked_OutputCallbackMessage">
     <wsdl:part name="parameters" element="tns:OnPlayerKicked" />
   </wsdl:message>
+  <wsdl:message name="IGameplayService_OnTurnChanged_OutputCallbackMessage">
+    <wsdl:part name="parameters" element="tns:OnTurnChanged" />
+  </wsdl:message>
+  <wsdl:message name="IGameplayService_OnGameFinished_OutputCallbackMessage">
+    <wsdl:part name="parameters" element="tns:OnGameFinished" />
+  </wsdl:message>
   <wsdl:portType name="IGameplayService">
     <wsdl:operation name="RollDice">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/RollDice" message="tns:IGameplayService_RollDice_InputMessage" />
@@ -80,6 +86,12 @@
     </wsdl:operation>
     <wsdl:operation name="OnPlayerKicked">
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/OnPlayerKicked" message="tns:IGameplayService_OnPlayerKicked_OutputCallbackMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="OnTurnChanged">
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/OnTurnChanged" message="tns:IGameplayService_OnTurnChanged_OutputCallbackMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="OnGameFinished">
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/OnGameFinished" message="tns:IGameplayService_OnGameFinished_OutputCallbackMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IGameplayService" type="tns:IGameplayService">
@@ -139,6 +151,18 @@
     </wsdl:operation>
     <wsdl:operation name="OnPlayerKicked">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/OnPlayerKicked" style="document" />
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnTurnChanged">
+      <soap12:operation soapAction="http://tempuri.org/IGameplayService/OnTurnChanged" style="document" />
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnGameFinished">
+      <soap12:operation soapAction="http://tempuri.org/IGameplayService/OnGameFinished" style="document" />
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>

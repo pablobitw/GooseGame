@@ -110,6 +110,7 @@
     <Compile Include="Helpers\AudioManager.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\FriendshipServiceManager.cs" />
+    <Compile Include="Helpers\GameplayServiceManager.cs" />
     <Compile Include="Helpers\LobbyServiceManager.cs" />
     <Compile Include="Helpers\UserSession.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />

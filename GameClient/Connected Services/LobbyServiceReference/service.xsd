@@ -107,10 +107,42 @@
       <xs:sequence />
     </xs:complexType>
   </xs:element>
+  <xs:element name="OnPlayerJoined">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby" minOccurs="0" name="player" nillable="true" type="q8:PlayerLobbyDto" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnPlayerLeft">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="username" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnGameStarted">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnLobbyDisbanded">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
   <xs:element name="OnPlayerKicked">
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" name="reason" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnLobbyMessageReceived">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="username" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="message" nillable="true" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

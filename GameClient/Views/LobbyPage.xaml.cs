@@ -30,7 +30,6 @@ namespace GameClient.Views
         private ChatServiceClient chatClient;
         private int playerCount = 4;
         private int boardId = 1;
-        private DispatcherTimer pollingTimer;
 
         public LobbyPage(string username)
         {
@@ -38,7 +37,7 @@ namespace GameClient.Views
             this.username = username;
             isHost = true;
 
-            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
+            SubscribeToLobbyEvents();
 
             if (LobbyTabControl.Items.Count > 1)
             {
@@ -48,6 +47,9 @@ namespace GameClient.Views
             StartMatchButton.IsEnabled = true;
             StartMatchButton.Opacity = 1.0;
             StartMatchButton.Content = GameClient.Resources.Strings.CreateLobbyButton ?? "CREAR SALA";
+
+            this.Loaded += Page_Loaded;
+            this.Unloaded += Page_Unloaded;
         }
 
         public LobbyPage(string username, string lobbyCode, JoinLobbyResultDto joinResult)
@@ -59,7 +61,7 @@ namespace GameClient.Views
             playerCount = joinResult.MaxPlayers;
             isHost = false;
 
-            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
+            SubscribeToLobbyEvents();
 
             SyncLobbyVisuals(joinResult.MaxPlayers, joinResult.BoardId, joinResult.IsPublic);
             LockLobbySettings(lobbyCode);
@@ -67,100 +69,125 @@ namespace GameClient.Views
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
 
-            this.Loaded += async (s, e) =>
-            {
-                await Task.Delay(500);
-                InitializeTimer();
-            };
-
             ConnectToChatService();
+
+            this.Loaded += Page_Loaded;
+            this.Unloaded += Page_Unloaded;
         }
 
-        private async void OnPlayerKicked(string reason)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            await Dispatcher.InvokeAsync(async () =>
+            var backCommandBinding = new CommandBinding(
+                NavigationCommands.BrowseBack,
+                OnBrowseBackExecuted,
+                OnBrowseBackCanExecute);
+
+            this.CommandBindings.Add(backCommandBinding);
+        }
+
+        private void OnBrowseBackCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+            e.Handled = true;
+        }
+
+        private void OnBrowseBackExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            UnsubscribeFromLobbyEvents();
+            CloseChatClient();
+            this.CommandBindings.Clear();
+        }
+
+        private void SubscribeToLobbyEvents()
+        {
+            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
+            LobbyServiceManager.Instance.PlayerJoined += OnPlayerJoined;
+            LobbyServiceManager.Instance.PlayerLeft += OnPlayerLeft;
+            LobbyServiceManager.Instance.GameStarted += OnGameStarted;
+            LobbyServiceManager.Instance.LobbyDisbanded += OnLobbyDisbanded;
+        }
+
+        private void UnsubscribeFromLobbyEvents()
+        {
+            LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
+            LobbyServiceManager.Instance.PlayerJoined -= OnPlayerJoined;
+            LobbyServiceManager.Instance.PlayerLeft -= OnPlayerLeft;
+            LobbyServiceManager.Instance.GameStarted -= OnGameStarted;
+            LobbyServiceManager.Instance.LobbyDisbanded -= OnLobbyDisbanded;
+        }
+
+        private void OnPlayerJoined(PlayerLobbyDto newPlayer)
+        {
+            Dispatcher.Invoke(() =>
             {
-                pollingTimer?.Stop();
-                CloseChatClient();
-
-                LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
-
-                MessageBox.Show(reason, "Expulsado del Lobby", MessageBoxButton.OK, MessageBoxImage.Warning);
-
-                if (Window.GetWindow(this) is GameMainWindow mainWindow)
-                {
-                    await mainWindow.ShowMainMenu();
-                }
+                AddMessageToUI("[Sistema]:", $"{newPlayer.Username} se ha unido.");
+                RefreshLobbyState();
             });
         }
 
-        private void InitializeTimer()
+        private void OnPlayerLeft(string leftUsername)
         {
-            pollingTimer = new DispatcherTimer();
-            pollingTimer.Interval = TimeSpan.FromSeconds(1);
-            pollingTimer.Tick += async (s, e) => await PollLobbyState();
-            pollingTimer.Start();
+            Dispatcher.Invoke(() =>
+            {
+                AddMessageToUI("[Sistema]:", $"{leftUsername} ha salido.");
+                RefreshLobbyState();
+            });
         }
 
-        private async Task PollLobbyState()
+        private void OnGameStarted()
         {
-            pollingTimer.Stop();
+            Dispatcher.Invoke(() =>
+            {
+                UnsubscribeFromLobbyEvents();
+                CloseChatClient();
+                NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
+            });
+        }
 
+        private void OnLobbyDisbanded()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show("El anfitrión ha disuelto la sala.", "Sala Cerrada", MessageBoxButton.OK, MessageBoxImage.Information);
+                ExitLobbyToMenu();
+            });
+        }
+
+        private async void RefreshLobbyState()
+        {
             try
             {
                 var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
-
                 if (state != null)
                 {
-                    if (state.IsGameStarted)
-                    {
-                        await HandleGameStartAsync();
-                    }
-                    else
-                    {
-                        UpdateLobbyUI(state);
-                    }
+                    UpdateLobbyUI(state);
                 }
-            }
-            catch (TimeoutException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            catch (CommunicationException ex)
-            {
-                Console.WriteLine(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                if (pollingTimer != null)
-                {
-                    pollingTimer.Start();
-                }
+                Console.WriteLine($"Error refrescando lobby: {ex.Message}");
             }
         }
 
-        private async Task HandleGameStartAsync()
+        private void OnPlayerKicked(string reason)
         {
-            pollingTimer.Stop();
-            pollingTimer = null;
-
-            if (!isHost)
+            Dispatcher.Invoke(() =>
             {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    try
-                    {
-                        NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                });
+                MessageBox.Show(reason, "Expulsado del Lobby", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ExitLobbyToMenu();
+            });
+        }
+
+        private async void ExitLobbyToMenu()
+        {
+            if (Window.GetWindow(this) is GameMainWindow mainWindow)
+            {
+                await mainWindow.ShowMainMenu();
             }
         }
 
@@ -204,17 +231,11 @@ namespace GameClient.Views
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            pollingTimer?.Stop();
-
-            LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
-
             if (isLobbyCreated && isHost)
             {
                 var result = MessageBox.Show("Se disolverá la sala. ¿Seguro?", "Salir", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.Yes)
                 {
-                    pollingTimer?.Start();
-                    LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
                     return;
                 }
 
@@ -239,12 +260,7 @@ namespace GameClient.Views
                 }
             }
 
-            if (Window.GetWindow(this) is GameMainWindow mainWindow)
-            {
-                await mainWindow.ShowMainMenu();
-            }
-
-            CloseChatClient();
+            ExitLobbyToMenu();
         }
 
         private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
@@ -312,7 +328,6 @@ namespace GameClient.Views
                     LockLobbySettings(result.LobbyCode);
                     var initialPlayers = new PlayerLobbyDto[] { new PlayerLobbyDto { Username = username, IsHost = true } };
                     UpdatePlayerListUI(initialPlayers);
-                    InitializeTimer();
                     ConnectToChatService();
                 }
                 else
@@ -341,27 +356,21 @@ namespace GameClient.Views
                     MessageBox.Show("Error: Se necesitan al menos 2 jugadores (Verificación de Servidor).");
 
                     if (serverState != null) UpdatePlayerListUI(serverState.Players);
+                    StartMatchButton.IsEnabled = true;
                     return;
                 }
 
                 bool started = await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
-                if (started)
-                {
-                    pollingTimer.Stop();
-                    pollingTimer = null;
-                    NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
-                }
-                else
+
+                if (!started)
                 {
                     MessageBox.Show("Error al iniciar.");
+                    StartMatchButton.IsEnabled = true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message);
-            }
-            finally
-            {
                 StartMatchButton.IsEnabled = true;
             }
         }

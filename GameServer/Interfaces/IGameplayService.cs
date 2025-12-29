@@ -31,5 +31,11 @@ namespace GameServer.Interfaces
 
         [OperationContract(IsOneWay = true)]
         void OnPlayerKicked(string reason);
+
+        [OperationContract(IsOneWay = true)]
+        void OnTurnChanged(GameStateDto newState);
+
+        [OperationContract(IsOneWay = true)]
+        void OnGameFinished(string winner);
     }
 }

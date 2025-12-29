@@ -17,6 +17,11 @@ namespace GameClient.Helpers
         private bool _disposed = false;
 
         public event Action<string> PlayerKicked;
+        public event Action<PlayerLobbyDto> PlayerJoined;
+        public event Action<string> PlayerLeft;
+        public event Action GameStarted;
+        public event Action LobbyDisbanded;
+        public event Action<string, string> MessageReceived;
 
         private LobbyServiceManager() { }
 
@@ -42,7 +47,7 @@ namespace GameClient.Helpers
         {
             _currentUsername = username;
 
-            CloseClient(); 
+            CloseClient();
 
             try
             {
@@ -93,6 +98,36 @@ namespace GameClient.Helpers
         {
             System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerKicked llamado: {reason}");
             PlayerKicked?.Invoke(reason);
+        }
+
+        public void OnPlayerJoined(PlayerLobbyDto player)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerJoined: {player.Username}");
+            PlayerJoined?.Invoke(player);
+        }
+
+        public void OnPlayerLeft(string username)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] OnPlayerLeft: {username}");
+            PlayerLeft?.Invoke(username);
+        }
+
+        public void OnGameStarted()
+        {
+            System.Diagnostics.Debug.WriteLine("[LobbyServiceManager] OnGameStarted");
+            GameStarted?.Invoke();
+        }
+
+        public void OnLobbyDisbanded()
+        {
+            System.Diagnostics.Debug.WriteLine("[LobbyServiceManager] OnLobbyDisbanded");
+            LobbyDisbanded?.Invoke();
+        }
+
+        public void OnLobbyMessageReceived(string username, string message)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LobbyServiceManager] Chat: {username}: {message}");
+            MessageReceived?.Invoke(username, message);
         }
 
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)

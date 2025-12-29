@@ -598,6 +598,12 @@ namespace GameClient.GameplayServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnPlayerKicked")]
         void OnPlayerKicked(string reason);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnTurnChanged")]
+        void OnTurnChanged(GameClient.GameplayServiceReference.GameStateDto newState);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IGameplayService/OnGameFinished")]
+        void OnGameFinished(string winner);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]

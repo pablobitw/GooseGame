@@ -842,8 +842,23 @@ namespace GameClient.LobbyServiceReference {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface ILobbyServiceCallback {
         
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnPlayerJoined")]
+        void OnPlayerJoined(GameClient.LobbyServiceReference.PlayerLobbyDto player);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnPlayerLeft")]
+        void OnPlayerLeft(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnGameStarted")]
+        void OnGameStarted();
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnLobbyDisbanded")]
+        void OnLobbyDisbanded();
+        
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnPlayerKicked")]
         void OnPlayerKicked(string reason);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/ILobbyService/OnLobbyMessageReceived")]
+        void OnLobbyMessageReceived(string username, string message);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
