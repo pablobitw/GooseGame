@@ -247,6 +247,9 @@ namespace GameServer.Services.Logic
                         await _repository.SaveChangesAsync();
                     }
                     ConnectionManager.AddUser(player.Username);
+
+                    _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
+
                     return true;
                 }
             }
@@ -469,6 +472,78 @@ namespace GameServer.Services.Logic
                 code = Math.Abs(value % 1000000).ToString("D6");
             }
             return code;
+        }
+        public async Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword)
+        {
+            try
+            {
+                var player = await _repository.GetPlayerByUsernameAsync(username);
+
+                if (player == null || player.Account == null)
+                {
+                    Log.WarnFormat("Intento de cambio de pass para usuario inexistente: {0}", username);
+                    return false;
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
+                {
+                    Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
+                    return false;
+                }
+
+                if (currentPassword == newPassword)
+                {
+                    Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
+                    return false;
+                }
+
+                string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                player.Account.PasswordHash = newHashedPassword;
+
+                await _repository.SaveChangesAsync();
+
+                Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
+
+                _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username));
+
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL crítico al cambiar contraseña.", ex);
+                return false;
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex);
+                return false;
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex);
+                return false;
+            }
+            catch (DbEntityValidationException ex)
+            {
+                foreach (var validationErrors in ex.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        Log.WarnFormat("Error de validación en entidad: Propiedad: {0} Error: {1}", validationError.PropertyName, validationError.ErrorMessage);
+                    }
+                }
+                return false;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex);
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                Log.Error("Error de argumento inválido durante el proceso de hashing.", ex);
+                return false;
+            }
         }
     }
 }

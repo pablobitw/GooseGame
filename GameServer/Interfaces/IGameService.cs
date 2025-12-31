@@ -33,5 +33,8 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<bool> ResendVerificationCodeAsync(string email);
+
+        [OperationContract]
+        Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword);
     }
 }

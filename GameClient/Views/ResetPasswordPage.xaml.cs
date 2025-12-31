@@ -10,12 +10,12 @@ namespace GameClient.Views
 {
     public partial class ResetPasswordPage : Page
     {
-        private string userEmail;
+        private string _username;
 
-        public ResetPasswordPage(string email)
+        public ResetPasswordPage(string username)
         {
             InitializeComponent();
-            this.userEmail = email;
+            this._username = username;
         }
 
         public ResetPasswordPage() : this(string.Empty)
@@ -26,14 +26,16 @@ namespace GameClient.Views
         {
             if (!IsFormValid()) return;
 
+            string currentPassword = CurrentPasswordBox.Password;
             string newPassword = NewPasswordBox.Password;
+
             var client = new GameServiceClient();
             bool updateSuccess = false;
             bool connectionError = false;
 
             try
             {
-                updateSuccess = await client.UpdatePasswordAsync(userEmail, newPassword);
+                updateSuccess = await client.ChangeUserPasswordAsync(_username, currentPassword, newPassword);
             }
             catch (Exception ex)
             {
@@ -84,21 +86,23 @@ namespace GameClient.Views
         {
             if (updateSuccess)
             {
-                MessageBox.Show("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "Éxito");
-                NavigationService.Navigate(new LoginPage());
+                MessageBox.Show("¡Contraseña actualizada con éxito!", "Éxito");
+                if (NavigationService.CanGoBack)
+                {
+                    NavigationService.GoBack();
+                }
             }
             else
             {
-                ShowError(NewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
-                ShowError(RepeatNewPasswordBox, "Error: No puedes usar tu contraseña anterior.");
+                ShowError(CurrentPasswordBox, "La contraseña actual es incorrecta o hubo un error.");
             }
         }
 
-        private void OnCancelButtonClick(object sender, RoutedEventArgs e)
+        private void OnBackButtonClick(object sender, RoutedEventArgs e)
         {
-            if (NavigationService != null)
+            if (NavigationService != null && NavigationService.CanGoBack)
             {
-                NavigationService.Navigate(new LoginPage());
+                NavigationService.GoBack();
             }
         }
 
@@ -107,24 +111,37 @@ namespace GameClient.Views
             ClearAllErrors();
             bool isValid = true;
 
+            string currentPass = CurrentPasswordBox.Password;
             string newPass = NewPasswordBox.Password;
             string repeatPass = RepeatNewPasswordBox.Password;
 
+            if (string.IsNullOrWhiteSpace(currentPass))
+            {
+                ShowError(CurrentPasswordBox, "Debes ingresar tu contraseña actual.");
+                isValid = false;
+            }
+
             if (string.IsNullOrWhiteSpace(newPass))
             {
-                ShowError(NewPasswordBox, "La contraseña no puede estar vacía.");
+                ShowError(NewPasswordBox, "La contraseña nueva no puede estar vacía.");
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(repeatPass))
             {
-                ShowError(RepeatNewPasswordBox, "Debes repetir la contraseña.");
+                ShowError(RepeatNewPasswordBox, "Debes repetir la contraseña nueva.");
                 isValid = false;
             }
             else if (newPass != repeatPass)
             {
-                ShowError(NewPasswordBox, "Las contraseñas no coinciden.");
-                ShowError(RepeatNewPasswordBox, "Las contraseñas no coinciden.");
+                ShowError(NewPasswordBox, "Las contraseñas nuevas no coinciden.");
+                ShowError(RepeatNewPasswordBox, "Las contraseñas nuevas no coinciden.");
+                isValid = false;
+            }
+
+            if (isValid && currentPass == newPass)
+            {
+                ShowError(NewPasswordBox, "La nueva contraseña no puede ser igual a la actual.");
                 isValid = false;
             }
 
@@ -139,6 +156,9 @@ namespace GameClient.Views
 
         private void ClearAllErrors()
         {
+            CurrentPasswordBox.ClearValue(Border.BorderBrushProperty);
+            CurrentPasswordBox.ToolTip = null;
+
             NewPasswordBox.ClearValue(Border.BorderBrushProperty);
             NewPasswordBox.ToolTip = null;
 

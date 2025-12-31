@@ -82,5 +82,39 @@ namespace GameServer.Helpers
                 return false;
             }
         }
+        public static async Task SendLoginNotificationAsync(string recipientEmail, string username)
+        {
+            string subject = "Goose Game - Nuevo Inicio de Sesión";
+            string date = DateTime.Now.ToString("g"); // Fecha y hora general
+
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>¡Hola, {username}!</h2>
+                    <p>Se ha detectado un nuevo inicio de sesión en tu cuenta.</p>
+                    <p><strong>Fecha:</strong> {date}</p>
+                    <hr>
+                    <p style='font-size: 12px; color: gray;'>Si fuiste tú, puedes ignorar este mensaje. 
+                    Si NO fuiste tú, te recomendamos cambiar tu contraseña inmediatamente.</p>
+                </div>";
+
+            await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        public static async Task SendPasswordChangedNotificationAsync(string recipientEmail, string username)
+        {
+            string subject = "Goose Game - Contraseña Actualizada";
+            string date = DateTime.Now.ToString("g");
+
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>Aviso de Seguridad</h2>
+                    <p>Hola <strong>{username}</strong>, te informamos que la contraseña de tu cuenta ha sido modificada exitosamente.</p>
+                    <p><strong>Fecha del cambio:</strong> {date}</p>
+                    <hr>
+                    <p style='color: red;'>Si no realizaste este cambio, recupera tu cuenta ahora mismo.</p>
+                </div>";
+
+            await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
     }
 }

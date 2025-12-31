@@ -62,5 +62,10 @@ namespace GameServer.Services
         {
             return await _authLogic.ResendVerificationCodeAsync(email);
         }
+
+        public async Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword)
+        {
+            return await _authLogic.ChangeUserPasswordAsync(username, currentPassword, newPassword);
+        }
     }
 }

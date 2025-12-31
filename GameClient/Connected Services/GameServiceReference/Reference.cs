@@ -244,6 +244,12 @@ namespace GameClient.GameServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ResendVerificationCode", ReplyAction="http://tempuri.org/IGameService/ResendVerificationCodeResponse")]
         System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ChangeUserPassword", ReplyAction="http://tempuri.org/IGameService/ChangeUserPasswordResponse")]
+        bool ChangeUserPassword(string username, string currentPassword, string newPassword);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ChangeUserPassword", ReplyAction="http://tempuri.org/IGameService/ChangeUserPasswordResponse")]
+        System.Threading.Tasks.Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -343,6 +349,14 @@ namespace GameClient.GameServiceReference {
         
         public System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email) {
             return base.Channel.ResendVerificationCodeAsync(email);
+        }
+        
+        public bool ChangeUserPassword(string username, string currentPassword, string newPassword) {
+            return base.Channel.ChangeUserPassword(username, currentPassword, newPassword);
+        }
+        
+        public System.Threading.Tasks.Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword) {
+            return base.Channel.ChangeUserPasswordAsync(username, currentPassword, newPassword);
         }
     }
 }

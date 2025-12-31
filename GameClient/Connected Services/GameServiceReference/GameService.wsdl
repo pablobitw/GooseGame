@@ -69,6 +69,12 @@
   <wsdl:message name="IGameService_ResendVerificationCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:ResendVerificationCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameService_ChangeUserPassword_InputMessage">
+    <wsdl:part name="parameters" element="tns:ChangeUserPassword" />
+  </wsdl:message>
+  <wsdl:message name="IGameService_ChangeUserPassword_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ChangeUserPasswordResponse" />
+  </wsdl:message>
   <wsdl:portType name="IGameService">
     <wsdl:operation name="RegisterUser">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/RegisterUser" message="tns:IGameService_RegisterUser_InputMessage" />
@@ -105,6 +111,10 @@
     <wsdl:operation name="ResendVerificationCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameService/ResendVerificationCode" message="tns:IGameService_ResendVerificationCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameService/ResendVerificationCodeResponse" message="tns:IGameService_ResendVerificationCode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeUserPassword">
+      <wsdl:input wsaw:Action="http://tempuri.org/IGameService/ChangeUserPassword" message="tns:IGameService_ChangeUserPassword_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IGameService/ChangeUserPasswordResponse" message="tns:IGameService_ChangeUserPassword_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IGameService" type="tns:IGameService">
@@ -184,6 +194,15 @@
     </wsdl:operation>
     <wsdl:operation name="ResendVerificationCode">
       <soap12:operation soapAction="http://tempuri.org/IGameService/ResendVerificationCode" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeUserPassword">
+      <soap12:operation soapAction="http://tempuri.org/IGameService/ChangeUserPassword" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
