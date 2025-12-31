@@ -227,30 +227,35 @@ namespace GameServer.Services.Logic
 
         public async Task<bool> LogInAsync(string usernameOrEmail, string password)
         {
+            bool result = false;
+
             try
             {
                 var player = await _repository.GetPlayerForLoginAsync(usernameOrEmail);
 
-                if (player == null) return false;
-
-                if (ConnectionManager.IsUserOnline(player.Username))
+                if (player != null)
                 {
-                    Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
-                    return false;
-                }
-
-                if (ValidateLoginCredentials(player, password))
-                {
-                    if (player.GameIdGame != null)
+                    if (!ConnectionManager.IsUserOnline(player.Username))
                     {
-                        player.GameIdGame = null;
-                        await _repository.SaveChangesAsync();
+                        if (ValidateLoginCredentials(player, password))
+                        {
+                            if (player.GameIdGame != null)
+                            {
+                                player.GameIdGame = null;
+                                await _repository.SaveChangesAsync();
+                            }
+
+                            ConnectionManager.AddUser(player.Username);
+
+                            _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
+
+                            result = true;
+                        }
                     }
-                    ConnectionManager.AddUser(player.Username);
-
-                    _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
-
-                    return true;
+                    else
+                    {
+                        Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
+                    }
                 }
             }
             catch (SqlException ex)
@@ -261,12 +266,16 @@ namespace GameServer.Services.Logic
             {
                 Log.Error("Error de Entity Framework en Login.", ex);
             }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error al actualizar el estado del jugador en Login.", ex);
+            }
             catch (TimeoutException ex)
             {
                 Log.Error("Timeout en Login.", ex);
             }
 
-            return false;
+            return result;
         }
 
         private bool ValidateLoginCredentials(Player player, string password)
@@ -475,53 +484,55 @@ namespace GameServer.Services.Logic
         }
         public async Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword)
         {
+            bool result = false;
+
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
 
-                if (player == null || player.Account == null)
+                if (player != null && player.Account != null)
+                {
+                    if (BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
+                    {
+                        if (currentPassword != newPassword)
+                        {
+                            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                            player.Account.PasswordHash = newHashedPassword;
+
+                            await _repository.SaveChangesAsync();
+
+                            Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
+
+                            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username));
+
+                            result = true;
+                        }
+                        else
+                        {
+                            Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
+                        }
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
+                    }
+                }
+                else
                 {
                     Log.WarnFormat("Intento de cambio de pass para usuario inexistente: {0}", username);
-                    return false;
                 }
-
-                if (!BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
-                {
-                    Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
-                    return false;
-                }
-
-                if (currentPassword == newPassword)
-                {
-                    Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
-                    return false;
-                }
-
-                string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                player.Account.PasswordHash = newHashedPassword;
-
-                await _repository.SaveChangesAsync();
-
-                Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
-
-                _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username));
-
-                return true;
             }
             catch (SqlException ex)
             {
                 Log.Fatal("Error SQL crítico al cambiar contraseña.", ex);
-                return false;
             }
             catch (EntityException ex)
             {
                 Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex);
-                return false;
             }
             catch (DbUpdateException ex)
             {
                 Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex);
-                return false;
             }
             catch (DbEntityValidationException ex)
             {
@@ -532,18 +543,17 @@ namespace GameServer.Services.Logic
                         Log.WarnFormat("Error de validación en entidad: Propiedad: {0} Error: {1}", validationError.PropertyName, validationError.ErrorMessage);
                     }
                 }
-                return false;
             }
             catch (TimeoutException ex)
             {
                 Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex);
-                return false;
             }
             catch (ArgumentException ex)
             {
                 Log.Error("Error de argumento inválido durante el proceso de hashing.", ex);
-                return false;
             }
+
+            return result;
         }
     }
 }
