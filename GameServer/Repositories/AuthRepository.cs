@@ -3,9 +3,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GameServer.Repositories
+namespace GameServer.Repositories.Interfaces
 {
-    public class AuthRepository : IDisposable
+    public class AuthRepository : IDisposable, IAuthRepository
     {
         private readonly GameDatabase_Container _context;
         private bool _disposed;

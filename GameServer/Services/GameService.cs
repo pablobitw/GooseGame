@@ -1,6 +1,7 @@
 ﻿using GameServer.DTOs.Auth;
 using GameServer.Interfaces;
 using GameServer.Repositories;
+using GameServer.Repositories.Interfaces;
 using GameServer.Services.Logic;
 using System.ServiceModel;
 using System.Threading.Tasks;

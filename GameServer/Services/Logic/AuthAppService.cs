@@ -1,6 +1,6 @@
 ﻿using GameServer.DTOs.Auth;
 using GameServer.Helpers;
-using GameServer.Repositories;
+using GameServer.Repositories.Interfaces;
 using log4net;
 using System;
 using System.Data.Entity.Core;
@@ -17,9 +17,9 @@ namespace GameServer.Services.Logic
         private static readonly ILog Log = LogManager.GetLogger(typeof(AuthAppService));
         private const string DefaultAvatar = "pack://application:,,,/Assets/Avatar/default_avatar.png";
         private const int CodeExpirationMinutes = 15;
-        private readonly AuthRepository _repository;
+        private readonly IAuthRepository _repository;
 
-        public AuthAppService(AuthRepository repository)
+        public AuthAppService(IAuthRepository repository)
         {
             _repository = repository;
         }
@@ -470,22 +470,9 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private static string GenerateSecureCode()
-        {
-            string code;
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                byte[] data = new byte[4];
-                rng.GetBytes(data);
-                int value = BitConverter.ToInt32(data, 0);
-                code = Math.Abs(value % 1000000).ToString("D6");
-            }
-            return code;
-        }
         public async Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword)
         {
             bool result = false;
-
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
@@ -522,18 +509,9 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Intento de cambio de pass para usuario inexistente: {0}", username);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL crítico al cambiar contraseña.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex);
-            }
+            catch (SqlException ex) { Log.Fatal("Error SQL crítico al cambiar contraseña.", ex); }
+            catch (EntityException ex) { Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex); }
+            catch (DbUpdateException ex) { Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex); }
             catch (DbEntityValidationException ex)
             {
                 foreach (var validationErrors in ex.EntityValidationErrors)
@@ -544,16 +522,23 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                Log.Error("Error de argumento inválido durante el proceso de hashing.", ex);
-            }
+            catch (TimeoutException ex) { Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex); }
+            catch (ArgumentException ex) { Log.Error("Error de argumento inválido durante el proceso de hashing.", ex); }
 
             return result;
+        }
+
+        private static string GenerateSecureCode()
+        {
+            string code;
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] data = new byte[4];
+                rng.GetBytes(data);
+                int value = BitConverter.ToInt32(data, 0);
+                code = Math.Abs(value % 1000000).ToString("D6");
+            }
+            return code;
         }
     }
 }
