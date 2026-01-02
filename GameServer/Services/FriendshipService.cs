@@ -15,7 +15,7 @@ namespace GameServer.Services
 
         public FriendshipService()
         {
-            var repository = new FriendshipRepository();
+            IFriendshipRepository repository = new FriendshipRepository();
             _logic = new FriendshipAppService(repository);
         }
 

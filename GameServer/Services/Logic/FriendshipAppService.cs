@@ -18,9 +18,8 @@ namespace GameServer.Services.Logic
         private static readonly Dictionary<string, IFriendshipServiceCallback> _connectedClients = new Dictionary<string, IFriendshipServiceCallback>();
         private static readonly object _locker = new object();
 
-        private readonly FriendshipRepository _repository;
-
-        public FriendshipAppService(FriendshipRepository repository)
+        private readonly IFriendshipRepository _repository;
+        public FriendshipAppService(IFriendshipRepository repository)
         {
             _repository = repository;
         }
@@ -75,6 +74,7 @@ namespace GameServer.Services.Logic
                     }
 
                     var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
+
                     if (existing == null)
                     {
                         var newFriendship = new Friendship
@@ -90,6 +90,21 @@ namespace GameServer.Services.Logic
 
                         NotifyUserRequestReceived(receiverUsername);
                         success = true;
+                    }
+                    else
+                    {
+                        if (existing.FriendshipStatus == (int)FriendshipStatus.Pending)
+                        {
+                            if (existing.PlayerIdPlayer == receiver.IdPlayer)
+                            {
+                                existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
+                                await _repository.SaveChangesAsync();
+
+                                NotifyUserListUpdated(senderUsername);
+                                NotifyUserListUpdated(receiverUsername);
+                                success = true;
+                            }
+                        }
                     }
                 }
             }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Repositories
 {
-    public class FriendshipRepository : IDisposable
+    public class FriendshipRepository : IDisposable, IFriendshipRepository
     {
         private readonly GameDatabase_Container _context;
         private bool _disposed;
