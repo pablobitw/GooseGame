@@ -15,18 +15,21 @@ namespace GameServer.Services
     public class GameplayService : IGameplayService, IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayService));
-        private readonly GameplayRepository _repository;
+        private readonly IGameplayRepository _repository;
         private readonly GameplayAppService _logic;
 
-        public GameplayService()
+        public GameplayService() : this(new GameplayRepository())
         {
-            _repository = new GameplayRepository();
+        }
+
+        public GameplayService(IGameplayRepository repository)
+        {
+            _repository = repository;
             _logic = new GameplayAppService(_repository);
         }
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            // CORRECCIÓN: Capturar callback ANTES del await
             var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
             if (callback != null && request != null)
             {
@@ -38,7 +41,6 @@ namespace GameServer.Services
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            // CORRECCIÓN: Capturar callback ANTES del await
             var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
             if (callback != null && request != null)
             {
@@ -78,7 +80,6 @@ namespace GameServer.Services
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
-            // CORRECCIÓN: Capturar callback para asegurar registro si no estaba
             var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
             if (callback != null && request != null)
             {

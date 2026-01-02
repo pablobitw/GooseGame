@@ -13,9 +13,12 @@ namespace GameServer.Services
     {
         private readonly AuthAppService _authLogic;
 
-        public GameService()
+        public GameService() : this(new AuthRepository())
         {
-            var repository = new AuthRepository();
+        }
+
+        public GameService(IAuthRepository repository)
+        {
             _authLogic = new AuthAppService(repository);
         }
 

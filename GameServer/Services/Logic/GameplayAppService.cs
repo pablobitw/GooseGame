@@ -29,8 +29,7 @@ namespace GameServer.Services.Logic
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
         private const int TurnTimeLimitSeconds = 20;
-        private readonly GameplayRepository _repository;
-
+        private readonly IGameplayRepository _repository;
         private class BoardMoveResult
         {
             public int FinalPosition { get; set; }
@@ -40,7 +39,7 @@ namespace GameServer.Services.Logic
             public string LuckyBoxTag { get; set; }
         }
 
-        public GameplayAppService(GameplayRepository repository)
+        public GameplayAppService(IGameplayRepository repository)
         {
             _repository = repository;
         }
