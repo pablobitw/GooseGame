@@ -20,9 +20,10 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LobbyAppService));
         private readonly ILobbyRepository _repository;
+
         public LobbyAppService(ILobbyRepository repository)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         private async Task NotifyAllInLobby(int gameId, string excludeUsername, Action<ILobbyServiceCallback> notificationAction)
@@ -74,15 +75,19 @@ namespace GameServer.Services.Logic
 
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
+            if (request == null || request.Settings == null)
+            {
+                return new LobbyCreationResultDto { Success = false, ErrorMessage = "Datos inválidos." };
+            }
+
+            if (request.Settings.MaxPlayers < 2 || request.Settings.MaxPlayers > 4)
+            {
+                return new LobbyCreationResultDto { Success = false, ErrorMessage = "El número de jugadores debe ser entre 2 y 4." };
+            }
+
             LobbyCreationResultDto result = new LobbyCreationResultDto { Success = false };
             try
             {
-                if (request == null || request.Settings == null)
-                {
-                    result.ErrorMessage = "Datos inválidos.";
-                    return result;
-                }
-
                 var hostPlayer = await _repository.GetPlayerByUsernameAsync(request.HostUsername);
                 if (hostPlayer == null)
                 {
@@ -500,6 +505,12 @@ namespace GameServer.Services.Logic
         public async Task KickPlayerAsync(KickPlayerRequest request)
         {
             if (request == null) return;
+
+            if (request.RequestorUsername == request.TargetUsername)
+            {
+                Log.WarnFormat("Host {0} intentó expulsarse a sí mismo.", request.RequestorUsername);
+                return;
+            }
 
             try
             {

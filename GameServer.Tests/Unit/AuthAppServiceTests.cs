@@ -398,5 +398,38 @@ namespace GameServer.Tests.Services
                 return (T)serializer.ReadObject(stream);
             }
         }
+        [Theory]
+        [InlineData(null, "email@test.com", "pass")]
+        [InlineData("", "email@test.com", "pass")]
+        [InlineData("   ", "email@test.com", "pass")]
+        public async Task RegisterUserAsync_InvalidUsername_ShouldReturnFatalError(string username, string email, string password)
+        {
+            var request = new RegisterUserRequest { Username = username, Email = email, Password = password };
+
+            var result = await _authService.RegisterUserAsync(request);
+
+           
+            Assert.Equal(RegistrationResult.FatalError, result);
+        }
+
+        [Theory]
+        [InlineData("User", null, "pass")]
+        [InlineData("User", "", "pass")]
+        [InlineData("User", "  ", "pass")]
+        [InlineData("User", "email-invalido", "pass")] 
+        public async Task RegisterUserAsync_InvalidEmail_ShouldReturnFatalError(string username, string email, string password)
+        {
+            var request = new RegisterUserRequest { Username = username, Email = email, Password = password };
+
+            var result = await _authService.RegisterUserAsync(request);
+
+            Assert.Equal(RegistrationResult.FatalError, result);
+        }
+
+        [Fact]
+        public void Constructor_NullRepository_ShouldThrowException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new AuthAppService(null));
+        }
     }
 }

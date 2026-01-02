@@ -21,7 +21,8 @@ namespace GameServer.Services.Logic
 
         public AuthAppService(IAuthRepository repository)
         {
-            _repository = repository;
+            // CORRECCIÓN 1: Validar inyección de dependencias (Pasa TC-29)
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
@@ -95,6 +96,19 @@ namespace GameServer.Services.Logic
         {
             if (request == null) return RegistrationResult.FatalError;
 
+            // CORRECCIÓN 2: Validaciones de entrada (Pasa TC-27 y TC-28)
+            if (string.IsNullOrWhiteSpace(request.Username) ||
+                string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password))
+            {
+                return RegistrationResult.FatalError;
+            }
+
+            if (!IsValidEmail(request.Email))
+            {
+                return RegistrationResult.FatalError;
+            }
+
             try
             {
                 var usernameCheck = await CheckUsernameAvailability(request.Username);
@@ -138,6 +152,20 @@ namespace GameServer.Services.Logic
             {
                 Log.Error("Tiempo de espera agotado en registro.", ex);
                 return RegistrationResult.FatalError;
+            }
+        }
+
+        // Helper simple para validar email
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
             }
         }
 
