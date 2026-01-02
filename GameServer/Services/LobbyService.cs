@@ -1,6 +1,7 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Interfaces;
 using GameServer.Repositories;
+using GameServer.Repositories.Interfaces;
 using GameServer.Services.Logic;
 using GameServer.Helpers;
 using System;
@@ -12,7 +13,7 @@ namespace GameServer.Services
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class LobbyService : ILobbyService, IDisposable
     {
-        private readonly LobbyRepository _repository;
+        private readonly ILobbyRepository _repository;
         private readonly LobbyAppService _logic;
 
         public LobbyService()

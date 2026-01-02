@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Repositories
 {
-    public class LobbyRepository : IDisposable
+    public class LobbyRepository : IDisposable, ILobbyRepository
     {
         private readonly GameDatabase_Container _context;
         private bool _disposed;

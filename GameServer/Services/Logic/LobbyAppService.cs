@@ -19,9 +19,8 @@ namespace GameServer.Services.Logic
     public class LobbyAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LobbyAppService));
-        private readonly LobbyRepository _repository;
-
-        public LobbyAppService(LobbyRepository repository)
+        private readonly ILobbyRepository _repository;
+        public LobbyAppService(ILobbyRepository repository)
         {
             _repository = repository;
         }
