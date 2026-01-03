@@ -131,6 +131,18 @@
     <Compile Include="Views\Components\DeactivateAccountDialog.xaml.cs">
       <DependentUpon>DeactivateAccountDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Components\KickReasonDialog.xaml.cs">
+      <DependentUpon>KickReasonDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Components\LuckyBoxDialog.xaml.cs">
+      <DependentUpon>LuckyBoxDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Components\PauseMenuDialog.xaml.cs">
+      <DependentUpon>PauseMenuDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Components\VoteKickPromptDialogxaml.xaml.cs">
+      <DependentUpon>VoteKickPromptDialogxaml.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CreateOrJoinMatch.xaml.cs">
       <DependentUpon>CreateOrJoinMatch.xaml</DependentUpon>
     </Compile>
@@ -228,6 +240,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Components\DeactivateAccountDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\KickReasonDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\LuckyBoxDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\PauseMenuDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\VoteKickPromptDialogxaml.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

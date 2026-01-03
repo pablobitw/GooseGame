@@ -1,6 +1,7 @@
 ﻿using GameClient.ChatServiceReference;
 using GameClient.GameplayServiceReference;
 using GameClient.Helpers;
+using GameClient.Views.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,57 +21,34 @@ namespace GameClient.Views
 {
     public partial class BoardPage : Page, IChatServiceCallback
     {
-        private const string LuckyBoxTagPrefix = "[LUCKYBOX:";
-        private string lobbyCode;
-        private int boardId;
-        private string currentUsername;
-        private bool _isGuest = false;
+        private const double TokenSize = 40.0;
+        private const double TokenOffset = 20.0;
+        private const int AnimationDurationMs = 500;
+
+        private const double OpacityActive = 1.0;
+        private const double OpacityInactive = 0.4;
+        private const double OpacityDisabled = 0.5;
+        private const double OpacitySemi = 0.6;
+
+        private readonly string lobbyCode;
+        private readonly int boardId;
+        private readonly string currentUsername;
+        private readonly bool _isGuest = false;
 
         private ChatServiceClient chatClient;
+        private ChatUiManager _chatManager;
 
         private DispatcherTimer _startCountdownTimer;
         private DispatcherTimer _turnCountdownTimer;
 
-        private int _turnSecondsRemaining = 20;
-        private string _lastTurnUsername = "";
-        private int _countdownValue = 5;
+        private int _turnSecondsRemaining;
+        private string _lastTurnUsername = string.Empty;
+        private int _countdownValue;
         private bool _isGameStarting = true;
         private bool _isGameOverHandled = false;
 
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
-        private int _luckyBoxClicks = 0;
-        private string _currentRewardType = "";
-        private int _currentRewardAmount = 0;
-        private string _lastLogProcessed = "";
-
-        private readonly string[] _tokenImagePaths =
-        {
-            "/Assets/Game Pieces/red_piece.png",
-            "/Assets/Game Pieces/blue_piece.png",
-            "/Assets/Game Pieces/green_piece.png",
-            "/Assets/Game Pieces/yellow_piece.png"
-        };
-
-        private readonly List<Point> _tileCoordinates = new List<Point>
-        {
-            new Point(489, 592), new Point(439, 594), new Point(393, 577), new Point(351, 540),
-            new Point(330, 494), new Point(326, 434), new Point(326, 377), new Point(327, 319),
-            new Point(336, 266), new Point(363, 210), new Point(403, 179), new Point(446, 168),
-            new Point(498, 167), new Point(550, 168), new Point(600, 165), new Point(647, 170),
-            new Point(695, 170), new Point(741, 171), new Point(790, 179), new Point(831, 214),
-            new Point(855, 264), new Point(866, 329), new Point(863, 391), new Point(861, 470),
-            new Point(840, 538), new Point(798, 578), new Point(752, 595), new Point(746, 530),
-            new Point(695, 537), new Point(651, 536), new Point(603, 534), new Point(552, 533),
-            new Point(505, 533), new Point(452, 525), new Point(411, 500), new Point(387, 440),
-            new Point(388, 382), new Point(388, 315), new Point(410, 257), new Point(462, 243),
-            new Point(507, 245), new Point(561, 244), new Point(604, 248), new Point(653, 244),
-            new Point(702, 244), new Point(744, 249), new Point(787, 273), new Point(802, 328),
-            new Point(802, 390), new Point(804, 443), new Point(727, 448), new Point(677, 463),
-            new Point(627, 464), new Point(582, 461), new Point(532, 461), new Point(483, 458),
-            new Point(448, 419), new Point(447, 366), new Point(474, 311), new Point(512, 318),
-            new Point(563, 319), new Point(625, 318), new Point(690, 319), new Point(739, 327),
-            new Point(611, 393)
-        };
+        private string _lastLogProcessed = string.Empty;
 
         public BoardPage(string lobbyCode, int boardId, string username)
         {
@@ -84,14 +62,25 @@ namespace GameClient.Views
                 _isGuest = true;
             }
 
-            SubscribeToEvents();
+            _turnSecondsRemaining = GameConfiguration.TurnDurationSeconds;
+            _countdownValue = GameConfiguration.StartCountdownSeconds;
 
+            _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource("ChatTabItemStyle"));
+
+            PauseMenu.ResumeRequested += (s, e) => PauseMenu.Visibility = Visibility.Collapsed;
+            PauseMenu.QuitRequested += (s, e) => QuitGameProcess();
+
+            KickReasonPrompt.KickConfirmed += KickReasonPrompt_KickConfirmed;
+            KickReasonPrompt.KickCancelled += (s, e) => KickReasonPrompt.Visibility = Visibility.Collapsed;
+
+            VoteKickPrompt.VoteSubmitted += VoteKickPrompt_VoteSubmitted;
+
+            SubscribeToEvents();
             ConnectToChatService();
             LoadBoardImage();
             StartCountdown();
 
-            _turnCountdownTimer = new DispatcherTimer();
-            _turnCountdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _turnCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _turnCountdownTimer.Tick += TurnCountdown_Tick;
 
             this.Loaded += Page_Loaded;
@@ -143,14 +132,186 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.VoteKickStarted -= OnVoteKickStarted;
         }
 
+        private void ConnectToChatService()
+        {
+            try
+            {
+                InstanceContext chatContext = new InstanceContext(this);
+                chatClient = new ChatServiceClient(chatContext);
+                var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
+                chatClient.JoinLobbyChat(request);
+            }
+            catch (EndpointNotFoundException)
+            {
+                SessionManager.ForceLogout("No se pudo conectar al servidor de chat.");
+            }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout("Error de comunicación con el servicio de chat.");
+            }
+        }
+
+        public void ReceiveMessage(ChatMessageDto message)
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                _chatManager.AddMessage(message.Sender, message.Message, message.IsPrivate, message.TargetUser, currentUsername);
+            });
+        }
+
+        private void SendChatButton_Click(object sender, RoutedEventArgs e)
+        {
+            string msg = ChatInputBox.Text;
+            if (string.IsNullOrWhiteSpace(msg)) return;
+
+            string target = _chatManager.GetCurrentTarget();
+            var dto = new ChatMessageDto { Sender = currentUsername, LobbyCode = lobbyCode, Message = msg };
+
+            ReceiveMessage(dto);
+            ChatInputBox.Clear();
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    if (target == "General")
+                    {
+                        dto.IsPrivate = false;
+                        chatClient.SendLobbyMessage(dto);
+                    }
+                    else
+                    {
+                        dto.IsPrivate = true;
+                        dto.TargetUser = target;
+                        chatClient.SendPrivateMessage(dto);
+                    }
+                }
+                catch (CommunicationException)
+                {
+                    SessionManager.ForceLogout("Se perdió la conexión al intentar enviar el mensaje.");
+                }
+            });
+        }
+
+        private void ChatInputBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) SendChatButton_Click(sender, e);
+        }
+
+        private void PrivateChatMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isGuest) return;
+            var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
+            string targetUser = panel?.Tag?.ToString();
+
+            if (!string.IsNullOrEmpty(targetUser) && targetUser != currentUsername)
+            {
+                _chatManager.EnsureTabExists(targetUser);
+                _chatManager.SelectTab(targetUser);
+            }
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            PauseMenu.Visibility = Visibility.Visible;
+        }
+
+        private async void QuitGameProcess()
+        {
+            PauseMenu.Visibility = Visibility.Collapsed;
+
+            if (MessageBox.Show("¿Estás seguro de salir? Perderás la partida.", "Abandonar", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            UnsubscribeFromEvents();
+            StopTimers();
+
+            try
+            {
+                await GameplayServiceManager.Instance.LeaveGameAsync(new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername });
+
+                if (Window.GetWindow(this) is GameMainWindow mw)
+                {
+                    await mw.ShowMainMenu();
+                }
+            }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout("Error de red al intentar abandonar la partida.");
+            }
+            catch (TimeoutException)
+            {
+                SessionManager.ForceLogout("El servidor no respondió a la solicitud de abandono.");
+            }
+            catch (Exception)
+            {
+                if (Window.GetWindow(this) is GameMainWindow mw)
+                {
+                    await mw.ShowMainMenu();
+                }
+            }
+        }
+
+        private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isGuest) return;
+            var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
+            string targetUser = panel?.Tag?.ToString();
+
+            if (!string.IsNullOrEmpty(targetUser) && targetUser != currentUsername)
+            {
+                KickReasonPrompt.Show(targetUser);
+            }
+        }
+
+        private async void KickReasonPrompt_KickConfirmed(object sender, KickEventArgs e)
+        {
+            KickReasonPrompt.Visibility = Visibility.Collapsed;
+            try
+            {
+                var req = new VoteRequestDto { Username = currentUsername, TargetUsername = e.TargetUsername, Reason = e.Reason };
+                await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
+                MessageBox.Show($"Votación iniciada contra {e.TargetUsername}.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (FaultException ex)
+            {
+                SessionManager.ForceLogout($"Error del servidor al iniciar votación: {ex.Message}");
+            }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout("Conexión perdida al intentar iniciar la votación.");
+            }
+        }
+
+        private async void VoteKickPrompt_VoteSubmitted(object sender, bool accept)
+        {
+            try
+            {
+                var resp = new VoteResponseDto { Username = currentUsername, AcceptKick = accept };
+                await GameplayServiceManager.Instance.CastVoteAsync(resp);
+            }
+            catch (FaultException ex)
+            {
+                MessageBox.Show($"No se pudo registrar el voto: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout("Se perdió la conexión al enviar tu voto.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[Critical Error] Error inesperado al votar: {ex.Message}");
+            }
+        }
+
         private void OnTurnChanged(GameStateDto newState)
         {
-            Dispatcher.Invoke(() => ProcessGameState(newState));
+            Dispatcher.InvokeAsync(() => ProcessGameState(newState));
         }
 
         private void OnGameFinished(string winner)
         {
-            Dispatcher.Invoke(() => HandleGameOver(winner));
+            Dispatcher.InvokeAsync(() => HandleGameOver(winner));
         }
 
         private void OnPlayerKicked(string reason)
@@ -159,7 +320,7 @@ namespace GameClient.Views
             {
                 StopTimers();
                 _isGameOverHandled = true;
-                MessageBox.Show(reason, "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(reason, "Has sido expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 if (Window.GetWindow(this) is GameMainWindow mainWindow)
                 {
@@ -172,60 +333,10 @@ namespace GameClient.Views
         {
             if (targetUsername == currentUsername) return;
 
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
-                VoteKickTargetText.Text = $"¿Expulsar a '{targetUsername}'?\nMotivo: {reason}";
-                VoteKickTargetText.Tag = targetUsername;
-                VoteKickOverlay.Visibility = Visibility.Visible;
-                Panel.SetZIndex(VoteKickOverlay, 999);
+                VoteKickPrompt.ShowVote(targetUsername, reason);
             });
-        }
-
-        public void StopTimers()
-        {
-            _startCountdownTimer?.Stop();
-            _turnCountdownTimer?.Stop();
-        }
-
-        public void UpdateUI(GameStateDto state)
-        {
-            ProcessGameState(state);
-        }
-
-        public async void HandleGameOver(string winner)
-        {
-            if (_isGameOverHandled) return;
-            _isGameOverHandled = true;
-            StopTimers();
-
-            var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow == null && !NavigationService.CanGoBack) return;
-
-            MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            if (mainWindow != null)
-            {
-                await mainWindow.ShowMainMenu();
-            }
-            else if (NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
-        }
-
-        private void StartCountdown()
-        {
-            _isGameStarting = true;
-            StartTimerPanel.Visibility = Visibility.Visible;
-            RollDiceButton.IsEnabled = false;
-            RollDiceButton.Opacity = 0.5;
-
-            _startCountdownTimer = new DispatcherTimer();
-            _startCountdownTimer.Interval = TimeSpan.FromSeconds(1);
-            _startCountdownTimer.Tick += Countdown_Tick;
-            _startCountdownTimer.Start();
-
-            _ = InitialStateLoad();
         }
 
         private async Task InitialStateLoad()
@@ -236,19 +347,9 @@ namespace GameClient.Views
                 var state = await GameplayServiceManager.Instance.GetGameStateAsync(request);
                 if (state != null) ProcessGameState(state);
             }
-            catch { }
-        }
-
-        private void Countdown_Tick(object sender, EventArgs e)
-        {
-            _countdownValue--;
-            if (_countdownValue > 0) StartTimerText.Text = _countdownValue.ToString();
-            else
+            catch (CommunicationException)
             {
-                _startCountdownTimer.Stop();
-                StartTimerPanel.Visibility = Visibility.Collapsed;
-                _isGameStarting = false;
-                _ = InitialStateLoad();
+                SessionManager.ForceLogout("Error de conexión al cargar el estado de la partida.");
             }
         }
 
@@ -265,31 +366,6 @@ namespace GameClient.Views
             ProcessLatestLog(state.GameLog);
         }
 
-        private void UpdateTurnTimer(string currentTurnUsername)
-        {
-            if (currentTurnUsername != _lastTurnUsername)
-            {
-                _lastTurnUsername = currentTurnUsername;
-                _turnSecondsRemaining = 20;
-                TurnTimerPanel.Visibility = Visibility.Visible;
-                TurnTimerText.Text = "Tiempo: 20s";
-                TurnTimerText.Foreground = Brushes.White;
-                _turnCountdownTimer.Start();
-            }
-        }
-
-        private void TurnCountdown_Tick(object sender, EventArgs e)
-        {
-            _turnSecondsRemaining--;
-            TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
-            TurnTimerText.Foreground = _turnSecondsRemaining <= 5 ? Brushes.Red : Brushes.White;
-            if (_turnSecondsRemaining <= 0)
-            {
-                _turnCountdownTimer.Stop();
-                TurnTimerText.Text = "¡Tiempo Agotado!";
-            }
-        }
-
         private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
         {
             RollDiceButton.IsEnabled = false;
@@ -300,14 +376,20 @@ namespace GameClient.Views
 
                 if (result != null)
                 {
-                    DiceOneText.Text = result.DiceOne.ToString();
-                    DiceTwoText.Text = result.DiceTwo.ToString();
+                    UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
                 }
             }
-            catch (Exception ex)
+            catch (FaultException ex)
             {
-                MessageBox.Show("Error al tirar dados: " + ex.Message);
-                RollDiceButton.IsEnabled = true;
+                SessionManager.ForceLogout($"Error crítico en el juego: {ex.Message}");
+            }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout("Conexión perdida con el servidor de juego.");
+            }
+            catch (TimeoutException)
+            {
+                SessionManager.ForceLogout("El servidor tardó demasiado en responder.");
             }
         }
 
@@ -315,81 +397,103 @@ namespace GameClient.Views
         {
             if (_isGameStarting)
             {
-                RollDiceButton.IsEnabled = false; RollDiceButton.Content = "Esperando inicio..."; RollDiceButton.Opacity = 0.5;
+                RollDiceButton.IsEnabled = false;
+                RollDiceButton.Content = "Esperando inicio...";
+                RollDiceButton.Opacity = OpacityDisabled;
                 return;
             }
-            if (state.IsMyTurn) { RollDiceButton.IsEnabled = true; RollDiceButton.Content = "¡Tirar Dados!"; RollDiceButton.Opacity = 1; }
-            else { RollDiceButton.IsEnabled = false; RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}"; RollDiceButton.Opacity = 0.6; }
+
+            if (state.IsMyTurn)
+            {
+                RollDiceButton.IsEnabled = true;
+                RollDiceButton.Content = "¡Tirar Dados!";
+                RollDiceButton.Opacity = OpacityActive;
+            }
+            else
+            {
+                RollDiceButton.IsEnabled = false;
+                RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}";
+                RollDiceButton.Opacity = OpacitySemi;
+            }
+        }
+
+        private void UpdateTurnTimer(string currentTurnUsername)
+        {
+            if (currentTurnUsername != _lastTurnUsername)
+            {
+                _lastTurnUsername = currentTurnUsername;
+                _turnSecondsRemaining = GameConfiguration.TurnDurationSeconds;
+
+                TurnTimerPanel.Visibility = Visibility.Visible;
+                TurnTimerText.Text = $"Tiempo: {GameConfiguration.TurnDurationSeconds}s";
+                TurnTimerText.Foreground = Brushes.White;
+                _turnCountdownTimer.Start();
+            }
+        }
+
+        private void TurnCountdown_Tick(object sender, EventArgs e)
+        {
+            _turnSecondsRemaining--;
+            TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
+
+            TurnTimerText.Foreground = _turnSecondsRemaining <= GameConfiguration.TurnWarningThreshold
+                ? Brushes.Red
+                : Brushes.White;
+
+            if (_turnSecondsRemaining <= 0)
+            {
+                _turnCountdownTimer.Stop();
+                TurnTimerText.Text = "¡Tiempo Agotado!";
+            }
+        }
+
+        private void StartCountdown()
+        {
+            _isGameStarting = true;
+            StartTimerPanel.Visibility = Visibility.Visible;
+            RollDiceButton.IsEnabled = false;
+            RollDiceButton.Opacity = OpacityDisabled;
+
+            _startCountdownTimer = new DispatcherTimer();
+            _startCountdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _startCountdownTimer.Tick += Countdown_Tick;
+            _startCountdownTimer.Start();
+
+            _ = InitialStateLoad();
+        }
+
+        private void Countdown_Tick(object sender, EventArgs e)
+        {
+            _countdownValue--;
+            if (_countdownValue > 0)
+            {
+                StartTimerText.Text = _countdownValue.ToString();
+            }
+            else
+            {
+                _startCountdownTimer.Stop();
+                StartTimerPanel.Visibility = Visibility.Collapsed;
+                _isGameStarting = false;
+                _ = InitialStateLoad();
+            }
         }
 
         private void UpdateGameLog(string[] logs)
         {
             if (logs == null) return;
+
             if (GameLogListBox.Items.Count != logs.Length)
             {
                 GameLogListBox.Items.Clear();
                 foreach (var logRaw in logs)
                 {
-                    GameLogListBox.Items.Add(CleanLogMessage(logRaw));
+                    GameLogListBox.Items.Add(GameLogHelper.CleanMessage(logRaw));
                 }
-                if (GameLogListBox.Items.Count > 0) GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
-            }
-        }
-
-        private static string CleanLogMessage(string raw)
-        {
-            string clean = raw;
-            if (string.IsNullOrEmpty(clean)) return string.Empty;
-
-            if (clean.Contains(LuckyBoxTagPrefix))
-            {
-                int start = clean.IndexOf(LuckyBoxTagPrefix);
-                if (start != -1)
+                if (GameLogListBox.Items.Count > 0)
                 {
-                    int end = clean.IndexOf("]", start);
-                    if (end != -1)
-                    {
-                        string tag = clean.Substring(start, end - start + 1);
-                        clean = clean.Replace(tag, "").Trim();
-                    }
+                    GameLogListBox.ScrollIntoView(GameLogListBox.Items[GameLogListBox.Items.Count - 1]);
                 }
             }
-            return clean.Replace("[EXTRA]", "").Trim();
-        }
-
-        private void CheckForLuckyBox(string logDescription)
-        {
-            if (string.IsNullOrEmpty(logDescription)) return;
-            if (TryParseLuckyBoxTag(logDescription, out string boxOwner, out string rewardType, out int rewardAmount) && boxOwner == currentUsername)
-            {
-                ShowLuckyBoxUI(rewardType, rewardAmount);
-            }
-        }
-
-        private static bool TryParseLuckyBoxTag(string log, out string owner, out string type, out int amount)
-        {
-            owner = type = ""; amount = 0;
-            if (string.IsNullOrEmpty(log)) return false;
-
-            int start = log.IndexOf(LuckyBoxTagPrefix);
-            if (start == -1) return false;
-
-            int end = log.IndexOf("]", start);
-            if (end == -1) return false;
-
-            try
-            {
-                string content = log.Substring(start, end - start + 1).Replace(LuckyBoxTagPrefix, "").Replace("]", "");
-                string[] parts = content.Split(':');
-                if (parts.Length != 2) return false;
-                owner = parts[0];
-                string[] rewardParts = parts[1].Split('_');
-                if (rewardParts.Length != 2) return false;
-                type = rewardParts[0];
-                amount = int.Parse(rewardParts[1]);
-                return true;
-            }
-            catch { return false; }
         }
 
         private void ProcessLatestLog(string[] logs)
@@ -405,11 +509,31 @@ namespace GameClient.Views
             }
         }
 
+        private void CheckForLuckyBox(string logDescription)
+        {
+            if (string.IsNullOrEmpty(logDescription)) return;
+
+            if (GameLogHelper.TryParseLuckyBox(logDescription, out string boxOwner, out string rewardType, out int rewardAmount)
+                && boxOwner == currentUsername)
+            {
+                LuckyBox.ShowReward(rewardType, rewardAmount);
+            }
+        }
+
         private void LoadBoardImage()
         {
-            string imagePath = (boardId == 1) ? "/Assets/Boards/normal_board.png" : "/Assets/Boards/special_board.png";
-            try { BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)); }
-            catch { }
+            string imagePath = (boardId == GameConfiguration.NormalBoardId)
+                ? "/Assets/Boards/normal_board.png"
+                : "/Assets/Boards/special_board.png";
+
+            try
+            {
+                BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
+            }
+            catch (IOException)
+            {
+                Console.Error.WriteLine($"No se pudo cargar la imagen del tablero: {imagePath}");
+            }
         }
 
         private void UpdateBoardVisuals(PlayerPositionDto[] players)
@@ -420,16 +544,18 @@ namespace GameClient.Views
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
+
                 if (!_playerTokens.ContainsKey(player.Username))
                 {
-                    string imagePath = _tokenImagePaths[i % _tokenImagePaths.Length];
+                    string imagePath = BoardDataHelper.TokenImagePaths[i % BoardDataHelper.TokenImagePaths.Length];
                     var token = CreatePlayerToken(player.Username, imagePath);
                     _playerTokens.Add(player.Username, token);
                     BoardCanvas.Children.Add(token);
                 }
+
                 var tokenUI = _playerTokens[player.Username];
                 MoveTokenToTile(tokenUI, player.CurrentTile);
-                tokenUI.Opacity = player.IsOnline ? 1.0 : 0.4;
+                tokenUI.Opacity = player.IsOnline ? OpacityActive : OpacityInactive;
             }
         }
 
@@ -437,26 +563,37 @@ namespace GameClient.Views
         {
             var image = new Image
             {
-                Width = 40,
-                Height = 40,
+                Width = TokenSize,
+                Height = TokenSize,
                 Source = new BitmapImage(new Uri(imagePath, UriKind.Relative)),
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
-            Canvas.SetLeft(image, _tileCoordinates[0].X - 20);
-            Canvas.SetTop(image, _tileCoordinates[0].Y - 20);
-            image.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, Direction = 320, ShadowDepth = 4, Opacity = 0.5 };
+
+            var startPos = BoardDataHelper.GetTileLocation(0);
+            Canvas.SetLeft(image, startPos.X - TokenOffset);
+            Canvas.SetTop(image, startPos.Y - TokenOffset);
+
+            image.Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black,
+                Direction = 320,
+                ShadowDepth = 4,
+                Opacity = 0.5
+            };
+
             return image;
         }
 
         private void MoveTokenToTile(UIElement token, int tileIndex)
         {
-            if (tileIndex < 0) tileIndex = 0;
-            if (tileIndex >= _tileCoordinates.Count) tileIndex = _tileCoordinates.Count - 1;
-            Point targetPoint = _tileCoordinates[tileIndex];
+            Point targetPoint = BoardDataHelper.GetTileLocation(tileIndex);
 
-            var animX = new DoubleAnimation { From = Canvas.GetLeft(token), To = targetPoint.X - 20, Duration = TimeSpan.FromMilliseconds(500) };
-            var animY = new DoubleAnimation { From = Canvas.GetTop(token), To = targetPoint.Y - 20, Duration = TimeSpan.FromMilliseconds(500) };
+            var duration = TimeSpan.FromMilliseconds(AnimationDurationMs);
+
+            var animX = new DoubleAnimation { From = Canvas.GetLeft(token), To = targetPoint.X - TokenOffset, Duration = duration };
+            var animY = new DoubleAnimation { From = Canvas.GetTop(token), To = targetPoint.Y - TokenOffset, Duration = duration };
+
             token.BeginAnimation(Canvas.LeftProperty, animX);
             token.BeginAnimation(Canvas.TopProperty, animY);
         }
@@ -519,108 +656,60 @@ namespace GameClient.Views
 
         private static void LoadAvatarImage(ImageBrush brush, string avatarPath)
         {
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            try { bitmap.UriSource = GetAvatarUri(avatarPath); }
-            catch { bitmap.UriSource = new Uri("/Assets/default_avatar.png", UriKind.Relative); }
-            bitmap.EndInit();
-            brush.Stretch = Stretch.UniformToFill;
-            brush.ImageSource = bitmap;
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = GetAvatarUri(avatarPath);
+                bitmap.EndInit();
+
+                brush.Stretch = Stretch.UniformToFill;
+                brush.ImageSource = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[UI Error] No se pudo cargar el avatar '{avatarPath}'. Error: {ex.Message}");
+
+                try
+                {
+                    brush.ImageSource = new BitmapImage(new Uri("/Assets/default_avatar.png", UriKind.Relative));
+                }
+                catch (Exception fallbackEx)
+                {
+                    Console.Error.WriteLine($"[UI Critical] Falló la carga del avatar por defecto: {fallbackEx.Message}");
+                }
+            }
         }
 
         private static Uri GetAvatarUri(string path)
         {
             if (string.IsNullOrEmpty(path)) return new Uri("/Assets/default_avatar.png", UriKind.Relative);
             if (path.StartsWith("pack://")) return new Uri(path, UriKind.RelativeOrAbsolute);
+
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Avatar", path);
             return File.Exists(fullPath) ? new Uri(fullPath, UriKind.Absolute) : new Uri("/Assets/default_avatar.png", UriKind.Relative);
         }
 
+        public void StopTimers()
+        {
+            _startCountdownTimer?.Stop();
+            _turnCountdownTimer?.Stop();
+        }
+
         private void CloseChatClient()
         {
-            if (chatClient != null)
-            {
-                try { if (chatClient.State == CommunicationState.Opened) chatClient.Close(); else chatClient.Abort(); }
-                catch { chatClient.Abort(); }
-            }
-        }
+            if (chatClient == null) return;
 
-        private void ConnectToChatService()
-        {
             try
             {
-                InstanceContext chatContext = new InstanceContext(this);
-                chatClient = new ChatServiceClient(chatContext);
-                var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
-                chatClient.JoinLobbyChat(request);
+                if (chatClient.State == CommunicationState.Opened) chatClient.Close();
+                else chatClient.Abort();
             }
-            catch { }
-        }
-
-        public void ReceiveMessage(ChatMessageDto message)
-        {
-            Dispatcher.Invoke(() =>
+            catch (Exception)
             {
-                string tabName = "General";
-                if (message.IsPrivate) tabName = (message.Sender == currentUsername) ? message.TargetUser : message.Sender;
-                ListBox targetList = GetOrCreateTab(tabName);
-                targetList.Items.Add($"{message.Sender}: {message.Message}");
-                targetList.ScrollIntoView(targetList.Items[targetList.Items.Count - 1]);
-            });
-        }
-
-        private ListBox GetOrCreateTab(string tabName)
-        {
-            foreach (TabItem item in ChatTabControl.Items)
-            {
-                if (item.Tag?.ToString() == tabName) return (ListBox)item.Content;
-            }
-            var newListBox = new ListBox
-            {
-                Background = new SolidColorBrush(Color.FromArgb(51, 0, 0, 0)),
-                BorderThickness = new Thickness(0),
-                Foreground = Brushes.White,
-                Margin = new Thickness(0, 5, 0, 0)
-            };
-            if (GeneralChatList.ItemTemplate != null) newListBox.ItemTemplate = GeneralChatList.ItemTemplate;
-            var newTab = new TabItem { Header = tabName, Tag = tabName, Content = newListBox, Style = (Style)FindResource("ChatTabItemStyle") };
-            ChatTabControl.Items.Add(newTab);
-            return newListBox;
-        }
-
-        private void SendChatButton_Click(object sender, RoutedEventArgs e)
-        {
-            string msg = ChatInputBox.Text;
-            if (string.IsNullOrWhiteSpace(msg)) return;
-            var selectedTab = ChatTabControl.SelectedItem as TabItem;
-            string target = selectedTab?.Tag?.ToString() ?? "General";
-            var dto = new ChatMessageDto { Sender = currentUsername, LobbyCode = lobbyCode, Message = msg };
-            ReceiveMessage(dto);
-            try
-            {
-                if (target == "General") { dto.IsPrivate = false; chatClient.SendLobbyMessage(dto); }
-                else { dto.IsPrivate = true; dto.TargetUser = target; chatClient.SendPrivateMessage(dto); }
-                ChatInputBox.Clear();
-            }
-            catch { MessageBox.Show("Error enviando mensaje."); }
-        }
-
-        private void ChatInputBox_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) SendChatButton_Click(sender, e); }
-
-        private void PrivateChatMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isGuest) return;
-            var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
-            string targetUser = panel?.Tag?.ToString();
-            if (!string.IsNullOrEmpty(targetUser) && targetUser != currentUsername)
-            {
-                GetOrCreateTab(targetUser);
-                foreach (TabItem item in ChatTabControl.Items)
-                {
-                    if (item.Tag?.ToString() == targetUser) { ChatTabControl.SelectedItem = item; break; }
-                }
+                chatClient.Abort();
             }
         }
 
@@ -629,127 +718,39 @@ namespace GameClient.Views
             if (_isGuest) return;
             var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
             string targetUser = panel?.Tag?.ToString();
+
             if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
+
             try
             {
                 bool sent = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
-                MessageBox.Show(sent ? $"Solicitud enviada a {targetUser}." : "No se pudo enviar.");
+                MessageBox.Show(sent ? $"Solicitud enviada a {targetUser}." : "No se pudo enviar solicitud.", "Amigos", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch { MessageBox.Show("Error de conexión."); }
-        }
-
-        private void ShowLuckyBoxUI(string type, int amount)
-        {
-            _currentRewardType = type; _currentRewardAmount = amount; _luckyBoxClicks = 0;
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", "luckybox_closed.png");
-            try { LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)); } catch { }
-            LuckyBoxImage.Visibility = Visibility.Visible;
-            RewardContainer.Visibility = Visibility.Collapsed;
-            OpenBoxButton.IsEnabled = true;
-            LuckyBoxOverlay.Visibility = Visibility.Visible;
-        }
-
-        private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
-        {
-            _luckyBoxClicks++;
-            var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard ?? LuckyBoxOverlay.Resources["ShakeAnimation"] as Storyboard;
-            if (_luckyBoxClicks < 3) shakeAnim?.Begin();
-            else
+            catch (CommunicationException)
             {
-                OpenBoxButton.IsEnabled = false;
-                LuckyBoxImage.Visibility = Visibility.Collapsed;
-                SetRewardVisuals();
-                RewardContainer.Visibility = Visibility.Visible;
-                var revealAnim = this.Resources["RevealAnimation"] as Storyboard ?? LuckyBoxOverlay.Resources["RevealAnimation"] as Storyboard;
-                revealAnim?.Begin();
-                await Task.Delay(3000);
-                LuckyBoxOverlay.Visibility = Visibility.Collapsed;
+                SessionManager.ForceLogout("Error de conexión al enviar solicitud.");
             }
         }
 
-        private void SetRewardVisuals()
+        private async void HandleGameOver(string winner)
         {
-            string imagePath = ""; string text = ""; SolidColorBrush color = Brushes.White;
-            switch (_currentRewardType)
-            {
-                case "COINS": imagePath = "coin_pile.png"; text = $"+{_currentRewardAmount} ORO"; color = Brushes.Gold; break;
-                case "COMMON": imagePath = "ticket_common.png"; text = "TICKET COMÚN"; break;
-                case "EPIC": imagePath = "ticket_epic.png"; text = "TICKET ÉPICO"; color = Brushes.Purple; break;
-                case "LEGENDARY": imagePath = "ticket_legendary.png"; text = "¡LEGENDARIO!"; color = Brushes.OrangeRed; break;
-            }
-            RewardText.Text = text; RewardText.Foreground = color;
-            string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", imagePath);
-            try { RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.RelativeOrAbsolute)); } catch { }
-        }
+            if (_isGameOverHandled) return;
+            _isGameOverHandled = true;
 
-        private void LuckyBoxOverlay_MouseDown(object sender, MouseButtonEventArgs e) { e.Handled = true; }
-
-        private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isGuest) return;
-            var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
-            string targetUser = panel?.Tag?.ToString();
-            if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
-            ReasonSelectorOverlay.Tag = targetUser;
-            ReasonSelectorOverlay.Visibility = Visibility.Visible;
-        }
-
-        private async void ConfirmKickButton_Click(object sender, RoutedEventArgs e)
-        {
-            string target = ReasonSelectorOverlay.Tag?.ToString();
-            string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Sin razón";
-            ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
-            try
-            {
-                var req = new VoteRequestDto { Username = currentUsername, TargetUsername = target, Reason = reason };
-                await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
-                MessageBox.Show($"Votación iniciada contra {target}.");
-            }
-            catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
-        }
-
-        private void CancelKickButton_Click(object sender, RoutedEventArgs e) => ReasonSelectorOverlay.Visibility = Visibility.Collapsed;
-        private async void VoteYes_Click(object sender, RoutedEventArgs e) => await SendVote(true);
-        private async void VoteNo_Click(object sender, RoutedEventArgs e) => await SendVote(false);
-
-        private async Task SendVote(bool accept)
-        {
-            VoteKickOverlay.Visibility = Visibility.Collapsed;
-            try
-            {
-                var resp = new VoteResponseDto { Username = currentUsername, AcceptKick = accept };
-                await GameplayServiceManager.Instance.CastVoteAsync(resp);
-            }
-            catch { }
-        }
-
-        private async void QuitGameButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (MessageBox.Show("¿Salir y perder?", "Abandonar", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
-            UnsubscribeFromEvents();
             StopTimers();
 
-            try
-            {
-                await GameplayServiceManager.Instance.LeaveGameAsync(new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername });
-            }
-            finally
-            {
-                if (Window.GetWindow(this) is GameMainWindow mw) await mw.ShowMainMenu();
-            }
-        }
+            MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
 
-        private void MenuButton_Click(object sender, RoutedEventArgs e) => PauseMenuOverlay.Visibility = Visibility.Visible;
-        private void ResumeButton_Click(object sender, RoutedEventArgs e) => PauseMenuOverlay.Visibility = Visibility.Collapsed;
-        private void PauseMenuOverlay_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == sender) PauseMenuOverlay.Visibility = Visibility.Collapsed; }
-
-        private void IngameScreenModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (Window.GetWindow(this) is GameMainWindow mw)
+            if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                if (IngameScreenModeCombo.SelectedIndex == 0) { mw.WindowStyle = WindowStyle.None; mw.WindowState = WindowState.Maximized; }
-                else if (IngameScreenModeCombo.SelectedIndex == 1) { mw.WindowStyle = WindowStyle.None; mw.WindowState = WindowState.Normal; mw.Width = 1280; mw.Height = 720; mw.CenterWindow(); }
-                else { mw.WindowStyle = WindowStyle.SingleBorderWindow; mw.WindowState = WindowState.Normal; }
+                await mainWindow.ShowMainMenu();
+            }
+            else
+            {
+                if (NavigationService != null && NavigationService.CanGoBack)
+                {
+                    NavigationService.GoBack();
+                }
             }
         }
     }

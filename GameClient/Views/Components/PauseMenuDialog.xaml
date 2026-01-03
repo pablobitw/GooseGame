@@ -1,0 +1,67 @@
+﻿<UserControl x:Class="GameClient.Views.Dialogs.PauseMenuDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="1080" d:DesignWidth="1920">
+
+    <Grid Background="#B3000000" MouseDown="Overlay_MouseDown">
+
+        <Border Width="500" Height="550" Background="#F0F0F0" CornerRadius="20" 
+                BorderBrush="#333" BorderThickness="2"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                MouseDown="Content_MouseDown">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="10" Opacity="0.5"/>
+            </Border.Effect>
+
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="PAUSA" Grid.Row="0" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#333" Margin="0,0,0,20"/>
+
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="Volumen Música" FontSize="18" FontWeight="SemiBold" Foreground="#555" Margin="0,10,0,5"/>
+                    <Slider x:Name="IngameMusicSlider" Minimum="0" Maximum="100" Value="50" IsSnapToTickEnabled="True" TickFrequency="5"/>
+
+                    <TextBlock Text="Efectos de Sonido" FontSize="18" FontWeight="SemiBold" Foreground="#555" Margin="0,20,0,5"/>
+                    <Slider x:Name="IngameSfxSlider" Minimum="0" Maximum="100" Value="80" IsSnapToTickEnabled="True" TickFrequency="5"/>
+
+                    <TextBlock Text="Modo de Pantalla" FontSize="18" FontWeight="SemiBold" Foreground="#555" Margin="0,20,0,5"/>
+                    <ComboBox x:Name="IngameScreenModeCombo" FontSize="16" Padding="10,5" SelectedIndex="0" SelectionChanged="IngameScreenModeCombo_SelectionChanged">
+                        <ComboBoxItem Content="Pantalla Completa"/>
+                        <ComboBoxItem Content="Ventana sin bordes"/>
+                        <ComboBoxItem Content="Ventana"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Margin="0,30,0,0">
+                    <Button Content="REANUDAR" Height="50" Background="#4CAF50" Foreground="White" 
+                            FontSize="20" FontWeight="Bold" Margin="0,0,0,10"
+                            Click="ResumeButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button Content="ABANDONAR PARTIDA" Height="50" Background="#F44336" Foreground="White" 
+                            FontSize="20" FontWeight="Bold"
+                            Click="QuitButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
