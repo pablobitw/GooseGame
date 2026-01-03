@@ -39,7 +39,6 @@ namespace GameClient.Views
 
                 if (!Directory.Exists(avatarsDir))
                 {
-                    // Fallback para desarrollo
                     string devPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\Assets\Avatar"));
                     if (Directory.Exists(devPath)) avatarsDir = devPath;
                     else return;

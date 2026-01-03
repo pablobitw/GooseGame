@@ -6,12 +6,13 @@ using System.Windows;
 
 namespace GameClient.ViewModels
 {
-    public class AvatarViewModel
+    public sealed class AvatarViewModel
     {
-        public ObservableCollection<string> AvatarPaths { get; set; } = new ObservableCollection<string>();
+        public ObservableCollection<string> AvatarPaths { get; }
 
         public AvatarViewModel()
         {
+            AvatarPaths = new ObservableCollection<string>();
             LoadAvatars();
         }
 
@@ -19,37 +20,63 @@ namespace GameClient.ViewModels
         {
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string avatarsDir = Path.Combine(baseDir, "Assets", "Avatar");
+                string avatarsDir = ResolveAvatarsDirectory();
 
-                if (!Directory.Exists(avatarsDir))
+                if (avatarsDir == null)
                 {
-                    string projectPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\Assets\Avatar"));
-                    if (Directory.Exists(projectPath))
-                    {
-                        avatarsDir = projectPath;
-                    }
+                    LoadDesignTimePlaceholders();
+                    return;
                 }
 
-                if (Directory.Exists(avatarsDir))
-                {
-                    var files = Directory.GetFiles(avatarsDir)
-                                         .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg"));
+                var files = Directory.EnumerateFiles(avatarsDir)
+                                     .Where(IsImageFile);
 
-                    foreach (var file in files)
-                    {
-                        AvatarPaths.Add(file);
-                    }
-                }
-                else
+                foreach (string file in files)
                 {
-                    if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new DependencyObject()))
-                    {
-                        for (int i = 0; i < 10; i++) AvatarPaths.Add("Placeholder");
-                    }
+                    AvatarPaths.Add(file);
                 }
             }
-            catch { /* Ignorar errores en diseño */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AvatarViewModel] Error: {ex.Message}");
+            }
+        }
+
+        private static string ResolveAvatarsDirectory()
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            string runtimePath = Path.Combine(baseDir, "Assets", "Avatar");
+            if (Directory.Exists(runtimePath))
+            {
+                return runtimePath;
+            }
+
+            string designPath = Path.GetFullPath(
+                Path.Combine(baseDir, @"..\..\Assets\Avatar"));
+
+            return Directory.Exists(designPath) ? designPath : null;
+        }
+
+        private static bool IsImageFile(string path)
+        {
+            string ext = Path.GetExtension(path);
+            return ext.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+                   ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void LoadDesignTimePlaceholders()
+        {
+            if (!System.ComponentModel.DesignerProperties
+                    .GetIsInDesignMode(new DependencyObject()))
+            {
+                return;
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                AvatarPaths.Add("Placeholder");
+            }
         }
     }
 }

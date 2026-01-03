@@ -143,11 +143,11 @@ namespace GameClient.Views
             }
             catch (EndpointNotFoundException)
             {
-                SessionManager.ForceLogout("No se pudo conectar al servidor de chat.");
+                SessionManager.ForceLogout("No se pudo conectar al servidor de chat. Verifica la configuración.");
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de comunicación con el servicio de chat.");
+                SessionManager.ForceLogout("Error de conexión al intentar unirse al chat.");
             }
         }
 
@@ -188,7 +188,11 @@ namespace GameClient.Views
                 }
                 catch (CommunicationException)
                 {
-                    SessionManager.ForceLogout("Se perdió la conexión al intentar enviar el mensaje.");
+                    Dispatcher.InvokeAsync(() => MessageBox.Show("No se pudo enviar el mensaje. Revisa tu conexión."));
+                }
+                catch (Exception)
+                {
+                    Dispatcher.InvokeAsync(() => MessageBox.Show("Error interno al enviar mensaje."));
                 }
             });
         }
@@ -237,18 +241,15 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de red al intentar abandonar la partida.");
+                SessionManager.ForceLogout("Error de conexión al intentar abandonar la partida.");
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor no respondió a la solicitud de abandono.");
+                SessionManager.ForceLogout("El servidor no respondió al intentar salir.");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (Window.GetWindow(this) is GameMainWindow mw)
-                {
-                    await mw.ShowMainMenu();
-                }
+                SessionManager.ForceLogout($"Error inesperado al salir: {ex.Message}");
             }
         }
 
@@ -275,10 +276,12 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                SessionManager.ForceLogout($"Error del servidor al iniciar votación: {ex.Message}");
+                // Error lógico (ej. ya hay votación en curso), NO sacar al usuario
+                MessageBox.Show($"No se pudo iniciar votación: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (CommunicationException)
             {
+                // Error de red
                 SessionManager.ForceLogout("Conexión perdida al intentar iniciar la votación.");
             }
         }
@@ -297,10 +300,6 @@ namespace GameClient.Views
             catch (CommunicationException)
             {
                 SessionManager.ForceLogout("Se perdió la conexión al enviar tu voto.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"[Critical Error] Error inesperado al votar: {ex.Message}");
             }
         }
 
@@ -349,7 +348,12 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de conexión al cargar el estado de la partida.");
+                // Si no podemos cargar el estado inicial, el juego es injugable -> Logout
+                SessionManager.ForceLogout("No se pudo cargar el estado inicial de la partida por problemas de conexión.");
+            }
+            catch (TimeoutException)
+            {
+                SessionManager.ForceLogout("El servidor tardó demasiado en enviar el estado inicial.");
             }
         }
 
@@ -381,7 +385,9 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                SessionManager.ForceLogout($"Error crítico en el juego: {ex.Message}");
+                // Error de lógica del juego (ej. no es tu turno), NO logout
+                MessageBox.Show($"Error del juego: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                RollDiceButton.IsEnabled = true;
             }
             catch (CommunicationException)
             {
@@ -389,7 +395,7 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor tardó demasiado en responder.");
+                SessionManager.ForceLogout("El servidor no respondió al intento de tirar dados.");
             }
         }
 
@@ -530,9 +536,10 @@ namespace GameClient.Views
             {
                 BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                Console.Error.WriteLine($"No se pudo cargar la imagen del tablero: {imagePath}");
+                // Error local de recursos, no es necesario sacar al usuario, pero sí loguear
+                Console.Error.WriteLine($"No se pudo cargar la imagen del tablero: {ex.Message}");
             }
         }
 
@@ -728,7 +735,7 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de conexión al enviar solicitud.");
+                SessionManager.ForceLogout("Error de conexión al enviar solicitud de amistad.");
             }
         }
 

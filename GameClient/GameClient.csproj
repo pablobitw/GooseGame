@@ -108,10 +108,15 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Helpers\AudioManager.cs" />
+    <Compile Include="Helpers\BoardDataHelper.cs" />
+    <Compile Include="Helpers\ChatUiManager.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\FriendshipServiceManager.cs" />
+    <Compile Include="Helpers\GameConfiguration.cs" />
+    <Compile Include="Helpers\GameLogHelper.cs" />
     <Compile Include="Helpers\GameplayServiceManager.cs" />
     <Compile Include="Helpers\LobbyServiceManager.cs" />
+    <Compile Include="Helpers\SessionManager.cs" />
     <Compile Include="Helpers\UserSession.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\AvatarItem.cs" />

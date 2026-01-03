@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Windows; // Necesario para la estructura Point
+using System.Windows; 
 
 namespace GameClient.Helpers
 {
