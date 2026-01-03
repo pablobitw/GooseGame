@@ -20,6 +20,9 @@ namespace GameClient.Views
             InitializeComponent();
             userEmail = email;
             this.Loaded += UserProfilePage_Loaded;
+
+            DeactivateDialog.DialogClosed += (s, e) => DeactivateDialog.Visibility = Visibility.Collapsed;
+            DeactivateDialog.AccountDeactivated += DeactivateDialog_AccountDeactivated;
         }
 
         public UserProfilePage() : this("dev@test.com")
@@ -141,73 +144,21 @@ namespace GameClient.Views
             if (mainWindow != null) await mainWindow.ShowMainMenu();
         }
 
-
         private void ShowDeactivatePopup_Click(object sender, RoutedEventArgs e)
         {
-            PbDeactivate1.Password = string.Empty;
-            PbDeactivate2.Password = string.Empty;
-            DeactivatePopupOverlay.Visibility = Visibility.Visible;
+            DeactivateDialog.CurrentUserEmail = userEmail;
+            DeactivateDialog.ResetFields();
+            DeactivateDialog.Visibility = Visibility.Visible;
         }
 
-        private void CancelDeactivate_Click(object sender, RoutedEventArgs e)
+        private void DeactivateDialog_AccountDeactivated(object sender, EventArgs e)
         {
-            DeactivatePopupOverlay.Visibility = Visibility.Collapsed;
-        }
+            DeactivateDialog.Visibility = Visibility.Collapsed;
+            MessageBox.Show("Cuenta desactivada con éxito. Serás redirigido al inicio de sesión.", "Cuenta Desactivada", MessageBoxButton.OK, MessageBoxImage.Information);
 
-        private async void ConfirmDeactivate_Click(object sender, RoutedEventArgs e)
-        {
-            string pass1 = PbDeactivate1.Password;
-            string pass2 = PbDeactivate2.Password;
-
-            if (string.IsNullOrWhiteSpace(pass1) || string.IsNullOrWhiteSpace(pass2))
-            {
-                MessageBox.Show("Por favor ingresa tu contraseña en ambos campos.", "Campos requeridos", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (pass1 != pass2)
-            {
-                MessageBox.Show("Las contraseñas no coinciden.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            ConfirmDeactivateButton.IsEnabled = false;
-            var client = new UserProfileServiceClient();
-
-            try
-            {
-                var request = new DeactivateAccountRequest
-                {
-                    Username = userEmail, 
-                    Password = pass1
-                };
-
-                bool success = await client.DeactivateAccountAsync(request);
-
-                if (success)
-                {
-                    MessageBox.Show("Cuenta desactivada con éxito. Serás redirigido al inicio de sesión.", "Cuenta Desactivada", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    var authWindow = new AuthWindow();
-                    authWindow.Show();
-                    Window.GetWindow(this)?.Close();
-                }
-                else
-                {
-                    MessageBox.Show("La contraseña es incorrecta o no se pudo desactivar la cuenta.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    ConfirmDeactivateButton.IsEnabled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error de conexión: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                ConfirmDeactivateButton.IsEnabled = true;
-            }
-            finally
-            {
-                if (client.State == CommunicationState.Opened) client.Close();
-                else client.Abort();
-            }
+            var authWindow = new AuthWindow();
+            authWindow.Show();
+            Window.GetWindow(this)?.Close();
         }
     }
 }

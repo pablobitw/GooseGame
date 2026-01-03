@@ -128,6 +128,9 @@
     <Compile Include="Views\ChangeUsernameWindow.xaml.cs">
       <DependentUpon>ChangeUsernameWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Components\DeactivateAccountDialog.xaml.cs">
+      <DependentUpon>DeactivateAccountDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CreateOrJoinMatch.xaml.cs">
       <DependentUpon>CreateOrJoinMatch.xaml</DependentUpon>
     </Compile>
@@ -221,6 +224,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ChangeUsernameWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\DeactivateAccountDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

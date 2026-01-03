@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:props="clr-namespace:GameClient.Resources"
+      xmlns:dialogs="clr-namespace:GameClient.Views.Dialogs"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="UserProfilePage"
@@ -101,9 +102,9 @@
 
                         <Button x:Name="DeactivateAccountButton" Content="Desactivar Cuenta" 
                                 Background="#DC3545" Foreground="White" BorderThickness="0"
-                                Width="200" FontSize="18" FontWeight="Bold"
+                                Width="200" Height="50" FontSize="18" FontWeight="Bold"
                                 HorizontalAlignment="Left" Grid.Column="0"
-                                Click="ShowDeactivatePopup_Click" Margin="654,105,0,-85">
+                                Click="ShowDeactivatePopup_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8"/>
@@ -112,56 +113,14 @@
                         </Button>
 
                         <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" Style="{StaticResource PrimaryButtonStyle}" 
-                                Width="150" Height="60" FontSize="24" FontWeight="Bold"
-                                Click="BackButton_Click" Margin="-776,-688,1330,688"/>
+                                Width="150" Height="60" FontSize="24" FontWeight="Bold" Grid.Column="1"
+                                Click="BackButton_Click"/>
                     </Grid>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Grid x:Name="DeactivatePopupOverlay" Visibility="Collapsed">
-            <Border Background="Black" Opacity="0.5"/>
-            <Border Background="White" Width="550" Height="400" CornerRadius="15" Padding="30">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.4"/>
-                </Border.Effect>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="⚠ Desactivar Cuenta" FontSize="26" FontWeight="Bold" Foreground="#DC3545" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-
-                    <TextBlock Text="¿Estás seguro? Para confirmar, ingresa tu contraseña actual dos veces:" 
-                               FontSize="16" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
-
-                    <TextBlock Text="Contraseña:" FontSize="14" FontWeight="SemiBold"/>
-                    <PasswordBox x:Name="PbDeactivate1" Height="40" Margin="0,5,0,15" Padding="5" FontSize="16"/>
-
-                    <TextBlock Text="Confirmar Contraseña:" FontSize="14" FontWeight="SemiBold"/>
-                    <PasswordBox x:Name="PbDeactivate2" Height="40" Margin="0,5,0,25" Padding="5" FontSize="16"/>
-
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="ConfirmDeactivateButton" Content="Confirmar" 
-                                Background="#DC3545" Foreground="White" Width="180" Height="45" 
-                                FontSize="16" FontWeight="Bold" Margin="0,0,15,0" BorderThickness="0"
-                                Click="ConfirmDeactivate_Click">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                        <Button Content="{x:Static props:Strings.CancelButton}" 
-                                Background="#AAA" Foreground="White" Width="120" Height="45" 
-                                FontSize="16" FontWeight="Bold" BorderThickness="0"
-                                Click="CancelDeactivate_Click">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <dialogs:DeactivateAccountDialog x:Name="DeactivateDialog" Visibility="Collapsed"/>
 
     </Grid>
 </Page>

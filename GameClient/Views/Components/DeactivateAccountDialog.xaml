@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="GameClient.Views.Dialogs.DeactivateAccountDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:props="clr-namespace:GameClient.Resources"
+             mc:Ignorable="d" 
+             d:DesignHeight="1080" d:DesignWidth="1920">
+
+    <Grid Background="#7F000000">
+        <Border Background="White" Width="550" Height="400" CornerRadius="15" Padding="30">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.4"/>
+            </Border.Effect>
+
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="⚠ Desactivar Cuenta" FontSize="26" FontWeight="Bold" Foreground="#DC3545" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                <TextBlock Text="¿Estás seguro? Para confirmar, ingresa tu contraseña actual dos veces:" 
+                           FontSize="16" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
+
+                <TextBlock Text="Contraseña:" FontSize="14" FontWeight="SemiBold"/>
+                <PasswordBox x:Name="PbDeactivate1" Height="40" Margin="0,5,0,15" Padding="5" FontSize="16"/>
+
+                <TextBlock Text="Confirmar Contraseña:" FontSize="14" FontWeight="SemiBold"/>
+                <PasswordBox x:Name="PbDeactivate2" Height="40" Margin="0,5,0,25" Padding="5" FontSize="16"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="ConfirmDeactivateButton" Content="Confirmar" 
+                            Background="#DC3545" Foreground="White" Width="180" Height="45" 
+                            FontSize="16" FontWeight="Bold" Margin="0,0,15,0" BorderThickness="0"
+                            Click="ConfirmDeactivate_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button Content="{x:Static props:Strings.CancelButton}" 
+                            Background="#AAA" Foreground="White" Width="120" Height="45" 
+                            FontSize="16" FontWeight="Bold" BorderThickness="0"
+                            Click="CancelDeactivate_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
