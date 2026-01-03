@@ -2,12 +2,11 @@
 using GameServer.Interfaces;
 using GameServer.Repositories;
 using GameServer.Services.Logic;
-using System.ServiceModel; 
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
-
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class UserProfileService : IUserProfileService
     {
@@ -21,38 +20,36 @@ namespace GameServer.Services
 
         public async Task<UserProfileDto> GetUserProfileAsync(string email)
         {
-            UserProfileDto result;
-            result = await _logic.GetUserProfileAsync(email);
-            return result;
+            return await _logic.GetUserProfileAsync(email);
         }
 
-        public async Task<UsernameChangeResult> ChangeUsernameAsync(string email, string newUsername)
+
+        public async Task<bool> SendUsernameChangeCodeAsync(string email)
         {
-            UsernameChangeResult result;
-            result = await _logic.ChangeUsernameAsync(email, newUsername);
-            return result;
+            return await _logic.SendUsernameChangeCodeAsync(email);
         }
+
+        public async Task<UsernameChangeResult> ChangeUsernameAsync(string email, string newUsername, string verificationCode)
+        {
+            return await _logic.ChangeUsernameAsync(email, newUsername, verificationCode);
+        }
+
 
         public async Task<bool> ChangeAvatarAsync(string email, string avatarName)
         {
-            bool result;
-            result = await _logic.ChangeAvatarAsync(email, avatarName);
-            return result;
+            return await _logic.ChangeAvatarAsync(email, avatarName);
         }
 
         public async Task<bool> SendPasswordChangeCodeAsync(string email)
         {
-            bool result;
-            result = await _logic.SendPasswordChangeCodeAsync(email);
-            return result;
+            return await _logic.SendPasswordChangeCodeAsync(email);
         }
 
         public async Task<bool> ChangePasswordWithCodeAsync(ChangePasswordRequest request)
         {
-            bool result;
-            result = await _logic.ChangePasswordWithCodeAsync(request);
-            return result;
+            return await _logic.ChangePasswordWithCodeAsync(request);
         }
+
         public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)
         {
             return await _logic.DeactivateAccountAsync(request);

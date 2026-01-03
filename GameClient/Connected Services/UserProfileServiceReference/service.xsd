@@ -18,8 +18,9 @@
   <xs:element name="ChangeUsername">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" name="email" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="identifier" nillable="true" type="xs:string" />
         <xs:element minOccurs="0" name="newUsername" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="verificationCode" nillable="true" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -84,6 +85,20 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" name="DeactivateAccountResult" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendUsernameChangeCode">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="identifier" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendUsernameChangeCodeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="SendUsernameChangeCodeResult" type="xs:boolean" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

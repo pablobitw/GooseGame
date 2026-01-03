@@ -329,10 +329,10 @@ namespace GameClient.UserProfileServiceReference {
         System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UserProfileDto> GetUserProfileAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeUsername", ReplyAction="http://tempuri.org/IUserProfileService/ChangeUsernameResponse")]
-        GameClient.UserProfileServiceReference.UsernameChangeResult ChangeUsername(string email, string newUsername);
+        GameClient.UserProfileServiceReference.UsernameChangeResult ChangeUsername(string identifier, string newUsername, string verificationCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeUsername", ReplyAction="http://tempuri.org/IUserProfileService/ChangeUsernameResponse")]
-        System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UsernameChangeResult> ChangeUsernameAsync(string email, string newUsername);
+        System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeAvatar", ReplyAction="http://tempuri.org/IUserProfileService/ChangeAvatarResponse")]
         bool ChangeAvatar(string email, string avatarName);
@@ -357,6 +357,12 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/DeactivateAccount", ReplyAction="http://tempuri.org/IUserProfileService/DeactivateAccountResponse")]
         System.Threading.Tasks.Task<bool> DeactivateAccountAsync(GameClient.UserProfileServiceReference.DeactivateAccountRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse")]
+        bool SendUsernameChangeCode(string identifier);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse")]
+        System.Threading.Tasks.Task<bool> SendUsernameChangeCodeAsync(string identifier);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -394,12 +400,12 @@ namespace GameClient.UserProfileServiceReference {
             return base.Channel.GetUserProfileAsync(email);
         }
         
-        public GameClient.UserProfileServiceReference.UsernameChangeResult ChangeUsername(string email, string newUsername) {
-            return base.Channel.ChangeUsername(email, newUsername);
+        public GameClient.UserProfileServiceReference.UsernameChangeResult ChangeUsername(string identifier, string newUsername, string verificationCode) {
+            return base.Channel.ChangeUsername(identifier, newUsername, verificationCode);
         }
         
-        public System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UsernameChangeResult> ChangeUsernameAsync(string email, string newUsername) {
-            return base.Channel.ChangeUsernameAsync(email, newUsername);
+        public System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode) {
+            return base.Channel.ChangeUsernameAsync(identifier, newUsername, verificationCode);
         }
         
         public bool ChangeAvatar(string email, string avatarName) {
@@ -432,6 +438,14 @@ namespace GameClient.UserProfileServiceReference {
         
         public System.Threading.Tasks.Task<bool> DeactivateAccountAsync(GameClient.UserProfileServiceReference.DeactivateAccountRequest request) {
             return base.Channel.DeactivateAccountAsync(request);
+        }
+        
+        public bool SendUsernameChangeCode(string identifier) {
+            return base.Channel.SendUsernameChangeCode(identifier);
+        }
+        
+        public System.Threading.Tasks.Task<bool> SendUsernameChangeCodeAsync(string identifier) {
+            return base.Channel.SendUsernameChangeCodeAsync(identifier);
         }
     }
 }

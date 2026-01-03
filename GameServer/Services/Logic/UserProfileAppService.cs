@@ -71,17 +71,72 @@ namespace GameServer.Services.Logic
             return profile;
         }
 
-        public async Task<UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername)
+        public async Task<bool> SendUsernameChangeCodeAsync(string identifier)
+        {
+            bool isSent = false;
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(identifier);
+
+                if (player != null && !player.IsGuest && player.Account != null)
+                {
+                    var account = player.Account;
+                    string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+
+                    account.VerificationCode = verifyCode;
+                    account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
+                    await _repository.SaveChangesAsync();
+
+                    isSent = await EmailHelper.SendVerificationEmailAsync(account.Email, verifyCode).ConfigureAwait(false);
+
+                    if (isSent) Log.InfoFormat("Código de cambio de usuario enviado a {0}", account.Email);
+                }
+                else
+                {
+                    Log.WarnFormat("Solicitud de código inválida para: {0}", identifier);
+                }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL enviando código de cambio de usuario.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error DB enviando código de cambio de usuario.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF enviando código de cambio de usuario.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando código de cambio de usuario.", ex);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error general enviando código de cambio de usuario.", ex);
+            }
+
+            return isSent;
+        }
+
+        public async Task<UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode)
         {
             UsernameChangeResult result = UsernameChangeResult.FatalError;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
 
-                if (player == null)
+                if (player == null || player.Account == null)
                 {
                     Log.WarnFormat("Cambio de usuario fallido (Usuario no encontrado): {0}", identifier);
                     result = UsernameChangeResult.UserNotFound;
+                }
+                else if (player.Account.VerificationCode != verificationCode || player.Account.CodeExpiration < DateTime.Now)
+                {
+                    Log.WarnFormat("Código incorrecto o expirado para cambio de usuario: {0}", identifier);
+                    result = UsernameChangeResult.FatalError;
                 }
                 else if (player.UsernameChangeCount >= MaxUsernameChanges)
                 {
@@ -100,6 +155,9 @@ namespace GameServer.Services.Logic
                         string oldUsername = player.Username;
                         player.Username = newUsername;
                         player.UsernameChangeCount++;
+
+                        player.Account.VerificationCode = null;
+                        player.Account.CodeExpiration = null;
 
                         await _repository.SaveChangesAsync();
                         Log.InfoFormat("Usuario cambiado: '{0}' -> '{1}'", oldUsername, newUsername);
@@ -125,6 +183,11 @@ namespace GameServer.Services.Logic
             catch (TimeoutException ex)
             {
                 Log.Error("Timeout al cambiar usuario.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error inesperado al cambiar usuario para {identifier}.", ex);
                 result = UsernameChangeResult.FatalError;
             }
 

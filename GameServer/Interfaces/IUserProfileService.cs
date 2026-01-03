@@ -11,7 +11,7 @@ namespace GameServer.Interfaces
         Task<UserProfileDto> GetUserProfileAsync(string email);
 
         [OperationContract]
-        Task<UsernameChangeResult> ChangeUsernameAsync(string email, string newUsername);
+        Task<UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode);
 
         [OperationContract]
         Task<bool> ChangeAvatarAsync(string email, string avatarName);
@@ -24,6 +24,11 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request);
-    
+
+        [OperationContract]
+        Task<bool> SendUsernameChangeCodeAsync(string identifier);
+
+        
+
     }
 }

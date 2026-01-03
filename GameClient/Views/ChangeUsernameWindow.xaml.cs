@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference;
+﻿using GameClient.Helpers;
 using GameClient.UserProfileServiceReference;
 using System;
 using System.ServiceModel;
@@ -17,6 +17,11 @@ namespace GameClient.Views
         {
             InitializeComponent();
             _userEmail = email;
+
+            Step1_VerifyCode.Visibility = Visibility.Visible;
+            Step2_ChangeName.Visibility = Visibility.Visible;
+            VerifyCodeButton.Visibility = Visibility.Collapsed;
+
             this.Loaded += OnWindowLoaded;
         }
 
@@ -31,92 +36,46 @@ namespace GameClient.Views
 
             try
             {
-                bool sent = await client.SendPasswordChangeCodeAsync(_userEmail);
+                bool sent = await client.SendUsernameChangeCodeAsync(_userEmail);
 
                 if (!sent)
                 {
-                    MessageBox.Show("No se pudo enviar el código. Verifica tu conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("No se pudo enviar el código. Intenta más tarde.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("El tiempo de espera se ha agotado.", "Error de Tiempo");
+                SessionManager.ForceLogout("El servidor tardó demasiado en enviar el código.");
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor.", "Error de Conexión");
+                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación con el servidor.", "Error de Red");
+                SessionManager.ForceLogout("Error de comunicación al solicitar el código.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                MessageBox.Show("Ocurrió un error inesperado al enviar el código.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
-                else
-                {
-                    client.Abort();
-                }
+                CloseClient(client);
             }
         }
 
-        private async void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string code = CodeTextBox.Text.Trim();
+            string newName = NewUsernameTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(code) || code.Length != 6)
             {
                 ShowError(CodeBorder, CodeErrorLabel, "El código debe tener 6 dígitos.");
                 return;
             }
-
-            VerifyCodeButton.IsEnabled = false;
-            var client = new GameServiceClient();
-
-            try
-            {
-                bool isValid = await client.VerifyRecoveryCodeAsync(_userEmail, code);
-
-                if (isValid)
-                {
-                    Step1_VerifyCode.Visibility = Visibility.Collapsed;
-                    Step2_ChangeName.Visibility = Visibility.Visible;
-
-                    NewUsernameTextBox.Focus();
-                }
-                else
-                {
-                    ShowError(CodeBorder, CodeErrorLabel, "Código incorrecto o expirado.");
-                }
-            }
-            catch (TimeoutException)
-            {
-                ShowError(CodeBorder, CodeErrorLabel, "El servidor tardó en responder.");
-            }
-            catch (CommunicationException)
-            {
-                ShowError(CodeBorder, CodeErrorLabel, "Error de conexión al verificar código.");
-            }
-            finally
-            {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
-                else
-                {
-                    client.Abort();
-                }
-                VerifyCodeButton.IsEnabled = true;
-            }
-        }
-
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            string newName = NewUsernameTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(newName) || newName.Length < 3)
             {
@@ -129,7 +88,7 @@ namespace GameClient.Views
 
             try
             {
-                var result = await client.ChangeUsernameAsync(_userEmail, newName);
+                var result = await client.ChangeUsernameAsync(_userEmail, newName, code);
 
                 switch (result)
                 {
@@ -146,8 +105,12 @@ namespace GameClient.Views
                         ShowError(UsernameBorder, UsernameErrorLabel, "Límite de cambios alcanzado (3/3).");
                         break;
 
-                    case UsernameChangeResult.CooldownActive:
-                        ShowError(UsernameBorder, UsernameErrorLabel, "Debes esperar para cambiarlo de nuevo.");
+                    case UsernameChangeResult.UserNotFound:
+                        SessionManager.ForceLogout("Usuario no encontrado. Sesión inválida.");
+                        break;
+
+                    case UsernameChangeResult.FatalError:
+                        ShowError(CodeBorder, CodeErrorLabel, "Código incorrecto o error del servidor.");
                         break;
 
                     default:
@@ -157,26 +120,24 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                ShowError(UsernameBorder, UsernameErrorLabel, "Tiempo de espera agotado.");
+                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
             }
-            catch (FaultException ex)
+            catch (EndpointNotFoundException)
             {
-                ShowError(UsernameBorder, UsernameErrorLabel, $"Error del servidor: {ex.Message}");
+                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
             }
             catch (CommunicationException)
             {
-                ShowError(UsernameBorder, UsernameErrorLabel, "Error de red al guardar.");
+                SessionManager.ForceLogout("Se perdió la conexión al intentar guardar.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                ShowError(UsernameBorder, UsernameErrorLabel, "Ocurrió un error inesperado.");
             }
             finally
             {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
-                else
-                {
-                    client.Abort();
-                }
+                CloseClient(client);
                 SaveButton.IsEnabled = true;
             }
         }
@@ -184,7 +145,26 @@ namespace GameClient.Views
         private async void ResendCode_Click(object sender, RoutedEventArgs e)
         {
             await SendVerificationCode();
-            MessageBox.Show("Código reenviado a tu correo.", "Información");
+            MessageBox.Show("Código reenviado a tu correo.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void CloseClient(UserProfileServiceClient client)
+        {
+            try
+            {
+                if (client.State == CommunicationState.Opened)
+                    client.Close();
+                else
+                    client.Abort();
+            }
+            catch (Exception)
+            {
+                client.Abort();
+            }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
