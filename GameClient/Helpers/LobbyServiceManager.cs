@@ -6,7 +6,9 @@ using System.Windows;
 
 namespace GameClient.Helpers
 {
-    [CallbackBehavior(UseSynchronizationContext = false, ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [CallbackBehavior(
+        UseSynchronizationContext = false,
+        ConcurrencyMode = ConcurrencyMode.Multiple)]
     public sealed class LobbyServiceManager : ILobbyServiceCallback, IDisposable
     {
         private static LobbyServiceManager _instance;
@@ -50,7 +52,7 @@ namespace GameClient.Helpers
 
             try
             {
-                InstanceContext context = new InstanceContext(this);
+                var context = new InstanceContext(this);
                 _client = new LobbyServiceClient(context);
             }
             catch (Exception ex)
@@ -77,6 +79,7 @@ namespace GameClient.Helpers
 
             return _client;
         }
+
 
 
         public void OnPlayerKicked(string reason)
@@ -110,125 +113,104 @@ namespace GameClient.Helpers
         }
 
 
-        public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
+        public Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            try
-            {
-                return await GetClient().CreateLobbyAsync(request);
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                throw new Exception("No se puede conectar al servidor.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                throw new Exception("El servidor tardó demasiado en responder.", ex);
-            }
-            catch (CommunicationException ex)
-            {
-                throw new Exception("Error de comunicación con el servidor.", ex);
-            }
+            return ExecuteAsync(c => c.CreateLobbyAsync(request));
         }
 
-        public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
+        public Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
-            try
-            {
-                return await GetClient().JoinLobbyAsync(request);
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                throw new Exception("No se puede conectar al servidor.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                throw new Exception("El servidor tardó demasiado en responder.", ex);
-            }
-            catch (CommunicationException ex)
-            {
-                throw new Exception("Error de comunicación con el servidor.", ex);
-            }
+            return ExecuteAsync(c => c.JoinLobbyAsync(request));
         }
 
-        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
+        public Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
+        {
+            return ExecuteAsync(c => c.GetLobbyStateAsync(lobbyCode));
+        }
+
+        public Task<bool> StartGameAsync(string lobbyCode)
+        {
+            return ExecuteAsync(c => c.StartGameAsync(lobbyCode));
+        }
+
+        public Task<bool> LeaveLobbyAsync(string username)
+        {
+            return ExecuteAsync(c => c.LeaveLobbyAsync(username));
+        }
+
+        public Task DisbandLobbyAsync(string username)
+        {
+            return ExecuteAsync(c => c.DisbandLobbyAsync(username));
+        }
+
+        public Task<ActiveMatchDto[]> GetPublicMatchesAsync()
+        {
+            return ExecuteAsync(c => c.GetPublicMatchesAsync());
+        }
+
+        public Task KickPlayerAsync(KickPlayerRequest request)
+        {
+            return ExecuteAsync(c => c.KickPlayerAsync(request));
+        }
+
+
+        private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action)
         {
             try
             {
-                return await GetClient().GetLobbyStateAsync(lobbyCode);
+                var client = GetClient();
+                return await action(client);
+            }
+            catch (EndpointNotFoundException)
+            {
+                InvalidateClient();
+                throw new InvalidOperationException(
+                    "No se puede conectar al servidor.");
+            }
+            catch (TimeoutException)
+            {
+                InvalidateClient();
+                throw new TimeoutException(
+                    "El servidor tardó demasiado en responder.");
             }
             catch (CommunicationException)
             {
+                InvalidateClient();
                 throw;
             }
         }
 
-        public async Task<bool> StartGameAsync(string lobbyCode)
+        private async Task ExecuteAsync(Func<LobbyServiceClient, Task> action)
         {
             try
             {
-                return await GetClient().StartGameAsync(lobbyCode);
+                var client = GetClient();
+                await action(client);
+            }
+            catch (EndpointNotFoundException)
+            {
+                InvalidateClient();
+                throw new InvalidOperationException(
+                    "No se puede conectar al servidor.");
+            }
+            catch (TimeoutException)
+            {
+                InvalidateClient();
+                throw new TimeoutException(
+                    "El servidor tardó demasiado en responder.");
             }
             catch (CommunicationException)
             {
+                InvalidateClient();
                 throw;
             }
         }
 
-        public async Task<bool> LeaveLobbyAsync(string username)
-        {
-            try
-            {
-                return await GetClient().LeaveLobbyAsync(username);
-            }
-            catch (CommunicationException)
-            {
-                throw;
-            }
-        }
 
-        public async Task DisbandLobbyAsync(string username)
+        private void InvalidateClient()
         {
-            try
-            {
-                await GetClient().DisbandLobbyAsync(username);
-            }
-            catch (CommunicationException)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
-        {
-            try
-            {
-                return await GetClient().GetPublicMatchesAsync();
-            }
-            catch (CommunicationException)
-            {
-                throw;
-            }
-        }
-
-        public async Task KickPlayerAsync(KickPlayerRequest request)
-        {
-            try
-            {
-                await GetClient().KickPlayerAsync(request);
-            }
-            catch (CommunicationException)
-            {
-                throw;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_disposed) return;
-
             CloseClient();
-            _disposed = true;
-            GC.SuppressFinalize(this);
+            _client = null;
         }
 
         private void CloseClient()
@@ -246,6 +228,15 @@ namespace GameClient.Helpers
             {
                 _client.Abort();
             }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            CloseClient();
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }

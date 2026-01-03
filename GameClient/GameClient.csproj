@@ -115,6 +115,7 @@
     <Compile Include="Helpers\GameConfiguration.cs" />
     <Compile Include="Helpers\GameLogHelper.cs" />
     <Compile Include="Helpers\GameplayServiceManager.cs" />
+    <Compile Include="Helpers\LobbyChatController.cs" />
     <Compile Include="Helpers\LobbyServiceManager.cs" />
     <Compile Include="Helpers\SessionManager.cs" />
     <Compile Include="Helpers\UserSession.cs" />

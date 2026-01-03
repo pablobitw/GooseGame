@@ -6,7 +6,9 @@ using System.Windows;
 
 namespace GameClient.Helpers
 {
-    [CallbackBehavior(UseSynchronizationContext = false, ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [CallbackBehavior(
+        UseSynchronizationContext = false,
+        ConcurrencyMode = ConcurrencyMode.Multiple)]
     public sealed class GameplayServiceManager : IGameplayServiceCallback, IDisposable
     {
         private static GameplayServiceManager _instance;
@@ -32,9 +34,7 @@ namespace GameClient.Helpers
                     lock (_lock)
                     {
                         if (_instance == null)
-                        {
                             _instance = new GameplayServiceManager();
-                        }
                     }
                 }
                 return _instance;
@@ -48,33 +48,13 @@ namespace GameClient.Helpers
 
             try
             {
-                InstanceContext context = new InstanceContext(this);
+                var context = new InstanceContext(this);
                 _client = new GameplayServiceClient(context);
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("No se pudo encontrar el servidor.");
-            }
-            catch (TimeoutException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
-            }
-            catch (CommunicationException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(
-                        "Ocurrió un error inesperado al iniciar la sesión.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning));
+                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
             }
         }
 
@@ -84,14 +64,16 @@ namespace GameClient.Helpers
                 throw new ObjectDisposedException(nameof(GameplayServiceManager));
 
             if (_client == null ||
-                _client.State == CommunicationState.Faulted ||
-                _client.State == CommunicationState.Closed)
+                _client.State == CommunicationState.Closed ||
+                _client.State == CommunicationState.Faulted)
             {
                 Initialize(_currentUsername);
             }
 
             return _client;
         }
+
+
 
         public void OnTurnChanged(GameStateDto newState)
         {
@@ -117,218 +99,127 @@ namespace GameClient.Helpers
                 VoteKickStarted?.Invoke(targetUsername, reason));
         }
 
-        public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
+
+        public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
+        {
+            return ExecuteAsync(c => c.RollDiceAsync(request));
+        }
+
+        public Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
+        {
+            return ExecuteAsync(c => c.GetGameStateAsync(request));
+        }
+
+        public Task<bool> LeaveGameAsync(GameplayRequest request)
+        {
+            return ExecuteAsync(c => c.LeaveGameAsync(request));
+        }
+
+        public Task InitiateVoteKickAsync(VoteRequestDto request)
+        {
+            return ExecuteAsync(c => c.InitiateVoteKickAsync(request));
+        }
+
+        public Task CastVoteAsync(VoteResponseDto vote)
+        {
+            return ExecuteAsync(c => c.CastVoteAsync(vote));
+        }
+
+
+        private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
             try
             {
-                return await GetClient().RollDiceAsync(request);
+                return await action(GetClient());
             }
             catch (FaultException ex)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(ex.Message, "Aviso",
-                        MessageBoxButton.OK, MessageBoxImage.Warning));
-                return null;
+                await ShowWarningAsync(ex.Message);
+                return default(T);
             }
-            catch (EndpointNotFoundException ex)
+            catch (EndpointNotFoundException)
             {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("El servidor no está disponible.");
-                return null;
+                return default(T);
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("El servidor no respondió a tiempo.");
-                return null;
+                return default(T);
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
-                return null;
+                return default(T);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show("Ocurrió un error inesperado.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information));
-                return null;
+                await ShowErrorAsync();
+                return default(T);
             }
         }
 
-        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
+        private async Task ExecuteAsync(Func<GameplayServiceClient, Task> action)
         {
             try
             {
-                return await GetClient().GetGameStateAsync(request);
+                await action(GetClient());
             }
             catch (FaultException ex)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(ex.Message, "Aviso",
-                        MessageBoxButton.OK, MessageBoxImage.Warning));
-                return null;
+                await ShowWarningAsync(ex.Message);
             }
-            catch (EndpointNotFoundException ex)
+            catch (EndpointNotFoundException)
             {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no está disponible.");
-                return null;
-            }
-            catch (TimeoutException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
-                return null;
-            }
-            catch (CommunicationException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show("Ocurrió un error inesperado.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information));
-                return null;
-            }
-        }
-
-        public async Task<bool> LeaveGameAsync(GameplayRequest request)
-        {
-            try
-            {
-                return await GetClient().LeaveGameAsync(request);
-            }
-            catch (FaultException ex)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(ex.Message, "Aviso",
-                        MessageBoxButton.OK, MessageBoxImage.Warning));
-                return false;
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no está disponible.");
-                return false;
-            }
-            catch (TimeoutException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
-                return false;
-            }
-            catch (CommunicationException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show("Ocurrió un error inesperado.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information));
-                return false;
-            }
-        }
-
-        public async Task InitiateVoteKickAsync(VoteRequestDto request)
-        {
-            try
-            {
-                await GetClient().InitiateVoteKickAsync(request);
-            }
-            catch (FaultException ex)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(ex.Message, "Aviso",
-                        MessageBoxButton.OK, MessageBoxImage.Warning));
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("El servidor no está disponible.");
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("El servidor no respondió a tiempo.");
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                Console.Error.WriteLine(ex);
+                InvalidateClient();
                 SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show("Ocurrió un error inesperado.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information));
+                await ShowErrorAsync();
             }
         }
 
-        public async Task CastVoteAsync(VoteResponseDto vote)
+
+        private Task ShowWarningAsync(string message)
         {
-            try
-            {
-                await GetClient().CastVoteAsync(vote);
-            }
-            catch (FaultException ex)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show(ex.Message, "Aviso",
-                        MessageBoxButton.OK, MessageBoxImage.Warning));
-            }
-            catch (EndpointNotFoundException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no está disponible.");
-            }
-            catch (TimeoutException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
-            }
-            catch (CommunicationException ex)
-            {
-                Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                    MessageBox.Show("Ocurrió un error inesperado.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information));
-            }
+            return Application.Current.Dispatcher.InvokeAsync(() =>
+                MessageBox.Show(
+                    message,
+                    "Aviso",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning)).Task;
         }
 
-        public void Dispose()
+        private Task ShowErrorAsync()
         {
-            if (_disposed) return;
+            return Application.Current.Dispatcher.InvokeAsync(() =>
+                MessageBox.Show(
+                    "Ocurrió un error inesperado.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information)).Task;
+        }
 
+        private void InvalidateClient()
+        {
             CloseClient();
-            _disposed = true;
-            GC.SuppressFinalize(this);
+            _client = null;
         }
 
         private void CloseClient()
@@ -342,15 +233,19 @@ namespace GameClient.Helpers
                 else
                     _client.Abort();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.Error.WriteLine(ex);
                 _client.Abort();
             }
-            finally
-            {
-                _client = null;
-            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            CloseClient();
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }

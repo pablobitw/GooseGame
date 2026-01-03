@@ -561,6 +561,9 @@
   <data name="VisibilityPublic" xml:space="preserve">
     <value>Public</value>
   </data>
+  <data name="WaitingForPlayersLabel" xml:space="preserve">
+    <value>Waiting for players...</value>
+  </data>
   <data name="WarningTitle" xml:space="preserve">
     <value>Warning</value>
   </data>

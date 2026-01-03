@@ -12,10 +12,17 @@ namespace GameClient.Helpers
 
         public static void Initialize(string username)
         {
-            if (Instance == null)
-            {
-                Instance = new FriendshipServiceManager(username);
-            }
+            if (Instance != null && Instance._username == username)
+                return;
+
+            Instance?.Disconnect();
+            Instance = new FriendshipServiceManager(username);
+        }
+
+        public static void Reset()
+        {
+            Instance?.Disconnect();
+            Instance = null;
         }
 
         private FriendshipServiceClient _proxy;
@@ -39,13 +46,27 @@ namespace GameClient.Helpers
                 _proxy = new FriendshipServiceClient(context);
                 _proxy.Connect(_username);
             }
-            catch (CommunicationException ex)
+            catch
             {
-                SessionManager.ForceLogout($"Error de conexión con el servicio de amigos: {ex.Message}");
+                HandleFatalConnectionError("No fue posible conectar con el servicio de amigos.");
             }
-            catch (TimeoutException)
+        }
+
+        private void HandleFatalConnectionError(string message)
+        {
+            AbortProxy();
+            Reset();
+            SessionManager.ForceLogout(message);
+        }
+
+        private void AbortProxy()
+        {
+            try
             {
-                SessionManager.ForceLogout("Tiempo de espera agotado al conectar con el servicio de amigos.");
+                _proxy?.Abort();
+            }
+            catch
+            {
             }
         }
 
@@ -65,23 +86,20 @@ namespace GameClient.Helpers
                     _proxy.Abort();
                 }
             }
-            catch (CommunicationException)
+            catch
             {
                 _proxy.Abort();
             }
-            catch (TimeoutException)
+            finally
             {
-                _proxy.Abort();
-            }
-            catch (Exception)
-            {
-                _proxy.Abort();
+                _proxy = null;
             }
         }
 
         public void OnFriendRequestReceived() => RequestReceived?.Invoke();
         public void OnFriendListUpdated() => FriendListUpdated?.Invoke();
-        public void OnGameInvitationReceived(string hostUsername, string lobbyCode) => GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
+        public void OnGameInvitationReceived(string hostUsername, string lobbyCode)
+            => GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
 
         public async Task<FriendDto[]> GetFriendListAsync()
         {
@@ -89,14 +107,9 @@ namespace GameClient.Helpers
             {
                 return await _proxy.GetFriendListAsync(_username);
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout("Se perdió la conexión al obtener la lista de amigos.");
-                return Array.Empty<FriendDto>();
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor no respondió al solicitar la lista de amigos.");
+                HandleFatalConnectionError("Se perdió la conexión al obtener la lista de amigos.");
                 return Array.Empty<FriendDto>();
             }
         }
@@ -107,14 +120,9 @@ namespace GameClient.Helpers
             {
                 return await _proxy.GetPendingRequestsAsync(_username);
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout("Se perdió la conexión al obtener solicitudes pendientes.");
-                return Array.Empty<FriendDto>();
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor no respondió al solicitar solicitudes pendientes.");
+                HandleFatalConnectionError("Se perdió la conexión al obtener solicitudes pendientes.");
                 return Array.Empty<FriendDto>();
             }
         }
@@ -125,19 +133,13 @@ namespace GameClient.Helpers
             {
                 return await _proxy.SendFriendRequestAsync(_username, targetUser);
             }
-            catch (FaultException ex)
+            catch (FaultException)
             {
-                Console.WriteLine($"[FriendshipManager] Error lógico al enviar solicitud: {ex.Message}");
                 return false;
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout($"Se perdió la conexión al enviar solicitud a {targetUser}.");
-                return false;
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor tardó demasiado en procesar la solicitud de amistad.");
+                HandleFatalConnectionError($"Se perdió la conexión al enviar solicitud a {targetUser}.");
                 return false;
             }
         }
@@ -155,13 +157,9 @@ namespace GameClient.Helpers
 
                 await _proxy.RespondToFriendRequestAsync(request);
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout($"Se perdió la conexión al responder la solicitud de {requester}.");
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor no respondió al intentar aceptar/rechazar la solicitud.");
+                HandleFatalConnectionError("Se perdió la conexión al responder una solicitud de amistad.");
             }
         }
 
@@ -171,14 +169,9 @@ namespace GameClient.Helpers
             {
                 return await _proxy.RemoveFriendAsync(_username, friendUsername);
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout($"Se perdió la conexión al intentar eliminar a {friendUsername}.");
-                return false;
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor tardó demasiado en eliminar al amigo.");
+                HandleFatalConnectionError("Se perdió la conexión al eliminar un amigo.");
                 return false;
             }
         }
@@ -196,17 +189,9 @@ namespace GameClient.Helpers
 
                 _proxy.SendGameInvitation(invitation);
             }
-            catch (CommunicationException)
+            catch
             {
-                SessionManager.ForceLogout($"Se perdió la conexión al invitar a {targetUser}.");
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout("El servidor no respondió al enviar la invitación.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[FriendshipManager] Error inesperado al invitar: {ex.Message}");
+                HandleFatalConnectionError("Se perdió la conexión al enviar una invitación.");
             }
         }
     }

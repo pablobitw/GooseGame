@@ -1447,6 +1447,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Esperando jugadores….
+        /// </summary>
+        public static string WaitingForPlayersLabel {
+            get {
+                return ResourceManager.GetString("WaitingForPlayersLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Aviso.
         /// </summary>
         public static string WarningTitle {

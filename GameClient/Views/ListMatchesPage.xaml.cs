@@ -1,4 +1,5 @@
 ﻿using GameClient.Helpers;
+using GameClient.Models;
 using GameClient.LobbyServiceReference;
 using System;
 using System.Collections.ObjectModel;
@@ -148,12 +149,5 @@ namespace GameClient.Views
             }
         }
     }
-
-    public class MatchItem
-    {
-        public string LobbyCode { get; set; }
-        public string HostName { get; set; }
-        public string MapName { get; set; }
-        public string PlayerCount { get; set; }
-    }
+  
 }

@@ -248,12 +248,36 @@ namespace GameServer.Services.Logic
                 TicketLegendary = 0
             };
 
-            _repository.AddPlayer(newPlayer);
-            await _repository.SaveChangesAsync();
+            try
+            {
+                _repository.AddPlayer(newPlayer);
+                await _repository.SaveChangesAsync();
 
-            await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
+                await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
 
-            return RegistrationResult.Success;
+                return RegistrationResult.Success;
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException?.InnerException is SqlException sqlEx)
+                {
+                    if (sqlEx.Number == 2601 || sqlEx.Number == 2627)
+                    {
+                        if (_repository.IsUsernameTaken(request.Username))
+                        {
+                            return RegistrationResult.UsernameAlreadyExists;
+                        }
+                        return RegistrationResult.EmailAlreadyExists;
+                    }
+                }
+                Log.Error("Error al guardar usuario en base de datos.", ex);
+                return RegistrationResult.FatalError;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error general al crear usuario.", ex);
+                return RegistrationResult.FatalError;
+            }
         }
 
         public async Task<LoginResponseDto> LogInAsync(string usernameOrEmail, string password)
