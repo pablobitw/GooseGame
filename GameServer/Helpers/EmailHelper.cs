@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Net;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using GameServer.Resources;
 
 namespace GameServer.Helpers
 {
@@ -11,30 +14,102 @@ namespace GameServer.Helpers
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(EmailHelper));
 
-        public static async Task<bool> SendVerificationEmailAsync(string recipientEmail, string verificationCode)
+        public static async Task<bool> SendVerificationEmailAsync(string recipientEmail, string verificationCode, string languageCode = "es-MX")
         {
-            string subject = "Goose Game - Código de Verificación";
+            SetCulture(languageCode);
+            string subject = ServerStrings.Email_VerificationSubject;
+            string bodyFormat = ServerStrings.Email_VerificationBody;
+
             string body = $@"
                 <div style='font-family: Arial, sans-serif; text-align: center;'>
-                    <h2>¡Bienvenido a Goose Game!</h2>
-                    <p>Tu código de verificación es:</p>
-                    <h1 style='color: #4CAF50; letter-spacing: 5px;'>{verificationCode}</h1>
-                    <p>Introduce este código en el juego para activar tu cuenta.</p>
+                    <h2>Goose Game</h2>
+                    <p>{string.Format(bodyFormat, verificationCode)}</p>
                 </div>";
+
             return await SendEmailInternalAsync(recipientEmail, subject, body);
         }
 
-        public static async Task<bool> SendRecoveryEmailAsync(string recipientEmail, string verificationCode)
+        public static async Task<bool> SendRecoveryEmailAsync(string recipientEmail, string verificationCode, string languageCode = "es-MX")
         {
-            string subject = "Goose Game - Recuperación de Contraseña";
+            SetCulture(languageCode);
+            string subject = ServerStrings.Email_RecoverySubject;
+            string bodyFormat = ServerStrings.Email_RecoveryBody;
+
             string body = $@"
                 <div style='font-family: Arial, sans-serif; text-align: center;'>
-                    <h2>Recuperación de Contraseña</h2>
-                    <p>Has solicitado restablecer tu contraseña. Usa este código:</p>
-                    <h1 style='color: #F44336; letter-spacing: 5px;'>{verificationCode}</h1>
-                    <p>Si no fuiste tú, ignora este mensaje.</p>
+                    <h2>Goose Game - Recovery</h2>
+                    <p>{string.Format(bodyFormat, verificationCode)}</p>
                 </div>";
+
             return await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        public static async Task SendLoginNotificationAsync(string recipientEmail, string username, string languageCode = "es-MX")
+        {
+            SetCulture(languageCode);
+            string subject = ServerStrings.Email_LoginAlertSubject;
+            string bodyFormat = ServerStrings.Email_LoginAlertBody;
+            string date = DateTime.Now.ToString("g");
+
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>Goose Game - Security</h2>
+                    <p>{string.Format(bodyFormat, username)}</p>
+                    <p>Date: {date}</p>
+                </div>";
+
+            await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        public static async Task SendPasswordChangedNotificationAsync(string recipientEmail, string username, string languageCode = "es-MX")
+        {
+            SetCulture(languageCode);
+            // Si no agregaste este key al resx, usa un string fijo o agrégalo como Email_PasswordChangedSubject
+            string subject = "Goose Game - Password Updated";
+            string date = DateTime.Now.ToString("g");
+
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>Security Alert</h2>
+                    <p>Hello {username}, your password was changed successfully.</p>
+                    <p>Date: {date}</p>
+                </div>";
+
+            await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        public static async Task SendUsernameChangedNotificationAsync(string recipientEmail, string oldUsername, string newUsername, string languageCode = "es-MX")
+        {
+            SetCulture(languageCode);
+            string subject = ServerStrings.Email_UsernameChangedSubject;
+            string bodyFormat = ServerStrings.Email_UsernameChangedBody;
+            string date = DateTime.Now.ToString("g");
+
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>Identity Update</h2>
+                    <p>{string.Format(bodyFormat, oldUsername, newUsername)}</p>
+                    <p>Date: {date}</p>
+                    <hr>
+                </div>";
+
+            await SendEmailInternalAsync(recipientEmail, subject, body);
+        }
+
+        private static void SetCulture(string languageCode)
+        {
+            try
+            {
+                var culture = new CultureInfo(languageCode);
+                Thread.CurrentThread.CurrentUICulture = culture;
+                Thread.CurrentThread.CurrentCulture = culture;
+            }
+            catch
+            {
+                var culture = new CultureInfo("es-MX");
+                Thread.CurrentThread.CurrentUICulture = culture;
+                Thread.CurrentThread.CurrentCulture = culture;
+            }
         }
 
         private static async Task<bool> SendEmailInternalAsync(string toEmail, string subject, string htmlBody)
@@ -43,6 +118,7 @@ namespace GameServer.Helpers
             {
                 string gmailUser = ConfigurationManager.AppSettings["GmailUser"];
                 string gmailPass = ConfigurationManager.AppSettings["GmailPass"];
+
                 if (string.IsNullOrEmpty(gmailUser) || string.IsNullOrEmpty(gmailPass))
                 {
                     Log.Error("Faltan las credenciales de Gmail en App.config/Web.config");
@@ -65,56 +141,20 @@ namespace GameServer.Helpers
                 {
                     mailMessage.To.Add(toEmail);
                     await smtpClient.SendMailAsync(mailMessage);
-
                     Log.InfoFormat("Correo enviado exitosamente a {0}", toEmail);
-
                     return true;
                 }
             }
             catch (SmtpException smtpEx)
             {
-                Log.Error(string.Format("Error SMTP al enviar a {0}: {1}", toEmail, smtpEx.Message), smtpEx);
+                Log.Error($"Error SMTP al enviar a {toEmail}: {smtpEx.Message}", smtpEx);
                 return false;
             }
             catch (Exception ex)
             {
-                Log.Error(string.Format("Error general al enviar correo a {0}: {1}", toEmail, ex.Message), ex);
+                Log.Error($"Error general al enviar correo a {toEmail}: {ex.Message}", ex);
                 return false;
             }
-        }
-        public static async Task SendLoginNotificationAsync(string recipientEmail, string username)
-        {
-            string subject = "Goose Game - Nuevo Inicio de Sesión";
-            string date = DateTime.Now.ToString("g"); // Fecha y hora general
-
-            string body = $@"
-                <div style='font-family: Arial, sans-serif; color: #333;'>
-                    <h2>¡Hola, {username}!</h2>
-                    <p>Se ha detectado un nuevo inicio de sesión en tu cuenta.</p>
-                    <p><strong>Fecha:</strong> {date}</p>
-                    <hr>
-                    <p style='font-size: 12px; color: gray;'>Si fuiste tú, puedes ignorar este mensaje. 
-                    Si NO fuiste tú, te recomendamos cambiar tu contraseña inmediatamente.</p>
-                </div>";
-
-            await SendEmailInternalAsync(recipientEmail, subject, body);
-        }
-
-        public static async Task SendPasswordChangedNotificationAsync(string recipientEmail, string username)
-        {
-            string subject = "Goose Game - Contraseña Actualizada";
-            string date = DateTime.Now.ToString("g");
-
-            string body = $@"
-                <div style='font-family: Arial, sans-serif; color: #333;'>
-                    <h2>Aviso de Seguridad</h2>
-                    <p>Hola <strong>{username}</strong>, te informamos que la contraseña de tu cuenta ha sido modificada exitosamente.</p>
-                    <p><strong>Fecha del cambio:</strong> {date}</p>
-                    <hr>
-                    <p style='color: red;'>Si no realizaste este cambio, recupera tu cuenta ahora mismo.</p>
-                </div>";
-
-            await SendEmailInternalAsync(recipientEmail, subject, body);
         }
     }
 }

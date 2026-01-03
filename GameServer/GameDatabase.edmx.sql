@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 12/27/2025 08:41:07
+-- Date Created: 01/03/2026 05:28:53
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -116,7 +116,8 @@ CREATE TABLE [dbo].[Accounts] (
     [RegisterDate] datetime  NOT NULL,
     [AccountStatus] int  NOT NULL,
     [VerificationCode] nvarchar(max)  NULL,
-    [CodeExpiration] datetime  NULL
+    [CodeExpiration] datetime  NULL,
+    [PreferredLanguage] nvarchar(5)  NOT NULL
 );
 GO
 

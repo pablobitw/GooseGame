@@ -410,6 +410,9 @@
     <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.GuestLoginResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.LoginResponseDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.RegistrationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>

@@ -4,6 +4,7 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="Email" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PreferredLanguage" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
@@ -18,6 +19,14 @@
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="RegistrationResult" nillable="true" type="tns:RegistrationResult" />
+  <xs:complexType name="LoginResponseDto">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="IsSuccess" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PreferredLanguage" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="LoginResponseDto" nillable="true" type="tns:LoginResponseDto" />
   <xs:complexType name="GuestLoginResult">
     <xs:sequence>
       <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />

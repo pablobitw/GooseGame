@@ -231,6 +231,9 @@
   <data name="DeleteFriendToolTip" xml:space="preserve">
     <value>Remove Friend</value>
   </data>
+  <data name="El idioma ha cambiado" xml:space="preserve">
+    <value>Language has been changed</value>
+  </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Email</value>
   </data>

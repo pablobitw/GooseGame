@@ -1132,6 +1132,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El idioma ha sido cambiado.
+        /// </summary>
+        public static string RestartMessage {
+            get {
+                return ResourceManager.GetString("RestartMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Guardar Avatar.
         /// </summary>
         public static string SaveAvatarButton {

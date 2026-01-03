@@ -17,6 +17,7 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Account()
         {
+            this.PreferredLanguage = "es-MX";
             this.Sanctions = new HashSet<Sanction>();
             this.Players = new HashSet<Player>();
         }
@@ -28,6 +29,7 @@ namespace GameServer
         public int AccountStatus { get; set; }
         public string VerificationCode { get; set; }
         public Nullable<System.DateTime> CodeExpiration { get; set; }
+        public string PreferredLanguage { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Sanction> Sanctions { get; set; }

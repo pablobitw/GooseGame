@@ -14,6 +14,10 @@ namespace GameClient.Views
 {
     public partial class RegisterPage : Page
     {
+        private const int MinPasswordLength = 8;
+        private const int MaxPasswordLength = 50;
+        private const string DefaultLanguage = "es-MX";
+
         public RegisterPage()
         {
             InitializeComponent();
@@ -86,6 +90,12 @@ namespace GameClient.Views
                 string email = EmailBox.Text;
                 string username = UserBox.Text;
                 string password = PasswordBox.Password;
+                string selectedLanguage = DefaultLanguage;
+
+                if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag != null)
+                {
+                    selectedLanguage = item.Tag.ToString();
+                }
 
                 GameServiceClient serviceClient = new GameServiceClient();
                 try
@@ -94,7 +104,8 @@ namespace GameClient.Views
                     {
                         Username = username,
                         Email = email,
-                        Password = password
+                        Password = password,
+                        PreferredLanguage = selectedLanguage
                     };
 
                     RegistrationResult result = await serviceClient.RegisterUserAsync(request);
@@ -147,6 +158,10 @@ namespace GameClient.Views
                     if (serviceClient.State == CommunicationState.Opened)
                     {
                         serviceClient.Close();
+                    }
+                    else
+                    {
+                        serviceClient.Abort();
                     }
                 }
             }
@@ -211,8 +226,8 @@ namespace GameClient.Views
             }
 
             var errorMessages = new List<string>();
-            if (password.Length < 8) errorMessages.Add("mínimo 8 caracteres");
-            if (password.Length > 50) errorMessages.Add("máximo 50 caracteres");
+            if (password.Length < MinPasswordLength) errorMessages.Add($"mínimo {MinPasswordLength} caracteres");
+            if (password.Length > MaxPasswordLength) errorMessages.Add($"máximo {MaxPasswordLength} caracteres");
             if (!password.Any(char.IsUpper)) errorMessages.Add("una mayúscula");
             if (!password.Any(c => !char.IsLetterOrDigit(c))) errorMessages.Add("un símbolo (ejemplo: !#$)");
 

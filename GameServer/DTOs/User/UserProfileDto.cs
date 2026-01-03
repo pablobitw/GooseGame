@@ -25,5 +25,8 @@ namespace GameServer.DTOs.User
 
         [DataMember]
         public int UsernameChangeCount { get; set; }
+
+        [DataMember]
+        public string PreferredLanguage { get; set; }
     }
 }

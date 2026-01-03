@@ -90,6 +90,7 @@
     <Property Name="AccountStatus" Type="int" Nullable="false" />
     <Property Name="VerificationCode" Type="nvarchar(max)" Nullable="true" />
     <Property Name="CodeExpiration" Type="datetime" Nullable="true" />
+    <Property Name="PreferredLanguage" Type="nvarchar" Nullable="false" DefaultValue="es-MX" MaxLength="5" />
   </EntityType>
   <EntityType Name="BoardSets">
     <Key>
@@ -418,6 +419,7 @@
           <NavigationProperty Name="Players" Relationship="Self.FK_PlayerAccount" FromRole="Accounts" ToRole="Players" />
           <Property Name="VerificationCode" Type="String" Nullable="true" MaxLength="Max" Unicode="true" FixedLength="false" />
           <Property Name="CodeExpiration" Type="DateTime" Nullable="true" />
+          <Property Name="PreferredLanguage" Type="String" Nullable="false" DefaultValue="es-MX" MaxLength="5" />
         </EntityType>
         <EntityType Name="BoardSet">
           <Key>
@@ -836,6 +838,7 @@
           <ScalarProperty Name="AccountStatus" ColumnName="AccountStatus" />
           <ScalarProperty Name="VerificationCode" ColumnName="VerificationCode" />
           <ScalarProperty Name="CodeExpiration" ColumnName="CodeExpiration" />
+          <ScalarProperty Name="PreferredLanguage" ColumnName="PreferredLanguage" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

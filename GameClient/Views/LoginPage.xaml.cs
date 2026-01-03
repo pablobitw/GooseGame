@@ -1,7 +1,10 @@
 ﻿using GameClient.GameServiceReference;
+using GameClient.Helpers;
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.ServiceModel;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -26,30 +29,58 @@ namespace GameClient.Views
             string usernameOrEmail = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            bool loginSuccessful = await AttemptLoginAsync(usernameOrEmail, password);
-
-            if (loginSuccessful)
-            {
-                GameMainWindow gameMenu = new GameMainWindow(usernameOrEmail);
-                gameMenu.Show();
-                Window.GetWindow(this).Close();
-            }
-            else
-            {
-                string errorMsg = "Login failed. Check credentials or ensure account is not already active.";
-                ShowError(UsernameBorder, errorMsg);
-                ShowError(PasswordBorder, errorMsg);
-            }
-        }
-
-        private static async Task<bool> AttemptLoginAsync(string username, string password)
-        {
             var serviceClient = new GameServiceClient();
-            bool isSuccess = false;
 
             try
             {
-                isSuccess = await serviceClient.LogInAsync(username, password);
+                var response = await serviceClient.LogInAsync(usernameOrEmail, password);
+
+                if (response.IsSuccess)
+                {
+                    string serverLanguage = response.PreferredLanguage ?? "es-MX";
+                    string currentLocalLanguage = GameClient.Properties.Settings.Default.LanguageCode;
+
+                    if (string.IsNullOrEmpty(currentLocalLanguage)) currentLocalLanguage = "es-MX";
+
+                    // --- CORRECCIÓN AQUÍ ---
+                    if (serverLanguage != currentLocalLanguage)
+                    {
+                        // 1. Guardamos el nuevo idioma
+                        GameClient.Properties.Settings.Default.LanguageCode = serverLanguage;
+                        GameClient.Properties.Settings.Default.Save();
+
+                        // 2. ¡IMPORTANTE! Desconectamos al usuario del servidor antes de reiniciar
+                        // Si no hacemos esto, el servidor creerá que seguimos conectados (Zombie Session)
+                        try
+                        {
+                            serviceClient.Logout(usernameOrEmail);
+                        }
+                        catch
+                        {
+                            // Ignoramos errores de red al salir, lo importante es intentar liberar la sesión
+                        }
+
+                        // 3. Reiniciamos la aplicación
+                        Process.Start(Application.ResourceAssembly.Location);
+                        Application.Current.Shutdown();
+                        return;
+                    }
+                    // -----------------------
+
+                    ApplyLanguage(serverLanguage);
+
+                    SessionManager.StartSession(usernameOrEmail, usernameOrEmail, false);
+
+                    GameMainWindow gameMenu = new GameMainWindow(usernameOrEmail);
+                    gameMenu.Show();
+                    Window.GetWindow(this).Close();
+                }
+                else
+                {
+                    string errorMsg = response.Message ?? "Login failed.";
+                    ShowError(UsernameBorder, errorMsg);
+                    ShowError(PasswordBorder, errorMsg);
+                }
             }
             catch (EndpointNotFoundException)
             {
@@ -59,24 +90,56 @@ namespace GameClient.Views
             {
                 MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
             }
-           
             catch (CommunicationException)
             {
                 MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorTitle);
+            }
             finally
             {
-                if (serviceClient.State == CommunicationState.Opened)
+                CloseClient(serviceClient);
+            }
+        }
+
+        private void ApplyLanguage(string cultureCode)
+        {
+            try
+            {
+                var culture = new CultureInfo(cultureCode);
+                Thread.CurrentThread.CurrentUICulture = culture;
+                Thread.CurrentThread.CurrentCulture = culture;
+
+                if (GameClient.Properties.Settings.Default.LanguageCode != cultureCode)
                 {
-                    serviceClient.Close();
+                    GameClient.Properties.Settings.Default.LanguageCode = cultureCode;
+                    GameClient.Properties.Settings.Default.Save();
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void CloseClient(GameServiceClient client)
+        {
+            try
+            {
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
                 }
                 else
                 {
-                    serviceClient.Abort();
+                    client.Abort();
                 }
             }
-
-            return isSuccess;
+            catch
+            {
+                client.Abort();
+            }
         }
 
         private bool IsFormValid()

@@ -59,6 +59,12 @@
   <wsdl:message name="IUserProfileService_SendUsernameChangeCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:SendUsernameChangeCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_UpdateLanguage_InputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateLanguage" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_UpdateLanguage_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateLanguageResponse" />
+  </wsdl:message>
   <wsdl:portType name="IUserProfileService">
     <wsdl:operation name="GetUserProfile">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfile" message="tns:IUserProfileService_GetUserProfile_InputMessage" />
@@ -87,6 +93,10 @@
     <wsdl:operation name="SendUsernameChangeCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode" message="tns:IUserProfileService_SendUsernameChangeCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse" message="tns:IUserProfileService_SendUsernameChangeCode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLanguage">
+      <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguage" message="tns:IUserProfileService_UpdateLanguage_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguageResponse" message="tns:IUserProfileService_UpdateLanguage_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IUserProfileService" type="tns:IUserProfileService">
@@ -149,6 +159,15 @@
     </wsdl:operation>
     <wsdl:operation name="SendUsernameChangeCode">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCode" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLanguage">
+      <soap12:operation soapAction="http://tempuri.org/IUserProfileService/UpdateLanguage" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

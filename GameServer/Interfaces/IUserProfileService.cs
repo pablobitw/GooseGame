@@ -28,7 +28,8 @@ namespace GameServer.Interfaces
         [OperationContract]
         Task<bool> SendUsernameChangeCodeAsync(string identifier);
 
-        
+        [OperationContract]
+        Task<bool> UpdateLanguageAsync(string email, string languageCode);
 
     }
 }

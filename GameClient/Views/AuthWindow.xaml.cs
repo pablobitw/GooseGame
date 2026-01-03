@@ -80,6 +80,8 @@ namespace GameClient
             }
         }
 
+
+
         public void ShowAuthButtons()
         {
             MainFrame.Content = null;

@@ -199,8 +199,10 @@ namespace GameServer.Services.Logic
             string newCode = GenerateSecureCode();
             player.Account.VerificationCode = newCode;
             player.Account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
             await _repository.SaveChangesAsync();
-            await EmailHelper.SendVerificationEmailAsync(player.Account.Email, newCode).ConfigureAwait(false);
+            await EmailHelper.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
+
             return RegistrationResult.EmailPendingVerification;
         }
 
@@ -209,8 +211,10 @@ namespace GameServer.Services.Logic
             string newCode = GenerateSecureCode();
             account.VerificationCode = newCode;
             account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
+
             await _repository.SaveChangesAsync();
-            await EmailHelper.SendVerificationEmailAsync(account.Email, newCode).ConfigureAwait(false);
+            await EmailHelper.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
+
             return RegistrationResult.EmailPendingVerification;
         }
 
@@ -226,7 +230,8 @@ namespace GameServer.Services.Logic
                 RegisterDate = DateTime.Now,
                 AccountStatus = (int)AccountStatus.Pending,
                 VerificationCode = verifyCode,
-                CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes)
+                CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes),
+                PreferredLanguage = request.PreferredLanguage ?? "es-MX"
             };
 
             var newPlayer = new Player
@@ -245,14 +250,20 @@ namespace GameServer.Services.Logic
 
             _repository.AddPlayer(newPlayer);
             await _repository.SaveChangesAsync();
-            await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode).ConfigureAwait(false);
+
+            await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
 
             return RegistrationResult.Success;
         }
 
-        public async Task<bool> LogInAsync(string usernameOrEmail, string password)
+        public async Task<LoginResponseDto> LogInAsync(string usernameOrEmail, string password)
         {
-            bool result = false;
+            var response = new LoginResponseDto
+            {
+                IsSuccess = false,
+                Message = "Credenciales inválidas o error de servidor.",
+                PreferredLanguage = "es-MX"
+            };
 
             try
             {
@@ -275,40 +286,48 @@ namespace GameServer.Services.Logic
 
                                 ConnectionManager.AddUser(player.Username);
 
-                                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
+                                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
 
-                                result = true;
+                                response.IsSuccess = true;
+                                response.Message = "Login exitoso.";
+                                response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
                             }
                         }
                         else
                         {
                             Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
+                            response.Message = "El usuario ya está conectado.";
                         }
                     }
                     else
                     {
                         Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
+                        response.Message = "Cuenta inactiva o baneada.";
                     }
                 }
             }
             catch (SqlException ex)
             {
                 Log.Fatal("Error SQL en Login.", ex);
+                response.Message = "Error de base de datos.";
             }
             catch (EntityException ex)
             {
                 Log.Error("Error de Entity Framework en Login.", ex);
+                response.Message = "Error interno del servidor.";
             }
             catch (DbUpdateException ex)
             {
                 Log.Error("Error al actualizar el estado del jugador en Login.", ex);
+                response.Message = "Error al actualizar estado.";
             }
             catch (TimeoutException ex)
             {
                 Log.Error("Timeout en Login.", ex);
+                response.Message = "El servidor tardó demasiado en responder.";
             }
 
-            return result;
+            return response;
         }
 
         private bool ValidateLoginCredentials(Player player, string password)
@@ -373,7 +392,7 @@ namespace GameServer.Services.Logic
                 account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                 await _repository.SaveChangesAsync();
-                return await EmailHelper.SendRecoveryEmailAsync(email, verifyCode).ConfigureAwait(false);
+                return await EmailHelper.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
             }
             catch (SqlException ex)
             {
@@ -422,12 +441,15 @@ namespace GameServer.Services.Logic
         {
             try
             {
-                var account = _repository.GetAccountByEmail(email);
-                if (account == null)
+                var player = _repository.GetPlayerForLoginAsync(email).Result;
+
+                if (player == null || player.Account == null)
                 {
-                    Log.ErrorFormat("Attempt to update password for non-existent account: {0}", email);
+                    Log.ErrorFormat("Attempt to update password for non-existent user/account: {0}", email);
                     return false;
                 }
+
+                var account = player.Account;
 
                 if (BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
                 {
@@ -442,6 +464,9 @@ namespace GameServer.Services.Logic
 
                 _repository.SaveChanges();
                 Log.InfoFormat("Contraseña actualizada para: {0}", email);
+
+                _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(email, player.Username, account.PreferredLanguage));
+
                 return true;
             }
             catch (SqlException ex)
@@ -459,6 +484,11 @@ namespace GameServer.Services.Logic
                 Log.Error("Timeout en Actualizar Password.", ex);
                 return false;
             }
+            catch (Exception ex)
+            {
+                Log.Error("Error general en Actualizar Password.", ex);
+                return false;
+            }
         }
 
         public async Task<bool> ResendVerificationCodeAsync(string email)
@@ -473,7 +503,7 @@ namespace GameServer.Services.Logic
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
-                    bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, newCode).ConfigureAwait(false);
+                    bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
                     if (emailSent)
                     {
                         Log.InfoFormat("Verification code resent to {0}.", email);
@@ -523,7 +553,7 @@ namespace GameServer.Services.Logic
 
                             Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
 
-                            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username));
+                            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
 
                             result = true;
                         }

@@ -11,7 +11,7 @@ namespace GameServer.Interfaces
         Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request);
 
         [OperationContract]
-        Task<bool> LogInAsync(string usernameOrEmail, string password);
+        Task<LoginResponseDto> LogInAsync(string usernameOrEmail, string password);
 
         [OperationContract]
         Task<GuestLoginResult> LoginAsGuestAsync();

@@ -474,6 +474,9 @@
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Restablecer contraseña</value>
   </data>
+  <data name="RestartMessage" xml:space="preserve">
+    <value>El idioma ha sido cambiado</value>
+  </data>
   <data name="SaveAvatarButton" xml:space="preserve">
     <value>Guardar Avatar</value>
   </data>

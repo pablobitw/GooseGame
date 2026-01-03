@@ -38,6 +38,9 @@ namespace GameClient.UserProfileServiceReference {
         private int MatchesWonField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string PreferredLanguageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string UsernameField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -114,6 +117,19 @@ namespace GameClient.UserProfileServiceReference {
                 if ((this.MatchesWonField.Equals(value) != true)) {
                     this.MatchesWonField = value;
                     this.RaisePropertyChanged("MatchesWon");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string PreferredLanguage {
+            get {
+                return this.PreferredLanguageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PreferredLanguageField, value) != true)) {
+                    this.PreferredLanguageField = value;
+                    this.RaisePropertyChanged("PreferredLanguage");
                 }
             }
         }
@@ -363,6 +379,12 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse")]
         System.Threading.Tasks.Task<bool> SendUsernameChangeCodeAsync(string identifier);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/UpdateLanguage", ReplyAction="http://tempuri.org/IUserProfileService/UpdateLanguageResponse")]
+        bool UpdateLanguage(string email, string languageCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/UpdateLanguage", ReplyAction="http://tempuri.org/IUserProfileService/UpdateLanguageResponse")]
+        System.Threading.Tasks.Task<bool> UpdateLanguageAsync(string email, string languageCode);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -446,6 +468,14 @@ namespace GameClient.UserProfileServiceReference {
         
         public System.Threading.Tasks.Task<bool> SendUsernameChangeCodeAsync(string identifier) {
             return base.Channel.SendUsernameChangeCodeAsync(identifier);
+        }
+        
+        public bool UpdateLanguage(string email, string languageCode) {
+            return base.Channel.UpdateLanguage(email, languageCode);
+        }
+        
+        public System.Threading.Tasks.Task<bool> UpdateLanguageAsync(string email, string languageCode) {
+            return base.Channel.UpdateLanguageAsync(email, languageCode);
         }
     }
 }

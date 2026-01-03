@@ -160,6 +160,7 @@ namespace GameServer.Services.Logic
                         player.Account.CodeExpiration = null;
 
                         await _repository.SaveChangesAsync();
+                        _ = EmailHelper.SendUsernameChangedNotificationAsync(player.Account.Email, oldUsername, newUsername);
                         Log.InfoFormat("Usuario cambiado: '{0}' -> '{1}'", oldUsername, newUsername);
                         result = UsernameChangeResult.Success;
                     }
@@ -297,6 +298,7 @@ namespace GameServer.Services.Logic
                             account.CodeExpiration = null;
 
                             await _repository.SaveChangesAsync();
+                            _ = EmailHelper.SendPasswordChangedNotificationAsync(account.Email, player.Username);
                             Log.InfoFormat("Contraseña cambiada exitosamente para {0}", request.Email);
                             isChanged = true;
                         }
@@ -333,6 +335,34 @@ namespace GameServer.Services.Logic
             }
 
             return isChanged;
+        }
+
+
+        public async Task<bool> UpdateLanguageAsync(string identifier, string languageCode)
+        {
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(identifier);
+
+                if (player != null && player.Account != null)
+                {
+                    if (languageCode.Length > 5) languageCode = languageCode.Substring(0, 5);
+
+                    player.Account.PreferredLanguage = languageCode;
+                    await _repository.SaveChangesAsync();
+
+                    Log.InfoFormat("Idioma actualizado para {0} a {1}", identifier, languageCode);
+                    return true;
+                }
+
+                Log.WarnFormat("Intento de cambio de idioma para usuario no encontrado: {0}", identifier);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error actualizando idioma para {identifier}", ex);
+                return false;
+            }
         }
 
         public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)

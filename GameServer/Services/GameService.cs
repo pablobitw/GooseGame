@@ -27,7 +27,7 @@ namespace GameServer.Services
             return await _authLogic.RegisterUserAsync(request);
         }
 
-        public async Task<bool> LogInAsync(string usernameOrEmail, string password)
+        public async Task<LoginResponseDto> LogInAsync(string usernameOrEmail, string password)
         {
             return await _authLogic.LogInAsync(usernameOrEmail, password);
         }

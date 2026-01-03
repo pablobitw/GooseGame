@@ -13,5 +13,8 @@ namespace GameServer.DTOs.Auth
 
         [DataMember]
         public string Password { get; set; }
+
+        [DataMember]
+        public string PreferredLanguage { get; set; }
     }
 }

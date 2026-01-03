@@ -29,6 +29,9 @@ namespace GameClient.GameServiceReference {
         private string PasswordField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string PreferredLanguageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string UsernameField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
@@ -63,6 +66,19 @@ namespace GameClient.GameServiceReference {
                 if ((object.ReferenceEquals(this.PasswordField, value) != true)) {
                     this.PasswordField = value;
                     this.RaisePropertyChanged("Password");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string PreferredLanguage {
+            get {
+                return this.PreferredLanguageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PreferredLanguageField, value) != true)) {
+                    this.PreferredLanguageField = value;
+                    this.RaisePropertyChanged("PreferredLanguage");
                 }
             }
         }
@@ -108,6 +124,83 @@ namespace GameClient.GameServiceReference {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
         FatalError = 4,
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LoginResponseDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth")]
+    [System.SerializableAttribute()]
+    public partial class LoginResponseDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsSuccessField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string PreferredLanguageField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsSuccess {
+            get {
+                return this.IsSuccessField;
+            }
+            set {
+                if ((this.IsSuccessField.Equals(value) != true)) {
+                    this.IsSuccessField = value;
+                    this.RaisePropertyChanged("IsSuccess");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string PreferredLanguage {
+            get {
+                return this.PreferredLanguageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.PreferredLanguageField, value) != true)) {
+                    this.PreferredLanguageField = value;
+                    this.RaisePropertyChanged("PreferredLanguage");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -198,10 +291,10 @@ namespace GameClient.GameServiceReference {
         System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(GameClient.GameServiceReference.RegisterUserRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        bool LogIn(string usernameOrEmail, string password);
+        GameClient.GameServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password);
+        System.Threading.Tasks.Task<GameClient.GameServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LoginAsGuest", ReplyAction="http://tempuri.org/IGameService/LoginAsGuestResponse")]
         GameClient.GameServiceReference.GuestLoginResult LoginAsGuest();
@@ -287,11 +380,11 @@ namespace GameClient.GameServiceReference {
             return base.Channel.RegisterUserAsync(request);
         }
         
-        public bool LogIn(string usernameOrEmail, string password) {
+        public GameClient.GameServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password) {
             return base.Channel.LogIn(usernameOrEmail, password);
         }
         
-        public System.Threading.Tasks.Task<bool> LogInAsync(string usernameOrEmail, string password) {
+        public System.Threading.Tasks.Task<GameClient.GameServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password) {
             return base.Channel.LogInAsync(usernameOrEmail, password);
         }
         
