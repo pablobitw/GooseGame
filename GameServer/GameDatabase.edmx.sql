@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 01/03/2026 05:28:53
+-- Date Created: 01/03/2026 16:34:54
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -111,7 +111,7 @@ GO
 -- Creating table 'Accounts'
 CREATE TABLE [dbo].[Accounts] (
     [IdAccount] int IDENTITY(1,1) NOT NULL,
-    [Email] nvarchar(255)  NOT NULL,
+    [Email] nvarchar(100)  NOT NULL,
     [PasswordHash] nvarchar(255)  NOT NULL,
     [RegisterDate] datetime  NOT NULL,
     [AccountStatus] int  NOT NULL,
@@ -202,7 +202,7 @@ GO
 -- Creating table 'Players'
 CREATE TABLE [dbo].[Players] (
     [IdPlayer] int IDENTITY(1,1) NOT NULL,
-    [Username] nvarchar(max)  NOT NULL,
+    [Username] nvarchar(100)  NOT NULL,
     [Coins] int  NOT NULL,
     [Avatar] nvarchar(max)  NOT NULL,
     [PlayerInventoryIdPlayerInventory] int  NOT NULL,

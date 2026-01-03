@@ -411,7 +411,7 @@
             <PropertyRef Name="IdAccount" />
           </Key>
           <Property Name="IdAccount" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Email" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Email" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="PasswordHash" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="RegisterDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="AccountStatus" Type="Int32" Nullable="false" />
@@ -519,7 +519,7 @@
             <PropertyRef Name="IdPlayer" />
           </Key>
           <Property Name="IdPlayer" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Username" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Username" Type="String" FixedLength="false" Unicode="true" Nullable="false" MaxLength="100" />
           <Property Name="Coins" Type="Int32" Nullable="false" />
           <Property Name="Avatar" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="PlayerInventoryIdPlayerInventory" Type="Int32" Nullable="false" />
