@@ -21,7 +21,6 @@ namespace GameServer.Services.Logic
 
         public AuthAppService(IAuthRepository repository)
         {
-            // CORRECCIÓN 1: Validar inyección de dependencias (Pasa TC-29)
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
@@ -96,7 +95,6 @@ namespace GameServer.Services.Logic
         {
             if (request == null) return RegistrationResult.FatalError;
 
-            // CORRECCIÓN 2: Validaciones de entrada (Pasa TC-27 y TC-28)
             if (string.IsNullOrWhiteSpace(request.Username) ||
                 string.IsNullOrWhiteSpace(request.Email) ||
                 string.IsNullOrWhiteSpace(request.Password))
@@ -155,7 +153,6 @@ namespace GameServer.Services.Logic
             }
         }
 
-        // Helper simple para validar email
         private bool IsValidEmail(string email)
         {
             try
@@ -263,26 +260,34 @@ namespace GameServer.Services.Logic
 
                 if (player != null)
                 {
-                    if (!ConnectionManager.IsUserOnline(player.Username))
+                    if (player.Account.AccountStatus != (int)AccountStatus.Inactive &&
+                        player.Account.AccountStatus != (int)AccountStatus.Banned)
                     {
-                        if (ValidateLoginCredentials(player, password))
+                        if (!ConnectionManager.IsUserOnline(player.Username))
                         {
-                            if (player.GameIdGame != null)
+                            if (ValidateLoginCredentials(player, password))
                             {
-                                player.GameIdGame = null;
-                                await _repository.SaveChangesAsync();
+                                if (player.GameIdGame != null)
+                                {
+                                    player.GameIdGame = null;
+                                    await _repository.SaveChangesAsync();
+                                }
+
+                                ConnectionManager.AddUser(player.Username);
+
+                                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
+
+                                result = true;
                             }
-
-                            ConnectionManager.AddUser(player.Username);
-
-                            _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username));
-
-                            result = true;
+                        }
+                        else
+                        {
+                            Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
                         }
                     }
                     else
                     {
-                        Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
+                        Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
                     }
                 }
             }

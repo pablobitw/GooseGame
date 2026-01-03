@@ -32,4 +32,11 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ChangePasswordRequest" nillable="true" type="tns:ChangePasswordRequest" />
+  <xs:complexType name="DeactivateAccountRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DeactivateAccountRequest" nillable="true" type="tns:DeactivateAccountRequest" />
 </xs:schema>

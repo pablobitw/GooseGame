@@ -53,5 +53,9 @@ namespace GameServer.Services
             result = await _logic.ChangePasswordWithCodeAsync(request);
             return result;
         }
+        public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)
+        {
+            return await _logic.DeactivateAccountAsync(request);
+        }
     }
 }

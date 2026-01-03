@@ -271,5 +271,44 @@ namespace GameServer.Services.Logic
 
             return isChanged;
         }
+
+        public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)
+        {
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(request.Username);
+
+                if (player == null || player.Account == null)
+                {
+                    Log.WarnFormat("Intento de desactivar cuenta inexistente o sin cuenta asociada: {0}", request.Username);
+                    return false;
+                }
+
+                if (player.IsGuest)
+                {
+                    Log.WarnFormat("Intento de desactivar cuenta de invitado: {0}", request.Username);
+                    return false;
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(request.Password, player.Account.PasswordHash))
+                {
+                    Log.WarnFormat("Fallo de autenticación al desactivar cuenta: {0}", request.Username);
+                    return false;
+                }
+
+                
+                player.Account.AccountStatus = 2; 
+
+                await _repository.SaveChangesAsync();
+
+                Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error al desactivar cuenta de {request.Username}", ex);
+                return false;
+            }
+        }
     }
 }

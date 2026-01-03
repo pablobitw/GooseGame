@@ -126,6 +126,7 @@
     <Compile Include="DTOs\Lobby\LobbyStateDto.cs" />
     <Compile Include="DTOs\Lobby\PlayerLobbyDto.cs" />
     <Compile Include="DTOs\User\ChangePasswordRequest.cs" />
+    <Compile Include="DTOs\User\DeactivateAccountRequest.cs" />
     <Compile Include="DTOs\User\UsernameChangeResult.cs" />
     <Compile Include="DTOs\User\UserProfileDto.cs" />
     <Compile Include="Enums.cs" />

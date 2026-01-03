@@ -47,6 +47,12 @@
   <wsdl:message name="IUserProfileService_ChangePasswordWithCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:ChangePasswordWithCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_DeactivateAccount_InputMessage">
+    <wsdl:part name="parameters" element="tns:DeactivateAccount" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_DeactivateAccount_OutputMessage">
+    <wsdl:part name="parameters" element="tns:DeactivateAccountResponse" />
+  </wsdl:message>
   <wsdl:portType name="IUserProfileService">
     <wsdl:operation name="GetUserProfile">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfile" message="tns:IUserProfileService_GetUserProfile_InputMessage" />
@@ -67,6 +73,10 @@
     <wsdl:operation name="ChangePasswordWithCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode" message="tns:IUserProfileService_ChangePasswordWithCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse" message="tns:IUserProfileService_ChangePasswordWithCode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DeactivateAccount">
+      <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/DeactivateAccount" message="tns:IUserProfileService_DeactivateAccount_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/DeactivateAccountResponse" message="tns:IUserProfileService_DeactivateAccount_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IUserProfileService" type="tns:IUserProfileService">
@@ -111,6 +121,15 @@
     </wsdl:operation>
     <wsdl:operation name="ChangePasswordWithCode">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCode" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeactivateAccount">
+      <soap12:operation soapAction="http://tempuri.org/IUserProfileService/DeactivateAccount" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

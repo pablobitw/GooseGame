@@ -63,26 +63,18 @@ namespace GameClient.Views
             }
             finally
             {
-                if (client.State == CommunicationState.Opened)
-                {
-                    client.Close();
-                }
-                else
-                {
-                    client.Abort();
-                }
+                if (client.State == CommunicationState.Opened) client.Close();
+                else client.Abort();
             }
         }
 
         private void UpdateProfileUI(UserProfileDto profile)
         {
             UsernameTextBox.Text = profile.Username;
-
             if (EmailTextBox != null) EmailTextBox.Text = profile.Email;
             if (GamesPlayedText != null) GamesPlayedText.Text = profile.MatchesPlayed.ToString();
             if (GamesWonText != null) GamesWonText.Text = profile.MatchesWon.ToString();
             if (CoinsText != null) CoinsText.Text = profile.Coins.ToString();
-
             UpdateUsernameChangeLimitUI(profile.UsernameChangeCount);
         }
 
@@ -106,10 +98,7 @@ namespace GameClient.Views
 
         private void LoadAvatar(string avatarName)
         {
-            if (string.IsNullOrEmpty(avatarName))
-            {
-                avatarName = "default_avatar.png";
-            }
+            if (string.IsNullOrEmpty(avatarName)) avatarName = "default_avatar.png";
 
             try
             {
@@ -123,18 +112,10 @@ namespace GameClient.Views
                     bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.EndInit();
-
                     CurrentAvatarBrush.ImageSource = bitmap;
                 }
             }
-            catch (UriFormatException)
-            {
-                Console.WriteLine(GameClient.Resources.Strings.AvatarFormatError);
-            }
-            catch (IOException)
-            {
-                Console.WriteLine(GameClient.Resources.Strings.AvatarReadError);
-            }
+            catch (Exception) { }
         }
 
         private async void ChangeUsernameButton_Click(object sender, RoutedEventArgs e)
@@ -157,10 +138,75 @@ namespace GameClient.Views
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
+            if (mainWindow != null) await mainWindow.ShowMainMenu();
+        }
 
-            if (mainWindow != null)
+
+        private void ShowDeactivatePopup_Click(object sender, RoutedEventArgs e)
+        {
+            PbDeactivate1.Password = string.Empty;
+            PbDeactivate2.Password = string.Empty;
+            DeactivatePopupOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void CancelDeactivate_Click(object sender, RoutedEventArgs e)
+        {
+            DeactivatePopupOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void ConfirmDeactivate_Click(object sender, RoutedEventArgs e)
+        {
+            string pass1 = PbDeactivate1.Password;
+            string pass2 = PbDeactivate2.Password;
+
+            if (string.IsNullOrWhiteSpace(pass1) || string.IsNullOrWhiteSpace(pass2))
             {
-                await mainWindow.ShowMainMenu();
+                MessageBox.Show("Por favor ingresa tu contraseña en ambos campos.", "Campos requeridos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (pass1 != pass2)
+            {
+                MessageBox.Show("Las contraseñas no coinciden.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            ConfirmDeactivateButton.IsEnabled = false;
+            var client = new UserProfileServiceClient();
+
+            try
+            {
+                var request = new DeactivateAccountRequest
+                {
+                    Username = userEmail, 
+                    Password = pass1
+                };
+
+                bool success = await client.DeactivateAccountAsync(request);
+
+                if (success)
+                {
+                    MessageBox.Show("Cuenta desactivada con éxito. Serás redirigido al inicio de sesión.", "Cuenta Desactivada", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    var authWindow = new AuthWindow();
+                    authWindow.Show();
+                    Window.GetWindow(this)?.Close();
+                }
+                else
+                {
+                    MessageBox.Show("La contraseña es incorrecta o no se pudo desactivar la cuenta.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ConfirmDeactivateButton.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error de conexión: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmDeactivateButton.IsEnabled = true;
+            }
+            finally
+            {
+                if (client.State == CommunicationState.Opened) client.Close();
+                else client.Abort();
             }
         }
     }

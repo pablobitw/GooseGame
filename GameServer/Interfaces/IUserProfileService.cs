@@ -21,5 +21,9 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         Task<bool> ChangePasswordWithCodeAsync(ChangePasswordRequest request);
+
+        [OperationContract]
+        Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request);
+    
     }
 }

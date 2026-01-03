@@ -15,7 +15,6 @@
         </Grid.Background>
 
         <Border Style="{StaticResource LobbyContainerBorderStyle}" Width="1400" Height="800">
-
             <Grid Margin="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="400"/>
@@ -23,7 +22,6 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-
                     <Border Width="450" Height="306" CornerRadius="150" BorderThickness="0" Margin="0,0,0,30">
                         <Border.Background>
                             <ImageBrush x:Name="CurrentAvatarBrush" ImageSource="/Assets/Avatar/default_avatar.png" Stretch="UniformToFill"/>
@@ -38,7 +36,6 @@
                     <Border Background="#20000000" CornerRadius="10" Padding="20" Margin="0,40,0,0">
                         <StackPanel>
                             <TextBlock Text="{x:Static props:Strings.StatsTitle}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -47,7 +44,6 @@
                                 <TextBlock Text="{x:Static props:Strings.GamesPlayedLabel}" FontSize="20" Grid.Column="0"/>
                                 <TextBlock x:Name="GamesPlayedText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1"/>
                             </Grid>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -56,7 +52,6 @@
                                 <TextBlock Text="{x:Static props:Strings.GamesWonLabel}" FontSize="20" Grid.Column="0"/>
                                 <TextBlock x:Name="GamesWonText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1" Foreground="#28A745"/>
                             </Grid>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -73,7 +68,6 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="60,0,0,0" VerticalAlignment="Center">
-
                     <TextBlock Text="{x:Static props:Strings.UserProfilePageTitle}" FontSize="48" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
                     <Separator Background="#CCC" Margin="0,0,0,40"/>
 
@@ -99,14 +93,75 @@
                             Width="300" Height="60" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" 
                             Click="ChangePasswordButton_Click"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,40,0,0">
-                        <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" Style="{StaticResource PrimaryButtonStyle}" 
-                                Width="150" Height="60" FontSize="24" FontWeight="Bold" Margin="0,0,20,0" 
-                                Click="BackButton_Click"/>
-                    </StackPanel>
+                    <Grid Margin="0,40,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
+                        <Button x:Name="DeactivateAccountButton" Content="Desactivar Cuenta" 
+                                Background="#DC3545" Foreground="White" BorderThickness="0"
+                                Width="200" FontSize="18" FontWeight="Bold"
+                                HorizontalAlignment="Left" Grid.Column="0"
+                                Click="ShowDeactivatePopup_Click" Margin="654,105,0,-85">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" Style="{StaticResource PrimaryButtonStyle}" 
+                                Width="150" Height="60" FontSize="24" FontWeight="Bold"
+                                Click="BackButton_Click" Margin="-776,-688,1330,688"/>
+                    </Grid>
                 </StackPanel>
             </Grid>
         </Border>
+
+        <Grid x:Name="DeactivatePopupOverlay" Visibility="Collapsed">
+            <Border Background="Black" Opacity="0.5"/>
+            <Border Background="White" Width="550" Height="400" CornerRadius="15" Padding="30">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.4"/>
+                </Border.Effect>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="⚠ Desactivar Cuenta" FontSize="26" FontWeight="Bold" Foreground="#DC3545" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                    <TextBlock Text="¿Estás seguro? Para confirmar, ingresa tu contraseña actual dos veces:" 
+                               FontSize="16" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
+
+                    <TextBlock Text="Contraseña:" FontSize="14" FontWeight="SemiBold"/>
+                    <PasswordBox x:Name="PbDeactivate1" Height="40" Margin="0,5,0,15" Padding="5" FontSize="16"/>
+
+                    <TextBlock Text="Confirmar Contraseña:" FontSize="14" FontWeight="SemiBold"/>
+                    <PasswordBox x:Name="PbDeactivate2" Height="40" Margin="0,5,0,25" Padding="5" FontSize="16"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="ConfirmDeactivateButton" Content="Confirmar" 
+                                Background="#DC3545" Foreground="White" Width="180" Height="45" 
+                                FontSize="16" FontWeight="Bold" Margin="0,0,15,0" BorderThickness="0"
+                                Click="ConfirmDeactivate_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Content="{x:Static props:Strings.CancelButton}" 
+                                Background="#AAA" Foreground="White" Width="120" Height="45" 
+                                FontSize="16" FontWeight="Bold" BorderThickness="0"
+                                Click="CancelDeactivate_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </Page>
