@@ -709,6 +709,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Expulsado.
+        /// </summary>
+        public static string KickedTitle {
+            get {
+                return ResourceManager.GetString("KickedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a English (US).
         /// </summary>
         public static string LanguageEn {

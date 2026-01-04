@@ -319,11 +319,19 @@ namespace GameClient.Views
 
         private void OnPlayerKicked(string reason)
         {
-            Dispatcher.InvokeAsync(async () =>
+            Dispatcher.Invoke(async () =>
             {
+                IsEnabled = false;
+                RollDiceButton.IsEnabled = false;
+
                 StopTimers();
                 _isGameOverHandled = true;
-                MessageBox.Show(reason, "Has sido expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                UnsubscribeFromEvents();
+                CloseChatClient();
+
+                string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
+                MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 if (Window.GetWindow(this) is GameMainWindow mainWindow)
                 {
@@ -375,6 +383,8 @@ namespace GameClient.Views
 
         private async void RollDiceButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isGameOverHandled || !IsEnabled) return;
+
             RollDiceButton.IsEnabled = false;
             try
             {
@@ -389,7 +399,7 @@ namespace GameClient.Views
             catch (FaultException ex)
             {
                 MessageBox.Show($"Error del juego: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                RollDiceButton.IsEnabled = true;
+                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
             }
             catch (CommunicationException)
             {
@@ -443,7 +453,6 @@ namespace GameClient.Views
         {
             _turnSecondsRemaining--;
 
-            // Evitar números negativos visuales
             if (_turnSecondsRemaining < 0) _turnSecondsRemaining = 0;
 
             TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
@@ -782,6 +791,8 @@ namespace GameClient.Views
                 MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
 
         private void OnFriendRequestPopUpReceived(string senderName)
         {

@@ -184,6 +184,15 @@ namespace GameClient
             }
         }
 
+        private void ShopButtonClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "¡Funcionalidad pendiente!\nTe recomendamos que ahorres tus monedas y consigas buenos tickets para cuando abra.",
+                "Tienda (Próximamente)",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
         private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
         {
             if (IsGuestActionRestricted("Tabla de Clasificación")) return;
@@ -252,6 +261,7 @@ namespace GameClient
                 }
             });
         }
+
 
         private async Task AttemptJoinLobbyAsync(string code)
         {

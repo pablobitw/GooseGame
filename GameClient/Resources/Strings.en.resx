@@ -321,6 +321,9 @@
   <data name="JoinMatchCodeTitle" xml:space="preserve">
     <value>Enter Match Code</value>
   </data>
+  <data name="KickedTitle" xml:space="preserve">
+    <value>Kick out</value>
+  </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
   </data>

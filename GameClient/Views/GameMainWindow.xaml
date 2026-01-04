@@ -91,6 +91,48 @@
                     </Button.Style>
                 </Button>
 
+                <Button x:Name="ShopButton" 
+                        Height="160" Width="134" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                        Margin="0,760,1726,0" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Click="ShopButtonClick">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Ellipse Fill="Black" Opacity="0.3" Margin="15"/>
+                                <Image Source="/Assets/Icons/shop_icon.png" Stretch="Uniform"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.9"/>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <Button x:Name="PlayButton" Content="{x:Static props:Strings.PlayButton}" 
                         Style="{StaticResource PrimaryButtonStyle}" 
                         Width="500" Height="140"
@@ -140,6 +182,7 @@
                     </Button>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+
                         <Button x:Name="OptionsButton" 
                                 Height="110" Width="110" Margin="0,0,30,0"
                                 Background="Transparent" BorderThickness="0" Cursor="Hand" 
@@ -169,6 +212,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+
                         <Button x:Name="LeaderboardButton" 
                                 Height="110" Width="110"
                                 Background="Transparent" BorderThickness="0" Cursor="Hand" 
@@ -237,6 +281,7 @@
             </Grid>
 
             <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+
         </Grid>
     </Viewbox>
 </Window>
