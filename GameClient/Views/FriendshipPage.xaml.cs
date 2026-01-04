@@ -14,6 +14,7 @@ namespace GameClient.Views
     {
         public ObservableCollection<FriendDisplayModel> FriendsList { get; set; }
         public ObservableCollection<FriendRequestDisplayModel> FriendRequestsList { get; set; }
+        public ObservableCollection<FriendRequestDisplayModel> SentRequestsList { get; set; }
 
         private readonly string _currentUsername;
         private FriendshipServiceManager _friendshipManager;
@@ -29,10 +30,15 @@ namespace GameClient.Views
                 OnPropertyChanged(nameof(RequestBadgeVisibility));
             }
         }
+
         public Visibility RequestBadgeVisibility => RequestCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public FriendshipPage(string username)
         {
@@ -42,18 +48,24 @@ namespace GameClient.Views
 
             FriendsList = new ObservableCollection<FriendDisplayModel>();
             FriendRequestsList = new ObservableCollection<FriendRequestDisplayModel>();
+            SentRequestsList = new ObservableCollection<FriendRequestDisplayModel>();
 
             FriendsListBox.ItemsSource = FriendsList;
             FriendRequestsListBox.ItemsSource = FriendRequestsList;
+            SentRequestsListBox.ItemsSource = SentRequestsList;
 
             if (FriendshipServiceManager.Instance == null)
             {
                 FriendshipServiceManager.Initialize(_currentUsername);
             }
+
             _friendshipManager = FriendshipServiceManager.Instance;
 
-            _friendshipManager.FriendListUpdated += HandleDataUpdate;
-            _friendshipManager.RequestReceived += HandleDataUpdate;
+            if (_friendshipManager != null)
+            {
+                _friendshipManager.FriendListUpdated += HandleDataUpdate;
+                _friendshipManager.RequestReceived += HandleDataUpdate;
+            }
 
             Loaded += FriendshipPage_Loaded;
             Unloaded += FriendshipPage_Unloaded;
@@ -75,39 +87,178 @@ namespace GameClient.Views
 
         private void HandleDataUpdate()
         {
-            this.Dispatcher.InvokeAsync(async () => await LoadDataAsync());
+            Dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    await LoadDataAsync();
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                    ShowErrorMessage("Error de comunicación con el servidor al actualizar.");
+                }
+                catch (TimeoutException)
+                {
+                    ShowErrorMessage("Tiempo de espera agotado al actualizar.");
+                }
+            });
         }
 
         private async Task LoadDataAsync()
         {
-            await LoadFriendsAsync();
-            await LoadRequestsAsync();
+            try
+            {
+                await LoadFriendsAsync();
+                await LoadRequestsAsync();
+                await LoadSentRequestsAsync();
+            }
+            catch (System.ServiceModel.CommunicationException)
+            {
+                ShowErrorMessage("Error de comunicación con el servidor. Por favor, verifica tu conexión.");
+            }
+            catch (TimeoutException)
+            {
+                ShowErrorMessage("El servidor tardó demasiado en responder. Inténtalo de nuevo.");
+            }
         }
 
         private async Task LoadFriendsAsync()
         {
-            var friends = await _friendshipManager.GetFriendListAsync();
-            FriendsList.Clear();
-            foreach (var friend in friends)
+            if (_friendshipManager == null)
             {
-                FriendsList.Add(new FriendDisplayModel
-                {
-                    Username = friend.Username,
-                    IsOnline = friend.IsOnline,
-                });
+                return;
             }
+
+            try
+            {
+                var friends = await _friendshipManager.GetFriendListAsync();
+
+                if (Dispatcher.CheckAccess())
+                {
+                    UpdateFriendsList(friends);
+                }
+                else
+                {
+                    await Dispatcher.InvokeAsync(() => UpdateFriendsList(friends));
+                }
+            }
+            catch (System.ServiceModel.CommunicationException)
+            {
+                throw;
+            }
+            catch (TimeoutException)
+            {
+                throw;
+            }
+        }
+
+        private void UpdateFriendsList(FriendDto[] friends)
+        {
+            FriendsList.Clear();
+
+            if (friends != null)
+            {
+                foreach (var friend in friends)
+                {
+                    FriendsList.Add(new FriendDisplayModel
+                    {
+                        Username = friend.Username,
+                        IsOnline = friend.IsOnline,
+                    });
+                }
+            }
+
             UpdateEmptyStateMessages();
         }
 
         private async Task LoadRequestsAsync()
         {
-            var requests = await _friendshipManager.GetPendingRequestsAsync();
-            FriendRequestsList.Clear();
-            foreach (var req in requests)
+            if (_friendshipManager == null)
             {
-                FriendRequestsList.Add(new FriendRequestDisplayModel { Username = req.Username });
+                return;
             }
+
+            try
+            {
+                var requests = await _friendshipManager.GetPendingRequestsAsync();
+
+                if (Dispatcher.CheckAccess())
+                {
+                    UpdateRequestsList(requests);
+                }
+                else
+                {
+                    await Dispatcher.InvokeAsync(() => UpdateRequestsList(requests));
+                }
+            }
+            catch (System.ServiceModel.CommunicationException)
+            {
+                throw;
+            }
+            catch (TimeoutException)
+            {
+                throw;
+            }
+        }
+
+        private void UpdateRequestsList(FriendDto[] requests)
+        {
+            FriendRequestsList.Clear();
+
+            if (requests != null)
+            {
+                foreach (var req in requests)
+                {
+                    FriendRequestsList.Add(new FriendRequestDisplayModel { Username = req.Username });
+                }
+            }
+
             RequestCount = FriendRequestsList.Count;
+            UpdateEmptyStateMessages();
+        }
+
+        private async Task LoadSentRequestsAsync()
+        {
+            if (_friendshipManager == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var sent = await _friendshipManager.GetSentRequestsAsync();
+
+                if (Dispatcher.CheckAccess())
+                {
+                    UpdateSentRequestsList(sent);
+                }
+                else
+                {
+                    await Dispatcher.InvokeAsync(() => UpdateSentRequestsList(sent));
+                }
+            }
+            catch (System.ServiceModel.CommunicationException)
+            {
+                throw;
+            }
+            catch (TimeoutException)
+            {
+                throw;
+            }
+        }
+
+        private void UpdateSentRequestsList(FriendDto[] sent)
+        {
+            SentRequestsList.Clear();
+
+            if (sent != null)
+            {
+                foreach (var req in sent)
+                {
+                    SentRequestsList.Add(new FriendRequestDisplayModel { Username = req.Username });
+                }
+            }
+
             UpdateEmptyStateMessages();
         }
 
@@ -115,84 +266,236 @@ namespace GameClient.Views
         {
             NoFriendsMessage.Visibility = FriendsList.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             NoRequestsMessage.Visibility = FriendRequestsList.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            NoSentRequestsMessage.Visibility = SentRequestsList.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // MÉTODO CORREGIDO
         private async void SendFriendRequest_Click(object sender, RoutedEventArgs e)
         {
             string target = SearchUserBox.Text.Trim();
+
             if (string.IsNullOrEmpty(target))
             {
-                MessageBox.Show(GameClient.Resources.Strings.EmptyUsernameError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowWarningMessage(GameClient.Resources.Strings.EmptyUsernameError);
                 return;
             }
 
-            if (target == _currentUsername)
+            if (target.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show(GameClient.Resources.Strings.SelfRequestError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowWarningMessage("No puedes enviarte una solicitud a ti mismo.");
                 return;
             }
 
-            // Aquí estaba el error: ahora recibimos el Enum FriendRequestResult
-            var result = await _friendshipManager.SendFriendRequestAsync(target);
+            if (_friendshipManager == null)
+            {
+                ShowErrorMessage("No hay conexión con el servidor.");
+                return;
+            }
 
-            if (result == FriendRequestResult.Success)
+            try
             {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.RequestSentSuccess, target), GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-                SearchUserBox.Text = string.Empty;
+                var result = await _friendshipManager.SendFriendRequestAsync(target);
+
+                if (result == FriendRequestResult.Success)
+                {
+                    ShowSuccessMessage($"Solicitud enviada a {target}.");
+                    SearchUserBox.Text = string.Empty;
+                    await LoadSentRequestsAsync();
+                }
+                else if (result == FriendRequestResult.AlreadyFriends)
+                {
+                    ShowInfoMessage("Ya eres amigo de este jugador.");
+                }
+                else if (result == FriendRequestResult.Pending)
+                {
+                    ShowWarningMessage("Ya hay una solicitud pendiente con este jugador.");
+                }
+                else if (result == FriendRequestResult.TargetNotFound)
+                {
+                    ShowWarningMessage("El usuario no existe.");
+                }
+                else
+                {
+                    ShowErrorMessage("No se pudo enviar la solicitud. Verifica tu conexión.");
+                }
             }
-            else if (result == FriendRequestResult.AlreadyFriends)
+            catch (System.ServiceModel.CommunicationException)
             {
-                MessageBox.Show("Actualmente ya eres amigo de este jugador.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+                ShowErrorMessage("Error de comunicación con el servidor.");
             }
-            else if (result == FriendRequestResult.Pending)
+            catch (TimeoutException)
             {
-                MessageBox.Show("Ya has enviado una solicitud a este jugador anteriormente.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else
-            {
-                MessageBox.Show(GameClient.Resources.Strings.RequestSentError, GameClient.Resources.Strings.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowErrorMessage("El servidor tardó demasiado en responder.");
             }
         }
 
         private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is Button btn && btn.Tag != null)
             {
                 string requester = btn.Tag.ToString();
-                await _friendshipManager.RespondToFriendRequestAsync(requester, true);
-                await LoadDataAsync();
+                btn.IsEnabled = false;
+
+                if (_friendshipManager == null)
+                {
+                    ShowErrorMessage("No hay conexión con el servidor.");
+                    btn.IsEnabled = true;
+                    return;
+                }
+
+                try
+                {
+                    bool success = await _friendshipManager.RespondToFriendRequestAsync(requester, true);
+
+                    if (success)
+                    {
+                        await LoadDataAsync();
+                    }
+                    else
+                    {
+                        ShowErrorMessage("No se pudo aceptar la solicitud en este momento.");
+                        btn.IsEnabled = true;
+                    }
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    btn.IsEnabled = true;
+                }
+                catch (TimeoutException)
+                {
+                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    btn.IsEnabled = true;
+                }
             }
         }
 
         private async void RejectRequest_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is Button btn && btn.Tag != null)
             {
                 string requester = btn.Tag.ToString();
-                await _friendshipManager.RespondToFriendRequestAsync(requester, false);
-                await LoadDataAsync();
+                btn.IsEnabled = false;
+
+                if (_friendshipManager == null)
+                {
+                    ShowErrorMessage("No hay conexión con el servidor.");
+                    btn.IsEnabled = true;
+                    return;
+                }
+
+                try
+                {
+                    bool success = await _friendshipManager.RespondToFriendRequestAsync(requester, false);
+
+                    if (success)
+                    {
+                        await LoadDataAsync();
+                    }
+                    else
+                    {
+                        ShowErrorMessage("No se pudo rechazar la solicitud.");
+                        btn.IsEnabled = true;
+                    }
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    btn.IsEnabled = true;
+                }
+                catch (TimeoutException)
+                {
+                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    btn.IsEnabled = true;
+                }
+            }
+        }
+
+        private async void CancelSentRequest_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag != null)
+            {
+                string target = btn.Tag.ToString();
+                btn.IsEnabled = false;
+
+                if (_friendshipManager == null)
+                {
+                    ShowErrorMessage("No hay conexión con el servidor.");
+                    btn.IsEnabled = true;
+                    return;
+                }
+
+                try
+                {
+                    bool success = await _friendshipManager.RemoveFriendAsync(target);
+
+                    if (success)
+                    {
+                        await LoadSentRequestsAsync();
+                    }
+                    else
+                    {
+                        ShowErrorMessage("No se pudo cancelar la solicitud enviada.");
+                        btn.IsEnabled = true;
+                    }
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    btn.IsEnabled = true;
+                }
+                catch (TimeoutException)
+                {
+                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    btn.IsEnabled = true;
+                }
             }
         }
 
         private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is Button btn && btn.Tag != null)
             {
                 string friend = btn.Tag.ToString();
+                var result = MessageBox.Show(
+                    $"¿Eliminar a {friend} de tus amigos?",
+                    "Confirmación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
 
-                var result = MessageBox.Show(string.Format(GameClient.Resources.Strings.DeleteConfirmation, friend),
-                                               GameClient.Resources.Strings.ConfirmationTitle,
-                                               MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
+                if (result != MessageBoxResult.Yes)
                 {
-                    bool deleted = await _friendshipManager.RemoveFriendAsync(friend);
-                    if (deleted)
+                    return;
+                }
+
+                btn.IsEnabled = false;
+
+                if (_friendshipManager == null)
+                {
+                    ShowErrorMessage("No hay conexión con el servidor.");
+                    btn.IsEnabled = true;
+                    return;
+                }
+
+                try
+                {
+                    bool success = await _friendshipManager.RemoveFriendAsync(friend);
+
+                    if (!success)
                     {
-                        MessageBox.Show(GameClient.Resources.Strings.FriendDeletedSuccess, GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-                        await LoadDataAsync();
+                        ShowErrorMessage("No se pudo eliminar al amigo. Inténtalo de nuevo.");
+                        btn.IsEnabled = true;
                     }
+                }
+                catch (System.ServiceModel.CommunicationException)
+                {
+                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    btn.IsEnabled = true;
+                }
+                catch (TimeoutException)
+                {
+                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    btn.IsEnabled = true;
                 }
             }
         }
@@ -203,6 +506,54 @@ namespace GameClient.Views
             if (mainWindow != null)
             {
                 await mainWindow.ShowMainMenu();
+            }
+        }
+
+        private void ShowErrorMessage(string message)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else
+            {
+                Dispatcher.Invoke(() => MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error));
+            }
+        }
+
+        private void ShowWarningMessage(string message)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                MessageBox.Show(message, "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                Dispatcher.Invoke(() => MessageBox.Show(message, "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning));
+            }
+        }
+
+        private void ShowInfoMessage(string message)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                MessageBox.Show(message, "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                Dispatcher.Invoke(() => MessageBox.Show(message, "Información", MessageBoxButton.OK, MessageBoxImage.Information));
+            }
+        }
+
+        private void ShowSuccessMessage(string message)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                MessageBox.Show(message, "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                Dispatcher.Invoke(() => MessageBox.Show(message, "Éxito", MessageBoxButton.OK, MessageBoxImage.Information));
             }
         }
     }

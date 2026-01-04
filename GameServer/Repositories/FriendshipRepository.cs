@@ -22,6 +22,7 @@ namespace GameServer.Repositories
         {
             ThrowIfDisposed();
             return await _context.Players
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Username == username)
                 .ConfigureAwait(false);
         }
@@ -29,7 +30,9 @@ namespace GameServer.Repositories
         public Player GetPlayerById(int id)
         {
             ThrowIfDisposed();
-            return _context.Players.FirstOrDefault(p => p.IdPlayer == id);
+            return _context.Players
+                .AsNoTracking()
+                .FirstOrDefault(p => p.IdPlayer == id);
         }
 
         public Friendship GetFriendship(int userId1, int userId2)
@@ -54,6 +57,7 @@ namespace GameServer.Repositories
             ThrowIfDisposed();
             var accepted = (int)FriendshipStatus.Accepted;
             return _context.Friendships
+                .AsNoTracking()
                 .Where(f => (f.PlayerIdPlayer == playerId || f.Player1_IdPlayer == playerId) && f.FriendshipStatus == accepted)
                 .ToList();
         }
@@ -63,7 +67,18 @@ namespace GameServer.Repositories
             ThrowIfDisposed();
             var pending = (int)FriendshipStatus.Pending;
             return _context.Friendships
+                .AsNoTracking()
                 .Where(f => f.Player1_IdPlayer == playerId && f.FriendshipStatus == pending)
+                .ToList();
+        }
+
+        public List<Friendship> GetOutgoingPendingRequests(int playerId)
+        {
+            ThrowIfDisposed();
+            var pending = (int)FriendshipStatus.Pending;
+            return _context.Friendships
+                .AsNoTracking()
+                .Where(f => f.PlayerIdPlayer == playerId && f.FriendshipStatus == pending)
                 .ToList();
         }
 
@@ -76,6 +91,10 @@ namespace GameServer.Repositories
         public void RemoveFriendship(Friendship friendship)
         {
             ThrowIfDisposed();
+            if (_context.Entry(friendship).State == EntityState.Detached)
+            {
+                _context.Friendships.Attach(friendship);
+            }
             _context.Friendships.Remove(friendship);
         }
 
@@ -85,21 +104,18 @@ namespace GameServer.Repositories
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Releases resources used by the repository.
-        /// </summary>
-        /// <param name="disposing">True when called from Dispose, false when called from finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -109,11 +125,12 @@ namespace GameServer.Repositories
             _disposed = true;
         }
 
-
         private void ThrowIfDisposed()
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(GetType().FullName);
+            }
         }
     }
 }

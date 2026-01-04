@@ -318,6 +318,12 @@ namespace GameClient.FriendshipServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
         System.Threading.Tasks.Task SendGameInvitationAsync(GameClient.FriendshipServiceReference.GameInvitationDto invitation);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetSentRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetSentRequestsResponse")]
+        GameClient.FriendshipServiceReference.FriendDto[] GetSentRequests(string username);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetSentRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetSentRequestsResponse")]
+        System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetSentRequestsAsync(string username);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -426,6 +432,14 @@ namespace GameClient.FriendshipServiceReference {
         
         public System.Threading.Tasks.Task SendGameInvitationAsync(GameClient.FriendshipServiceReference.GameInvitationDto invitation) {
             return base.Channel.SendGameInvitationAsync(invitation);
+        }
+        
+        public GameClient.FriendshipServiceReference.FriendDto[] GetSentRequests(string username) {
+            return base.Channel.GetSentRequests(username);
+        }
+        
+        public System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetSentRequestsAsync(string username) {
+            return base.Channel.GetSentRequestsAsync(username);
         }
     }
 }

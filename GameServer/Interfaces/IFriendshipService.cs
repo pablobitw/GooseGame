@@ -31,5 +31,8 @@ namespace GameServer.Interfaces
 
         [OperationContract]
         void SendGameInvitation(GameInvitationDto invitation);
+
+        [OperationContract]
+        Task<List<FriendDto>> GetSentRequests(string username);
     }
 }

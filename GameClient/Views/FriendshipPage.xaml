@@ -161,6 +161,41 @@
                             <TextBlock x:Name="NoRequestsMessage" Text="{x:Static props:Strings.NoRequestsMessage}" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
                     </TabItem>
+
+                    <TabItem Header="Enviadas">
+                        <Grid>
+                            <ListBox x:Name="SentRequestsListBox" Margin="20" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White" CornerRadius="10" Padding="15" Margin="0,5">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="2" BlurRadius="5" Opacity="0.1"/>
+                                            </Border.Effect>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <fa:ImageAwesome Icon="PaperPlane" Foreground="Gray" Height="25" Width="25" VerticalAlignment="Center" Margin="0,0,15,0"/>
+
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Username}" FontSize="24" FontWeight="Bold"/>
+                                                    <TextBlock Text="Esperando respuesta..." FontSize="14" Foreground="Gray" FontStyle="Italic"/>
+                                                </StackPanel>
+
+                                                <Button Grid.Column="2" Content="Cancelar" Style="{StaticResource OrangeButtonStyle}" 
+                                                        Width="120" Height="40" FontSize="16" 
+                                                        Tag="{Binding Username}" Click="CancelSentRequest_Click"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock x:Name="NoSentRequestsMessage" Text="No has enviado solicitudes pendientes" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                        </Grid>
+                    </TabItem>
                 </TabControl>
             </Grid>
         </Border>

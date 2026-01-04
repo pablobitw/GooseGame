@@ -5,7 +5,7 @@ using GameClient.FriendshipServiceReference;
 
 namespace GameClient.Helpers
 {
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     public class FriendshipServiceManager : IFriendshipServiceCallback
     {
         public static FriendshipServiceManager Instance { get; private set; }
@@ -13,7 +13,9 @@ namespace GameClient.Helpers
         public static void Initialize(string username)
         {
             if (Instance != null && Instance._username == username)
+            {
                 return;
+            }
 
             Instance?.Disconnect();
             Instance = new FriendshipServiceManager(username);
@@ -31,7 +33,6 @@ namespace GameClient.Helpers
         public event Action FriendListUpdated;
         public event Action RequestReceived;
         public event Action<string, string> GameInvitationReceived;
-
         public event Action<string> FriendRequestPopUpReceived;
 
         private FriendshipServiceManager(string username)
@@ -48,31 +49,44 @@ namespace GameClient.Helpers
                 _proxy = new FriendshipServiceClient(context);
                 _proxy.Connect(_username);
             }
-            catch
+            catch (EndpointNotFoundException ex)
             {
-                HandleFatalConnectionError("No fue posible conectar con el servicio de amigos.");
+                HandleFatalConnectionError($"No se pudo conectar al servidor: {ex.Message}");
+            }
+            catch (CommunicationException ex)
+            {
+                HandleFatalConnectionError($"Error de conexión con el servicio de amigos: {ex.Message}");
+            }
+            catch (TimeoutException ex)
+            {
+                HandleFatalConnectionError($"Tiempo de espera agotado al conectar: {ex.Message}");
             }
         }
 
         private void HandleFatalConnectionError(string message)
         {
-            AbortProxy();
+            if (_proxy != null)
+            {
+                try
+                {
+                    _proxy.Abort();
+                }
+                catch
+                {
+                    // Ignorar errores al abortar
+                }
+                _proxy = null;
+            }
             Reset();
             SessionManager.ForceLogout(message);
         }
 
-        private void AbortProxy()
-        {
-            try
-            {
-                _proxy?.Abort();
-            }
-            catch { }
-        }
-
         public void Disconnect()
         {
-            if (_proxy == null) return;
+            if (_proxy == null)
+            {
+                return;
+            }
 
             try
             {
@@ -86,7 +100,11 @@ namespace GameClient.Helpers
                     _proxy.Abort();
                 }
             }
-            catch
+            catch (CommunicationException)
+            {
+                _proxy.Abort();
+            }
+            catch (TimeoutException)
             {
                 _proxy.Abort();
             }
@@ -96,23 +114,49 @@ namespace GameClient.Helpers
             }
         }
 
-        public void OnFriendRequestReceived() => RequestReceived?.Invoke();
-        public void OnFriendListUpdated() => FriendListUpdated?.Invoke();
+        public void OnFriendRequestReceived()
+        {
+            RequestReceived?.Invoke();
+        }
+
+        public void OnFriendListUpdated()
+        {
+            FriendListUpdated?.Invoke();
+        }
+
         public void OnGameInvitationReceived(string hostUsername, string lobbyCode)
-            => GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
+        {
+            GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
+        }
 
         public void OnFriendRequestPopUp(string senderUsername)
-            => FriendRequestPopUpReceived?.Invoke(senderUsername);
+        {
+            FriendRequestPopUpReceived?.Invoke(senderUsername);
+        }
 
         public async Task<FriendDto[]> GetFriendListAsync()
         {
             try
             {
-                return await _proxy.GetFriendListAsync(_username);
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                {
+                    return await _proxy.GetFriendListAsync(_username);
+                }
+                return Array.Empty<FriendDto>();
             }
-            catch
+            catch (CommunicationObjectFaultedException ex)
             {
-                HandleFatalConnectionError("Se perdió la conexión al obtener la lista de amigos.");
+                HandleFatalConnectionError($"Canal corrupto al obtener lista de amigos: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (CommunicationException ex)
+            {
+                HandleFatalConnectionError($"Error de comunicación al obtener lista de amigos: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (TimeoutException ex)
+            {
+                HandleFatalConnectionError($"Timeout al obtener lista de amigos: {ex.Message}");
                 return Array.Empty<FriendDto>();
             }
         }
@@ -121,11 +165,52 @@ namespace GameClient.Helpers
         {
             try
             {
-                return await _proxy.GetPendingRequestsAsync(_username);
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                {
+                    return await _proxy.GetPendingRequestsAsync(_username);
+                }
+                return Array.Empty<FriendDto>();
             }
-            catch
+            catch (CommunicationObjectFaultedException ex)
             {
-                HandleFatalConnectionError("Se perdió la conexión al obtener solicitudes pendientes.");
+                HandleFatalConnectionError($"Canal corrupto al obtener solicitudes pendientes: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (CommunicationException ex)
+            {
+                HandleFatalConnectionError($"Error de comunicación al obtener solicitudes: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (TimeoutException ex)
+            {
+                HandleFatalConnectionError($"Timeout al obtener solicitudes: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+        }
+
+        public async Task<FriendDto[]> GetSentRequestsAsync()
+        {
+            try
+            {
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                {
+                    return await _proxy.GetSentRequestsAsync(_username);
+                }
+                return Array.Empty<FriendDto>();
+            }
+            catch (CommunicationObjectFaultedException ex)
+            {
+                HandleFatalConnectionError($"Canal corrupto al obtener solicitudes enviadas: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (CommunicationException ex)
+            {
+                HandleFatalConnectionError($"Error de comunicación al obtener solicitudes enviadas: {ex.Message}");
+                return Array.Empty<FriendDto>();
+            }
+            catch (TimeoutException ex)
+            {
+                HandleFatalConnectionError($"Timeout al obtener solicitudes enviadas: {ex.Message}");
                 return Array.Empty<FriendDto>();
             }
         }
@@ -134,35 +219,55 @@ namespace GameClient.Helpers
         {
             try
             {
-                return await _proxy.SendFriendRequestAsync(_username, targetUser);
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                {
+                    return await _proxy.SendFriendRequestAsync(_username, targetUser);
+                }
+                return FriendRequestResult.Error;
             }
-            catch (FaultException)
+            catch (CommunicationObjectFaultedException)
             {
                 return FriendRequestResult.Error;
             }
-            catch
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Se perdió la conexión al enviar solicitud a {targetUser}.");
+                return FriendRequestResult.Error;
+            }
+            catch (TimeoutException)
+            {
                 return FriendRequestResult.Error;
             }
         }
 
-        public async Task RespondToFriendRequestAsync(string requester, bool accept)
+        public async Task<bool> RespondToFriendRequestAsync(string requester, bool accept)
         {
             try
             {
-                var request = new RespondRequestDto
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
                 {
-                    RespondingUsername = _username,
-                    RequesterUsername = requester,
-                    IsAccepted = accept
-                };
+                    var request = new RespondRequestDto
+                    {
+                        RespondingUsername = _username,
+                        RequesterUsername = requester,
+                        IsAccepted = accept
+                    };
 
-                await _proxy.RespondToFriendRequestAsync(request);
+                    await _proxy.RespondToFriendRequestAsync(request);
+                    return true;
+                }
+                return false;
             }
-            catch
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError("Se perdió la conexión al responder una solicitud de amistad.");
+                return false;
+            }
+            catch (CommunicationException)
+            {
+                return false;
+            }
+            catch (TimeoutException)
+            {
+                return false;
             }
         }
 
@@ -170,11 +275,22 @@ namespace GameClient.Helpers
         {
             try
             {
-                return await _proxy.RemoveFriendAsync(_username, friendUsername);
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
+                {
+                    return await _proxy.RemoveFriendAsync(_username, friendUsername);
+                }
+                return false;
             }
-            catch
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError("Se perdió la conexión al eliminar un amigo.");
+                return false;
+            }
+            catch (CommunicationException)
+            {
+                return false;
+            }
+            catch (TimeoutException)
+            {
                 return false;
             }
         }
@@ -183,18 +299,29 @@ namespace GameClient.Helpers
         {
             try
             {
-                var invitation = new GameInvitationDto
+                if (_proxy != null && _proxy.State == CommunicationState.Opened)
                 {
-                    SenderUsername = _username,
-                    TargetUsername = targetUser,
-                    LobbyCode = lobbyCode
-                };
+                    var invitation = new GameInvitationDto
+                    {
+                        SenderUsername = _username,
+                        TargetUsername = targetUser,
+                        LobbyCode = lobbyCode
+                    };
 
-                _proxy.SendGameInvitation(invitation);
+                    _proxy.SendGameInvitation(invitation);
+                }
             }
-            catch
+            catch (CommunicationObjectFaultedException ex)
             {
-                HandleFatalConnectionError("Se perdió la conexión al enviar una invitación.");
+                HandleFatalConnectionError($"Canal corrupto al enviar invitación: {ex.Message}");
+            }
+            catch (CommunicationException ex)
+            {
+                HandleFatalConnectionError($"Error de comunicación al enviar invitación: {ex.Message}");
+            }
+            catch (TimeoutException ex)
+            {
+                HandleFatalConnectionError($"Timeout al enviar invitación: {ex.Message}");
             }
         }
     }
