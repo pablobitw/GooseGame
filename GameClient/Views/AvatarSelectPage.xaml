@@ -8,6 +8,7 @@
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="AvatarSelectPage"
       FontFamily="Segoe UI">
+
     <Page.Resources>
         <Style x:Key="SuccessButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#28A745"/>
@@ -166,7 +167,7 @@
                                FontSize="18" Foreground="#666" TextWrapping="Wrap" TextAlignment="Center" 
                                HorizontalAlignment="Center" Margin="20,0,20,30"/>
 
-                    <Button Content="Great!" 
+                    <Button Content="{x:Static props:Strings.GreatButton}" 
                             Style="{StaticResource SuccessButtonStyle}" 
                             Width="200" Height="50"
                             Click="OnSuccessContinue_Click"/>

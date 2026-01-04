@@ -306,6 +306,11 @@ namespace GameServer.Services.Logic
                     game.GameStatus = (int)GameStatus.InProgress;
                     await _repository.SaveChangesAsync();
                     Log.InfoFormat("Juego {0} iniciado con {1} jugadores.", lobbyCode, players.Count);
+
+                    // --- ARRANQUE DEL MOTOR DE TIEMPO ---
+                    GameManager.Instance.StartMonitoring(game.IdGame);
+                    // ------------------------------------
+
                     success = true;
 
                     await NotifyAllInLobby(game.IdGame, null, client => client.OnGameStarted());
@@ -344,6 +349,9 @@ namespace GameServer.Services.Logic
                     if (game != null)
                     {
                         await NotifyAllInLobby(gameId, hostUsername, client => client.OnLobbyDisbanded());
+
+                        // Detenemos monitoreo si estaba activo
+                        GameManager.Instance.StopMonitoring(gameId);
 
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
@@ -434,6 +442,9 @@ namespace GameServer.Services.Logic
                 game.GameStatus = (int)GameStatus.Finished;
                 string winnerName = remainingPlayers.Count > 0 ? remainingPlayers[0].Username : "Nadie";
                 Log.InfoFormat("Juego terminado por abandono desde Lobby. Ganador: {0}", winnerName);
+
+                GameManager.Instance.StopMonitoring(gameId);
+
                 await _repository.SaveChangesAsync();
                 return true;
             }

@@ -279,6 +279,9 @@
   <data name="GamesWonLabel" xml:space="preserve">
     <value>Wins:</value>
   </data>
+  <data name="GreatButton" xml:space="preserve">
+    <value>Great!</value>
+  </data>
   <data name="HostHeader" xml:space="preserve">
     <value>Host</value>
   </data>
@@ -515,6 +518,9 @@
   </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Sucess</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred: {0}</value>
   </data>
   <data name="UnexpectedErrorMessage" xml:space="preserve">
     <value>An unexpected error occurred: {0}</value>

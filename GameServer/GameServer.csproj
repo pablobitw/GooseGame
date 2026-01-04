@@ -157,6 +157,7 @@
     </Compile>
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
+    <Compile Include="Helpers\GameManager.cs" />
     <Compile Include="Helpers\PlayerSocialLinkHelper.cs" />
     <Compile Include="Helpers\VoteManager.cs" />
     <Compile Include="Interfaces\IChatCallback.cs" />

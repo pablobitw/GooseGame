@@ -439,9 +439,13 @@ namespace GameClient.Views
             }
         }
 
-        private void TurnCountdown_Tick(object sender, EventArgs e)
+        private async void TurnCountdown_Tick(object sender, EventArgs e)
         {
             _turnSecondsRemaining--;
+
+            // Evitar números negativos visuales
+            if (_turnSecondsRemaining < 0) _turnSecondsRemaining = 0;
+
             TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
 
             TurnTimerText.Foreground = _turnSecondsRemaining <= GameConfiguration.TurnWarningThreshold
@@ -452,6 +456,18 @@ namespace GameClient.Views
             {
                 _turnCountdownTimer.Stop();
                 TurnTimerText.Text = "¡Tiempo Agotado!";
+
+                await Task.Delay(1500);
+
+                try
+                {
+                    var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
+                    await GameplayServiceManager.Instance.GetGameStateAsync(request);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error triggering server timeout: " + ex.Message);
+                }
             }
         }
 

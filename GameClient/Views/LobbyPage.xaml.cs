@@ -4,7 +4,6 @@ using GameClient.LobbyServiceReference;
 using GameClient.Models;
 using System;
 using System.Linq;
-using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -269,20 +268,23 @@ namespace GameClient.Views
         private void UpdatePlayerListUI(PlayerLobbyDto[] players)
         {
             PlayerList.Items.Clear();
-            int filled = 0;
+            int slotsFilled = 0;
 
             foreach (var player in players.OrderByDescending(p => p.IsHost))
             {
                 PlayerList.Items.Add(CreatePlayerItem(player));
-                filled++;
+                slotsFilled++;
             }
 
-            for (int i = filled; i < playerCount; i++)
+            int emptySlots = playerCount - slotsFilled;
+            for (int i = 0; i < emptySlots; i++)
+            {
                 PlayerList.Items.Add(CreateEmptySlotItem());
+            }
 
-            PlayersTabHeader.Text = $"JUGADORES ({filled}/{playerCount})";
+            PlayersTabHeader.Text = $"JUGADORES ({slotsFilled}/{playerCount})";
 
-            UpdateStartButtonState(filled);
+            UpdateStartButtonState(slotsFilled);
         }
 
         private void UpdateStartButtonState(int playersInLobby)
@@ -304,7 +306,6 @@ namespace GameClient.Views
                 StartMatchButton.Content = GameClient.Resources.Strings.WaitingForPlayersLabel;
             }
         }
-
 
         private void ConnectToChat()
         {
@@ -331,17 +332,38 @@ namespace GameClient.Views
 
         private ListBoxItem CreatePlayerItem(PlayerLobbyDto player)
         {
-            var text = player.Username +
-                       (player.IsHost ? " (Host)" : "") +
-                       (player.Username == username ? " (Tú)" : "");
+            var textBlock = new TextBlock
+            {
+                Text = player.Username,
+                FontSize = 22,
+                VerticalAlignment = VerticalAlignment.Center
+            };
 
-            var block = new TextBlock { Text = text, FontSize = 22 };
-            var icon = new ImageAwesome { Icon = FontAwesomeIcon.UserCircle, Height = 30, Width = 30 };
-            var panel = new StackPanel { Orientation = Orientation.Horizontal };
-            panel.Children.Add(icon);
-            panel.Children.Add(block);
+            if (player.IsHost)
+            {
+                textBlock.Text += " (Host)";
+                textBlock.FontWeight = FontWeights.Bold;
+            }
 
-            return new ListBoxItem { Content = panel, Padding = new Thickness(10) };
+            if (player.Username == username)
+            {
+                textBlock.Text += " (Tú)";
+            }
+
+            var icon = new FontAwesome.WPF.FontAwesome
+            {
+                Icon = FontAwesomeIcon.UserCircle,
+                Foreground = new SolidColorBrush(Color.FromRgb(52, 138, 199)),
+                Height = 30,
+                Width = 30,
+                Margin = new Thickness(0, 0, 15, 0)
+            };
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            stackPanel.Children.Add(icon);
+            stackPanel.Children.Add(textBlock);
+
+            return new ListBoxItem { Content = stackPanel, Padding = new Thickness(10) };
         }
 
         private ListBoxItem CreateEmptySlotItem()
@@ -443,6 +465,7 @@ namespace GameClient.Views
         {
             InviteFriendsOverlay.Visibility = Visibility.Collapsed;
         }
+
         private void OnChatTextBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
@@ -466,7 +489,6 @@ namespace GameClient.Views
             }
         }
 
-
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag != null)
@@ -476,6 +498,5 @@ namespace GameClient.Views
                 btn.Content = "Enviado";
             }
         }
-
     }
 }

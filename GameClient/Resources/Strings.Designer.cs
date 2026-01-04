@@ -583,6 +583,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a ¡Genial!.
+        /// </summary>
+        public static string GreatButton {
+            get {
+                return ResourceManager.GetString("GreatButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Anfitrión.
         /// </summary>
         public static string HostHeader {
@@ -1308,6 +1317,15 @@ namespace GameClient.Resources {
         public static string TimeoutLabel {
             get {
                 return ResourceManager.GetString("TimeoutLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ha ocurrido un error inesperado: {0} .
+        /// </summary>
+        public static string UnexpectedError {
+            get {
+                return ResourceManager.GetString("UnexpectedError", resourceCulture);
             }
         }
         

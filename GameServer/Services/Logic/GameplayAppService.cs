@@ -8,8 +8,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -22,14 +20,14 @@ namespace GameServer.Services.Logic
         private static readonly Random RandomGenerator = new Random();
         private static readonly object _randomLock = new object();
         private static readonly ConcurrentDictionary<int, bool> _processingGames = new ConcurrentDictionary<int, bool>();
-        private static readonly ConcurrentDictionary<int, DateTime> _lastGameActivity = new ConcurrentDictionary<int, DateTime>();
         private static readonly ConcurrentDictionary<string, int> _afkStrikes = new ConcurrentDictionary<string, int>();
         private static readonly ConcurrentDictionary<int, VoteState> _activeVotes = new ConcurrentDictionary<int, VoteState>();
 
         private static readonly int[] GooseTiles = { 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
-        private const int TurnTimeLimitSeconds = 20;
+
         private readonly IGameplayRepository _repository;
+
         private class BoardMoveResult
         {
             public int FinalPosition { get; set; }
@@ -75,7 +73,6 @@ namespace GameServer.Services.Logic
 
         private async Task NotifyGameFinished(List<Player> players, string winnerUsername)
         {
-            // CORRECCIÓN ADVERTENCIA: Task.Yield fuerza ejecución asíncrona para no bloquear
             await Task.Yield();
 
             try
@@ -126,7 +123,7 @@ namespace GameServer.Services.Logic
                 }
 
                 _afkStrikes.TryRemove(request.Username, out _);
-                _lastGameActivity[game.IdGame] = DateTime.UtcNow;
+                GameManager.Instance.UpdateActivity(game.IdGame);
 
                 var player = sortedPlayers.First(p => p.Username == request.Username);
                 DiceRollDto result;
@@ -384,7 +381,7 @@ namespace GameServer.Services.Logic
 
             await UpdateStatsEndGame(game.IdGame, player.IdPlayer);
 
-            _lastGameActivity.TryRemove(game.IdGame, out _);
+            GameManager.Instance.StopMonitoring(game.IdGame);
             _activeVotes.TryRemove(game.IdGame, out _);
 
             return new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
@@ -416,8 +413,6 @@ namespace GameServer.Services.Logic
                 {
                     return await BuildFinishedGameStateAsync(game);
                 }
-
-                await CheckAndProcessAfkAsync(game.IdGame);
 
                 return await BuildActiveGameStateAsync(game.IdGame, request.Username);
             }
@@ -460,32 +455,6 @@ namespace GameServer.Services.Logic
                 CurrentTurnUsername = "",
                 IsMyTurn = false
             };
-        }
-
-        private async Task CheckAndProcessAfkAsync(int gameId)
-        {
-            if (!_lastGameActivity.ContainsKey(gameId))
-            {
-                _lastGameActivity[gameId] = DateTime.UtcNow;
-            }
-            else
-            {
-                TimeSpan inactivity = DateTime.UtcNow - _lastGameActivity[gameId];
-                if (inactivity.TotalSeconds > TurnTimeLimitSeconds)
-                {
-                    if (_processingGames.TryAdd(gameId, true))
-                    {
-                        try
-                        {
-                            await ProcessAfkTimeout(gameId);
-                        }
-                        finally
-                        {
-                            _processingGames.TryRemove(gameId, out _);
-                        }
-                    }
-                }
-            }
         }
 
         private async Task<GameStateDto> BuildActiveGameStateAsync(int gameId, string requestUsername)
@@ -550,7 +519,6 @@ namespace GameServer.Services.Logic
 
                 await ProcessLeavingPlayerStats(player);
 
-                // Capturar lista antes de que se reduzca (FIX de la partida muerta)
                 var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                 var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
 
@@ -612,10 +580,8 @@ namespace GameServer.Services.Logic
                 Log.InfoFormat("Juego {0} terminado. Todos los jugadores abandonaron.", game.LobbyCode);
             }
 
-            // Notificar ANTES de borrar los datos de partida
             await NotifyGameFinished(remainingPlayers, winnerName);
 
-            // Limpiar datos
             foreach (var p in remainingPlayers)
             {
                 p.GameIdGame = null;
@@ -623,7 +589,7 @@ namespace GameServer.Services.Logic
             }
             await _repository.SaveChangesAsync();
 
-            _lastGameActivity.TryRemove(game.IdGame, out _);
+            GameManager.Instance.StopMonitoring(game.IdGame);
         }
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
@@ -847,7 +813,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private async Task ProcessAfkTimeout(int gameId)
+        public async Task ProcessAfkTimeout(int gameId)
         {
             if (!_processingGames.TryAdd(gameId, true)) return;
 
@@ -904,7 +870,7 @@ namespace GameServer.Services.Logic
 
                 await lobbyLogic.KickPlayerAsync(kickReq);
             }
-            _lastGameActivity[gameId] = DateTime.UtcNow;
+            GameManager.Instance.UpdateActivity(gameId);
         }
 
         private async Task HandleAfkWarning(int gameId, Player afkPlayer, int strikes, int totalMoves)
@@ -927,7 +893,7 @@ namespace GameServer.Services.Logic
             _repository.AddMove(skipMove);
             await _repository.SaveChangesAsync();
 
-            _lastGameActivity[gameId] = DateTime.UtcNow;
+            GameManager.Instance.UpdateActivity(gameId);
         }
 
         private async Task UpdateStatsEndGame(int gameId, int winnerId)

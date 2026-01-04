@@ -565,13 +565,38 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\alert_nueva.png" />
+    <Content Include="Assets\Avatar\alexmc_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Avatar\chivas_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Avatar\frikiboy_avatar.png">
+    <Content Include="Assets\Avatar\crepper_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Avatar\profilepic1.png">
+    <Content Include="Assets\Avatar\default_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\elrevo_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\frikboy_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\gwen2_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\gwen_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Assets\Avatar\realvardrid_avatar.png" />
+    <Content Include="Assets\Avatar\manutd_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\spiderman_avatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Avatar\steve_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\BACKGROUND_1.mp4">
@@ -638,20 +663,12 @@
     <None Include="Connected Services\GameServiceReference\item.disco" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\default_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\fondo3.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Avatar\realmadrid_avatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Assets\Boards\special_board.png" />
     <Resource Include="Assets\Boards\normal_board.png" />
     <Content Include="Assets\BACKGROUND.mp4">

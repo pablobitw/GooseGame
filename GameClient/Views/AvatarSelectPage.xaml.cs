@@ -77,7 +77,7 @@ namespace GameClient.Views
             }
             catch (Exception ex)
             {
-                ShowError($"Unexpected error loading avatars: {ex.Message}");
+                ShowError(string.Format(GameClient.Resources.Strings.UnexpectedError, ex.Message));
             }
         }
 
@@ -118,27 +118,26 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                client.Abort(); 
+                client.Abort();
                 ShowError(GameClient.Resources.Strings.TimeoutLabel);
                 ResetUiState();
             }
             catch (CommunicationException ex)
             {
-                client.Abort(); 
+                client.Abort();
                 ShowError($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}");
                 ResetUiState();
             }
             catch (Exception ex)
             {
                 client.Abort();
-                ShowError($"An unexpected error occurred: {ex.Message}");
+                ShowError(string.Format(GameClient.Resources.Strings.UnexpectedError, ex.Message));
                 ResetUiState();
             }
         }
 
         private void ShowError(string message)
         {
-            
             CustomMessageBox msgBox = new CustomMessageBox(message);
             msgBox.ShowDialog();
         }
@@ -152,7 +151,7 @@ namespace GameClient.Views
                 {
                     SuccessAvatarImage.ImageSource = new BitmapImage(new Uri(selectedItem.FullPath));
                 }
-                catch (UriFormatException) {  }
+                catch (UriFormatException) { }
             }
 
             SuccessOverlay.Visibility = Visibility.Visible;
