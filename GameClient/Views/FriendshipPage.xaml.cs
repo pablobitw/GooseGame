@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 using GameClient.FriendshipServiceReference;
 using GameClient.Helpers;
 using GameClient.Models;
@@ -117,6 +117,7 @@ namespace GameClient.Views
             NoRequestsMessage.Visibility = FriendRequestsList.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        // MÉTODO CORREGIDO
         private async void SendFriendRequest_Click(object sender, RoutedEventArgs e)
         {
             string target = SearchUserBox.Text.Trim();
@@ -132,11 +133,21 @@ namespace GameClient.Views
                 return;
             }
 
-            bool sent = await _friendshipManager.SendFriendRequestAsync(target);
-            if (sent)
+            // Aquí estaba el error: ahora recibimos el Enum FriendRequestResult
+            var result = await _friendshipManager.SendFriendRequestAsync(target);
+
+            if (result == FriendRequestResult.Success)
             {
                 MessageBox.Show(string.Format(GameClient.Resources.Strings.RequestSentSuccess, target), GameClient.Resources.Strings.InfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                 SearchUserBox.Text = string.Empty;
+            }
+            else if (result == FriendRequestResult.AlreadyFriends)
+            {
+                MessageBox.Show("Actualmente ya eres amigo de este jugador.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else if (result == FriendRequestResult.Pending)
+            {
+                MessageBox.Show("Ya has enviado una solicitud a este jugador anteriormente.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
@@ -171,8 +182,8 @@ namespace GameClient.Views
                 string friend = btn.Tag.ToString();
 
                 var result = MessageBox.Show(string.Format(GameClient.Resources.Strings.DeleteConfirmation, friend),
-                                             GameClient.Resources.Strings.ConfirmationTitle,
-                                             MessageBoxButton.YesNo, MessageBoxImage.Question);
+                                               GameClient.Resources.Strings.ConfirmationTitle,
+                                               MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
                 {

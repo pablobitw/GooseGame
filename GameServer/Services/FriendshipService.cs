@@ -30,39 +30,29 @@ namespace GameServer.Services
             _logic.DisconnectUser(username);
         }
 
-        public async Task<bool> SendFriendRequest(string senderUsername, string receiverUsername)
+        public async Task<FriendRequestResult> SendFriendRequest(string senderUsername, string receiverUsername)
         {
-            bool result;
-            result = await _logic.SendFriendRequestAsync(senderUsername, receiverUsername);
-            return result;
+            return await _logic.SendFriendRequestAsync(senderUsername, receiverUsername);
         }
 
         public async Task<bool> RespondToFriendRequest(RespondRequestDto request)
         {
-            bool result;
-            result = await _logic.RespondToFriendRequestAsync(request);
-            return result;
+            return await _logic.RespondToFriendRequestAsync(request);
         }
 
         public async Task<bool> RemoveFriend(string username, string friendUsername)
         {
-            bool result;
-            result = await _logic.RemoveFriendAsync(username, friendUsername);
-            return result;
+            return await _logic.RemoveFriendAsync(username, friendUsername);
         }
 
         public async Task<List<FriendDto>> GetFriendList(string username)
         {
-            List<FriendDto> result;
-            result = await _logic.GetFriendListAsync(username);
-            return result;
+            return await _logic.GetFriendListAsync(username);
         }
 
         public async Task<List<FriendDto>> GetPendingRequests(string username)
         {
-            List<FriendDto> result;
-            result = await _logic.GetPendingRequestsAsync(username);
-            return result;
+            return await _logic.GetPendingRequestsAsync(username);
         }
 
         public void SendGameInvitation(GameInvitationDto invitation)

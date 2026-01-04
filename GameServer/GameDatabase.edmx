@@ -84,7 +84,7 @@
       <PropertyRef Name="IdAccount" />
     </Key>
     <Property Name="IdAccount" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Email" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="Email" Type="nvarchar" Nullable="false" MaxLength="100" />
     <Property Name="PasswordHash" Type="nvarchar" Nullable="false" MaxLength="255" />
     <Property Name="RegisterDate" Type="datetime" Nullable="false" />
     <Property Name="AccountStatus" Type="int" Nullable="false" />
@@ -175,7 +175,7 @@
       <PropertyRef Name="IdPlayer" />
     </Key>
     <Property Name="IdPlayer" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Username" Type="nvarchar" Nullable="false" MaxLength="100" />
     <Property Name="Coins" Type="int" Nullable="false" />
     <Property Name="Avatar" Type="nvarchar(max)" Nullable="false" />
     <Property Name="PlayerInventoryIdPlayerInventory" Type="int" Nullable="false" />

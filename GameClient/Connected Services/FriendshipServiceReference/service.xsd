@@ -36,14 +36,14 @@
   <xs:element name="SendFriendRequestResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" name="SendFriendRequestResult" type="xs:boolean" />
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="SendFriendRequestResult" type="q1:FriendRequestResult" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="RespondToFriendRequest">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="request" nillable="true" type="q1:RespondRequestDto" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="request" nillable="true" type="q2:RespondRequestDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -64,7 +64,7 @@
   <xs:element name="GetFriendListResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="GetFriendListResult" nillable="true" type="q2:ArrayOfFriendDto" />
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="GetFriendListResult" nillable="true" type="q3:ArrayOfFriendDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -78,7 +78,7 @@
   <xs:element name="GetPendingRequestsResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="GetPendingRequestsResult" nillable="true" type="q3:ArrayOfFriendDto" />
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="GetPendingRequestsResult" nillable="true" type="q4:ArrayOfFriendDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -100,7 +100,7 @@
   <xs:element name="SendGameInvitation">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="invitation" nillable="true" type="q4:GameInvitationDto" />
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" minOccurs="0" name="invitation" nillable="true" type="q5:GameInvitationDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -124,6 +124,13 @@
       <xs:sequence>
         <xs:element minOccurs="0" name="hostUsername" nillable="true" type="xs:string" />
         <xs:element minOccurs="0" name="lobbyCode" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OnFriendRequestPopUp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="senderUsername" nillable="true" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

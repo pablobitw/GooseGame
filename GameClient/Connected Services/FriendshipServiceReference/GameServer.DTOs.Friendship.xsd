@@ -1,5 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="FriendRequestResult">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Success" />
+      <xs:enumeration value="AlreadyFriends" />
+      <xs:enumeration value="Pending" />
+      <xs:enumeration value="TargetNotFound" />
+      <xs:enumeration value="GuestRestriction" />
+      <xs:enumeration value="Error" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="FriendRequestResult" nillable="true" type="tns:FriendRequestResult" />
   <xs:complexType name="RespondRequestDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="IsAccepted" type="xs:boolean" />

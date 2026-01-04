@@ -15,7 +15,7 @@ namespace GameServer.Interfaces
         void Disconnect(string username);
 
         [OperationContract]
-        Task<bool> SendFriendRequest(string senderUsername, string receiverUsername);
+        Task<FriendRequestResult> SendFriendRequest(string senderUsername, string receiverUsername);
 
         [OperationContract]
         Task<bool> RespondToFriendRequest(RespondRequestDto request);

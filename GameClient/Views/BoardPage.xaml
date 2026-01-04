@@ -105,7 +105,7 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill" TileMode="None">
+                                <ImageBrush x:Name="Player1Avatar" Stretch="UniformToFill">
                                     <ImageBrush.RelativeTransform>
                                         <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
                                     </ImageBrush.RelativeTransform>
@@ -128,7 +128,7 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill" TileMode="None">
+                                <ImageBrush x:Name="Player2Avatar" Stretch="UniformToFill">
                                     <ImageBrush.RelativeTransform>
                                         <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
                                     </ImageBrush.RelativeTransform>
@@ -151,7 +151,7 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill" TileMode="None">
+                                <ImageBrush x:Name="Player3Avatar" Stretch="UniformToFill">
                                     <ImageBrush.RelativeTransform>
                                         <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
                                     </ImageBrush.RelativeTransform>
@@ -174,7 +174,7 @@
                         <Ellipse Fill="Gray"/>
                         <Ellipse>
                             <Ellipse.Fill>
-                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill" TileMode="None">
+                                <ImageBrush x:Name="Player4Avatar" Stretch="UniformToFill">
                                     <ImageBrush.RelativeTransform>
                                         <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.2" ScaleY="1.2"/>
                                     </ImageBrush.RelativeTransform>
@@ -273,6 +273,8 @@
             <dialogs:VoteKickPromptDialog x:Name="VoteKickPrompt" Visibility="Collapsed" Panel.ZIndex="400"/>
 
             <dialogs:KickReasonDialog x:Name="KickReasonPrompt" Visibility="Collapsed" Panel.ZIndex="500"/>
+
+            <dialogs:FriendRequestDialog x:Name="FriendRequestPopup" Visibility="Collapsed" Panel.ZIndex="600"/>
 
         </Grid>
     </Grid>

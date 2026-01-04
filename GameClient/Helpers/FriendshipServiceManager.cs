@@ -32,6 +32,8 @@ namespace GameClient.Helpers
         public event Action RequestReceived;
         public event Action<string, string> GameInvitationReceived;
 
+        public event Action<string> FriendRequestPopUpReceived;
+
         private FriendshipServiceManager(string username)
         {
             _username = username;
@@ -65,9 +67,7 @@ namespace GameClient.Helpers
             {
                 _proxy?.Abort();
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         public void Disconnect()
@@ -101,6 +101,9 @@ namespace GameClient.Helpers
         public void OnGameInvitationReceived(string hostUsername, string lobbyCode)
             => GameInvitationReceived?.Invoke(hostUsername, lobbyCode);
 
+        public void OnFriendRequestPopUp(string senderUsername)
+            => FriendRequestPopUpReceived?.Invoke(senderUsername);
+
         public async Task<FriendDto[]> GetFriendListAsync()
         {
             try
@@ -127,7 +130,7 @@ namespace GameClient.Helpers
             }
         }
 
-        public async Task<bool> SendFriendRequestAsync(string targetUser)
+        public async Task<FriendRequestResult> SendFriendRequestAsync(string targetUser)
         {
             try
             {
@@ -135,12 +138,12 @@ namespace GameClient.Helpers
             }
             catch (FaultException)
             {
-                return false;
+                return FriendRequestResult.Error;
             }
             catch
             {
                 HandleFatalConnectionError($"Se perdió la conexión al enviar solicitud a {targetUser}.");
-                return false;
+                return FriendRequestResult.Error;
             }
         }
 

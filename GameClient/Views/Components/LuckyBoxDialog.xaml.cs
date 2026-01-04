@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,8 +34,16 @@ namespace GameClient.Views.Dialogs
 
         private void ResetState()
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", "luckybox_closed.png");
-            try { LuckyBoxImage.Source = new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)); } catch { }
+            try
+            {
+                LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
+            }
+            catch { }
+
+            if (LuckyBoxImage.RenderTransform is RotateTransform rt)
+            {
+                rt.Angle = 0;
+            }
 
             LuckyBoxImage.Visibility = Visibility.Visible;
             RewardContainer.Visibility = Visibility.Collapsed;
@@ -102,8 +109,14 @@ namespace GameClient.Views.Dialogs
             RewardText.Text = text;
             RewardText.Foreground = color;
 
-            string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", imagePath);
-            try { RewardImage.Source = new BitmapImage(new Uri(fullPath, UriKind.RelativeOrAbsolute)); } catch { }
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                try
+                {
+                    RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
+                }
+                catch { }
+            }
         }
 
         private void Overlay_MouseDown(object sender, MouseButtonEventArgs e)

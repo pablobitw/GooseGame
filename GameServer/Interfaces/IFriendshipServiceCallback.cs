@@ -13,5 +13,8 @@ namespace GameServer.Interfaces
 
         [OperationContract(IsOneWay = true)]
         void OnGameInvitationReceived(string hostUsername, string lobbyCode);
+
+        [OperationContract(IsOneWay = true)]
+        void OnFriendRequestPopUp(string senderUsername);
     }
 }

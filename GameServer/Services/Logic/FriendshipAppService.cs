@@ -54,74 +54,105 @@ namespace GameServer.Services.Logic
             NotifyFriendsOfStatusChange(username);
         }
 
-        public async Task<bool> SendFriendRequestAsync(string senderUsername, string receiverUsername)
+        public async Task<FriendRequestResult> SendFriendRequestAsync(string senderUsername, string receiverUsername)
         {
-            bool success = false;
             try
             {
-                if (!string.IsNullOrEmpty(senderUsername) &&
-                    !string.IsNullOrEmpty(receiverUsername) &&
-                    !senderUsername.Equals(receiverUsername))
+                if (string.IsNullOrEmpty(senderUsername) || string.IsNullOrEmpty(receiverUsername) || senderUsername.Equals(receiverUsername))
                 {
-                    var sender = await _repository.GetPlayerByUsernameAsync(senderUsername);
-                    var receiver = await _repository.GetPlayerByUsernameAsync(receiverUsername);
+                    return FriendRequestResult.Error;
+                }
 
-                    if (sender == null || receiver == null) return false;
-                    if (sender.IsGuest || receiver.IsGuest)
+                var sender = await _repository.GetPlayerByUsernameAsync(senderUsername);
+                var receiver = await _repository.GetPlayerByUsernameAsync(receiverUsername);
+
+                if (sender == null || receiver == null)
+                {
+                    return FriendRequestResult.TargetNotFound;
+                }
+
+                if (sender.IsGuest || receiver.IsGuest)
+                {
+                    Log.WarnFormat("Intento de amistad inválido con invitado: {0} -> {1}", senderUsername, receiverUsername);
+                    return FriendRequestResult.GuestRestriction;
+                }
+
+                var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
+
+                if (existing != null)
+                {
+                    if (existing.FriendshipStatus == (int)FriendshipStatus.Accepted)
                     {
-                        Log.WarnFormat("Intento de amistad inválido con invitado: {0} -> {1}", senderUsername, receiverUsername);
-                        return false;
+                        return FriendRequestResult.AlreadyFriends;
                     }
 
-                    var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
-
-                    if (existing == null)
+                    if (existing.FriendshipStatus == (int)FriendshipStatus.Pending)
                     {
-                        var newFriendship = new Friendship
+                        if (existing.PlayerIdPlayer == sender.IdPlayer)
                         {
-                            PlayerIdPlayer = sender.IdPlayer,
-                            Player1_IdPlayer = receiver.IdPlayer,
-                            FriendshipStatus = (int)FriendshipStatus.Pending,
-                            RequestDate = DateTime.Now
-                        };
+                            return FriendRequestResult.Pending;
+                        }
 
-                        _repository.AddFriendship(newFriendship);
+                        existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
                         await _repository.SaveChangesAsync();
 
-                        NotifyUserRequestReceived(receiverUsername);
-                        success = true;
-                    }
-                    else
-                    {
-                        if (existing.FriendshipStatus == (int)FriendshipStatus.Pending)
-                        {
-                            if (existing.PlayerIdPlayer == receiver.IdPlayer)
-                            {
-                                existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
-                                await _repository.SaveChangesAsync();
-
-                                NotifyUserListUpdated(senderUsername);
-                                NotifyUserListUpdated(receiverUsername);
-                                success = true;
-                            }
-                        }
+                        NotifyUserListUpdated(senderUsername);
+                        NotifyUserListUpdated(receiverUsername);
+                        return FriendRequestResult.Success;
                     }
                 }
+
+                var newFriendship = new Friendship
+                {
+                    PlayerIdPlayer = sender.IdPlayer,
+                    Player1_IdPlayer = receiver.IdPlayer,
+                    FriendshipStatus = (int)FriendshipStatus.Pending,
+                    RequestDate = DateTime.Now
+                };
+
+                _repository.AddFriendship(newFriendship);
+                await _repository.SaveChangesAsync();
+
+                NotifyUserRequestReceived(receiverUsername); 
+                NotifyUserPopUp(receiverUsername, senderUsername); 
+
+                return FriendRequestResult.Success;
             }
             catch (SqlException ex)
             {
                 Log.Error("Error SQL enviando solicitud de amistad.", ex);
+                return FriendRequestResult.Error;
             }
             catch (DbUpdateException ex)
             {
                 Log.Error("Error DB enviando solicitud de amistad.", ex);
+                return FriendRequestResult.Error;
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout enviando solicitud de amistad.", ex);
+                Log.Error("Error general enviando solicitud de amistad.", ex);
+                return FriendRequestResult.Error;
             }
+        }
 
-            return success;
+
+        private static void NotifyUserPopUp(string targetUser, string senderUser)
+        {
+            string key = targetUser.ToLower();
+            lock (_locker)
+            {
+                if (_connectedClients.ContainsKey(key))
+                {
+                    try
+                    {
+                        _connectedClients[key].OnFriendRequestPopUp(senderUser);
+                    }
+                    catch (CommunicationException)
+                    {
+                        _connectedClients.Remove(key);
+                    }
+                }
+            }
         }
 
         public async Task<bool> RespondToFriendRequestAsync(RespondRequestDto request)

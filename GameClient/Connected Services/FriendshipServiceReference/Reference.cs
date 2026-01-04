@@ -13,6 +13,29 @@ namespace GameClient.FriendshipServiceReference {
     using System;
     
     
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="FriendRequestResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
+    public enum FriendRequestResult : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Success = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        AlreadyFriends = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Pending = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        TargetNotFound = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GuestRestriction = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Error = 5,
+    }
+    
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="RespondRequestDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
@@ -261,10 +284,10 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task DisconnectAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/SendFriendRequestResponse")]
-        bool SendFriendRequest(string senderUsername, string receiverUsername);
+        GameClient.FriendshipServiceReference.FriendRequestResult SendFriendRequest(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/SendFriendRequestResponse")]
-        System.Threading.Tasks.Task<bool> SendFriendRequestAsync(string senderUsername, string receiverUsername);
+        System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> SendFriendRequestAsync(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
         bool RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request);
@@ -308,6 +331,9 @@ namespace GameClient.FriendshipServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnGameInvitationReceived")]
         void OnGameInvitationReceived(string hostUsername, string lobbyCode);
+        
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IFriendshipService/OnFriendRequestPopUp")]
+        void OnFriendRequestPopUp(string senderUsername);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -354,11 +380,11 @@ namespace GameClient.FriendshipServiceReference {
             return base.Channel.DisconnectAsync(username);
         }
         
-        public bool SendFriendRequest(string senderUsername, string receiverUsername) {
+        public GameClient.FriendshipServiceReference.FriendRequestResult SendFriendRequest(string senderUsername, string receiverUsername) {
             return base.Channel.SendFriendRequest(senderUsername, receiverUsername);
         }
         
-        public System.Threading.Tasks.Task<bool> SendFriendRequestAsync(string senderUsername, string receiverUsername) {
+        public System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> SendFriendRequestAsync(string senderUsername, string receiverUsername) {
             return base.Channel.SendFriendRequestAsync(senderUsername, receiverUsername);
         }
         

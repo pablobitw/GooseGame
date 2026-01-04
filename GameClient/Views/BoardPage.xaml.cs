@@ -1,4 +1,5 @@
 ﻿using GameClient.ChatServiceReference;
+using GameClient.FriendshipServiceReference;
 using GameClient.GameplayServiceReference;
 using GameClient.Helpers;
 using GameClient.Views.Dialogs;
@@ -122,6 +123,7 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished += OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked += OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted += OnVoteKickStarted;
+            FriendshipServiceManager.Instance.FriendRequestPopUpReceived += OnFriendRequestPopUpReceived;
         }
 
         private void UnsubscribeFromEvents()
@@ -130,6 +132,10 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished -= OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted -= OnVoteKickStarted;
+            if (FriendshipServiceManager.Instance != null)
+            {
+                FriendshipServiceManager.Instance.FriendRequestPopUpReceived -= OnFriendRequestPopUpReceived;
+            }
         }
 
         private void ConnectToChatService()
@@ -276,12 +282,10 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                // Error lógico (ej. ya hay votación en curso), NO sacar al usuario
                 MessageBox.Show($"No se pudo iniciar votación: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (CommunicationException)
             {
-                // Error de red
                 SessionManager.ForceLogout("Conexión perdida al intentar iniciar la votación.");
             }
         }
@@ -348,7 +352,6 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                // Si no podemos cargar el estado inicial, el juego es injugable -> Logout
                 SessionManager.ForceLogout("No se pudo cargar el estado inicial de la partida por problemas de conexión.");
             }
             catch (TimeoutException)
@@ -385,7 +388,6 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                // Error de lógica del juego (ej. no es tu turno), NO logout
                 MessageBox.Show($"Error del juego: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                 RollDiceButton.IsEnabled = true;
             }
@@ -519,10 +521,12 @@ namespace GameClient.Views
         {
             if (string.IsNullOrEmpty(logDescription)) return;
 
-            if (GameLogHelper.TryParseLuckyBox(logDescription, out string boxOwner, out string rewardType, out int rewardAmount)
-                && boxOwner == currentUsername)
+            if (GameLogHelper.TryParseLuckyBox(logDescription, out string boxOwner, out string rewardType, out int rewardAmount))
             {
-                LuckyBox.ShowReward(rewardType, rewardAmount);
+                if (boxOwner.Equals(currentUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    LuckyBox.ShowReward(rewardType, rewardAmount);
+                }
             }
         }
 
@@ -538,7 +542,6 @@ namespace GameClient.Views
             }
             catch (IOException ex)
             {
-                // Error local de recursos, no es necesario sacar al usuario, pero sí loguear
                 Console.Error.WriteLine($"No se pudo cargar la imagen del tablero: {ex.Message}");
             }
         }
@@ -730,13 +733,46 @@ namespace GameClient.Views
 
             try
             {
-                bool sent = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
-                MessageBox.Show(sent ? $"Solicitud enviada a {targetUser}." : "No se pudo enviar solicitud.", "Amigos", MessageBoxButton.OK, MessageBoxImage.Information);
+                var result = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
+
+                switch (result)
+                {
+                    case FriendRequestResult.Success:
+                        MessageBox.Show($"Solicitud enviada a {targetUser}.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                    case FriendRequestResult.AlreadyFriends:
+                        MessageBox.Show($"Actualmente ya eres amigo de {targetUser}.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                    case FriendRequestResult.Pending:
+                        MessageBox.Show($"Ya le has mandado solicitud a este jugador.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    case FriendRequestResult.GuestRestriction:
+                        MessageBox.Show("Los invitados no pueden tener amigos.", "Restricción", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    case FriendRequestResult.TargetNotFound:
+                        MessageBox.Show("No se encontró al jugador.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    default:
+                        MessageBox.Show("Ocurrió un error al intentar enviar la solicitud.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                }
             }
             catch (CommunicationException)
             {
                 SessionManager.ForceLogout("Error de conexión al enviar solicitud de amistad.");
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OnFriendRequestPopUpReceived(string senderName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FriendRequestPopup.ShowRequest(senderName);
+            });
         }
 
         private async void HandleGameOver(string winner)

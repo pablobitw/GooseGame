@@ -137,6 +137,9 @@
     <Compile Include="Views\Components\DeactivateAccountDialog.xaml.cs">
       <DependentUpon>DeactivateAccountDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Components\FriendRequestDialog.xaml.cs">
+      <DependentUpon>FriendRequestDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Components\KickReasonDialog.xaml.cs">
       <DependentUpon>KickReasonDialog.xaml</DependentUpon>
     </Compile>
@@ -246,6 +249,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Components\DeactivateAccountDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\FriendRequestDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -377,6 +384,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\FriendshipServiceReference\GameClient.FriendshipServiceReference.FriendDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\FriendshipServiceReference\GameClient.FriendshipServiceReference.FriendRequestResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\FriendshipServiceReference\GameServer.DTOs.Friendship.xsd">

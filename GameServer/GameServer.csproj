@@ -108,6 +108,7 @@
     <Compile Include="DTOs\Chat\ChatMessageDto.cs" />
     <Compile Include="DTOs\Chat\JoinChatRequest.cs" />
     <Compile Include="DTOs\Friendship\FriendDto.cs" />
+    <Compile Include="DTOs\Friendship\FriendRequestResult.cs" />
     <Compile Include="DTOs\Friendship\GameInvitationDto.cs" />
     <Compile Include="DTOs\Friendship\RespondRequestDto.cs" />
     <Compile Include="DTOs\Gameplay\DiceRollDto.cs" />
