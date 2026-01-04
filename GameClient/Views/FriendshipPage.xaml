@@ -42,8 +42,11 @@
                             <fa:ImageAwesome Icon="Search" Foreground="Gray" Margin="10,0,5,0" VerticalAlignment="Center" Height="20"/>
 
                             <TextBox x:Name="SearchUserBox" Grid.Column="1" Width="250" FontSize="18" 
-                                     VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
-                                     Tag="{x:Static props:Strings.SearchUserPlaceholder}"/>
+                            VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
+                            Tag="{x:Static props:Strings.SearchUserPlaceholder}"
+                            MaxLength="30"
+                            DataObject.Pasting="OnTextBoxPasting"/>
+
                         </Grid>
                     </Border>
 

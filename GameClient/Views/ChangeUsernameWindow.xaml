@@ -80,7 +80,8 @@
                                    VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                         <TextBox x:Name="CodeTextBox" Background="Transparent" BorderThickness="0" 
                                  VerticalContentAlignment="Center" Padding="10,0" FontSize="16" MaxLength="6"
-                                 TextChanged="OnCodeTextChanged"/>
+                                 TextChanged="OnCodeTextChanged"
+                                 DataObject.Pasting="OnTextBoxPasting"/>
                     </Grid>
                 </Border>
                 <TextBlock x:Name="CodeErrorLabel" Text="Código incorrecto o expirado" Foreground="{StaticResource DangerBrush}" 
@@ -109,7 +110,8 @@
                                    VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                         <TextBox x:Name="NewUsernameTextBox" Background="Transparent" BorderThickness="0" 
                                  VerticalContentAlignment="Center" Padding="10,0" FontSize="16" MaxLength="20"
-                                 TextChanged="OnUsernameTextChanged"/>
+                                 TextChanged="OnUsernameTextChanged"
+                                 DataObject.Pasting="OnTextBoxPasting"/>
                     </Grid>
                 </Border>
                 <TextBlock x:Name="UsernameErrorLabel" Text="El nombre ya está en uso" Foreground="{StaticResource DangerBrush}" 

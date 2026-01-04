@@ -443,6 +443,29 @@ namespace GameClient.Views
         {
             InviteFriendsOverlay.Visibility = Visibility.Collapsed;
         }
+        private void OnChatTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
+            {
+                var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
+                e.CancelCommand();
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
+                    if (sanitized.Length > ChatMessageTextBox.MaxLength)
+                        sanitized = sanitized.Substring(0, ChatMessageTextBox.MaxLength);
+
+                    ChatMessageTextBox.Text = sanitized;
+                    ChatMessageTextBox.CaretIndex = ChatMessageTextBox.Text.Length;
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            else
+            {
+                e.CancelCommand();
+            }
+        }
+
 
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
         {

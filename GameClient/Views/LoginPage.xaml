@@ -46,7 +46,9 @@
                             <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
                                        Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                             <TextBox x:Name="UsernameTextBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
-                                     TextChanged="OnUsernameTextChanged"/>
+                                     TextChanged="OnUsernameTextChanged"
+                                     MaxLength="254"
+                                     DataObject.Pasting="OnTextBoxPasting"/>
                         </Grid>
                     </Border>
 
@@ -55,7 +57,9 @@
                             <TextBlock x:Name="PasswordPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
                                        Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                             <PasswordBox x:Name="PasswordBox" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
-                                         PasswordChanged="OnPasswordChanged"/>
+                                         PasswordChanged="OnPasswordChanged"
+                                         MaxLength="128"
+                                         DataObject.Pasting="OnPasswordBoxPasting"/>
                         </Grid>
                     </Border>
 

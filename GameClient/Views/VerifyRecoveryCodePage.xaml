@@ -27,7 +27,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
     </Page.Resources>
 
     <Grid>
@@ -54,6 +53,7 @@
                              Style="{StaticResource InputTextBoxStyle}"
                              TextChanged="OnGenericTextBoxChanged"
                              MaxLength="6"
+                             DataObject.Pasting="OnCodeTextBoxPasting"
                              Tag="{x:Reference CodePlaceholder}"/>
                     <TextBlock x:Name="CodePlaceholder" Text="{x:Static props:Strings.VerificationCodeLabel}" 
                                Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
@@ -69,7 +69,6 @@
                         Style="{StaticResource PrimaryButtonStyle}"
                         Background="Gray"
                         Click="OnResendCodeButtonClick"/>
-
             </StackPanel>
         </Border>
     </Grid>

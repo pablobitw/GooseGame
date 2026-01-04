@@ -9,6 +9,7 @@ using System.Net.Mail;
 using GameClient.Views;
 using System.Linq;
 using System.Collections.Generic;
+using System.Windows.Threading;
 
 namespace GameClient.Views
 {
@@ -27,7 +28,6 @@ namespace GameClient.Views
         {
             string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
             string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
-
             MessageBox.Show(message ?? messageKey, title ?? titleKey);
         }
 
@@ -35,7 +35,6 @@ namespace GameClient.Views
         {
             var textBox = sender as TextBox;
             var placeholder = textBox.Tag as TextBlock;
-
             if (placeholder != null)
             {
                 placeholder.Visibility = string.IsNullOrEmpty(textBox.Text)
@@ -58,7 +57,6 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
-
             if (placeholder != null && string.IsNullOrWhiteSpace(passwordBox.Password))
             {
                 placeholder.Visibility = Visibility.Visible;
@@ -320,6 +318,40 @@ namespace GameClient.Views
             {
                 authWindow.ShowAuthButtons();
             }
+        }
+
+        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
+            {
+                var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
+                e.CancelCommand();
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
+                    var tb = (TextBox)sender;
+                    if (tb.MaxLength > 0 && sanitized.Length > tb.MaxLength)
+                        sanitized = sanitized.Substring(0, tb.MaxLength);
+                    tb.Text = sanitized;
+                    tb.CaretIndex = tb.Text.Length;
+                }), DispatcherPriority.Background);
+            }
+            else
+            {
+                e.CancelCommand();
+            }
+        }
+
+        private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), DispatcherPriority.Background);
         }
     }
 }

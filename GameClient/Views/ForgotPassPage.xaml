@@ -9,9 +9,6 @@
       d:DesignHeight="550" d:DesignWidth="450"
       Title="ForgotPassPage">
 
-    <Page.Resources>
-    </Page.Resources>
-
     <Grid>
         <Button Content="Volver"
                 Style="{StaticResource PrimaryButtonStyle}"
@@ -30,7 +27,9 @@
                     <TextBox x:Name="EmailTextBox" 
                              Style="{StaticResource InputTextBoxStyle}"
                              TextChanged="OnGenericTextBoxChanged"
-                             Tag="{x:Reference EmailPlaceholder}"/>
+                             Tag="{x:Reference EmailPlaceholder}"
+                             MaxLength="254"
+                             DataObject.Pasting="OnTextBoxPasting"/>
                     <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" 
                                Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                 </Grid>
@@ -39,7 +38,9 @@
                     <TextBox x:Name="RepeatEmailTextBox" 
                              Style="{StaticResource InputTextBoxStyle}"
                              TextChanged="OnGenericTextBoxChanged"
-                             Tag="{x:Reference RepeatEmailPlaceholder}"/>
+                             Tag="{x:Reference RepeatEmailPlaceholder}"
+                             MaxLength="254"
+                             DataObject.Pasting="OnTextBoxPasting"/>
                     <TextBlock x:Name="RepeatEmailPlaceholder" Text="{x:Static props:Strings.RepeatEmailLabel}" 
                                Foreground="Gray" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False"/>
                 </Grid>

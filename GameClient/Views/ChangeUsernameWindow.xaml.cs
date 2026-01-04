@@ -198,5 +198,17 @@ namespace GameClient.Views
             UsernamePlaceholder.Visibility = string.IsNullOrEmpty(NewUsernameTextBox.Text) ? Visibility.Visible : Visibility.Collapsed;
             ClearError(UsernameBorder, UsernameErrorLabel);
         }
+
+        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en este campo.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
     }
 }

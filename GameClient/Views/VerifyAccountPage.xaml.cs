@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using GameClient.GameServiceReference;
 using System.ServiceModel;
 using GameClient.Views;
+using System.Windows.Threading;
 
 namespace GameClient
 {
@@ -163,6 +165,29 @@ namespace GameClient
         private void BackButton(object sender, RoutedEventArgs e)
         {
             NavigationService.Navigate(new LoginPage());
+        }
+
+        private void OnCodeTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
+            {
+                var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
+                e.CancelCommand();
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var sanitized = new string(raw.Where(char.IsDigit).ToArray());
+                    if (sanitized.Length > CodeTextBox.MaxLength)
+                        sanitized = sanitized.Substring(0, CodeTextBox.MaxLength);
+
+                    CodeTextBox.Text = sanitized;
+                    CodeTextBox.CaretIndex = CodeTextBox.Text.Length;
+                }), DispatcherPriority.Background);
+            }
+            else
+            {
+                e.CancelCommand();
+            }
         }
     }
 }

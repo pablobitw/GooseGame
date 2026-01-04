@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net.Mail;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -7,6 +7,7 @@ using System.Windows.Navigation;
 using GameClient.GameServiceReference;
 using GameClient.Views;
 using System.ServiceModel;
+using System.Windows.Threading;
 
 namespace GameClient.Views
 {
@@ -152,6 +153,29 @@ namespace GameClient.Views
         {
             CodeTextBox.ClearValue(Border.BorderBrushProperty);
             CodeTextBox.ToolTip = null;
+        }
+
+        private void OnCodeTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
+            {
+                var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
+                e.CancelCommand();
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var sanitized = new string(raw.Where(char.IsDigit).ToArray());
+                    if (sanitized.Length > CodeTextBox.MaxLength)
+                        sanitized = sanitized.Substring(0, CodeTextBox.MaxLength);
+
+                    CodeTextBox.Text = sanitized;
+                    CodeTextBox.CaretIndex = CodeTextBox.Text.Length;
+                }), DispatcherPriority.Background);
+            }
+            else
+            {
+                e.CancelCommand();
+            }
         }
     }
 }

@@ -81,5 +81,17 @@ namespace GameClient.Views.Components
                 else client.Abort();
             }
         }
+
+        private void PasswordBox_OnPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
     }
 }

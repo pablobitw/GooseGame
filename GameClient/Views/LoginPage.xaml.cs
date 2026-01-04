@@ -42,30 +42,23 @@ namespace GameClient.Views
 
                     if (string.IsNullOrEmpty(currentLocalLanguage)) currentLocalLanguage = "es-MX";
 
-                    // --- CORRECCIÓN AQUÍ ---
                     if (serverLanguage != currentLocalLanguage)
                     {
-                        // 1. Guardamos el nuevo idioma
                         GameClient.Properties.Settings.Default.LanguageCode = serverLanguage;
                         GameClient.Properties.Settings.Default.Save();
 
-                        // 2. ¡IMPORTANTE! Desconectamos al usuario del servidor antes de reiniciar
-                        // Si no hacemos esto, el servidor creerá que seguimos conectados (Zombie Session)
                         try
                         {
                             serviceClient.Logout(usernameOrEmail);
                         }
                         catch
                         {
-                            // Ignoramos errores de red al salir, lo importante es intentar liberar la sesión
                         }
 
-                        // 3. Reiniciamos la aplicación
                         Process.Start(Application.ResourceAssembly.Location);
                         Application.Current.Shutdown();
                         return;
                     }
-                    // -----------------------
 
                     ApplyLanguage(serverLanguage);
 
@@ -210,6 +203,30 @@ namespace GameClient.Views
             {
                 authWindow.ShowAuthButtons();
             }
+        }
+
+        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en este campo.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
     }
 }

@@ -151,5 +151,17 @@ namespace GameClient
 
             return isValid;
         }
+
+        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de correo.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
     }
 }

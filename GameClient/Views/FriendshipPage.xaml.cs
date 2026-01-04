@@ -544,6 +544,18 @@ namespace GameClient.Views
                 Dispatcher.Invoke(() => MessageBox.Show(message, "Información", MessageBoxButton.OK, MessageBoxImage.Information));
             }
         }
+        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            e.CancelCommand();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MessageBox.Show("Por seguridad, el pegado está deshabilitado en el buscador.",
+                                "Acción bloqueada",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
 
         private void ShowSuccessMessage(string message)
         {

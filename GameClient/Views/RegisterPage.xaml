@@ -20,12 +20,12 @@
         </Grid.Background>
 
         <Button Content="Volver"
-        Style="{StaticResource PrimaryButtonStyle}"
-        HorizontalAlignment="Left"
-        VerticalAlignment="Top"
-        Margin="10,21,0,0"
-        Width="78"
-        Click="OnBackButton" Height="35"/>
+                Style="{StaticResource PrimaryButtonStyle}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="10,21,0,0"
+                Width="78"
+                Click="OnBackButton" Height="35"/>
 
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <Border Background="White" CornerRadius="20" MaxWidth="360" Padding="25,20" Width="364">
@@ -40,44 +40,48 @@
 
                     <Grid Margin="0,5">
                         <TextBox x:Name="EmailBox" 
-                             Style="{StaticResource InputTextBoxStyle}" 
-                             TextChanged="OnGenericTextBoxChanged"
-                             Tag="{x:Reference EmailPlaceholder}"/>
-
+                                 Style="{StaticResource InputTextBoxStyle}" 
+                                 TextChanged="OnGenericTextBoxChanged"
+                                 Tag="{x:Reference EmailPlaceholder}"
+                                 MaxLength="254"
+                                 DataObject.Pasting="OnTextBoxPasting"/>
                         <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <Grid Margin="0,5">
                         <TextBox x:Name="UserBox" 
-                             Style="{StaticResource InputTextBoxStyle}" 
-                             TextChanged="OnGenericTextBoxChanged"
-                             Tag="{x:Reference UsernamePlaceholder}"/>
-
+                                 Style="{StaticResource InputTextBoxStyle}" 
+                                 TextChanged="OnGenericTextBoxChanged"
+                                 Tag="{x:Reference UsernamePlaceholder}"
+                                 MaxLength="20"
+                                 DataObject.Pasting="OnTextBoxPasting"/>
                         <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <Grid Margin="0,5">
                         <PasswordBox x:Name="PasswordBox" 
-                                 Style="{StaticResource InputPasswordBoxStyle}" 
-                                 GotFocus="OnGenericPasswordFocus"
-                                 LostFocus="OnGenericPasswordLost"
-                                 PasswordChanged="OnGenericPasswordChanged"
-                                 Tag="{x:Reference PassPlaceholder}"/>
-
+                                     Style="{StaticResource InputPasswordBoxStyle}" 
+                                     GotFocus="OnGenericPasswordFocus"
+                                     LostFocus="OnGenericPasswordLost"
+                                     PasswordChanged="OnGenericPasswordChanged"
+                                     Tag="{x:Reference PassPlaceholder}"
+                                     MaxLength="50"
+                                     DataObject.Pasting="OnPasswordBoxPasting"/>
                         <TextBlock x:Name="PassPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
 
                     <Grid Margin="0,5">
                         <PasswordBox x:Name="RepeatBox" 
-                                 Style="{StaticResource InputPasswordBoxStyle}" 
-                                 GotFocus="OnGenericPasswordFocus"
-                                 LostFocus="OnGenericPasswordLost"
-                                 PasswordChanged="OnGenericPasswordChanged"
-                                 Tag="{x:Reference RepeatPlaceholder}"/>
-
+                                     Style="{StaticResource InputPasswordBoxStyle}" 
+                                     GotFocus="OnGenericPasswordFocus"
+                                     LostFocus="OnGenericPasswordLost"
+                                     PasswordChanged="OnGenericPasswordChanged"
+                                     Tag="{x:Reference RepeatPlaceholder}"
+                                     MaxLength="50"
+                                     DataObject.Pasting="OnPasswordBoxPasting"/>
                         <TextBlock x:Name="RepeatPlaceholder" Text="{x:Static props:Strings.RepeatPasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
