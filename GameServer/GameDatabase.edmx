@@ -193,6 +193,8 @@
     <Property Name="TicketEpic" Type="int" Nullable="false" />
     <Property Name="TicketLegendary" Type="int" Nullable="false" />
     <Property Name="TurnsSkipped" Type="int" Nullable="false" DefaultValue="0" />
+    <Property Name="KickCount" Type="int" Nullable="false" DefaultValue="0" />
+    <Property Name="IsBanned" Type="bit" Nullable="false" />
     <Property Name="PlayerStat_IdPlayers" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PlayerStats">
@@ -567,6 +569,8 @@
           <Property Name="TicketLegendary" Type="Int32" Nullable="false" />
           <Property Name="TurnsSkipped" Type="Int32" Nullable="false" DefaultValue="0" />
           <NavigationProperty Name="PlayerSocialLinks" Relationship="GameServer.PlayerPlayerSocialLink" FromRole="Player" ToRole="PlayerSocialLink" />
+          <Property Name="KickCount" Type="Int32" Nullable="false" DefaultValue="0" />
+          <Property Name="IsBanned" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -1000,6 +1004,8 @@
           <ScalarProperty Name="TicketEpic" ColumnName="TicketEpic" />
           <ScalarProperty Name="TicketLegendary" ColumnName="TicketLegendary" />
           <ScalarProperty Name="TurnsSkipped" ColumnName="TurnsSkipped" />
+          <ScalarProperty Name="KickCount" ColumnName="KickCount" />
+          <ScalarProperty Name="IsBanned" ColumnName="IsBanned" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

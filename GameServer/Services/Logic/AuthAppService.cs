@@ -295,8 +295,16 @@ namespace GameServer.Services.Logic
 
                 if (player != null)
                 {
-                    if (player.Account.AccountStatus != (int)AccountStatus.Inactive &&
-                        player.Account.AccountStatus != (int)AccountStatus.Banned)
+                    if (player.IsBanned)
+                    {
+                        response.Message = "Tu cuenta ha sido baneada permanentemente por acumulación de faltas.";
+                    }
+                    else if (await _repository.IsAccountSanctionedAsync(player.Account.IdAccount))
+                    {
+                        response.Message = "Tu cuenta tiene una sanción temporal activa.";
+                    }
+                    else if (player.Account.AccountStatus != (int)AccountStatus.Inactive &&
+                             player.Account.AccountStatus != (int)AccountStatus.Banned)
                     {
                         if (!ConnectionManager.IsUserOnline(player.Username))
                         {
@@ -326,7 +334,7 @@ namespace GameServer.Services.Logic
                     else
                     {
                         Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
-                        response.Message = "Cuenta inactiva o baneada.";
+                        response.Message = "Cuenta inactiva o suspendida administrativamente.";
                     }
                 }
             }
@@ -342,8 +350,8 @@ namespace GameServer.Services.Logic
             }
             catch (DbUpdateException ex)
             {
-                Log.Error("Error al actualizar el estado del jugador en Login.", ex);
-                response.Message = "Error al actualizar estado.";
+                Log.Error("Error al actualizar datos en Login.", ex);
+                response.Message = "Error al procesar la solicitud.";
             }
             catch (TimeoutException ex)
             {

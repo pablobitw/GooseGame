@@ -167,7 +167,13 @@ namespace GameClient.GameplayServiceReference {
         private string[] GameLogField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsBannedField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsGameOverField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsKickedField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsMyTurnField;
@@ -221,6 +227,19 @@ namespace GameClient.GameplayServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsBanned {
+            get {
+                return this.IsBannedField;
+            }
+            set {
+                if ((this.IsBannedField.Equals(value) != true)) {
+                    this.IsBannedField = value;
+                    this.RaisePropertyChanged("IsBanned");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public bool IsGameOver {
             get {
                 return this.IsGameOverField;
@@ -229,6 +248,19 @@ namespace GameClient.GameplayServiceReference {
                 if ((this.IsGameOverField.Equals(value) != true)) {
                     this.IsGameOverField = value;
                     this.RaisePropertyChanged("IsGameOver");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsKicked {
+            get {
+                return this.IsKickedField;
+            }
+            set {
+                if ((this.IsKickedField.Equals(value) != true)) {
+                    this.IsKickedField = value;
+                    this.RaisePropertyChanged("IsKicked");
                 }
             }
         }

@@ -833,10 +833,10 @@ namespace GameClient.LobbyServiceReference {
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDto[]> GetPublicMatchesAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
-        void KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request);
+        bool KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
-        System.Threading.Tasks.Task KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request);
+        System.Threading.Tasks.Task<bool> KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -945,11 +945,11 @@ namespace GameClient.LobbyServiceReference {
             return base.Channel.GetPublicMatchesAsync();
         }
         
-        public void KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request) {
-            base.Channel.KickPlayer(request);
+        public bool KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request) {
+            return base.Channel.KickPlayer(request);
         }
         
-        public System.Threading.Tasks.Task KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request) {
+        public System.Threading.Tasks.Task<bool> KickPlayerAsync(GameClient.LobbyServiceReference.KickPlayerRequest request) {
             return base.Channel.KickPlayerAsync(request);
         }
     }

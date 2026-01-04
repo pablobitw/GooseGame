@@ -25,7 +25,6 @@ namespace GameServer.Services
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
-
             var result = await _logic.CreateLobbyAsync(request);
 
             if (result.Success && callback != null)
@@ -39,7 +38,6 @@ namespace GameServer.Services
         public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
-
             var result = await _logic.JoinLobbyAsync(request);
 
             if (result.Success && callback != null)
@@ -75,9 +73,9 @@ namespace GameServer.Services
             return await _logic.GetPublicMatchesAsync();
         }
 
-        public async Task KickPlayerAsync(KickPlayerRequest request)
+        public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            await _logic.KickPlayerAsync(request);
+            return await _logic.KickPlayerAsync(request);
         }
 
         public void Dispose()

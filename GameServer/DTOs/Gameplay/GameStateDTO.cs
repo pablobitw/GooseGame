@@ -22,5 +22,11 @@ namespace GameServer.DTOs.Gameplay
         public bool IsGameOver { get; set; }
         [DataMember]
         public string WinnerUsername { get; set; }
+
+        [DataMember]
+        public bool IsKicked { get; set; }
+
+        [DataMember]
+        public bool IsBanned { get; set; }
     }
 }

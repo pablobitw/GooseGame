@@ -307,9 +307,7 @@ namespace GameServer.Services.Logic
                     await _repository.SaveChangesAsync();
                     Log.InfoFormat("Juego {0} iniciado con {1} jugadores.", lobbyCode, players.Count);
 
-                    // --- ARRANQUE DEL MOTOR DE TIEMPO ---
                     GameManager.Instance.StartMonitoring(game.IdGame);
-                    // ------------------------------------
 
                     success = true;
 
@@ -513,63 +511,92 @@ namespace GameServer.Services.Logic
             return matchesList.ToArray();
         }
 
-        public async Task KickPlayerAsync(KickPlayerRequest request)
+        public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            if (request == null) return;
+            bool operationSuccess = false;
 
-            if (request.RequestorUsername == request.TargetUsername)
+            if (request != null)
             {
-                Log.WarnFormat("Host {0} intentó expulsarse a sí mismo.", request.RequestorUsername);
-                return;
-            }
-
-            try
-            {
-                var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
-                if (game == null)
+                if (request.RequestorUsername != request.TargetUsername)
                 {
-                    Log.Warn("KickPlayer: Lobby no encontrado.");
-                    return;
-                }
+                    try
+                    {
+                        var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
 
-                var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
-                if (host == null || game.HostPlayerID != host.IdPlayer)
+                        if (game != null)
+                        {
+                            var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
+
+                            if (host != null && game.HostPlayerID == host.IdPlayer)
+                            {
+                                var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
+
+                                if (target != null && target.GameIdGame == game.IdGame)
+                                {
+                                    target.KickCount++;
+                                    bool isBanned = false;
+
+                                    if (target.KickCount >= 3)
+                                    {
+                                        target.IsBanned = true;
+                                        isBanned = true;
+                                        Log.WarnFormat("Jugador {0} BANEADO por acumulación de expulsiones.", target.Username);
+                                    }
+
+                                    target.GameIdGame = null;
+                                    await _repository.SaveChangesAsync();
+
+                                    string notificationMsg = isBanned
+                                        ? "Has sido BANEADO permanentemente por acumulación de faltas."
+                                        : "Has sido expulsado por el anfitrión.";
+
+                                    NotifyClient(request.TargetUsername, notificationMsg);
+                                    await NotifyAllInLobby(game.IdGame, request.TargetUsername, client => client.OnPlayerLeft(request.TargetUsername));
+
+                                    Log.InfoFormat("Jugador {0} expulsado del lobby {1} por {2}. Strike {3}/3",
+                                        request.TargetUsername, request.LobbyCode, request.RequestorUsername, target.KickCount);
+
+                                    operationSuccess = true;
+                                }
+                                else
+                                {
+                                    Log.WarnFormat("KickPlayer: Jugador objetivo {0} no está en el lobby.", request.TargetUsername);
+                                }
+                            }
+                            else
+                            {
+                                Log.WarnFormat("KickPlayer: {0} intentó expulsar sin ser host.", request.RequestorUsername);
+                            }
+                        }
+                        else
+                        {
+                            Log.Warn("KickPlayer: Lobby no encontrado.");
+                        }
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        Log.Error("Error DB al expulsar jugador.", ex);
+                    }
+                    catch (SqlException ex)
+                    {
+                        Log.Error("Error SQL al expulsar jugador.", ex);
+                    }
+                    catch (EntityException ex)
+                    {
+                        Log.Error("Error EF al expulsar jugador.", ex);
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        Log.Error("Timeout al expulsar jugador.", ex);
+                    }
+                }
+                else
                 {
-                    Log.WarnFormat("KickPlayer: {0} intentó expulsar sin ser host.", request.RequestorUsername);
-                    return;
+                    Log.WarnFormat("Host {0} intentó expulsarse a sí mismo.", request.RequestorUsername);
                 }
+            }
 
-                var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
-                if (target == null || target.GameIdGame != game.IdGame)
-                {
-                    Log.WarnFormat("KickPlayer: Jugador objetivo {0} no está en el lobby.", request.TargetUsername);
-                    return;
-                }
-
-                target.GameIdGame = null;
-                await _repository.SaveChangesAsync();
-
-                NotifyClient(request.TargetUsername, "Has sido expulsado por el anfitrión.");
-                await NotifyAllInLobby(game.IdGame, request.TargetUsername, client => client.OnPlayerLeft(request.TargetUsername));
-
-                Log.InfoFormat("Jugador {0} expulsado del lobby {1} por {2}.", request.TargetUsername, request.LobbyCode, request.RequestorUsername);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB al expulsar jugador.", ex);
-            }
-            catch (SqlException ex)
-            {
-                Log.Error("Error SQL al expulsar jugador.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF al expulsar jugador.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout al expulsar jugador.", ex);
-            }
+            return operationSuccess;
         }
 
         private static void NotifyClient(string username, string message)

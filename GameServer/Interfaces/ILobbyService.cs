@@ -29,6 +29,8 @@ namespace GameServer.Interfaces
         Task<ActiveMatchDto[]> GetPublicMatchesAsync();
 
         [OperationContract]
-        Task KickPlayerAsync(KickPlayerRequest request);
+        Task<bool> KickPlayerAsync(KickPlayerRequest request);
+
+
     }
 }

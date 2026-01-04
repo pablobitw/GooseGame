@@ -87,11 +87,16 @@ namespace GameServer.Repositories.Interfaces
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        public async Task<bool> IsAccountSanctionedAsync(int accountId)
+        {
+            ThrowIfDisposed();
+            DateTime now = DateTime.Now;
 
-        /// <summary>
-        /// Releases resources used by the repository.
-        /// </summary>
-        /// <param name="disposing">True when called from Dispose, false when called from finalizer.</param>
+            return await _context.Sanctions.AnyAsync(s =>
+                s.Account_IdAccount == accountId &&
+                (s.SanctionType == 2 || (s.SanctionType == 1 && s.EndDate > now))
+            ).ConfigureAwait(false);
+        }
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

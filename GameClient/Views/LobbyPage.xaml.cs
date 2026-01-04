@@ -4,6 +4,7 @@ using GameClient.LobbyServiceReference;
 using GameClient.Models;
 using System;
 using System.Linq;
+using System.ServiceModel; 
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -144,7 +145,7 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("El anfitrión cerró la sala.", "Sala cerrada");
+                MessageBox.Show("El anfitrión cerró la sala.", "Sala cerrada", MessageBoxButton.OK, MessageBoxImage.Information);
                 ExitLobby();
             });
         }
@@ -157,7 +158,24 @@ namespace GameClient.Views
                 if (state != null)
                     UpdateLobbyUI(state);
             }
-            catch { }
+            catch (TimeoutException)
+            {
+                HandleConnectionError("El tiempo de espera para actualizar el lobby se ha agotado.");
+            }
+            catch (CommunicationException)
+            {
+                HandleConnectionError("Error de comunicación con el servidor al actualizar el lobby.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error actualizando lobby: {ex.Message}");
+            }
+        }
+
+        private void HandleConnectionError(string message)
+        {
+            MessageBox.Show(message, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+            ExitLobby();
         }
 
         private void UpdateLobbyUI(LobbyStateDto state)
@@ -190,9 +208,18 @@ namespace GameClient.Views
                 else
                     await LobbyServiceManager.Instance.LeaveLobbyAsync(username);
             }
-            catch { }
-
-            ExitLobby();
+            catch (TimeoutException)
+            {
+                MessageBox.Show("No se pudo notificar al servidor, cerrando localmente.", "Timeout", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de red al intentar salir.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                ExitLobby();
+            }
         }
 
         private void ExitLobby()
@@ -220,33 +247,53 @@ namespace GameClient.Views
                 BoardId = boardId
             };
 
-            var result = await LobbyServiceManager.Instance.CreateLobbyAsync(
-                new CreateLobbyRequest { HostUsername = username, Settings = settings });
-
-            if (!result.Success)
+            try
             {
-                MessageBox.Show(result.ErrorMessage);
-                StartMatchButton.IsEnabled = true;
-                return;
-            }
+                var result = await LobbyServiceManager.Instance.CreateLobbyAsync(
+                    new CreateLobbyRequest { HostUsername = username, Settings = settings });
 
-            lobbyCode = result.LobbyCode;
-            LockLobbySettings(lobbyCode);
-            UpdatePlayerListUI(new[] { new PlayerLobbyDto { Username = username, IsHost = true } });
-            ConnectToChat();
+                if (!result.Success)
+                {
+                    MessageBox.Show(result.ErrorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    StartMatchButton.IsEnabled = true;
+                    return;
+                }
+
+                lobbyCode = result.LobbyCode;
+                LockLobbySettings(lobbyCode);
+                UpdatePlayerListUI(new[] { new PlayerLobbyDto { Username = username, IsHost = true } });
+                ConnectToChat();
+            }
+            catch (TimeoutException)
+            {
+                MessageBox.Show("El servidor no respondió a tiempo.", "Timeout", MessageBoxButton.OK, MessageBoxImage.Error);
+                StartMatchButton.IsEnabled = true;
+            }
+            catch (CommunicationException)
+            {
+                MessageBox.Show("Error de comunicación al crear el lobby.", "Error de Red", MessageBoxButton.OK, MessageBoxImage.Error);
+                StartMatchButton.IsEnabled = true;
+            }
         }
 
         private async Task StartGameAsync()
         {
-            var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
-
-            if (state == null || state.Players.Length < MinPlayersToStart)
+            try
             {
-                MessageBox.Show("Se necesitan al menos 2 jugadores.");
-                return;
-            }
+                var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
 
-            await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
+                if (state == null || state.Players.Length < MinPlayersToStart)
+                {
+                    MessageBox.Show("Se necesitan al menos 2 jugadores.", "Imposible Iniciar", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
+            }
+            catch (Exception ex) when (ex is TimeoutException || ex is CommunicationException)
+            {
+                MessageBox.Show("Error al intentar iniciar la partida. Verifique su conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void LockLobbySettings(string code)
@@ -452,13 +499,20 @@ namespace GameClient.Views
             if (FriendshipServiceManager.Instance == null)
                 return;
 
-            var friends = await FriendshipServiceManager.Instance.GetFriendListAsync();
-            var online = friends.Where(f => f.IsOnline).ToList();
+            try
+            {
+                var friends = await FriendshipServiceManager.Instance.GetFriendListAsync();
+                var online = friends.Where(f => f.IsOnline).ToList();
 
-            InviteFriendsList.ItemsSource = online;
-            NoFriendsToInviteText.Visibility = online.Count == 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+                InviteFriendsList.ItemsSource = online;
+                NoFriendsToInviteText.Visibility = online.Count == 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("No se pudo cargar la lista de amigos.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void CloseInviteMenu_Click(object sender, RoutedEventArgs e)
@@ -493,9 +547,16 @@ namespace GameClient.Views
         {
             if (sender is Button btn && btn.Tag != null)
             {
-                FriendshipServiceManager.Instance.SendGameInvitation(btn.Tag.ToString(), lobbyCode);
-                btn.IsEnabled = false;
-                btn.Content = "Enviado";
+                try
+                {
+                    FriendshipServiceManager.Instance.SendGameInvitation(btn.Tag.ToString(), lobbyCode);
+                    btn.IsEnabled = false;
+                    btn.Content = "Enviado";
+                }
+                catch (CommunicationException)
+                {
+                    MessageBox.Show("Error al enviar invitación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

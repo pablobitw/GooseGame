@@ -1,13 +1,14 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
+using GameServer.Helpers;
 using GameServer.Models;
 using GameServer.Repositories;
-using GameServer.Helpers;
 using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
+using System.Data.SqlClient;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -402,25 +403,55 @@ namespace GameServer.Services.Logic
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            if (request == null) return new GameStateDto();
+            var gameState = new GameStateDto();
 
-            try
+            if (request != null)
             {
-                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                if (game == null) return new GameStateDto();
-
-                if (game.GameStatus == (int)GameStatus.Finished)
+                try
                 {
-                    return await BuildFinishedGameStateAsync(game);
-                }
+                    var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
 
-                return await BuildActiveGameStateAsync(game.IdGame, request.Username);
+                    if (game != null)
+                    {
+                        var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+
+                        if (player != null && player.GameIdGame != game.IdGame)
+                        {
+                            gameState.IsKicked = true;
+                            gameState.IsBanned = player.IsBanned;
+                        }
+                        else
+                        {
+                            if (game.GameStatus == (int)GameStatus.Finished)
+                            {
+                                gameState = await BuildFinishedGameStateAsync(game);
+                            }
+                            else
+                            {
+                                gameState = await BuildActiveGameStateAsync(game.IdGame, request.Username);
+                            }
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    Log.Error("Error de base de datos obteniendo estado.", ex);
+                }
+                catch (EntityException ex)
+                {
+                    Log.Error("Error de entidad obteniendo estado.", ex);
+                }
+                catch (TimeoutException ex)
+                {
+                    Log.Error("Tiempo de espera agotado obteniendo estado.", ex);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error general obteniendo estado.", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Log.Error("Error obteniendo estado de juego.", ex);
-                return new GameStateDto();
-            }
+
+            return gameState;
         }
 
         private async Task<GameStateDto> BuildFinishedGameStateAsync(Game game)
