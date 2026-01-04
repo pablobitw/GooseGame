@@ -127,8 +127,10 @@
     <Compile Include="DTOs\Lobby\LobbySettingsDto.cs" />
     <Compile Include="DTOs\Lobby\LobbyStateDto.cs" />
     <Compile Include="DTOs\Lobby\PlayerLobbyDto.cs" />
+    <Compile Include="DTOs\User\AddPlayerSocialLinkDto.cs" />
     <Compile Include="DTOs\User\ChangePasswordRequest.cs" />
     <Compile Include="DTOs\User\DeactivateAccountRequest.cs" />
+    <Compile Include="DTOs\User\PlayerSocialLinkDto.cs" />
     <Compile Include="DTOs\User\UsernameChangeResult.cs" />
     <Compile Include="DTOs\User\UserProfileDto.cs" />
     <Compile Include="Enums.cs" />
@@ -155,6 +157,7 @@
     </Compile>
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
+    <Compile Include="Helpers\PlayerSocialLinkHelper.cs" />
     <Compile Include="Helpers\VoteManager.cs" />
     <Compile Include="Interfaces\IChatCallback.cs" />
     <Compile Include="Interfaces\IChatNotifier.cs" />
@@ -179,6 +182,9 @@
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="PlayerInventory.cs">
+      <DependentUpon>GameDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PlayerSocialLink.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="PlayerStat.cs">

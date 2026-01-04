@@ -18,6 +18,7 @@
     <EntitySet Name="PlayerStats" EntityType="GameServer.Store.PlayerStats" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="Sanctions" EntityType="GameServer.Store.Sanctions" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="Tiles" EntityType="GameServer.Store.Tiles" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="PlayerSocialLinks" EntityType="GameServer.Store.PlayerSocialLinks" store:Type="Tables" Schema="dbo" />
     <AssociationSet Name="FK_IdAccount" Association="GameServer.Store.FK_IdAccount">
       <End Role="Accounts" EntitySet="Accounts" />
       <End Role="Sanctions" EntitySet="Sanctions" />
@@ -77,6 +78,10 @@
     <AssociationSet Name="GamePlayer" Association="GameServer.Store.GamePlayer">
       <End Role="Game" EntitySet="Games" />
       <End Role="Player" EntitySet="Players" />
+    </AssociationSet>
+    <AssociationSet Name="PlayerPlayerSocialLink" Association="GameServer.Store.PlayerPlayerSocialLink">
+      <End Role="Player" EntitySet="Players" />
+      <End Role="PlayerSocialLink" EntitySet="PlayerSocialLinks" />
     </AssociationSet>
   </EntityContainer>
   <EntityType Name="Accounts">
@@ -221,6 +226,16 @@
     <Property Name="IdTile" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="TileNumber" Type="int" Nullable="false" />
     <Property Name="Board_idBoard" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="PlayerSocialLinks">
+    <Key>
+      <PropertyRef Name="IdPlayerSocialLink" />
+    </Key>
+    <Property Name="IdPlayerSocialLink" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="SocialType" Type="tinyint" Nullable="false" />
+    <Property Name="Url" Type="nvarchar" Nullable="false" MaxLength="512" />
+    <Property Name="CreatedAt" Type="datetime" Nullable="false" />
+    <Property Name="PlayerIdPlayer" Type="int" Nullable="false" />
   </EntityType>
   <Association Name="FK_IdAccount">
     <End Role="Accounts" Type="GameServer.Store.Accounts" Multiplicity="1" />
@@ -402,6 +417,18 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
+  <Association Name="PlayerPlayerSocialLink">
+    <End Role="Player" Type="GameServer.Store.Players" Multiplicity="1" />
+    <End Role="PlayerSocialLink" Type="GameServer.Store.PlayerSocialLinks" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Player">
+        <PropertyRef Name="IdPlayer" />
+      </Principal>
+      <Dependent Role="PlayerSocialLink">
+        <PropertyRef Name="PlayerIdPlayer" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
 </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
@@ -539,6 +566,7 @@
           <Property Name="TicketEpic" Type="Int32" Nullable="false" />
           <Property Name="TicketLegendary" Type="Int32" Nullable="false" />
           <Property Name="TurnsSkipped" Type="Int32" Nullable="false" DefaultValue="0" />
+          <NavigationProperty Name="PlayerSocialLinks" Relationship="GameServer.PlayerPlayerSocialLink" FromRole="Player" ToRole="PlayerSocialLink" />
         </EntityType>
         <EntityType Name="PlayerStat">
           <Key>
@@ -805,6 +833,11 @@
             <End Role="Game" EntitySet="Games" />
             <End Role="Player" EntitySet="Players" />
           </AssociationSet>
+          <EntitySet Name="PlayerSocialLinks" EntityType="GameServer.PlayerSocialLink" />
+          <AssociationSet Name="PlayerPlayerSocialLink" Association="GameServer.PlayerPlayerSocialLink">
+            <End Role="Player" EntitySet="Players" />
+            <End Role="PlayerSocialLink" EntitySet="PlayerSocialLinks" />
+          </AssociationSet>
         </EntityContainer>
         <Association Name="PlayerPlayerStat">
           <End Type="GameServer.Player" Role="Player" Multiplicity="1" />
@@ -819,6 +852,29 @@
             </Principal>
             <Dependent Role="Player">
               <PropertyRef Name="GameIdGame" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="PlayerSocialLink">
+          <Key>
+            <PropertyRef Name="IdPlayerSocialLink" />
+          </Key>
+          <Property Name="IdPlayerSocialLink" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SocialType" Type="Byte" Nullable="false" />
+          <Property Name="Url" Type="String" Nullable="false" MaxLength="512" />
+          <Property Name="CreatedAt" Type="DateTime" Nullable="false" />
+          <NavigationProperty Name="Player" Relationship="GameServer.PlayerPlayerSocialLink" FromRole="PlayerSocialLink" ToRole="Player" />
+          <Property Name="PlayerIdPlayer" Type="Int32" Nullable="false" />
+        </EntityType>
+        <Association Name="PlayerPlayerSocialLink">
+          <End Type="GameServer.Player" Role="Player" Multiplicity="1" />
+          <End Type="GameServer.PlayerSocialLink" Role="PlayerSocialLink" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Player">
+              <PropertyRef Name="IdPlayer" />
+            </Principal>
+            <Dependent Role="PlayerSocialLink">
+              <PropertyRef Name="PlayerIdPlayer" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -979,6 +1035,17 @@
           <ScalarProperty Name="IdTile" ColumnName="IdTile" />
           <ScalarProperty Name="TileNumber" ColumnName="TileNumber" />
           <ScalarProperty Name="Board_idBoard" ColumnName="Board_idBoard" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="PlayerSocialLinks">
+      <EntityTypeMapping TypeName="IsTypeOf(GameServer.PlayerSocialLink)">
+        <MappingFragment StoreEntitySet="PlayerSocialLinks">
+          <ScalarProperty Name="IdPlayerSocialLink" ColumnName="IdPlayerSocialLink" />
+          <ScalarProperty Name="SocialType" ColumnName="SocialType" />
+          <ScalarProperty Name="Url" ColumnName="Url" />
+          <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+          <ScalarProperty Name="PlayerIdPlayer" ColumnName="PlayerIdPlayer" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

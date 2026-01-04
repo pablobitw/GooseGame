@@ -26,6 +26,7 @@ namespace GameServer
             this.Friendships1 = new HashSet<Friendship>();
             this.MoveRecords = new HashSet<MoveRecord>();
             this.PlayerInventories = new HashSet<PlayerInventory>();
+            this.PlayerSocialLinks = new HashSet<PlayerSocialLink>();
         }
     
         public int IdPlayer { get; set; }
@@ -55,5 +56,7 @@ namespace GameServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<PlayerInventory> PlayerInventories { get; set; }
         public virtual PlayerStat PlayerStat { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PlayerSocialLink> PlayerSocialLinks { get; set; }
     }
 }

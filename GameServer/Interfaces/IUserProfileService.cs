@@ -31,5 +31,10 @@ namespace GameServer.Interfaces
         [OperationContract]
         Task<bool> UpdateLanguageAsync(string email, string languageCode);
 
+        [OperationContract]
+        Task<string> AddSocialLinkAsync(string identifier, string url);
+
+        [OperationContract]
+        Task<bool> RemoveSocialLinkAsync(string identifier, string url);
     }
 }

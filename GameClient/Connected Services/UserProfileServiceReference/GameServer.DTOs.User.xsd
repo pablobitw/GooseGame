@@ -8,11 +8,25 @@
       <xs:element minOccurs="0" name="MatchesPlayed" type="xs:int" />
       <xs:element minOccurs="0" name="MatchesWon" type="xs:int" />
       <xs:element minOccurs="0" name="PreferredLanguage" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SocialLinks" nillable="true" type="tns:ArrayOfPlayerSocialLinkDto" />
       <xs:element minOccurs="0" name="Username" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="UsernameChangeCount" type="xs:int" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="UserProfileDto" nillable="true" type="tns:UserProfileDto" />
+  <xs:complexType name="ArrayOfPlayerSocialLinkDto">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlayerSocialLinkDto" nillable="true" type="tns:PlayerSocialLinkDto" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPlayerSocialLinkDto" nillable="true" type="tns:ArrayOfPlayerSocialLinkDto" />
+  <xs:complexType name="PlayerSocialLinkDto">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="SocialType" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Url" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PlayerSocialLinkDto" nillable="true" type="tns:PlayerSocialLinkDto" />
   <xs:simpleType name="UsernameChangeResult">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Success" />

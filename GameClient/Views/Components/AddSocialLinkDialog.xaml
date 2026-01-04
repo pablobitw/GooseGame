@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="GameClient.Views.Components.AddSocialLinkDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="350" d:DesignWidth="500">
+
+    <Grid Background="#AA000000">
+        <Border Background="White" Width="500" Height="350" CornerRadius="15" BorderBrush="#333" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.5"/>
+            </Border.Effect>
+
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Agregar Red Social" FontSize="24" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                    <TextBlock Text="Selecciona la plataforma:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="SocialTypeComboBox" Height="40" FontSize="16" Margin="0,0,0,20" SelectionChanged="SocialTypeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="YouTube" Tag="https://youtube.com/"/>
+                        <ComboBoxItem Content="X (Twitter)" Tag="https://x.com/"/>
+                        <ComboBoxItem Content="Facebook" Tag="https://facebook.com/"/>
+                        <ComboBoxItem Content="TikTok" Tag="https://tiktok.com/@"/>
+                        <ComboBoxItem Content="Instagram" Tag="https://instagram.com/"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Nombre de usuario / Canal:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+
+                    <Border BorderBrush="#CCC" BorderThickness="1" CornerRadius="3" Height="40">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="PrefixTextBlock" 
+                                       Text="https://..." 
+                                       Foreground="Gray" 
+                                       VerticalAlignment="Center" 
+                                       Margin="10,0,5,0"
+                                       FontSize="16"/>
+
+                            <TextBox x:Name="UrlTextBox" 
+                                     Grid.Column="1"
+                                     FontSize="16" 
+                                     VerticalContentAlignment="Center" 
+                                     BorderThickness="0" 
+                                     Background="Transparent"
+                                     MaxLength="70" 
+                                     DataObject.Pasting="UrlTextBox_Pasting"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock x:Name="HintText" Text="Escribe solo tu nombre de usuario." FontSize="12" Foreground="Gray" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button Content="Cancelar" Width="120" Height="40" Background="#CCC" Foreground="Black" FontWeight="Bold" BorderThickness="0" Margin="0,0,20,0" Click="CancelButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <Button Content="Guardar" Width="120" Height="40" Background="#FF5722" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="SaveButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

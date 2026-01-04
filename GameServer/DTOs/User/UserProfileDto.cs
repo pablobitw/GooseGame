@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Collections.Generic;
 
 namespace GameServer.DTOs.User
 {
@@ -28,5 +29,9 @@ namespace GameServer.DTOs.User
 
         [DataMember]
         public string PreferredLanguage { get; set; }
+
+        [DataMember]
+        public List<PlayerSocialLinkDto> SocialLinks { get; set; }
+
     }
 }

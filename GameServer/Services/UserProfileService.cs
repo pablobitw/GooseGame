@@ -23,7 +23,6 @@ namespace GameServer.Services
             return await _logic.GetUserProfileAsync(email);
         }
 
-
         public async Task<bool> SendUsernameChangeCodeAsync(string email)
         {
             return await _logic.SendUsernameChangeCodeAsync(email);
@@ -33,7 +32,6 @@ namespace GameServer.Services
         {
             return await _logic.ChangeUsernameAsync(email, newUsername, verificationCode);
         }
-
 
         public async Task<bool> ChangeAvatarAsync(string email, string avatarName)
         {
@@ -58,6 +56,16 @@ namespace GameServer.Services
         public async Task<bool> UpdateLanguageAsync(string email, string languageCode)
         {
             return await _logic.UpdateLanguageAsync(email, languageCode);
+        }
+
+        public async Task<string> AddSocialLinkAsync(string identifier, string url)
+        {
+            return await _logic.AddSocialLinkAsync(identifier, url);
+        }
+
+        public async Task<bool> RemoveSocialLinkAsync(string identifier, string url)
+        {
+            return await _logic.RemoveSocialLinkAsync(identifier, url);
         }
     }
 }

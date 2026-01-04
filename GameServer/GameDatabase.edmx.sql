@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 01/03/2026 16:34:54
+-- Date Created: 01/04/2026 00:18:08
 -- Generated from EDMX file: C:\Users\PABLO\source\repos\GooseGame\GameServer\GameDatabase.edmx
 -- --------------------------------------------------
 
@@ -62,6 +62,9 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_GamePlayer]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_GamePlayer];
 GO
+IF OBJECT_ID(N'[dbo].[FK_PlayerPlayerSocialLink]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[PlayerSocialLinks] DROP CONSTRAINT [FK_PlayerPlayerSocialLink];
+GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
@@ -102,6 +105,9 @@ IF OBJECT_ID(N'[dbo].[Sanctions]', 'U') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[Tiles]', 'U') IS NOT NULL
     DROP TABLE [dbo].[Tiles];
+GO
+IF OBJECT_ID(N'[dbo].[PlayerSocialLinks]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[PlayerSocialLinks];
 GO
 
 -- --------------------------------------------------
@@ -251,6 +257,16 @@ CREATE TABLE [dbo].[Tiles] (
 );
 GO
 
+-- Creating table 'PlayerSocialLinks'
+CREATE TABLE [dbo].[PlayerSocialLinks] (
+    [IdPlayerSocialLink] int IDENTITY(1,1) NOT NULL,
+    [SocialType] tinyint  NOT NULL,
+    [Url] nvarchar(512)  NOT NULL,
+    [CreatedAt] datetime  NOT NULL,
+    [PlayerIdPlayer] int  NOT NULL
+);
+GO
+
 -- --------------------------------------------------
 -- Creating all PRIMARY KEY constraints
 -- --------------------------------------------------
@@ -325,6 +341,12 @@ GO
 ALTER TABLE [dbo].[Tiles]
 ADD CONSTRAINT [PK_Tiles]
     PRIMARY KEY CLUSTERED ([IdTile] ASC);
+GO
+
+-- Creating primary key on [IdPlayerSocialLink] in table 'PlayerSocialLinks'
+ALTER TABLE [dbo].[PlayerSocialLinks]
+ADD CONSTRAINT [PK_PlayerSocialLinks]
+    PRIMARY KEY CLUSTERED ([IdPlayerSocialLink] ASC);
 GO
 
 -- --------------------------------------------------
@@ -554,6 +576,21 @@ GO
 CREATE INDEX [IX_FK_GamePlayer]
 ON [dbo].[Players]
     ([GameIdGame]);
+GO
+
+-- Creating foreign key on [PlayerIdPlayer] in table 'PlayerSocialLinks'
+ALTER TABLE [dbo].[PlayerSocialLinks]
+ADD CONSTRAINT [FK_PlayerPlayerSocialLink]
+    FOREIGN KEY ([PlayerIdPlayer])
+    REFERENCES [dbo].[Players]
+        ([IdPlayer])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+GO
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_PlayerPlayerSocialLink'
+CREATE INDEX [IX_FK_PlayerPlayerSocialLink]
+ON [dbo].[PlayerSocialLinks]
+    ([PlayerIdPlayer]);
 GO
 
 -- --------------------------------------------------

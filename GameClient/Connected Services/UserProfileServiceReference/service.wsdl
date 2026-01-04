@@ -65,6 +65,18 @@
   <wsdl:message name="IUserProfileService_UpdateLanguage_OutputMessage">
     <wsdl:part name="parameters" element="tns:UpdateLanguageResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_AddSocialLink_InputMessage">
+    <wsdl:part name="parameters" element="tns:AddSocialLink" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_AddSocialLink_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AddSocialLinkResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_RemoveSocialLink_InputMessage">
+    <wsdl:part name="parameters" element="tns:RemoveSocialLink" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_RemoveSocialLink_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RemoveSocialLinkResponse" />
+  </wsdl:message>
   <wsdl:portType name="IUserProfileService">
     <wsdl:operation name="GetUserProfile">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfile" message="tns:IUserProfileService_GetUserProfile_InputMessage" />
@@ -97,6 +109,14 @@
     <wsdl:operation name="UpdateLanguage">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguage" message="tns:IUserProfileService_UpdateLanguage_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguageResponse" message="tns:IUserProfileService_UpdateLanguage_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AddSocialLink">
+      <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/AddSocialLink" message="tns:IUserProfileService_AddSocialLink_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/AddSocialLinkResponse" message="tns:IUserProfileService_AddSocialLink_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveSocialLink">
+      <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLink" message="tns:IUserProfileService_RemoveSocialLink_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse" message="tns:IUserProfileService_RemoveSocialLink_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IUserProfileService" type="tns:IUserProfileService">
@@ -168,6 +188,24 @@
     </wsdl:operation>
     <wsdl:operation name="UpdateLanguage">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/UpdateLanguage" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSocialLink">
+      <soap12:operation soapAction="http://tempuri.org/IUserProfileService/AddSocialLink" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveSocialLink">
+      <soap12:operation soapAction="http://tempuri.org/IUserProfileService/RemoveSocialLink" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

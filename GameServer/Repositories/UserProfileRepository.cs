@@ -23,6 +23,7 @@ namespace GameServer.Repositories
             return await _context.Players
                 .Include(p => p.Account)
                 .Include(p => p.PlayerStat)
+                .Include(p => p.PlayerSocialLinks)
                 .FirstOrDefaultAsync(p => (p.Account != null && p.Account.Email == identifier) || p.Username == identifier)
                 .ConfigureAwait(false);
         }
@@ -39,17 +40,12 @@ namespace GameServer.Repositories
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Releases resources used by the repository.
-        /// </summary>
-        /// <param name="disposing">True when called from Dispose, false when called from finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -63,6 +59,10 @@ namespace GameServer.Repositories
             _disposed = true;
         }
 
+        public void DeleteSocialLink(PlayerSocialLink link)
+        {
+            _context.PlayerSocialLinks.Remove(link);
+        }
 
         private void ThrowIfDisposed()
         {

@@ -4,9 +4,11 @@ using GameServer.Helpers;
 using GameServer.Repositories;
 using log4net;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
@@ -42,13 +44,27 @@ namespace GameServer.Services.Logic
                     profile = new UserProfileDto
                     {
                         Username = player.Username,
-                        Email = emailDisplay, 
+                        Email = emailDisplay,
                         AvatarPath = player.Avatar,
                         Coins = player.Coins,
                         MatchesPlayed = player.PlayerStat?.MatchesPlayed ?? 0,
                         MatchesWon = player.PlayerStat?.MatchesWon ?? 0,
-                        UsernameChangeCount = player.UsernameChangeCount
+                        UsernameChangeCount = player.UsernameChangeCount,
+                        PreferredLanguage = player.Account?.PreferredLanguage,
+                        SocialLinks = new List<PlayerSocialLinkDto>()
                     };
+
+                    if (player.PlayerSocialLinks != null)
+                    {
+                        foreach (var link in player.PlayerSocialLinks)
+                        {
+                            profile.SocialLinks.Add(new PlayerSocialLinkDto
+                            {
+                                SocialType = link.SocialType.ToString(),
+                                Url = link.Url
+                            });
+                        }
+                    }
                 }
                 else
                 {
@@ -96,22 +112,6 @@ namespace GameServer.Services.Logic
                 {
                     Log.WarnFormat("Solicitud de código inválida para: {0}", identifier);
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL enviando código de cambio de usuario.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB enviando código de cambio de usuario.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF enviando código de cambio de usuario.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout enviando código de cambio de usuario.", ex);
             }
             catch (Exception ex)
             {
@@ -166,26 +166,6 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error($"Error actualizando usuario para {identifier}.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL crítico al cambiar usuario.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF al cambiar usuario.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout al cambiar usuario.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
             catch (Exception ex)
             {
                 Log.Error($"Error inesperado al cambiar usuario para {identifier}.", ex);
@@ -213,21 +193,9 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Cambio de avatar fallido (Usuario no encontrado): {0}", identifier);
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error($"Error SQL cambiando avatar para {identifier}.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error($"Error DB cambiando avatar para {identifier}.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error($"Error EF cambiando avatar para {identifier}.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error($"Timeout cambiando avatar para {identifier}.", ex);
+                Log.Error($"Error cambiando avatar para {identifier}.", ex);
             }
 
             return isSuccess;
@@ -258,21 +226,9 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Solicitud inválida (Usuario no encontrado o es Invitado): {0}", identifier);
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL enviando código pass.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB enviando código pass.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF enviando código pass.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout enviando código pass.", ex);
+                Log.Error("Error enviando código pass.", ex);
             }
 
             return isSent;
@@ -317,26 +273,13 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Intento de cambio de pass en cuenta inválida/invitado: {0}", request.Email);
                 }
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error SQL cambiando password con código.", ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB cambiando password con código.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF cambiando password con código.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout cambiando password con código.", ex);
+                Log.Error("Error cambiando password con código.", ex);
             }
 
             return isChanged;
         }
-
 
         public async Task<bool> UpdateLanguageAsync(string identifier, string languageCode)
         {
@@ -389,8 +332,7 @@ namespace GameServer.Services.Logic
                     return false;
                 }
 
-                
-                player.Account.AccountStatus = 2; 
+                player.Account.AccountStatus = 2;
 
                 await _repository.SaveChangesAsync();
 
@@ -400,6 +342,72 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error($"Error al desactivar cuenta de {request.Username}", ex);
+                return false;
+            }
+        }
+
+        public async Task<string> AddSocialLinkAsync(string identifier, string url)
+        {
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(identifier);
+                if (player == null) return "Usuario no encontrado.";
+
+                var existingTypes = player.PlayerSocialLinks
+                    .Select(l => (SocialType)l.SocialType);
+
+                if (!PlayerSocialLinkHelper.CanAddSocialLink(existingTypes, url, out SocialType newType, out string errorMsg))
+                {
+                    Log.WarnFormat("Intento inválido de agregar red social para {0}: {1}", identifier, errorMsg);
+                    return errorMsg;
+                }
+
+                var newLink = new PlayerSocialLink
+                {
+                    PlayerIdPlayer = player.IdPlayer,
+                    SocialType = (byte)newType,
+                    Url = url
+                };
+
+                player.PlayerSocialLinks.Add(newLink);
+
+                await _repository.SaveChangesAsync();
+                Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error al agregar red social para {identifier}", ex);
+                return "Ocurrió un error interno al guardar la red social.";
+            }
+        }
+
+        public async Task<bool> RemoveSocialLinkAsync(string identifier, string urlToRemove)
+        {
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(identifier);
+                if (player == null || player.PlayerSocialLinks == null) return false;
+
+                var link = player.PlayerSocialLinks.FirstOrDefault(l => l.Url == urlToRemove);
+
+                if (link != null)
+                {
+                  
+                    _repository.DeleteSocialLink(link);
+
+                    await _repository.SaveChangesAsync();
+                    Log.InfoFormat("Red social eliminada para {0}: {1}", identifier, urlToRemove);
+                    return true;
+                }
+
+                Log.WarnFormat("Intento de borrar red social no encontrada: {0} -> {1}", identifier, urlToRemove);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error al eliminar red social para {identifier}", ex);
                 return false;
             }
         }

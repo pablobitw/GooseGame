@@ -49,4 +49,14 @@ namespace GameServer
         TemporaryBan,
         PermanentBan
     }
+
+    public enum SocialType : byte
+    {
+        YouTube = 1,
+        X = 2,
+        Facebook = 3,
+        TikTok = 4,
+        Instagram = 5
+    }
+
 }

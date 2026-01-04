@@ -37,5 +37,6 @@ namespace GameServer
         public virtual DbSet<PlayerStat> PlayerStats { get; set; }
         public virtual DbSet<Sanction> Sanctions { get; set; }
         public virtual DbSet<Tile> Tiles { get; set; }
+        public virtual DbSet<PlayerSocialLink> PlayerSocialLinks { get; set; }
     }
 }

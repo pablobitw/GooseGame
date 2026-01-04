@@ -41,6 +41,9 @@ namespace GameClient.UserProfileServiceReference {
         private string PreferredLanguageField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.UserProfileServiceReference.PlayerSocialLinkDto[] SocialLinksField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string UsernameField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -135,6 +138,19 @@ namespace GameClient.UserProfileServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.UserProfileServiceReference.PlayerSocialLinkDto[] SocialLinks {
+            get {
+                return this.SocialLinksField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.SocialLinksField, value) != true)) {
+                    this.SocialLinksField = value;
+                    this.RaisePropertyChanged("SocialLinks");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public string Username {
             get {
                 return this.UsernameField;
@@ -156,6 +172,67 @@ namespace GameClient.UserProfileServiceReference {
                 if ((this.UsernameChangeCountField.Equals(value) != true)) {
                     this.UsernameChangeCountField = value;
                     this.RaisePropertyChanged("UsernameChangeCount");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="PlayerSocialLinkDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User")]
+    [System.SerializableAttribute()]
+    public partial class PlayerSocialLinkDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string SocialTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string UrlField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string SocialType {
+            get {
+                return this.SocialTypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.SocialTypeField, value) != true)) {
+                    this.SocialTypeField = value;
+                    this.RaisePropertyChanged("SocialType");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Url {
+            get {
+                return this.UrlField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.UrlField, value) != true)) {
+                    this.UrlField = value;
+                    this.RaisePropertyChanged("Url");
                 }
             }
         }
@@ -385,6 +462,18 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/UpdateLanguage", ReplyAction="http://tempuri.org/IUserProfileService/UpdateLanguageResponse")]
         System.Threading.Tasks.Task<bool> UpdateLanguageAsync(string email, string languageCode);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/AddSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/AddSocialLinkResponse")]
+        string AddSocialLink(string identifier, string url);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/AddSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/AddSocialLinkResponse")]
+        System.Threading.Tasks.Task<string> AddSocialLinkAsync(string identifier, string url);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/RemoveSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse")]
+        bool RemoveSocialLink(string identifier, string url);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/RemoveSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse")]
+        System.Threading.Tasks.Task<bool> RemoveSocialLinkAsync(string identifier, string url);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -476,6 +565,22 @@ namespace GameClient.UserProfileServiceReference {
         
         public System.Threading.Tasks.Task<bool> UpdateLanguageAsync(string email, string languageCode) {
             return base.Channel.UpdateLanguageAsync(email, languageCode);
+        }
+        
+        public string AddSocialLink(string identifier, string url) {
+            return base.Channel.AddSocialLink(identifier, url);
+        }
+        
+        public System.Threading.Tasks.Task<string> AddSocialLinkAsync(string identifier, string url) {
+            return base.Channel.AddSocialLinkAsync(identifier, url);
+        }
+        
+        public bool RemoveSocialLink(string identifier, string url) {
+            return base.Channel.RemoveSocialLink(identifier, url);
+        }
+        
+        public System.Threading.Tasks.Task<bool> RemoveSocialLinkAsync(string identifier, string url) {
+            return base.Channel.RemoveSocialLinkAsync(identifier, url);
         }
     }
 }

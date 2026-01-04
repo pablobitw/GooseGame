@@ -4,7 +4,7 @@ using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace GameClient.Views.Dialogs
+namespace GameClient.Views.Components
 {
     public partial class DeactivateAccountDialog : UserControl
     {
