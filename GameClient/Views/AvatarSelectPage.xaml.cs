@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using GameClient.UserProfileServiceReference;
 using GameClient.Models;
+using GameClient.Views;
 
 namespace GameClient.Views
 {
     public partial class AvatarSelectPage : Page
     {
-        private readonly string userEmail;
-        private string selectedAvatarFileName;
+        private readonly string _userEmail;
+        private string _selectedAvatarFileName;
 
         public AvatarSelectPage(string email)
         {
             InitializeComponent();
-            userEmail = email;
+            _userEmail = email;
             this.Loaded += AvatarSelectPage_Loaded;
         }
 
@@ -41,7 +44,11 @@ namespace GameClient.Views
                 {
                     string devPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\Assets\Avatar"));
                     if (Directory.Exists(devPath)) avatarsDir = devPath;
-                    else return;
+                    else
+                    {
+                        ShowError(GameClient.Resources.Strings.AvatarLoadError);
+                        return;
+                    }
                 }
 
                 var files = Directory.GetFiles(avatarsDir)
@@ -60,12 +67,17 @@ namespace GameClient.Views
 
                 AvatarsListBox.ItemsSource = avatarList;
             }
+            catch (IOException ex)
+            {
+                ShowError($"{GameClient.Resources.Strings.AvatarLoadError}: {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                ShowError($"{GameClient.Resources.Strings.AvatarLoadError}: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.AvatarLoadError, ex.Message),
-                                GameClient.Resources.Strings.ErrorTitle,
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Error);
+                ShowError($"Unexpected error loading avatars: {ex.Message}");
             }
         }
 
@@ -73,58 +85,89 @@ namespace GameClient.Views
         {
             if (AvatarsListBox.SelectedItem is AvatarItem selectedItem)
             {
-                selectedAvatarFileName = selectedItem.FileName;
+                _selectedAvatarFileName = selectedItem.FileName;
                 SaveAvatarButton.IsEnabled = true;
             }
         }
 
         private async void SaveAvatarButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedAvatarFileName)) return;
+            if (string.IsNullOrEmpty(_selectedAvatarFileName)) return;
 
             SaveAvatarButton.IsEnabled = false;
+            AvatarsListBox.IsEnabled = false;
+            BackButton.IsEnabled = false;
+
             var client = new UserProfileServiceClient();
 
             try
             {
-                bool success = await client.ChangeAvatarAsync(userEmail, selectedAvatarFileName);
+                bool success = await client.ChangeAvatarAsync(_userEmail, _selectedAvatarFileName);
+
                 if (success)
                 {
-                    MessageBox.Show(GameClient.Resources.Strings.AvatarUpdatedMessage,
-                                    GameClient.Resources.Strings.SuccessTitle,
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-                    GoBack();
+                    ShowSuccessOverlay();
+                    client.Close();
                 }
                 else
                 {
-                    MessageBox.Show(GameClient.Resources.Strings.AvatarUpdateError,
-                                    GameClient.Resources.Strings.ErrorTitle,
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                    SaveAvatarButton.IsEnabled = true;
+                    ShowError(GameClient.Resources.Strings.AvatarUpdateError);
+                    client.Close();
+                    ResetUiState();
                 }
             }
             catch (TimeoutException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
-                SaveAvatarButton.IsEnabled = true;
+                client.Abort(); 
+                ShowError(GameClient.Resources.Strings.TimeoutLabel);
+                ResetUiState();
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}", GameClient.Resources.Strings.ErrorTitle);
-                SaveAvatarButton.IsEnabled = true;
+                client.Abort(); 
+                ShowError($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}");
+                ResetUiState();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorTitle);
-                SaveAvatarButton.IsEnabled = true;
+                client.Abort();
+                ShowError($"An unexpected error occurred: {ex.Message}");
+                ResetUiState();
             }
-            finally
+        }
+
+        private void ShowError(string message)
+        {
+            
+            CustomMessageBox msgBox = new CustomMessageBox(message);
+            msgBox.ShowDialog();
+        }
+
+        private void ShowSuccessOverlay()
+        {
+            var selectedItem = AvatarsListBox.SelectedItem as AvatarItem;
+            if (selectedItem != null)
             {
-                if (client.State == CommunicationState.Opened) client.Close();
-                else client.Abort();
+                try
+                {
+                    SuccessAvatarImage.ImageSource = new BitmapImage(new Uri(selectedItem.FullPath));
+                }
+                catch (UriFormatException) {  }
             }
+
+            SuccessOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void OnSuccessContinue_Click(object sender, RoutedEventArgs e)
+        {
+            GoBack();
+        }
+
+        private void ResetUiState()
+        {
+            SaveAvatarButton.IsEnabled = true;
+            AvatarsListBox.IsEnabled = true;
+            BackButton.IsEnabled = true;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -135,7 +178,7 @@ namespace GameClient.Views
         private void GoBack()
         {
             if (NavigationService.CanGoBack) NavigationService.GoBack();
-            else NavigationService.Navigate(new UserProfilePage(userEmail));
+            else NavigationService.Navigate(new UserProfilePage(_userEmail));
         }
     }
 }

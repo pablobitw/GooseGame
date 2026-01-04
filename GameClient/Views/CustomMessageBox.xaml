@@ -1,41 +1,73 @@
 ﻿<Window x:Class="GameClient.CustomMessageBox"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Confirmación" 
-        
-        Height="1000" Width="1200"
-        
-        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+        xmlns:props="clr-namespace:GameClient.Resources"
+        Title="Confirmación"
+        Width="1920" Height="1080"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
 
-    <Viewbox>
-        <Border Width="1200" Height="1000">
+    <Canvas>
+        <Border Width="600" Height="600"
+                Canvas.Left="660" Canvas.Top="240"
+                CornerRadius="20">
             <Border.Effect>
                 <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="25" ShadowDepth="0"/>
             </Border.Effect>
             <Border.Background>
-                <ImageBrush ImageSource="/Assets/alert.png" Stretch="Uniform"/>
+                <ImageBrush ImageSource="/Assets/alert_nueva.png"
+                            Stretch="Uniform"
+                            AlignmentX="Center"
+                            AlignmentY="Center"/>
             </Border.Background>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="0.8*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock x:Name="MessageText" Grid.Row="1"
-                           Text="Mensaje de ejemplo."
-                           FontFamily="/Assets/Fonts/#Dosis" FontSize="43" FontWeight="ExtraBold"
-                           TextWrapping="Wrap" TextAlignment="Center"
+            <Canvas>
+                <TextBlock x:Name="MessageText"
+                           Text="{x:Static props:Strings.ConfirmExitLabel}"
+                           FontFamily="Fredoka Medium"
+                           FontSize="48"
+                           FontWeight="Black"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
                            Foreground="#5C4033"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           MaxWidth="450" Width="342"/>
+                           Width="430"
+                           Height="146"
+                           Canvas.Left="82"
+                           Canvas.Top="231"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           TextOptions.TextFormattingMode="Ideal"
+                           TextOptions.TextRenderingMode="ClearType">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="0" Opacity="0.6"/>
+                    </TextBlock.Effect>
+                </TextBlock>
 
-                <StackPanel x:Name="ButtonsPanel" Grid.Row="2" Orientation="Horizontal" 
-                            HorizontalAlignment="Center" Margin="0,30,0,0"/>
-            </Grid>
+                <Button Content="{x:Static props:Strings.YesLabel}"
+                        Width="140" Height="54"
+                        Style="{StaticResource OrangeButtonStyle}"
+                        Canvas.Left="140"
+                        Canvas.Top="414"
+                        FontFamily="Fredoka Medium"
+                        FontSize="36"
+                        Click="OnYesClick"/>
+
+                <Button Content="{x:Static props:Strings.NoLabel}"
+                        Width="140" Height="54"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Canvas.Left="300"
+                        Canvas.Top="414"
+                        FontFamily="Fredoka Medium"
+                        FontSize="36"
+                        Click="OnNoClick"/>
+            </Canvas>
         </Border>
-    </Viewbox>
+    </Canvas>
 </Window>

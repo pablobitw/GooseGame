@@ -143,6 +143,9 @@
     <Compile Include="Views\Components\FriendRequestDialog.xaml.cs">
       <DependentUpon>FriendRequestDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Components\GameAlertBox.xaml.cs">
+      <DependentUpon>GameAlertBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Components\KickReasonDialog.xaml.cs">
       <DependentUpon>KickReasonDialog.xaml</DependentUpon>
     </Compile>
@@ -260,6 +263,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Components\FriendRequestDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Components\GameAlertBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -545,9 +552,6 @@
     <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\alert.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\Icons\chat_icon.png" />
   </ItemGroup>
   <ItemGroup>
@@ -560,6 +564,7 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Assets\alert_nueva.png" />
     <Content Include="Assets\Avatar\chivas_avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

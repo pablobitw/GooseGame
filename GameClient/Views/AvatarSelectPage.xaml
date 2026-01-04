@@ -8,13 +8,49 @@
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="AvatarSelectPage"
       FontFamily="Segoe UI">
-
     <Page.Resources>
+        <Style x:Key="SuccessButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#28A745"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="25">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#218838"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SimpleButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="ListBoxItem">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="Border" BorderThickness="0" Background="Transparent" Margin="10">
+                        <Border x:Name="Border" BorderThickness="0" Background="Transparent" Margin="15">
                             <ContentPresenter />
                         </Border>
                     </ControlTemplate>
@@ -28,7 +64,11 @@
             <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
         </Grid.Background>
 
-        <Border Style="{StaticResource LobbyContainerBorderStyle}" Width="1200" Height="900">
+        <Border Background="White" CornerRadius="20" Width="1200" Height="900" Opacity="0.95">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.5"/>
+            </Border.Effect>
+
             <Grid Margin="50">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -42,19 +82,16 @@
                 </StackPanel>
 
                 <Border Grid.Row="1" Background="White" CornerRadius="10" BorderBrush="#DDD" BorderThickness="1" Margin="0,0,0,30">
-
                     <ListBox x:Name="AvatarsListBox" 
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                              SelectionChanged="AvatarsListBox_SelectionChanged"
                              Background="Transparent" BorderThickness="0" Padding="20">
-
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel HorizontalAlignment="Center" />
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
-
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Width="150" Height="150" CornerRadius="100" BorderThickness="4" Cursor="Hand">
@@ -65,11 +102,15 @@
                                                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                                                     <Setter Property="BorderBrush" Value="#28A745"/>
                                                     <Setter Property="BorderThickness" Value="6"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#28A745" BlurRadius="15" ShadowDepth="0"/>
+                                                        </Setter.Value>
+                                                    </Setter>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-
                                     <Border.Background>
                                         <ImageBrush ImageSource="{Binding FullPath}" Stretch="UniformToFill"/>
                                     </Border.Background>
@@ -81,16 +122,57 @@
 
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="BackButton" Content="{x:Static props:Strings.CancelButton}" 
-                            Style="{StaticResource PrimaryButtonStyle}" 
+                            Style="{StaticResource SimpleButtonStyle}"
+                            Background="#6c757d" Foreground="White"
                             Width="200" Height="60" Margin="0,0,20,0" 
                             Click="BackButton_Click"/>
 
                     <Button x:Name="SaveAvatarButton" Content="{x:Static props:Strings.SaveAvatarButton}" 
-                            Style="{StaticResource GreenButtonStyle}" 
+                            Style="{StaticResource SimpleButtonStyle}"
+                            Background="#007bff" Foreground="White"
                             Width="250" Height="60" 
                             Click="SaveAvatarButton_Click" IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </Border>
+
+        <Grid x:Name="SuccessOverlay" Visibility="Collapsed" Background="#CC000000">
+            <Border Background="White" CornerRadius="25" Width="500" Height="450" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.4"/>
+                </Border.Effect>
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                    <Grid Height="180" Width="180" Margin="0,0,0,20">
+                        <Ellipse Stroke="#28A745" StrokeThickness="5">
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="SuccessAvatarImage" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Border Background="#28A745" CornerRadius="20" Width="40" Height="40" 
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
+                            <TextBlock Text="✓" Foreground="White" FontSize="24" FontWeight="Bold" 
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Text="{x:Static props:Strings.SuccessTitle}" 
+                               FontSize="36" FontWeight="Bold" Foreground="#333" 
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="{x:Static props:Strings.AvatarUpdatedMessage}" 
+                               FontSize="18" Foreground="#666" TextWrapping="Wrap" TextAlignment="Center" 
+                               HorizontalAlignment="Center" Margin="20,0,20,30"/>
+
+                    <Button Content="Great!" 
+                            Style="{StaticResource SuccessButtonStyle}" 
+                            Width="200" Height="50"
+                            Click="OnSuccessContinue_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </Page>
