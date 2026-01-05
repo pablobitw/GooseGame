@@ -59,7 +59,6 @@ namespace GameClient.Helpers
                     player.Volume = _sfxVolume;
                     player.Play();
                     player.Stop();
-
                     _preloadedSfx[relativePath] = player;
                 }
             }
@@ -72,7 +71,10 @@ namespace GameClient.Helpers
         public static void PlayRandomMusic(string[] playlist)
         {
             if (!_isMusicEnabled || playlist == null || playlist.Length == 0) return;
-            if (_currentTrackPath != null && playlist.Contains(_currentTrackPath) && _musicPlayer.Position > TimeSpan.Zero) return;
+
+            if (_currentTrackPath != null && playlist.Contains(_currentTrackPath) && _musicPlayer.Position > TimeSpan.Zero)
+                return;
+
             int index = _random.Next(playlist.Length);
             PlayFile(playlist[index]);
         }
@@ -85,12 +87,13 @@ namespace GameClient.Helpers
                 string fullPath = Path.GetFullPath(Path.Combine(baseDir, relativePath));
                 if (!File.Exists(fullPath)) return;
 
-                if (_currentTrackPath == relativePath && _musicPlayer.Position > TimeSpan.Zero)
-                    return;
-
+                // Hard reset para asegurar cambio de ambiente
                 _musicPlayer.Stop();
+                _musicPlayer.Close();
+
                 _musicPlayer.Open(new Uri(fullPath));
                 _musicPlayer.Play();
+
                 _currentTrackPath = relativePath;
                 _musicPlayer.Position = TimeSpan.FromMilliseconds(1);
             }
@@ -107,7 +110,6 @@ namespace GameClient.Helpers
                 var player = _preloadedSfx[relativePath];
                 player.Stop();
                 player.Position = TimeSpan.Zero;
-                player.Volume = _sfxVolume;
                 player.Play();
             }
             else
@@ -131,11 +133,8 @@ namespace GameClient.Helpers
 
         public static void StopMusic()
         {
-            if (_musicPlayer != null)
-            {
-                _musicPlayer.Stop();
-                _musicPlayer.Close();
-            }
+            _musicPlayer.Stop();
+            _musicPlayer.Close();
             _currentTrackPath = null;
         }
 

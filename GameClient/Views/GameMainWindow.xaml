@@ -37,6 +37,43 @@
                     </Border.Background>
                 </Border>
 
+                <Button x:Name="HowToPlayButton" 
+                        Width="130" Height="130" 
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="40,40,0,0"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" 
+                        Click="HowToPlayButtonClick" 
+                        ToolTip="Cómo Jugar"
+                        Panel.ZIndex="5">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Ellipse Fill="Black" Opacity="0.3" Margin="5"/>
+                                <Image Source="/Assets/Icons/howtoplay_icon.png" Stretch="Uniform"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <Image Source="/Assets/Icons/coins_banner.png" 
                        Stretch="Uniform"
                        HorizontalAlignment="Right" VerticalAlignment="Top"

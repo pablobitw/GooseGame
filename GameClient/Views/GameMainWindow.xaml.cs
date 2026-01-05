@@ -303,5 +303,11 @@ namespace GameClient
                 MessageBox.Show($"Error al intentar unirse: {ex.Message}", ErrorTitle);
             }
         }
+
+        private void HowToPlayButtonClick(object sender, RoutedEventArgs e)
+        {
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            MainFrame.Navigate(new HowToPlayPage());
+        }
     }
 }
