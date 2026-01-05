@@ -52,7 +52,7 @@ namespace GameClient.Views
                 }
 
                 var files = Directory.GetFiles(avatarsDir)
-                                     .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg"));
+                                         .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg"));
 
                 var avatarList = new List<AvatarItem>();
 
@@ -69,11 +69,11 @@ namespace GameClient.Views
             }
             catch (IOException ex)
             {
-                ShowError($"{GameClient.Resources.Strings.AvatarLoadError}: {ex.Message}");
+                ShowError($"{GameClient.Resources.Strings.ErrorAvatarFileLoad}: {ex.Message}");
             }
             catch (UnauthorizedAccessException ex)
             {
-                ShowError($"{GameClient.Resources.Strings.AvatarLoadError}: {ex.Message}");
+                ShowError($"{GameClient.Resources.Strings.ErrorAvatarUnauthorized}: {ex.Message}");
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    ShowError(GameClient.Resources.Strings.AvatarUpdateError);
+                    ShowError(GameClient.Resources.Strings.ErrorAvatarUpdateFailed);
                     client.Close();
                     ResetUiState();
                 }
@@ -119,13 +119,19 @@ namespace GameClient.Views
             catch (TimeoutException)
             {
                 client.Abort();
-                ShowError(GameClient.Resources.Strings.TimeoutLabel);
+                ShowError(GameClient.Resources.Strings.ErrorAvatarTimeout);
                 ResetUiState();
             }
-            catch (CommunicationException ex)
+            catch (EndpointNotFoundException)
             {
                 client.Abort();
-                ShowError($"{GameClient.Resources.Strings.ComunicationLabel}: {ex.Message}");
+                ShowError(GameClient.Resources.Strings.ErrorAvatarDbConnection);
+                ResetUiState();
+            }
+            catch (CommunicationException)
+            {
+                client.Abort();
+                ShowError(GameClient.Resources.Strings.ErrorAvatarNetwork);
                 ResetUiState();
             }
             catch (Exception ex)

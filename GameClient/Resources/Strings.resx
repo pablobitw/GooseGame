@@ -264,6 +264,9 @@
   <data name="ConnectionError" xml:space="preserve">
     <value>Error de conexion</value>
   </data>
+  <data name="ConnectionErrorTitle" xml:space="preserve">
+    <value>Error de Conexión</value>
+  </data>
   <data name="CopyCodeToolTip" xml:space="preserve">
     <value>Copiar Código</value>
   </data>
@@ -374,6 +377,33 @@
   </data>
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Instrucciones:</value>
+  </data>
+  <data name="ErrorAuthConnection" xml:space="preserve">
+    <value>No se pudo conectar con el servidor de autenticación. Verifica tu conexión a internet.</value>
+  </data>
+  <data name="ErrorAuthTimeout" xml:space="preserve">
+    <value>El servidor de inicio de sesión tardó demasiado en responder. Inténtalo de nuevo.</value>
+  </data>
+  <data name="ErrorAuthUnexpected" xml:space="preserve">
+    <value>Ocurrió un error inesperado al entrar como invitado: {0}</value>
+  </data>
+  <data name="ErrorAvatarDbConnection" xml:space="preserve">
+    <value>No se pudo conectar a la base de datos para guardar el avatar.</value>
+  </data>
+  <data name="ErrorAvatarFileLoad" xml:space="preserve">
+    <value>Error al cargar los archivos de avatar.</value>
+  </data>
+  <data name="ErrorAvatarNetwork" xml:space="preserve">
+    <value>Error de red al intentar guardar el avatar. Verifique su conexión.</value>
+  </data>
+  <data name="ErrorAvatarTimeout" xml:space="preserve">
+    <value>El servidor tardó demasiado en actualizar tu avatar.</value>
+  </data>
+  <data name="ErrorAvatarUnauthorized" xml:space="preserve">
+    <value>Error al cargar los archivos de imagen del disco.</value>
+  </data>
+  <data name="ErrorAvatarUpdateFailed" xml:space="preserve">
+    <value>No se pudo actualizar el avatar en el perfil. Intente nuevamente.</value>
   </data>
   <data name="ErrorCoinFetch" xml:space="preserve">
     <value>Could not sync your coins.</value>
@@ -843,6 +873,12 @@
   <data name="NoMatchesLabel" xml:space="preserve">
     <value>No hay partidas disponibles.</value>
   </data>
+  <data name="NonCritical_LoadError" xml:space="preserve">
+    <value>No pudimos obtener la información solicitada.</value>
+  </data>
+  <data name="NonCritical_SaveError" xml:space="preserve">
+    <value>No pudimos guardar tus cambios en este momento. Revisa tu internet e inténtalo de nuevo.</value>
+  </data>
   <data name="NoRequestsMessage" xml:space="preserve">
     <value>No tienes solicitudes pendientes.</value>
   </data>
@@ -972,6 +1008,24 @@
   <data name="RewardLegendary" xml:space="preserve">
     <value>¡LEGENDARIO!</value>
   </data>
+  <data name="SafeZone_ConnectionLost" xml:space="preserve">
+    <value>¡Vaya! Se ha perdido la conexión con el servidor. Te hemos regresado al inicio para reconectar.</value>
+  </data>
+  <data name="SafeZone_DatabaseError" xml:space="preserve">
+    <value>Nuestros servicios están teniendo problemas técnicos momentáneos. Por favor, intenta entrar más tarde.</value>
+  </data>
+  <data name="SafeZone_Kicked" xml:space="preserve">
+    <value>El anfitrión de la sala ha decidido expulsarte. Volverás al menú principal.</value>
+  </data>
+  <data name="SafeZone_LobbyDisbanded" xml:space="preserve">
+    <value>El anfitrión cerró la sala. Te hemos regresado al menú para que busques otra partida.</value>
+  </data>
+  <data name="SafeZone_ServerTimeout" xml:space="preserve">
+    <value>El servidor está tardando mucho en responder. Por seguridad, cerramos tu sesión.</value>
+  </data>
+  <data name="SafeZone_SessionExpired" xml:space="preserve">
+    <value>Tu sesión ha caducado o alguien más inició sesión con tu cuenta.</value>
+  </data>
   <data name="SaveAvatarButton" xml:space="preserve">
     <value>Guardar Avatar</value>
   </data>
@@ -1086,6 +1140,9 @@
   <data name="Step2Instruction" xml:space="preserve">
     <value>¡Código verificado! Escribe tu nuevo nombre.</value>
   </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Exitoso</value>
   </data>
@@ -1142,6 +1199,9 @@
   </data>
   <data name="TimeoutLabel" xml:space="preserve">
     <value>La solicitud tardó demasiado en responder. Revisa tu conexión</value>
+  </data>
+  <data name="TimeoutTitle" xml:space="preserve">
+    <value>Tiempo de espera</value>
   </data>
   <data name="TimerExpired" xml:space="preserve">
     <value>¡Tiempo Agotado!</value>
@@ -1268,6 +1328,9 @@
   </data>
   <data name="WarningTitle" xml:space="preserve">
     <value>Aviso</value>
+  </data>
+  <data name="WelcomeTitle" xml:space="preserve">
+    <value>Bienvenido</value>
   </data>
   <data name="WindowedMode" xml:space="preserve">
     <value>Ventana</value>

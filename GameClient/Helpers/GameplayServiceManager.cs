@@ -54,7 +54,7 @@ namespace GameClient.Helpers
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnect);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
         }
 
@@ -136,19 +136,19 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayServerUnavailable);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_DatabaseError);
                 return default(T);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayTimeout);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ServerTimeout);
                 return default(T);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnectionLost);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
                 return default(T);
             }
             catch (Exception ex)
@@ -172,17 +172,17 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayServerUnavailable);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayTimeout);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ServerTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnectionLost);
+                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
             catch (Exception ex)
             {

@@ -58,7 +58,7 @@ namespace GameClient.Helpers
             catch (Exception)
             {
                 MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorLobbyInit,
+                    GameClient.Resources.Strings.SafeZone_DatabaseError, 
                     GameClient.Resources.Strings.DialogErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -160,22 +160,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.ErrorLobbyConnect);
+                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(GameClient.Resources.Strings.ErrorLobbyTimeout);
+                throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw new CommunicationException(GameClient.Resources.Strings.ErrorLobbyComm);
+                throw new CommunicationException(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw new Exception(GameClient.Resources.Strings.ErrorLobbyOperation);
+                throw new Exception(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
         }
 
@@ -189,22 +189,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.ErrorLobbyConnect);
+                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(GameClient.Resources.Strings.ErrorLobbyTimeout);
+                throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw new CommunicationException(GameClient.Resources.Strings.ErrorLobbyComm);
+                throw new CommunicationException(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw new Exception(GameClient.Resources.Strings.ErrorLobbyOperation);
+                throw new Exception(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
         }
 

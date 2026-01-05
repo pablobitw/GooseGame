@@ -1,5 +1,5 @@
-﻿using GameClient.GameServiceReference; 
-using GameClient.Helpers; 
+﻿using GameClient.GameServiceReference;
+using GameClient.Helpers;
 using GameClient.Views;
 using System;
 using System.ServiceModel;
@@ -20,6 +20,7 @@ namespace GameClient
             AuthButtonsPanel.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new LoginPage());
         }
+
         public void NavigateToRegister()
         {
             AuthButtonsPanel.Visibility = Visibility.Collapsed;
@@ -47,7 +48,9 @@ namespace GameClient
                 {
                     UserSession.GetInstance().SetSession(result.Username, true);
 
-                    MessageBox.Show(result.Message, "Bienvenido", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(result.Message,
+                                    GameClient.Resources.Strings.WelcomeTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Information);
 
                     GameMainWindow mainMenu = new GameMainWindow(result.Username);
 
@@ -56,22 +59,30 @@ namespace GameClient
                 }
                 else
                 {
-                    MessageBox.Show(result.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(result.Message,
+                                    GameClient.Resources.Strings.DialogErrorTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 client.Close();
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor. Verifica tu conexión.", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorAuthConnection,
+                                GameClient.Resources.Strings.ConnectionErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("El servidor tardó demasiado en responder.", "Tiempo de espera", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorAuthTimeout,
+                                GameClient.Resources.Strings.TimeoutTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.ErrorAuthUnexpected, ex.Message),
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -79,8 +90,6 @@ namespace GameClient
                 if (btn != null) btn.IsEnabled = true;
             }
         }
-
-
 
         public void ShowAuthButtons()
         {

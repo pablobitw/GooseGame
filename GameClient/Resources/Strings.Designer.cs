@@ -502,6 +502,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de Conexión.
+        /// </summary>
+        public static string ConnectionErrorTitle {
+            get {
+                return ResourceManager.GetString("ConnectionErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Copiar Código.
         /// </summary>
         public static string CopyCodeToolTip {
@@ -831,6 +840,87 @@ namespace GameClient.Resources {
         public static string EnterRecoveryCodeInstruction {
             get {
                 return ResourceManager.GetString("EnterRecoveryCodeInstruction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar con el servidor de autenticación. Verifica tu conexión a internet..
+        /// </summary>
+        public static string ErrorAuthConnection {
+            get {
+                return ResourceManager.GetString("ErrorAuthConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor de inicio de sesión tardó demasiado en responder. Inténtalo de nuevo..
+        /// </summary>
+        public static string ErrorAuthTimeout {
+            get {
+                return ResourceManager.GetString("ErrorAuthTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al entrar como invitado: {0}.
+        /// </summary>
+        public static string ErrorAuthUnexpected {
+            get {
+                return ResourceManager.GetString("ErrorAuthUnexpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar a la base de datos para guardar el avatar..
+        /// </summary>
+        public static string ErrorAvatarDbConnection {
+            get {
+                return ResourceManager.GetString("ErrorAvatarDbConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar los archivos de avatar..
+        /// </summary>
+        public static string ErrorAvatarFileLoad {
+            get {
+                return ResourceManager.GetString("ErrorAvatarFileLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de red al intentar guardar el avatar. Verifique su conexión..
+        /// </summary>
+        public static string ErrorAvatarNetwork {
+            get {
+                return ResourceManager.GetString("ErrorAvatarNetwork", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor tardó demasiado en actualizar tu avatar..
+        /// </summary>
+        public static string ErrorAvatarTimeout {
+            get {
+                return ResourceManager.GetString("ErrorAvatarTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar los archivos de imagen del disco..
+        /// </summary>
+        public static string ErrorAvatarUnauthorized {
+            get {
+                return ResourceManager.GetString("ErrorAvatarUnauthorized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo actualizar el avatar en el perfil. Intente nuevamente..
+        /// </summary>
+        public static string ErrorAvatarUpdateFailed {
+            get {
+                return ResourceManager.GetString("ErrorAvatarUpdateFailed", resourceCulture);
             }
         }
         
@@ -2239,6 +2329,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No pudimos obtener la información solicitada..
+        /// </summary>
+        public static string NonCritical_LoadError {
+            get {
+                return ResourceManager.GetString("NonCritical_LoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No pudimos guardar tus cambios en este momento. Revisa tu internet e inténtalo de nuevo..
+        /// </summary>
+        public static string NonCritical_SaveError {
+            get {
+                return ResourceManager.GetString("NonCritical_SaveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No tienes solicitudes pendientes..
         /// </summary>
         public static string NoRequestsMessage {
@@ -2626,6 +2734,60 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a ¡Vaya! Se ha perdido la conexión con el servidor. Te hemos regresado al inicio para reconectar..
+        /// </summary>
+        public static string SafeZone_ConnectionLost {
+            get {
+                return ResourceManager.GetString("SafeZone_ConnectionLost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nuestros servicios están teniendo problemas técnicos momentáneos. Por favor, intenta entrar más tarde..
+        /// </summary>
+        public static string SafeZone_DatabaseError {
+            get {
+                return ResourceManager.GetString("SafeZone_DatabaseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El anfitrión de la sala ha decidido expulsarte. Volverás al menú principal..
+        /// </summary>
+        public static string SafeZone_Kicked {
+            get {
+                return ResourceManager.GetString("SafeZone_Kicked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El anfitrión cerró la sala. Te hemos regresado al menú para que busques otra partida..
+        /// </summary>
+        public static string SafeZone_LobbyDisbanded {
+            get {
+                return ResourceManager.GetString("SafeZone_LobbyDisbanded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor está tardando mucho en responder. Por seguridad, cerramos tu sesión..
+        /// </summary>
+        public static string SafeZone_ServerTimeout {
+            get {
+                return ResourceManager.GetString("SafeZone_ServerTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tu sesión ha caducado o alguien más inició sesión con tu cuenta..
+        /// </summary>
+        public static string SafeZone_SessionExpired {
+            get {
+                return ResourceManager.GetString("SafeZone_SessionExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Guardar Avatar.
         /// </summary>
         public static string SaveAvatarButton {
@@ -2968,6 +3130,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string String1 {
+            get {
+                return ResourceManager.GetString("String1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Exitoso.
         /// </summary>
         public static string SuccessTitle {
@@ -3135,6 +3306,15 @@ namespace GameClient.Resources {
         public static string TimeoutLabel {
             get {
                 return ResourceManager.GetString("TimeoutLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tiempo de espera.
+        /// </summary>
+        public static string TimeoutTitle {
+            get {
+                return ResourceManager.GetString("TimeoutTitle", resourceCulture);
             }
         }
         
@@ -3513,6 +3693,15 @@ namespace GameClient.Resources {
         public static string WarningTitle {
             get {
                 return ResourceManager.GetString("WarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bienvenido.
+        /// </summary>
+        public static string WelcomeTitle {
+            get {
+                return ResourceManager.GetString("WelcomeTitle", resourceCulture);
             }
         }
         

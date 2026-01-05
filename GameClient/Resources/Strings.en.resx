@@ -258,6 +258,9 @@
   <data name="ConnectionError" xml:space="preserve">
     <value>Connection error</value>
   </data>
+  <data name="ConnectionErrorTitle" xml:space="preserve">
+    <value>Connection Error</value>
+  </data>
   <data name="CopyCodeToolTip" xml:space="preserve">
     <value>Copy Code</value>
   </data>
@@ -365,6 +368,33 @@
   </data>
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Please type the code</value>
+  </data>
+  <data name="ErrorAuthConnection" xml:space="preserve">
+    <value>Could not connect to the authentication server. Please check your internet connection.</value>
+  </data>
+  <data name="ErrorAuthTimeout" xml:space="preserve">
+    <value>The login server took too long to respond. Please try again.</value>
+  </data>
+  <data name="ErrorAuthUnexpected" xml:space="preserve">
+    <value>An unexpected error occurred while logging in as guest: {0}</value>
+  </data>
+  <data name="ErrorAvatarDbConnection" xml:space="preserve">
+    <value>Could not connect to the database to save the avatar.</value>
+  </data>
+  <data name="ErrorAvatarFileLoad" xml:space="preserve">
+    <value>Error loading image files from disk.</value>
+  </data>
+  <data name="ErrorAvatarNetwork" xml:space="preserve">
+    <value>Network error while trying to save avatar. Check your connection.</value>
+  </data>
+  <data name="ErrorAvatarTimeout" xml:space="preserve">
+    <value>Server took too long to update your avatar.</value>
+  </data>
+  <data name="ErrorAvatarUnauthorized" xml:space="preserve">
+    <value>Insufficient permissions to read avatar files.</value>
+  </data>
+  <data name="ErrorAvatarUpdateFailed" xml:space="preserve">
+    <value>Could not update avatar in profile. Please try again.</value>
   </data>
   <data name="ErrorCoinFetch" xml:space="preserve">
     <value>Could not sync your coins.</value>
@@ -831,6 +861,12 @@
   <data name="NoMatchesLabel" xml:space="preserve">
     <value>No matches available.</value>
   </data>
+  <data name="NonCritical_LoadError" xml:space="preserve">
+    <value>We couldn't get the requested information.</value>
+  </data>
+  <data name="NonCritical_SaveError" xml:space="preserve">
+    <value>We couldn't save your changes right now. Check your internet and try again.</value>
+  </data>
   <data name="NoRequestsMessage" xml:space="preserve">
     <value>No pending requests.</value>
   </data>
@@ -956,6 +992,24 @@
   </data>
   <data name="RewardLegendary" xml:space="preserve">
     <value>LEGENDARY!</value>
+  </data>
+  <data name="SafeZone_ConnectionLost" xml:space="preserve">
+    <value>Oops! Connection to the server was lost. We returned you to the start to reconnect.</value>
+  </data>
+  <data name="SafeZone_DatabaseError" xml:space="preserve">
+    <value>Our services are having temporary technical issues. Please try logging in later.</value>
+  </data>
+  <data name="SafeZone_Kicked" xml:space="preserve">
+    <value>The room host has decided to kick you out. Returning to main menu.</value>
+  </data>
+  <data name="SafeZone_LobbyDisbanded" xml:space="preserve">
+    <value>The host closed the room. We returned you to the menu to find another match.</value>
+  </data>
+  <data name="SafeZone_ServerTimeout" xml:space="preserve">
+    <value>The server is taking too long to respond. For safety, we closed your session.</value>
+  </data>
+  <data name="SafeZone_SessionExpired" xml:space="preserve">
+    <value>Your session has expired or someone else logged in with your account.</value>
   </data>
   <data name="SaveAvatarButton" xml:space="preserve">
     <value>Save Avatar</value>
@@ -1125,6 +1179,9 @@
   <data name="TileWellName" xml:space="preserve">
     <value>The Well</value>
   </data>
+  <data name="TimeoutTitle" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
   <data name="TimerExpired" xml:space="preserve">
     <value>Time's Up!</value>
   </data>
@@ -1235,6 +1292,9 @@
   </data>
   <data name="WarningTitle" xml:space="preserve">
     <value>Warning</value>
+  </data>
+  <data name="WelcomeTitle" xml:space="preserve">
+    <value>Welcome</value>
   </data>
   <data name="WindowedMode" xml:space="preserve">
     <value>Windowed</value>
