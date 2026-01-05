@@ -132,19 +132,19 @@ namespace GameClient.Views
 
         private void OnPlayerJoined(PlayerLobbyDto player)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(async () =>
             {
                 AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
-                RefreshLobbyState();
+                await RefreshLobbyState();
             });
         }
 
         private void OnPlayerLeft(string username)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(async () =>
             {
                 AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
-                RefreshLobbyState();
+                await RefreshLobbyState();
             });
         }
 
@@ -173,7 +173,7 @@ namespace GameClient.Views
             });
         }
 
-        private async void RefreshLobbyState()
+        private async Task RefreshLobbyState()
         {
             try
             {
@@ -599,6 +599,5 @@ namespace GameClient.Views
                 }
             }
         }
-
     }
 }

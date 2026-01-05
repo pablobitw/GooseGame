@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Helpers
 {
-    public class GameManager
+    public class GameManager : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameManager));
         private static GameManager _instance;
@@ -19,8 +19,10 @@ namespace GameServer.Helpers
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        private const int CheckIntervalMs = 1000; 
-        private const int TurnTimeLimitSeconds = 20; 
+        private const int CheckIntervalMs = 1000;
+        private const int TurnTimeLimitSeconds = 20;
+
+        private bool _disposed;
 
         private GameManager()
         {
@@ -42,7 +44,6 @@ namespace GameServer.Helpers
                 return _instance;
             }
         }
-
 
         public void StartMonitoring(int gameId)
         {
@@ -111,8 +112,6 @@ namespace GameServer.Helpers
                 using (var repository = new GameplayRepository())
                 {
                     var logicService = new GameplayAppService(repository);
-
-                   
                     await logicService.ProcessAfkTimeout(gameId);
                 }
             }
@@ -120,6 +119,17 @@ namespace GameServer.Helpers
             {
                 Log.Error($"[GameManager] Error al ejecutar timeout forzado en partida {gameId}", ex);
             }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+
+            _disposed = true;
+            Log.Info("[GameManager] Recursos liberados correctamente.");
         }
     }
 }

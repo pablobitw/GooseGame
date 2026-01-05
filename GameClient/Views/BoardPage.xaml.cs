@@ -228,50 +228,40 @@ namespace GameClient.Views
             PauseMenu.Visibility = Visibility.Visible;
         }
 
-        private async Task QuitGameProcess()
+        private async void QuitGameProcess()
         {
             PauseMenu.Visibility = Visibility.Collapsed;
 
-            var confirm = MessageBox.Show(
-                GameClient.Resources.Strings.LeaveGameConfirm,
-                GameClient.Resources.Strings.LeaveGameTitle,
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            if (MessageBox.Show(GameClient.Resources.Strings.LeaveGameConfirm,
+                                GameClient.Resources.Strings.LeaveGameTitle,
+                                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
 
-            bool shouldExit = (confirm == MessageBoxResult.Yes);
+            UnsubscribeFromEvents();
+            StopTimers();
 
-            if (shouldExit)
+            try
             {
-                UnsubscribeFromEvents();
-                StopTimers();
+                await GameplayServiceManager.Instance.LeaveGameAsync(new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername });
 
-                try
+                if (Window.GetWindow(this) is GameMainWindow mw)
                 {
-                    await GameplayServiceManager.Instance.LeaveGameAsync(
-                        new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername });
-
-                    if (Window.GetWindow(this) is GameMainWindow mw)
-                    {
-                        await mw.ShowMainMenu();
-                    }
-                }
-                catch (CommunicationException)
-                {
-                    SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorConn);
-                }
-                catch (TimeoutException)
-                {
-                    SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorServer);
-                }
-                catch (Exception ex)
-                {
-                    SessionManager.ForceLogout(
-                        string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
+                    await mw.ShowMainMenu();
                 }
             }
+            catch (CommunicationException)
+            {
+                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorConn);
+            }
+            catch (TimeoutException)
+            {
+                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorServer);
+            }
+            catch (Exception ex)
+            {
+                SessionManager.ForceLogout(string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
+            }
         }
-
-
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -839,35 +829,28 @@ namespace GameClient.Views
             });
         }
 
-        private async Task HandleGameOver(string winner)
+        private async void HandleGameOver(string winner)
         {
-            bool alreadyHandled = _isGameOverHandled;
+            if (_isGameOverHandled) return;
+            _isGameOverHandled = true;
 
-            if (!alreadyHandled)
+            StopTimers();
+
+            MessageBox.Show(string.Format(GameClient.Resources.Strings.GameOverMessage, winner),
+                            GameClient.Resources.Strings.GameOverTitle,
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+
+            if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
-                _isGameOverHandled = true;
-                StopTimers();
-
-                MessageBox.Show(
-                    $"¡Juego Terminado!\n\nGanador: {winner}",
-                    "Fin de Partida",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
-                if (Window.GetWindow(this) is GameMainWindow mainWindow)
+                await mainWindow.ShowMainMenu();
+            }
+            else
+            {
+                if (NavigationService != null && NavigationService.CanGoBack)
                 {
-                    await mainWindow.ShowMainMenu();
-                }
-                else
-                {
-                    bool canNavigateBack = NavigationService != null && NavigationService.CanGoBack;
-                    if (canNavigateBack)
-                    {
-                        NavigationService.GoBack();
-                    }
+                    NavigationService.GoBack();
                 }
             }
         }
-
     }
 }
