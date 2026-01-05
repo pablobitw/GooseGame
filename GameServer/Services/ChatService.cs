@@ -13,7 +13,6 @@ namespace GameServer.Services
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
         private readonly ChatAppService _logic;
-
         private readonly ConcurrentDictionary<string, IChatCallback> _callbacks = new ConcurrentDictionary<string, IChatCallback>();
 
         public ChatService()

@@ -25,7 +25,7 @@ namespace GameServer.Chat.Moderation
             if (newCount >= MaxCensoredMessages)
             {
                 _counters.TryRemove(key, out _);
-                return true; // requiere kick
+                return true; 
             }
 
             return false;

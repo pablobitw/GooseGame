@@ -1,21 +1,21 @@
 ﻿using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
 using GameServer.Interfaces;
+using GameServer.Services.Logic; 
 using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
 {
     public class ChatAppService
     {
-        private static readonly ILog Log =
-            LogManager.GetLogger(typeof(ChatAppService));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ChatAppService));
 
-        private static readonly ConcurrentDictionary<string,
-            ConcurrentDictionary<string, string>> _lobbies
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _lobbies
             = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
 
         private static readonly SpamTracker _spamTracker = new SpamTracker();
@@ -24,31 +24,25 @@ namespace GameServer.Services.Logic
 
         private readonly IChatNotifier _notifier;
 
+        private readonly Func<SanctionAppService> _sanctionServiceFactory;
+
         public ChatAppService(IChatNotifier notifier)
         {
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _sanctionServiceFactory = () => new SanctionAppService();
         }
 
         public void JoinChat(JoinChatRequest request)
         {
-            if (request == null ||
-                string.IsNullOrEmpty(request.Username) ||
-                string.IsNullOrEmpty(request.LobbyCode))
+            if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.LobbyCode))
             {
                 return;
             }
 
-            var lobbyChatters = _lobbies.GetOrAdd(
-                request.LobbyCode,
-                _ => new ConcurrentDictionary<string, string>()
-            );
-
+            var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, _ => new ConcurrentDictionary<string, string>());
             lobbyChatters[request.Username] = request.Username;
 
-            BroadcastSystemMessage(
-                request.LobbyCode,
-                $"{request.Username} se ha unido."
-            );
+            BroadcastSystemMessage(request.LobbyCode, $"{request.Username} se ha unido.");
         }
 
         public void SendMessage(ChatMessageDto messageDto)
@@ -56,31 +50,21 @@ namespace GameServer.Services.Logic
             if (messageDto == null || string.IsNullOrEmpty(messageDto.LobbyCode))
                 return;
 
-            if (string.IsNullOrWhiteSpace(messageDto.Message) ||
-                messageDto.Message.Length > MaxMessageLength)
+            if (string.IsNullOrWhiteSpace(messageDto.Message) || messageDto.Message.Length > MaxMessageLength)
             {
-                BroadcastSystemMessage(
-                    messageDto.LobbyCode,
-                    $"El mensaje de {messageDto.Sender} no fue enviado por exceder el límite permitido."
-                );
+                BroadcastSystemMessage(messageDto.LobbyCode, $"El mensaje de {messageDto.Sender} no fue enviado por exceder el límite permitido.");
                 return;
             }
 
-            var spamResult = _spamTracker.Analyze(
-                messageDto.LobbyCode,
-                messageDto.Sender
-            );
+            var spamResult = _spamTracker.Analyze(messageDto.LobbyCode, messageDto.Sender);
 
             if (!spamResult.IsAllowed)
             {
-                BroadcastSystemMessage(
-                    messageDto.LobbyCode,
-                    spamResult.SystemNotification
-                );
+                BroadcastSystemMessage(messageDto.LobbyCode, spamResult.SystemNotification);
 
                 if (spamResult.RequiresKick)
                 {
-                    RemoveClient(messageDto.LobbyCode, messageDto.Sender);
+                    KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Spam masivo", "CHAT_SPAM");
                 }
                 return;
             }
@@ -89,42 +73,28 @@ namespace GameServer.Services.Logic
 
             if (profanityResult.IsBlocked)
             {
-                BroadcastSystemMessage(
-                    messageDto.LobbyCode,
-                    profanityResult.SystemNotification
-                );
+                BroadcastSystemMessage(messageDto.LobbyCode, profanityResult.SystemNotification);
                 return;
             }
 
             if (profanityResult.IsCensored)
             {
-                var level = WarningTracker.RegisterWarning(
-                    messageDto.LobbyCode,
-                    messageDto.Sender
-                );
+                var level = WarningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
 
                 switch (level)
                 {
                     case WarningLevel.Warning:
-                        BroadcastSystemMessage(
-                            messageDto.LobbyCode,
-                            $"{messageDto.Sender}: advertencia por lenguaje inapropiado."
-                        );
+                        BroadcastSystemMessage(messageDto.LobbyCode, $"{messageDto.Sender}: advertencia por lenguaje inapropiado.");
                         break;
 
                     case WarningLevel.LastWarning:
-                        BroadcastSystemMessage(
-                            messageDto.LobbyCode,
-                            $"{messageDto.Sender}: último aviso."
-                        );
+                        BroadcastSystemMessage(messageDto.LobbyCode, $"{messageDto.Sender}: último aviso.");
                         break;
 
-                    case WarningLevel.Punishment:
-                        BroadcastSystemMessage(
-                            messageDto.LobbyCode,
-                            $"{messageDto.Sender} fue expulsado por lenguaje inapropiado."
-                        );
-                        RemoveClient(messageDto.LobbyCode, messageDto.Sender);
+                    case WarningLevel.Punishment: 
+                        BroadcastSystemMessage(messageDto.LobbyCode, $"{messageDto.Sender} fue expulsado por lenguaje inapropiado.");
+
+                        KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Lenguaje ofensivo reiterado", "CHAT_TOXICITY");
                         return;
                 }
             }
@@ -132,11 +102,7 @@ namespace GameServer.Services.Logic
             messageDto.Message = profanityResult.FinalMessage;
             messageDto.IsPrivate = false;
 
-            BroadcastInternal(
-                messageDto.Sender,
-                messageDto.LobbyCode,
-                messageDto
-            );
+            BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto);
         }
 
         public void SendPrivateMessage(ChatMessageDto messageDto)
@@ -163,11 +129,26 @@ namespace GameServer.Services.Logic
                 return;
 
             RemoveClient(request.LobbyCode, request.Username);
+            BroadcastSystemMessage(request.LobbyCode, $"{request.Username} ha salido.");
+        }
 
-            BroadcastSystemMessage(
-                request.LobbyCode,
-                $"{request.Username} ha salido."
-            );
+
+        private void KickUserForChatOffense(string lobbyCode, string username, string reason, string source)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var sanctionService = _sanctionServiceFactory();
+                    await sanctionService.ProcessKickAsync(username, lobbyCode, reason, source);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error executing chat kick for {username}", ex);
+                }
+            });
+
+            RemoveClient(lobbyCode, username);
         }
 
         private void BroadcastSystemMessage(string lobbyCode, string message)
@@ -183,16 +164,12 @@ namespace GameServer.Services.Logic
             BroadcastInternal("SYSTEM", lobbyCode, systemMessage);
         }
 
-        private void BroadcastInternal(
-            string senderUsername,
-            string lobbyCode,
-            ChatMessageDto messageDto)
+        private void BroadcastInternal(string senderUsername, string lobbyCode, ChatMessageDto messageDto)
         {
             if (_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
             {
                 var recipients = lobbyChatters.Keys
-                    .Where(userKey => senderUsername == "SYSTEM" ||
-                                      !userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase))
+                    .Where(userKey => senderUsername == "SYSTEM" || !userKey.Equals(senderUsername, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 foreach (var userKey in recipients)
@@ -210,22 +187,21 @@ namespace GameServer.Services.Logic
             }
             catch (TimeoutException ex)
             {
-                Log.WarnFormat("[Chat] Timeout enviando a {0}", userKey, ex);
+                Log.WarnFormat("[Chat] Timeout enviando a {0}: {1}", userKey, ex.Message);
             }
             catch (CommunicationException ex)
             {
-                Log.WarnFormat("[Chat] Comunicación interrumpida con {0}", userKey, ex);
+                Log.WarnFormat("[Chat] Comunicación interrumpida con {0}: {1}", userKey, ex.Message);
             }
             catch (ObjectDisposedException ex)
             {
-                Log.WarnFormat("[Chat] Canal ya eliminado para {0}", userKey, ex);
+                Log.WarnFormat("[Chat] Canal ya eliminado para {0}: {1}", userKey, ex.Message);
             }
         }
 
         public static void RemoveClient(string lobbyCode, string username)
         {
-            if (!string.IsNullOrEmpty(lobbyCode) &&
-                _lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
+            if (!string.IsNullOrEmpty(lobbyCode) && _lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
             {
                 lobbyChatters.TryRemove(username, out _);
                 WarningTracker.Reset(lobbyCode, username);

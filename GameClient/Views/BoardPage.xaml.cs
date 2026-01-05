@@ -319,11 +319,10 @@ namespace GameClient.Views
 
         private void OnPlayerKicked(string reason)
         {
-            Dispatcher.Invoke(async () =>
+            Dispatcher.Invoke(() =>
             {
                 IsEnabled = false;
                 RollDiceButton.IsEnabled = false;
-
                 StopTimers();
                 _isGameOverHandled = true;
 
@@ -333,9 +332,13 @@ namespace GameClient.Views
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
+                
                 if (Window.GetWindow(this) is GameMainWindow mainWindow)
                 {
-                    await mainWindow.ShowMainMenu();
+                  
+                    var loginScreen = new AuthWindow();
+                    loginScreen.Show();
+                     mainWindow.Close();
                 }
             });
         }

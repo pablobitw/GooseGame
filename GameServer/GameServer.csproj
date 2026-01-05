@@ -226,6 +226,7 @@
     <Compile Include="Services\Logic\LobbyAppService.cs" />
     <Compile Include="Services\Logic\SanctionAppService.cs" />
     <Compile Include="Services\Logic\UserProfileAppService.cs" />
+    <Compile Include="Services\Logic\VoteLogic.cs" />
     <Compile Include="Services\UserProfileService.cs" />
     <Compile Include="Tile.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
