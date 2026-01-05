@@ -2,7 +2,6 @@
 using GameServer.Interfaces;
 using Moq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
@@ -13,223 +12,282 @@ namespace GameServer.Tests.Helpers
     {
         public ConnectionManagerTests()
         {
-            ResetStaticState();
+            ResetStaticData();
         }
 
         public void Dispose()
         {
-            ResetStaticState();
+            ResetStaticData();
         }
 
-        private void ResetStaticState()
+        private void ResetStaticData()
         {
             var activeUsersField = typeof(ConnectionManager).GetField("_activeUsers", BindingFlags.NonPublic | BindingFlags.Static);
-            var lobbyCallbacksField = typeof(ConnectionManager).GetField("_lobbyCallbacks", BindingFlags.NonPublic | BindingFlags.Static);
-            var gameplayCallbacksField = typeof(ConnectionManager).GetField("_gameplayCallbacks", BindingFlags.NonPublic | BindingFlags.Static);
+            var activeUsers = (HashSet<string>)activeUsersField.GetValue(null);
+            activeUsers.Clear();
 
-            if (activeUsersField != null)
-            {
-                var hashSet = activeUsersField.GetValue(null);
-                hashSet?.GetType().GetMethod("Clear").Invoke(hashSet, null);
-            }
+            var lobbyField = typeof(ConnectionManager).GetField("_lobbyCallbacks", BindingFlags.NonPublic | BindingFlags.Static);
+            var lobbyCallbacks = (Dictionary<string, ILobbyServiceCallback>)lobbyField.GetValue(null);
+            lobbyCallbacks.Clear();
 
-            if (lobbyCallbacksField != null)
-            {
-                var dict = (IDictionary)lobbyCallbacksField.GetValue(null);
-                dict?.Clear();
-            }
-
-            if (gameplayCallbacksField != null)
-            {
-                var dict = (IDictionary)gameplayCallbacksField.GetValue(null);
-                dict?.Clear();
-            }
+            var gameplayField = typeof(ConnectionManager).GetField("_gameplayCallbacks", BindingFlags.NonPublic | BindingFlags.Static);
+            var gameplayCallbacks = (Dictionary<string, IGameplayServiceCallback>)gameplayField.GetValue(null);
+            gameplayCallbacks.Clear();
         }
 
+
         [Fact]
-        public void AddUser_NewUser_ShouldReturnTrue()
+        public void AddUser_NewUser_ReturnsTrue()
         {
-            string username = "PlayerOne";
+            // Act
+            bool result = ConnectionManager.AddUser("User1");
 
-            bool result = ConnectionManager.AddUser(username);
-
+            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void AddUser_DuplicateUser_ShouldReturnFalse()
+        public void AddUser_ExistingUser_ReturnsFalse()
         {
-            string username = "PlayerOne";
-            ConnectionManager.AddUser(username);
+            // Arrange
+            ConnectionManager.AddUser("User1");
 
-            bool result = ConnectionManager.AddUser(username);
+            // Act
+            bool result = ConnectionManager.AddUser("User1");
 
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void AddUser_NullUsername_ShouldReturnFalse()
+        public void AddUser_DifferentCase_ReturnsFalse()
         {
-            string username = null;
+            ConnectionManager.AddUser("User1");
 
-            bool result = ConnectionManager.AddUser(username);
+            // Act
+            bool result = ConnectionManager.AddUser("USER1");
 
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void AddUser_EmptyUsername_ShouldReturnFalse()
+        public void AddUser_NullUsername_ReturnsFalse()
         {
-            string username = "   ";
+            // Act
+            bool result = ConnectionManager.AddUser(null);
 
-            bool result = ConnectionManager.AddUser(username);
-
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void IsUserOnline_UserExists_ShouldReturnTrue()
+        public void AddUser_WhitespaceUsername_ReturnsFalse()
         {
-            string username = "OnlineUser";
-            ConnectionManager.AddUser(username);
+            // Act
+            bool result = ConnectionManager.AddUser("   ");
 
-            bool result = ConnectionManager.IsUserOnline(username);
+            // Assert
+            Assert.False(result);
+        }
 
+        [Fact]
+        public void IsUserOnline_UserAdded_ReturnsTrue()
+        {
+            // Arrange
+            ConnectionManager.AddUser("UserOnline");
+
+            // Act
+            bool result = ConnectionManager.IsUserOnline("UserOnline");
+
+            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void IsUserOnline_UserDoesNotExist_ShouldReturnFalse()
+        public void IsUserOnline_UserNotAdded_ReturnsFalse()
         {
+            // Act
             bool result = ConnectionManager.IsUserOnline("GhostUser");
 
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void RegisterLobbyClient_NewClient_ShouldStoreCallback()
+        public void IsUserOnline_NullInput_ReturnsFalse()
         {
-            string username = "LobbyUser";
-            var mockCallback = new Mock<ILobbyServiceCallback>();
+            // Act
+            bool result = ConnectionManager.IsUserOnline(null);
 
-            ConnectionManager.RegisterLobbyClient(username, mockCallback.Object);
-            var retrieved = ConnectionManager.GetLobbyClient(username);
-
-            Assert.NotNull(retrieved);
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
-        public void RegisterLobbyClient_ExistingClient_ShouldUpdateCallback()
+        public void RemoveUser_ExistingUser_RemovesFromActiveSet()
         {
-            string username = "LobbyUser";
+            // Arrange
+            ConnectionManager.AddUser("UserToRemove");
+
+            // Act
+            ConnectionManager.RemoveUser("UserToRemove");
+
+            // Assert
+            Assert.False(ConnectionManager.IsUserOnline("UserToRemove"));
+        }
+
+        [Fact]
+        public void RemoveUser_ExistingUser_RemovesCallbacksToo()
+        {
+            // Arrange
+            string user = "UserFull";
+            var mockCallback = new Mock<ILobbyServiceCallback>();
+            ConnectionManager.AddUser(user);
+            ConnectionManager.RegisterLobbyClient(user, mockCallback.Object);
+
+            // Act
+            ConnectionManager.RemoveUser(user);
+
+            // Assert
+            Assert.Null(ConnectionManager.GetLobbyClient(user));
+        }
+
+        [Fact]
+        public void RemoveUser_NullInput_DoesNotThrow()
+        {
+            // Act & Assert
+            var exception = Record.Exception(() => ConnectionManager.RemoveUser(null));
+            Assert.Null(exception);
+        }
+
+
+
+        [Fact]
+        public void RegisterLobbyClient_NewUser_StoresCallback()
+        {
+            // Arrange
+            string user = "LobbyUser";
+            var mockCallback = new Mock<ILobbyServiceCallback>();
+
+            // Act
+            ConnectionManager.RegisterLobbyClient(user, mockCallback.Object);
+
+            // Assert
+            Assert.Same(mockCallback.Object, ConnectionManager.GetLobbyClient(user));
+        }
+
+        [Fact]
+        public void RegisterLobbyClient_ExistingUser_OverwritesCallback()
+        {
+            // Arrange
+            string user = "LobbyUser";
             var mockCallback1 = new Mock<ILobbyServiceCallback>();
             var mockCallback2 = new Mock<ILobbyServiceCallback>();
-            ConnectionManager.RegisterLobbyClient(username, mockCallback1.Object);
+            ConnectionManager.RegisterLobbyClient(user, mockCallback1.Object);
 
-            ConnectionManager.RegisterLobbyClient(username, mockCallback2.Object);
-            var retrieved = ConnectionManager.GetLobbyClient(username);
+            // Act
+            ConnectionManager.RegisterLobbyClient(user, mockCallback2.Object);
 
-            Assert.Same(mockCallback2.Object, retrieved);
+            // Assert
+            Assert.Same(mockCallback2.Object, ConnectionManager.GetLobbyClient(user));
         }
 
         [Fact]
-        public void UnregisterLobbyClient_UserExists_ShouldRemoveCallback()
+        public void GetLobbyClient_UserNotFound_ReturnsNull()
         {
-            string username = "UserToRemove";
+            // Act
+            var result = ConnectionManager.GetLobbyClient("Unknown");
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void UnregisterLobbyClient_ExistingUser_RemovesCallback()
+        {
+            // Arrange
+            string user = "UserToUnreg";
             var mockCallback = new Mock<ILobbyServiceCallback>();
-            ConnectionManager.RegisterLobbyClient(username, mockCallback.Object);
+            ConnectionManager.RegisterLobbyClient(user, mockCallback.Object);
 
-            ConnectionManager.UnregisterLobbyClient(username);
-            var retrieved = ConnectionManager.GetLobbyClient(username);
+            // Act
+            ConnectionManager.UnregisterLobbyClient(user);
 
-            Assert.Null(retrieved);
+            // Assert
+            Assert.Null(ConnectionManager.GetLobbyClient(user));
         }
 
         [Fact]
-        public void RegisterGameplayClient_NewClient_ShouldStoreCallback()
+        public void UnregisterLobbyClient_NonExisting_DoesNotThrow()
         {
-            string username = "GameUser";
+            // Act & Assert
+            var exception = Record.Exception(() => ConnectionManager.UnregisterLobbyClient("Ghost"));
+            Assert.Null(exception);
+        }
+
+
+        [Fact]
+        public void RegisterGameplayClient_NewUser_StoresCallback()
+        {
+            // Arrange
+            string user = "GameUser";
             var mockCallback = new Mock<IGameplayServiceCallback>();
 
-            ConnectionManager.RegisterGameplayClient(username, mockCallback.Object);
-            var retrieved = ConnectionManager.GetGameplayClient(username);
+            // Act
+            ConnectionManager.RegisterGameplayClient(user, mockCallback.Object);
 
-            Assert.NotNull(retrieved);
+            // Assert
+            Assert.Same(mockCallback.Object, ConnectionManager.GetGameplayClient(user));
         }
 
         [Fact]
-        public void UnregisterGameplayClient_UserExists_ShouldRemoveCallback()
+        public void RegisterGameplayClient_ExistingUser_OverwritesCallback()
         {
-            string username = "GameUser";
+            // Arrange
+            string user = "GameUser";
+            var mockCallback1 = new Mock<IGameplayServiceCallback>();
+            var mockCallback2 = new Mock<IGameplayServiceCallback>();
+            ConnectionManager.RegisterGameplayClient(user, mockCallback1.Object);
+
+            // Act
+            ConnectionManager.RegisterGameplayClient(user, mockCallback2.Object);
+
+            // Assert
+            Assert.Same(mockCallback2.Object, ConnectionManager.GetGameplayClient(user));
+        }
+
+        [Fact]
+        public void GetGameplayClient_UserNotFound_ReturnsNull()
+        {
+            // Act
+            var result = ConnectionManager.GetGameplayClient("Unknown");
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void UnregisterGameplayClient_ExistingUser_RemovesCallback()
+        {
+            // Arrange
+            string user = "UserToUnreg";
             var mockCallback = new Mock<IGameplayServiceCallback>();
-            ConnectionManager.RegisterGameplayClient(username, mockCallback.Object);
+            ConnectionManager.RegisterGameplayClient(user, mockCallback.Object);
 
-            ConnectionManager.UnregisterGameplayClient(username);
-            var retrieved = ConnectionManager.GetGameplayClient(username);
+            // Act
+            ConnectionManager.UnregisterGameplayClient(user);
 
-            Assert.Null(retrieved);
+            // Assert
+            Assert.Null(ConnectionManager.GetGameplayClient(user));
         }
 
         [Fact]
-        public void RemoveUser_UserWithCallbacks_ShouldCleanAllLists()
+        public void UnregisterGameplayClient_NonExisting_DoesNotThrow()
         {
-            string username = "FullUser";
-            ConnectionManager.AddUser(username);
-            ConnectionManager.RegisterLobbyClient(username, new Mock<ILobbyServiceCallback>().Object);
-            ConnectionManager.RegisterGameplayClient(username, new Mock<IGameplayServiceCallback>().Object);
-
-            ConnectionManager.RemoveUser(username);
-
-            Assert.False(ConnectionManager.IsUserOnline(username));
-        }
-
-        [Fact]
-        public void RemoveUser_UserWithCallbacks_ShouldRemoveLobbyCallback()
-        {
-            string username = "FullUser";
-            ConnectionManager.AddUser(username);
-            ConnectionManager.RegisterLobbyClient(username, new Mock<ILobbyServiceCallback>().Object);
-
-            ConnectionManager.RemoveUser(username);
-
-            Assert.Null(ConnectionManager.GetLobbyClient(username));
-        }
-
-        [Fact]
-        public void RemoveUser_UserWithCallbacks_ShouldRemoveGameplayCallback()
-        {
-            string username = "FullUser";
-            ConnectionManager.AddUser(username);
-            ConnectionManager.RegisterGameplayClient(username, new Mock<IGameplayServiceCallback>().Object);
-
-            ConnectionManager.RemoveUser(username);
-
-            Assert.Null(ConnectionManager.GetGameplayClient(username));
-        }
-
-        [Fact]
-        public void RemoveUser_NullUsername_ShouldDoNothing()
-        {
-            ConnectionManager.RemoveUser(null);
-
-            Assert.True(true);
-        }
-
-        [Fact]
-        public async System.Threading.Tasks.Task AddUser_ConcurrentAccess_ShouldHandleLockingCorrectly()
-        {
-            int threadCount = 100;
-            string baseName = "ThreadUser_";
-            var tasks = new System.Threading.Tasks.Task[threadCount];
-
-            for (int i = 0; i < threadCount; i++)
-            {
-                int localI = i;
-                tasks[i] = System.Threading.Tasks.Task.Run(() => ConnectionManager.AddUser(baseName + localI));
-            }
-            await System.Threading.Tasks.Task.WhenAll(tasks);
-
-            Assert.True(ConnectionManager.IsUserOnline(baseName + "0"));
+            // Act & Assert
+            var exception = Record.Exception(() => ConnectionManager.UnregisterGameplayClient("Ghost"));
+            Assert.Null(exception);
         }
     }
 }

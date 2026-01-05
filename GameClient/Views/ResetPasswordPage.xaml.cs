@@ -47,7 +47,10 @@ namespace GameClient.Views
 
         private async void OnConfirmButtonClick(object sender, RoutedEventArgs e)
         {
-            if (!IsFormValid()) return;
+            if (!IsFormValid())
+            {
+                return;
+            }
 
             string currentPassword = CurrentPasswordBox.Password;
             string newPassword = NewPasswordBox.Password;
@@ -99,7 +102,7 @@ namespace GameClient.Views
             return true;
         }
 
-        private void CloseClientSafely(GameServiceClient client)
+        private static void CloseClientSafely(GameServiceClient client)
         {
             if (client.State == CommunicationState.Opened)
             {
@@ -139,7 +142,7 @@ namespace GameClient.Views
             }
         }
 
-        private bool IsPasswordStrong(string password)
+        private static bool IsPasswordStrong(string password)
         {
             var regex = new Regex(@"^(?=.*[0-9])(?=.*[!@#$%^&*()_+={}\[\]:;<>,.?/~`|-]).{8,}$");
             return regex.IsMatch(password);
@@ -215,7 +218,10 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
-            if (placeholder != null) placeholder.Visibility = Visibility.Collapsed;
+            if (placeholder != null)
+            {
+                placeholder.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void OnGenericPasswordLost(object sender, RoutedEventArgs e)

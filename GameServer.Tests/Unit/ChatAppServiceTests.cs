@@ -1,12 +1,9 @@
-﻿using GameServer.Chat.Moderation;
+﻿using GameServer.Interfaces;
 using GameServer.DTOs.Chat;
-using GameServer.Interfaces;
 using GameServer.Services.Logic;
 using Moq;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.ServiceModel;
 using Xunit;
@@ -15,223 +12,213 @@ namespace GameServer.Tests.Services
 {
     public class ChatAppServiceTests : IDisposable
     {
-        private readonly Mock<IChatNotifier> _mockNotifier;
-        private readonly ChatAppService _service;
+        private readonly Mock<IChatCallback> _mockCallbackA;
+        private readonly Mock<IChatCallback> _mockCallbackB;
+        private readonly ChatAppService _chatService;
+
+        private readonly string _lobbyCode = "LobbyTest1";
+        private readonly string _userA = "UserA";
+        private readonly string _userB = "UserB";
 
         public ChatAppServiceTests()
         {
-            ResetStaticState();
-            _mockNotifier = new Mock<IChatNotifier>();
-            _service = new ChatAppService(_mockNotifier.Object);
+            _chatService = new ChatAppService();
+            _mockCallbackA = new Mock<IChatCallback>();
+            _mockCallbackB = new Mock<IChatCallback>();
+            ResetStaticData();
         }
 
         public void Dispose()
         {
-            ResetStaticState();
+            ResetStaticData();
         }
 
-        private void ResetStaticState()
+        private void ResetStaticData()
         {
             var lobbiesField = typeof(ChatAppService).GetField("_lobbies", BindingFlags.NonPublic | BindingFlags.Static);
             if (lobbiesField != null)
             {
-                var dict = lobbiesField.GetValue(null) as IDictionary;
-                dict?.Clear();
+                var lobbies = (ConcurrentDictionary<string, ConcurrentDictionary<string, string>>)lobbiesField.GetValue(null);
+                lobbies?.Clear();
             }
 
-            var warningsField = typeof(WarningTracker).GetField("_warnings", BindingFlags.NonPublic | BindingFlags.Static);
-            if (warningsField != null)
+            var callbacksField = typeof(ChatAppService).GetField("_callbacks", BindingFlags.NonPublic | BindingFlags.Static);
+            if (callbacksField != null)
             {
-                var dict = warningsField.GetValue(null) as IDictionary;
-                dict?.Clear();
-            }
-
-            var spamTrackerField = typeof(ChatAppService).GetField("_spamTracker", BindingFlags.NonPublic | BindingFlags.Static);
-            if (spamTrackerField != null)
-            {
-                var spamTrackerInstance = spamTrackerField.GetValue(null);
-                var historyField = typeof(SpamTracker).GetField("_messageHistory", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (historyField != null)
-                {
-                    var dict = historyField.GetValue(spamTrackerInstance) as IDictionary;
-                    dict?.Clear();
-                }
+                var callbacks = (ConcurrentDictionary<string, IChatCallback>)callbacksField.GetValue(null);
+                callbacks?.Clear();
             }
         }
 
         [Fact]
-        public void Constructor_NullNotifier_ShouldThrowException()
+        public void SendMessage_LengthExactly100_ShouldSend()
         {
-            Assert.Throws<ArgumentNullException>(() => new ChatAppService(null));
+            string uA = "UserL100_" + Guid.NewGuid();
+            string uB = "UserL100B_" + Guid.NewGuid();
+
+            _chatService.JoinChat(new JoinChatRequest { Username = uA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _chatService.JoinChat(new JoinChatRequest { Username = uB, LobbyCode = _lobbyCode }, _mockCallbackB.Object);
+
+            _mockCallbackB.Invocations.Clear();
+
+            string msg = new string('a', 100);
+            var dto = new ChatMessageDto { LobbyCode = _lobbyCode, Sender = uA, Message = msg };
+
+            // Act
+            _chatService.SendMessage(dto);
+
+            // Assert
+            _mockCallbackB.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.Message == msg)), Times.Once);
         }
 
         [Fact]
-        public void JoinChat_ValidRequest_ShouldBroadcastJoinMessage()
+        public void SendMessage_Length101_ShouldNotBroadcast_AndWarnSender()
         {
-            var request = new JoinChatRequest { Username = "User1", LobbyCode = "L1" };
+            // Arrange
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _chatService.JoinChat(new JoinChatRequest { Username = _userB, LobbyCode = _lobbyCode }, _mockCallbackB.Object);
 
-            _service.JoinChat(request);
+            _mockCallbackA.Invocations.Clear();
+            _mockCallbackB.Invocations.Clear();
 
-            _mockNotifier.Verify(n => n.SendMessageToClient(
-                "User1",
-                It.Is<ChatMessageDto>(m => m.Message.Contains("ha unido") && m.Sender == "SYSTEM")
-            ), Times.Once);
-        }
+            string msg = new string('a', 101);
+            var dto = new ChatMessageDto { LobbyCode = _lobbyCode, Sender = _userA, Message = msg };
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void JoinChat_InvalidRequest_ShouldDoNothing(string invalidString)
-        {
-            var request = new JoinChatRequest { Username = invalidString, LobbyCode = "L1" };
-            _service.JoinChat(request);
-            _mockNotifier.Verify(n => n.SendMessageToClient(It.IsAny<string>(), It.IsAny<ChatMessageDto>()), Times.Never);
-        }
+            // Act
+            _chatService.SendMessage(dto);
 
-        [Fact]
-        public void SendMessage_ValidMessage_ShouldBroadcastToOthers()
-        {
-            JoinUser("User1", "L1");
-            JoinUser("User2", "L1");
-            var msg = new ChatMessageDto { Sender = "User1", LobbyCode = "L1", Message = "Good Morning" };
-
-            var receivedMessages = new List<ChatMessageDto>();
-            _mockNotifier.Setup(n => n.SendMessageToClient("User2", It.IsAny<ChatMessageDto>()))
-                         .Callback<string, ChatMessageDto>((u, m) => receivedMessages.Add(m));
-
-            _service.SendMessage(msg);
-
-            var userMessage = receivedMessages.FirstOrDefault(m => m.Sender == "User1");
-
-            Assert.NotNull(userMessage);
-            Assert.Equal("Good Morning", userMessage.Message);
-
-            _mockNotifier.Verify(n => n.SendMessageToClient(
-                "User1",
-                It.Is<ChatMessageDto>(m => m.Sender == "User1")
-            ), Times.Never);
+            // Assert
+            _mockCallbackB.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.Sender == "SYSTEM" && m.Message.Contains("largo"))), Times.Once);
         }
 
         [Fact]
-        public void SendMessage_MessageTooLong_ShouldSendSystemWarningToSender()
+        public void JoinChat_NullRequest_ShouldDoNothing()
         {
-            var longMsg = new string('A', 51);
-            JoinUser("User1", "L1");
-            var msg = new ChatMessageDto { Sender = "User1", LobbyCode = "L1", Message = longMsg };
-
-            _service.SendMessage(msg);
-
-            _mockNotifier.Verify(n => n.SendMessageToClient(
-                "User1",
-                It.Is<ChatMessageDto>(m => m.Sender == "SYSTEM" && m.Message.Contains("exceder el límite"))
-            ), Times.Once);
+            _chatService.JoinChat(null, _mockCallbackA.Object);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
         [Fact]
-        public void SendMessage_SpamDetected_ShouldBlockAndWarn()
+        public void JoinChat_EmptyUsername_ShouldDoNothing()
         {
-            JoinUser("User1", "L1");
-            var msg = new ChatMessageDto { Sender = "User1", LobbyCode = "L1", Message = "Spam" };
-
-            for (int i = 0; i < 5; i++) _service.SendMessage(msg);
-
-            _service.SendMessage(msg);
-
-            _mockNotifier.Verify(n => n.SendMessageToClient(
-                "User1",
-                It.Is<ChatMessageDto>(m => m.Sender == "SYSTEM" && m.Message.Contains("spam"))
-            ), Times.AtLeastOnce);
+            _chatService.JoinChat(new JoinChatRequest { Username = "", LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
         [Fact]
-        public void SendMessage_ProfanityDetected_ShouldBroadcastToOthers()
+        public void SendMessage_NullDto_ShouldReturn()
         {
-            JoinUser("User1", "L1");
-            JoinUser("User2", "L1");
-
-            var msg = new ChatMessageDto { Sender = "User1", LobbyCode = "L1", Message = "Clean message" };
-
-            ChatMessageDto received = null;
-            _mockNotifier.Setup(n => n.SendMessageToClient("User2", It.IsAny<ChatMessageDto>()))
-                         .Callback<string, ChatMessageDto>((u, m) =>
-                         {
-                             if (m.Sender == "User1") received = m;
-                         });
-
-            _service.SendMessage(msg);
-
-            Assert.NotNull(received);
-            Assert.Equal("Clean message", received.Message);
+            _chatService.SendMessage(null);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
         [Fact]
-        public void SendPrivateMessage_UserConnected_ShouldDeliverToBoth()
+        public void SendMessage_EmptyMessage_ShouldDoNothing()
         {
-            var msg = new ChatMessageDto { Sender = "User1", TargetUser = "User2", Message = "Secret" };
-            _mockNotifier.Setup(n => n.IsUserConnected("User2")).Returns(true);
+            // Arrange
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
 
-            _service.SendPrivateMessage(msg);
+            _mockCallbackA.Invocations.Clear();
 
-            _mockNotifier.Verify(n => n.SendMessageToClient("User1", It.Is<ChatMessageDto>(m => m.IsPrivate)), Times.Once);
-            _mockNotifier.Verify(n => n.SendMessageToClient("User2", It.Is<ChatMessageDto>(m => m.IsPrivate)), Times.Once);
+            var dto = new ChatMessageDto { LobbyCode = _lobbyCode, Sender = _userA, Message = "   " };
+
+            // Act
+            _chatService.SendMessage(dto);
+
+            // Assert
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
         [Fact]
-        public void SendPrivateMessage_UserDisconnected_ShouldLogWarningOnly()
+        public void SendPrivateMessage_NullTarget_ShouldReturn()
         {
-            var msg = new ChatMessageDto { Sender = "User1", TargetUser = "User2", Message = "Secret" };
-            _mockNotifier.Setup(n => n.IsUserConnected("User2")).Returns(false);
-
-            _service.SendPrivateMessage(msg);
-
-            _mockNotifier.Verify(n => n.SendMessageToClient(It.IsAny<string>(), It.IsAny<ChatMessageDto>()), Times.Never);
+            var dto = new ChatMessageDto { Sender = _userA, TargetUser = null, Message = "Hi" };
+            _chatService.SendPrivateMessage(dto);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
         [Fact]
-        public void LeaveChat_ValidRequest_ShouldNotifyOthers()
+        public void JoinChat_ValidUser_ShouldNotifyLobby()
         {
-            JoinUser("User1", "L1");
-            JoinUser("User2", "L1");
+            // Arrange
+            string uniqueB = "UserB_" + Guid.NewGuid();
+            _chatService.JoinChat(new JoinChatRequest { Username = uniqueB, LobbyCode = _lobbyCode }, _mockCallbackB.Object);
+            _mockCallbackB.Invocations.Clear();
 
-            var request = new JoinChatRequest { Username = "User1", LobbyCode = "L1" };
+            string uniqueA = "UserA_" + Guid.NewGuid();
+            var request = new JoinChatRequest { Username = uniqueA, LobbyCode = _lobbyCode };
 
-            _service.LeaveChat(request);
+            // Act
+            _chatService.JoinChat(request, _mockCallbackA.Object);
 
-            _mockNotifier.Verify(n => n.SendMessageToClient(
-                "User2",
-                It.Is<ChatMessageDto>(m => m.Sender == "SYSTEM" && m.Message.Contains("ha salido"))
-            ), Times.Once);
+            // Assert 
+            _mockCallbackB.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.Message.Contains(uniqueA) && m.Sender == "SYSTEM")), Times.Once);
+        }
+
+
+
+        [Fact]
+        public void SendPrivateMessage_TargetOnline_ShouldSendToTarget_AndSender()
+        {
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _chatService.JoinChat(new JoinChatRequest { Username = _userB, LobbyCode = _lobbyCode }, _mockCallbackB.Object);
+            _mockCallbackA.Invocations.Clear();
+            _mockCallbackB.Invocations.Clear();
+
+            var dto = new ChatMessageDto { Sender = _userA, TargetUser = _userB, Message = "Psst" };
+
+            // Act
+            _chatService.SendPrivateMessage(dto);
+
+            // Assert
+            _mockCallbackB.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.IsPrivate == true && m.Message == "Psst")), Times.Once);
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.IsPrivate == true && m.Message == "Psst")), Times.Once);
         }
 
         [Fact]
-        public void CommunicationException_ShouldHandleGracefully()
+        public void LeaveChat_UserInLobby_ShouldBroadcastLeaveMessage()
         {
-            JoinUser("User1", "L1");
-            _mockNotifier.Setup(n => n.SendMessageToClient("User1", It.IsAny<ChatMessageDto>()))
-                         .Throws(new CommunicationException());
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _chatService.JoinChat(new JoinChatRequest { Username = _userB, LobbyCode = _lobbyCode }, _mockCallbackB.Object);
+            _mockCallbackB.Invocations.Clear();
 
-            var msg = new ChatMessageDto { Sender = "SYSTEM", LobbyCode = "L1", Message = "Test" };
+            var request = new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode };
 
-            var exception = Record.Exception(() => _service.SendMessage(msg));
+            // Act
+            _chatService.LeaveChat(request);
+
+            // Assert
+            _mockCallbackB.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.Message.Contains("ha salido") && m.Sender == "SYSTEM")), Times.Once);
+        }
+
+        [Fact]
+        public void SendPrivateMessage_TargetOffline_ShouldWarnSender()
+        {
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+            _mockCallbackA.Invocations.Clear();
+
+            var dto = new ChatMessageDto { Sender = _userA, TargetUser = _userB, Message = "Hello?" };
+
+            // Act
+            _chatService.SendPrivateMessage(dto);
+
+            // Assert
+            _mockCallbackA.Verify(c => c.ReceiveMessage(It.Is<ChatMessageDto>(m => m.Sender == "SYSTEM" && m.Message.Contains("no está disponible"))), Times.Once);
+        }
+
+        [Fact]
+        public void JoinChat_CallbackThrowTimeout_ShouldCatchAndNotCrash()
+        {
+            _mockCallbackA.Setup(c => c.ReceiveMessage(It.IsAny<ChatMessageDto>())).Throws(new TimeoutException());
+            _chatService.JoinChat(new JoinChatRequest { Username = _userA, LobbyCode = _lobbyCode }, _mockCallbackA.Object);
+
+            // Act
+            var dto = new ChatMessageDto { LobbyCode = _lobbyCode, Sender = "SYSTEM", Message = "Welcome" };
+            var exception = Record.Exception(() => _chatService.SendMessage(dto));
+
+            // Assert
             Assert.Null(exception);
-        }
-
-        [Fact]
-        public void ObjectDisposedException_ShouldHandleGracefully()
-        {
-            JoinUser("User1", "L1");
-            _mockNotifier.Setup(n => n.SendMessageToClient("User1", It.IsAny<ChatMessageDto>()))
-                         .Throws(new ObjectDisposedException("channel"));
-
-            var msg = new ChatMessageDto { Sender = "SYSTEM", LobbyCode = "L1", Message = "Test" };
-
-            var exception = Record.Exception(() => _service.SendMessage(msg));
-            Assert.Null(exception);
-        }
-
-        private void JoinUser(string username, string lobbyCode)
-        {
-            _service.JoinChat(new JoinChatRequest { Username = username, LobbyCode = lobbyCode });
         }
     }
 }

@@ -22,9 +22,9 @@ namespace GameClient
                 Thread.CurrentThread.CurrentUICulture = culture;
                 Thread.CurrentThread.CurrentCulture = culture;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine($"[App] Error al establecer cultura: {ex.Message}");
             }
 
             base.OnStartup(e);

@@ -1,33 +1,25 @@
 ﻿using GameServer.DTOs.Chat;
 using GameServer.Interfaces;
 using GameServer.Services.Logic;
-using log4net;
-using System;
-using System.Collections.Concurrent;
 using System.ServiceModel;
 
 namespace GameServer.Services
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
-    public class ChatService : IChatService, IChatNotifier
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
+    public class ChatService : IChatService
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ChatService));
         private readonly ChatAppService _logic;
-        private readonly ConcurrentDictionary<string, IChatCallback> _callbacks = new ConcurrentDictionary<string, IChatCallback>();
 
         public ChatService()
         {
-            _logic = new ChatAppService(this);
+            _logic = new ChatAppService();
         }
 
         public void JoinLobbyChat(JoinChatRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
-            if (callback != null && request != null)
-            {
-                _callbacks[request.Username] = callback;
-                _logic.JoinChat(request);
-            }
+
+            _logic.JoinChat(request, callback);
         }
 
         public void SendLobbyMessage(ChatMessageDto messageDto)
@@ -43,34 +35,6 @@ namespace GameServer.Services
         public void LeaveLobbyChat(JoinChatRequest request)
         {
             _logic.LeaveChat(request);
-            if (request != null)
-            {
-                _callbacks.TryRemove(request.Username, out _);
-            }
-        }
-
-        public void SendMessageToClient(string clientKey, ChatMessageDto message)
-        {
-            if (_callbacks.TryGetValue(clientKey, out var callback))
-            {
-                try
-                {
-                    callback.ReceiveMessage(message);
-                }
-                catch (CommunicationException)
-                {
-                    _callbacks.TryRemove(clientKey, out _);
-                }
-                catch (TimeoutException)
-                {
-                    _callbacks.TryRemove(clientKey, out _);
-                }
-            }
-        }
-
-        public bool IsUserConnected(string username)
-        {
-            return _callbacks.ContainsKey(username);
         }
     }
 }

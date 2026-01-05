@@ -52,25 +52,27 @@ namespace GameServer.Services.Logic
             try
             {
                 var players = await _repository.GetPlayersInGameAsync(gameId);
-                foreach (var player in players)
+                var usernames = players.Select(player => player.Username).ToList();
+
+                foreach (var username in usernames)
                 {
-                    var client = ConnectionManager.GetGameplayClient(player.Username);
+                    var client = ConnectionManager.GetGameplayClient(username);
                     if (client != null)
                     {
                         try
                         {
-                            var stateDto = await BuildActiveGameStateAsync(gameId, player.Username);
+                            var stateDto = await BuildActiveGameStateAsync(gameId, username);
                             client.OnTurnChanged(stateDto);
                         }
                         catch (CommunicationException ex)
                         {
                             Log.WarnFormat("Communication error notifying turn: {0}", ex.Message);
-                            ConnectionManager.UnregisterGameplayClient(player.Username);
+                            ConnectionManager.UnregisterGameplayClient(username);
                         }
                         catch (TimeoutException ex)
                         {
                             Log.WarnFormat("Timeout notifying turn: {0}", ex.Message);
-                            ConnectionManager.UnregisterGameplayClient(player.Username);
+                            ConnectionManager.UnregisterGameplayClient(username);
                         }
                     }
                 }
@@ -85,7 +87,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private async Task NotifyGameFinished(List<Player> players, string winnerUsername)
+        private static async Task NotifyGameFinished(List<Player> players, string winnerUsername)
         {
             await Task.Yield();
 
@@ -118,56 +120,75 @@ namespace GameServer.Services.Logic
             DiceRollDto result = null;
             int gameIdForLock = 0;
 
-            if (request != null)
+            if (request == null)
             {
-                try
-                {
-                    var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                    if (game != null && game.GameStatus == (int)GameStatus.InProgress)
-                    {
-                        gameIdForLock = game.IdGame;
-                        if (_processingGames.TryAdd(game.IdGame, true))
-                        {
-                            var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-                            var sortedPlayers = players.OrderBy(p => p.IdPlayer).ToList();
+                return result;
+            }
 
-                            if (await ValidateTurnAsync(game.IdGame, sortedPlayers, request.Username))
-                            {
-                                _afkStrikes.TryRemove(request.Username, out _);
-                                GameManager.Instance.UpdateActivity(game.IdGame);
-
-                                var player = sortedPlayers.First(p => p.Username == request.Username);
-
-                                if (player.TurnsSkipped > 0)
-                                {
-                                    result = await HandleSkippedTurnAsync(game.IdGame, player);
-                                }
-                                else
-                                {
-                                    result = await ProcessNormalTurnAsync(game, player);
-                                }
-
-                                var gameCheck = await _repository.GetGameByIdAsync(game.IdGame);
-                                if (gameCheck.GameStatus == (int)GameStatus.InProgress)
-                                {
-                                    await NotifyTurnUpdate(game.IdGame);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (SqlException ex)
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                if (game == null || game.GameStatus != (int)GameStatus.InProgress)
                 {
-                    Log.Error("SQL Error in RollDice", ex);
+                    return result;
                 }
-                catch (EntityException ex)
+
+                gameIdForLock = game.IdGame;
+                if (!_processingGames.TryAdd(game.IdGame, true))
                 {
-                    Log.Error("Entity Error in RollDice", ex);
+                    return result;
                 }
-                finally
+
+                result = await ProcessGameTurn(game, request.Username);
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("SQL Error in RollDice", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Entity Error in RollDice", ex);
+            }
+            finally
+            {
+                if (gameIdForLock != 0)
                 {
-                    if (gameIdForLock != 0) _processingGames.TryRemove(gameIdForLock, out _);
+                    _processingGames.TryRemove(gameIdForLock, out _);
                 }
+            }
+
+            return result;
+        }
+
+        private async Task<DiceRollDto> ProcessGameTurn(Game game, string username)
+        {
+            var players = await _repository.GetPlayersInGameAsync(game.IdGame);
+            var sortedPlayers = players.OrderBy(p => p.IdPlayer).ToList();
+
+            if (!await ValidateTurnAsync(game.IdGame, sortedPlayers, username))
+            {
+                return null;
+            }
+
+            _afkStrikes.TryRemove(username, out _);
+            GameManager.Instance.UpdateActivity(game.IdGame);
+
+            var player = sortedPlayers.First(p => p.Username == username);
+
+            DiceRollDto result;
+            if (player.TurnsSkipped > 0)
+            {
+                result = await HandleSkippedTurnAsync(game.IdGame, player);
+            }
+            else
+            {
+                result = await ProcessNormalTurnAsync(game, player);
+            }
+
+            var gameCheck = await _repository.GetGameByIdAsync(game.IdGame);
+            if (gameCheck.GameStatus == (int)GameStatus.InProgress)
+            {
+                await NotifyTurnUpdate(game.IdGame);
             }
 
             return result;
@@ -257,7 +278,7 @@ namespace GameServer.Services.Logic
             return resultDto;
         }
 
-        private (int, int) GenerateDiceRoll(int currentPos)
+        private static (int, int) GenerateDiceRoll(int currentPos)
         {
             int d1;
             int d2;
@@ -319,7 +340,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private void HandleGooseRule(BoardMoveResult result)
+        private static void HandleGooseRule(BoardMoveResult result)
         {
             int nextGoose = GooseTiles.FirstOrDefault(t => t > result.FinalPosition);
             if (nextGoose != 0)
@@ -334,7 +355,7 @@ namespace GameServer.Services.Logic
             result.IsExtraTurn = true;
         }
 
-        private void HandleBridgeRule(BoardMoveResult result)
+        private static void HandleBridgeRule(BoardMoveResult result)
         {
             if (result.FinalPosition == 6)
             {
@@ -349,7 +370,7 @@ namespace GameServer.Services.Logic
             result.IsExtraTurn = true;
         }
 
-        private void HandlePenaltyRules(BoardMoveResult result)
+        private static void HandlePenaltyRules(BoardMoveResult result)
         {
             switch (result.FinalPosition)
             {
@@ -417,7 +438,7 @@ namespace GameServer.Services.Logic
             return new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
         }
 
-        private string BuildActionDescription(string username, int d1, int d2, BoardMoveResult rule)
+        private static string BuildActionDescription(string username, int d1, int d2, BoardMoveResult rule)
         {
             string baseMsg = d2 > 0 ? string.Format("{0} tiró {1} y {2}.", username, d1, d2) : string.Format("{0} tiró {1}.", username, d1);
             string fullDescription = string.IsNullOrEmpty(rule.Message)
@@ -434,46 +455,49 @@ namespace GameServer.Services.Logic
         {
             var gameState = new GameStateDto();
 
-            if (request != null)
+            if (request == null)
             {
-                try
-                {
-                    var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                return gameState;
+            }
 
-                    if (game != null)
-                    {
-                        var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
 
-                        if (player != null && player.GameIdGame != game.IdGame)
-                        {
-                            gameState.IsKicked = true;
-                            gameState.IsBanned = player.IsBanned;
-                        }
-                        else
-                        {
-                            if (game.GameStatus == (int)GameStatus.Finished)
-                            {
-                                gameState = await BuildFinishedGameStateAsync(game);
-                            }
-                            else
-                            {
-                                gameState = await BuildActiveGameStateAsync(game.IdGame, request.Username);
-                            }
-                        }
-                    }
-                }
-                catch (SqlException ex)
+                if (game == null)
                 {
-                    Log.Error("SQL Error obtaining state", ex);
+                    return gameState;
                 }
-                catch (EntityException ex)
+
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+
+                if (player != null && player.GameIdGame != game.IdGame)
                 {
-                    Log.Error("Entity Error obtaining state", ex);
+                    gameState.IsKicked = true;
+                    gameState.IsBanned = player.IsBanned;
+                    return gameState;
                 }
-                catch (TimeoutException ex)
+
+                if (game.GameStatus == (int)GameStatus.Finished)
                 {
-                    Log.Error("Timeout obtaining state", ex);
+                    gameState = await BuildFinishedGameStateAsync(game);
                 }
+                else
+                {
+                    gameState = await BuildActiveGameStateAsync(game.IdGame, request.Username);
+                }
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("SQL Error obtaining state", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Entity Error obtaining state", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obtaining state", ex);
             }
 
             return gameState;

@@ -24,7 +24,7 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
-        private void ShowTranslatedMessageBox(string messageKey, string titleKey)
+        private static void ShowTranslatedMessageBox(string messageKey, string titleKey)
         {
             string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
             string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
@@ -83,85 +83,100 @@ namespace GameClient.Views
 
         private async void CreateAccount(object sender, RoutedEventArgs e)
         {
-            if (IsFormValid())
+            if (!IsFormValid())
             {
-                string email = EmailBox.Text;
-                string username = UserBox.Text;
-                string password = PasswordBox.Password;
-                string selectedLanguage = DefaultLanguage;
+                return;
+            }
 
-                if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag != null)
+            string email = EmailBox.Text;
+            string username = UserBox.Text;
+            string password = PasswordBox.Password;
+            string selectedLanguage = GetSelectedLanguage();
+
+            GameServiceClient serviceClient = new GameServiceClient();
+            try
+            {
+                var request = new RegisterUserRequest
                 {
-                    selectedLanguage = item.Tag.ToString();
-                }
+                    Username = username,
+                    Email = email,
+                    Password = password,
+                    PreferredLanguage = selectedLanguage
+                };
 
-                GameServiceClient serviceClient = new GameServiceClient();
-                try
-                {
-                    var request = new RegisterUserRequest
-                    {
-                        Username = username,
-                        Email = email,
-                        Password = password,
-                        PreferredLanguage = selectedLanguage
-                    };
+                RegistrationResult result = await serviceClient.RegisterUserAsync(request);
+                HandleRegistrationResult(result, email);
+            }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("EndpointNotFoundLabel", "EndpointNotFoundTitle");
+            }
+            catch (TimeoutException)
+            {
+                ShowTranslatedMessageBox("TimeoutLabel", "ErrorTitle");
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+            }
+            finally
+            {
+                CloseServiceClient(serviceClient);
+            }
+        }
 
-                    RegistrationResult result = await serviceClient.RegisterUserAsync(request);
+        private string GetSelectedLanguage()
+        {
+            if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag != null)
+            {
+                return item.Tag.ToString();
+            }
+            return DefaultLanguage;
+        }
 
-                    switch (result)
-                    {
-                        case RegistrationResult.Success:
-                            ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
-                            NavigationService.Navigate(new VerifyAccountPage(email));
-                            break;
+        private void HandleRegistrationResult(RegistrationResult result, string email)
+        {
+            switch (result)
+            {
+                case RegistrationResult.Success:
+                    ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
+                    NavigationService.Navigate(new VerifyAccountPage(email));
+                    break;
 
-                        case RegistrationResult.EmailPendingVerification:
-                            ShowTranslatedMessageBox("AccountPendingLabel", "AccountPendingTitle");
-                            NavigationService.Navigate(new VerifyAccountPage(email));
-                            break;
+                case RegistrationResult.EmailPendingVerification:
+                    ShowTranslatedMessageBox("AccountPendingLabel", "AccountPendingTitle");
+                    NavigationService.Navigate(new VerifyAccountPage(email));
+                    break;
 
-                        case RegistrationResult.UsernameAlreadyExists:
-                            ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
-                            ShowError(UserBox, "Este nombre de usuario ya está en uso");
-                            break;
+                case RegistrationResult.UsernameAlreadyExists:
+                    ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
+                    ShowError(UserBox, "Este nombre de usuario ya está en uso");
+                    break;
 
-                        case RegistrationResult.EmailAlreadyExists:
-                            ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
-                            ShowError(EmailBox, "Este correo electrónico ya está registrado");
-                            break;
+                case RegistrationResult.EmailAlreadyExists:
+                    ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
+                    ShowError(EmailBox, "Este correo electrónico ya está registrado");
+                    break;
 
-                        default:
-                            ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
-                            break;
-                    }
-                }
-                catch (EndpointNotFoundException)
-                {
-                    ShowTranslatedMessageBox("EndpointNotFoundLabel", "EndpointNotFoundTitle");
-                }
-                catch (TimeoutException)
-                {
-                    ShowTranslatedMessageBox("TimeoutLabel", "ErrorTitle");
-                }
-                catch (CommunicationException)
-                {
+                default:
                     ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
-                }
-                finally
-                {
-                    if (serviceClient.State == CommunicationState.Opened)
-                    {
-                        serviceClient.Close();
-                    }
-                    else
-                    {
-                        serviceClient.Abort();
-                    }
-                }
+                    break;
+            }
+        }
+
+        private static void CloseServiceClient(GameServiceClient serviceClient)
+        {
+            if (serviceClient.State == CommunicationState.Opened)
+            {
+                serviceClient.Close();
+            }
+            else
+            {
+                serviceClient.Abort();
             }
         }
 
@@ -170,19 +185,32 @@ namespace GameClient.Views
             ClearAllErrors();
             bool isValid = true;
 
-            if (!ValidateEmail()) isValid = false;
-            if (!ValidateUsername()) isValid = false;
+            if (!ValidateEmail())
+            {
+                isValid = false;
+            }
+
+            if (!ValidateUsername())
+            {
+                isValid = false;
+            }
 
             bool isPasswordStrong = ValidatePasswordStrength();
             bool isRepeatPopulated = ValidateRepeatPasswordNotEmpty();
 
             if (isPasswordStrong && isRepeatPopulated)
             {
-                if (!CheckPasswordsMatch()) isValid = false;
+                if (!CheckPasswordsMatch())
+                {
+                    isValid = false;
+                }
             }
             else
             {
-                if (!isPasswordStrong || !isRepeatPopulated) isValid = false;
+                if (!isPasswordStrong || !isRepeatPopulated)
+                {
+                    isValid = false;
+                }
             }
 
             return isValid;
@@ -196,11 +224,13 @@ namespace GameClient.Views
                 ShowError(EmailBox, "El correo no puede estar vacio");
                 return false;
             }
+
             if (!IsValidEmail(email))
             {
                 ShowError(EmailBox, "El formato del correo no es valido");
                 return false;
             }
+
             return true;
         }
 
@@ -211,6 +241,7 @@ namespace GameClient.Views
                 ShowError(UserBox, "El nombre de usuario no puede estar vacio");
                 return false;
             }
+
             return true;
         }
 
@@ -224,10 +255,25 @@ namespace GameClient.Views
             }
 
             var errorMessages = new List<string>();
-            if (password.Length < MinPasswordLength) errorMessages.Add($"mínimo {MinPasswordLength} caracteres");
-            if (password.Length > MaxPasswordLength) errorMessages.Add($"máximo {MaxPasswordLength} caracteres");
-            if (!password.Any(char.IsUpper)) errorMessages.Add("una mayúscula");
-            if (!password.Any(c => !char.IsLetterOrDigit(c))) errorMessages.Add("un símbolo (ejemplo: !#$)");
+            if (password.Length < MinPasswordLength)
+            {
+                errorMessages.Add($"mínimo {MinPasswordLength} caracteres");
+            }
+
+            if (password.Length > MaxPasswordLength)
+            {
+                errorMessages.Add($"máximo {MaxPasswordLength} caracteres");
+            }
+
+            if (!password.Any(char.IsUpper))
+            {
+                errorMessages.Add("una mayúscula");
+            }
+
+            if (!password.Any(c => !char.IsLetterOrDigit(c)))
+            {
+                errorMessages.Add("un símbolo (ejemplo: !#$)");
+            }
 
             if (errorMessages.Count > 0)
             {
@@ -235,6 +281,7 @@ namespace GameClient.Views
                 ShowError(PasswordBox, fullErrorMessage);
                 return false;
             }
+
             return true;
         }
 
@@ -245,6 +292,7 @@ namespace GameClient.Views
                 ShowError(RepeatBox, "Debes repetir la contraseña");
                 return false;
             }
+
             return true;
         }
 
@@ -256,6 +304,7 @@ namespace GameClient.Views
                 ShowError(RepeatBox, "Las contraseñas no coinciden");
                 return false;
             }
+
             return true;
         }
 
@@ -331,7 +380,10 @@ namespace GameClient.Views
                     var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
                     var tb = (TextBox)sender;
                     if (tb.MaxLength > 0 && sanitized.Length > tb.MaxLength)
+                    {
                         sanitized = sanitized.Substring(0, tb.MaxLength);
+                    }
+
                     tb.Text = sanitized;
                     tb.CaretIndex = tb.Text.Length;
                 }), DispatcherPriority.Background);

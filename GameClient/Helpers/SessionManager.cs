@@ -42,13 +42,10 @@ namespace GameClient.Helpers
                 AuthWindow loginWindow = new AuthWindow();
                 loginWindow.Show();
 
-                var openWindows = Application.Current.Windows.Cast<Window>().ToList();
+                var openWindows = Application.Current.Windows.Cast<Window>().Where(w => w != loginWindow).ToList();
                 foreach (Window window in openWindows)
                 {
-                    if (window != loginWindow)
-                    {
-                        window.Close();
-                    }
+                    window.Close();
                 }
             });
         }

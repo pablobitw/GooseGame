@@ -52,7 +52,7 @@ namespace GameClient.Views
                 }
 
                 var files = Directory.GetFiles(avatarsDir)
-                                         .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg"));
+                                     .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg"));
 
                 var avatarList = new List<AvatarItem>();
 
@@ -142,7 +142,7 @@ namespace GameClient.Views
             }
         }
 
-        private void ShowError(string message)
+        private static void ShowError(string message)
         {
             CustomMessageBox msgBox = new CustomMessageBox(message);
             msgBox.ShowDialog();
@@ -157,7 +157,10 @@ namespace GameClient.Views
                 {
                     SuccessAvatarImage.ImageSource = new BitmapImage(new Uri(selectedItem.FullPath));
                 }
-                catch (UriFormatException) { }
+                catch (UriFormatException ex)
+                {
+                    Console.WriteLine($"[AvatarSelectPage] Error al cargar avatar: {ex.Message}");
+                }
             }
 
             SuccessOverlay.Visibility = Visibility.Visible;

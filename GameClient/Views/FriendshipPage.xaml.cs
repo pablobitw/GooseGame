@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,9 +22,13 @@ namespace GameClient.Views
         private Action _onConfirmAction;
 
         private int _requestCount;
+
         public int RequestCount
         {
-            get { return _requestCount; }
+            get
+            {
+                return _requestCount;
+            }
             set
             {
                 _requestCount = value;
@@ -94,10 +99,12 @@ namespace GameClient.Views
         private void DialogButton_Click(object sender, RoutedEventArgs e)
         {
             DialogOverlay.Visibility = Visibility.Collapsed;
+
             if (sender == ConfirmBtn)
             {
                 _onConfirmAction?.Invoke();
             }
+
             _onConfirmAction = null;
         }
 
@@ -123,7 +130,7 @@ namespace GameClient.Views
                 {
                     await LoadDataAsync();
                 }
-                catch (System.ServiceModel.CommunicationException)
+                catch (CommunicationException)
                 {
                     ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 }
@@ -136,20 +143,9 @@ namespace GameClient.Views
 
         private async Task LoadDataAsync()
         {
-            try
-            {
-                await LoadFriendsAsync();
-                await LoadRequestsAsync();
-                await LoadSentRequestsAsync();
-            }
-            catch (System.ServiceModel.CommunicationException)
-            {
-                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-            }
-            catch (TimeoutException)
-            {
-                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-            }
+            await LoadFriendsAsync();
+            await LoadRequestsAsync();
+            await LoadSentRequestsAsync();
         }
 
         private async Task LoadFriendsAsync()
@@ -159,26 +155,15 @@ namespace GameClient.Views
                 return;
             }
 
-            try
-            {
-                var friends = await _friendshipManager.GetFriendListAsync();
+            var friends = await _friendshipManager.GetFriendListAsync();
 
-                if (Dispatcher.CheckAccess())
-                {
-                    UpdateFriendsList(friends);
-                }
-                else
-                {
-                    await Dispatcher.InvokeAsync(() => UpdateFriendsList(friends));
-                }
-            }
-            catch (System.ServiceModel.CommunicationException)
+            if (Dispatcher.CheckAccess())
             {
-                throw;
+                UpdateFriendsList(friends);
             }
-            catch (TimeoutException)
+            else
             {
-                throw;
+                await Dispatcher.InvokeAsync(() => UpdateFriendsList(friends));
             }
         }
 
@@ -208,26 +193,15 @@ namespace GameClient.Views
                 return;
             }
 
-            try
-            {
-                var requests = await _friendshipManager.GetPendingRequestsAsync();
+            var requests = await _friendshipManager.GetPendingRequestsAsync();
 
-                if (Dispatcher.CheckAccess())
-                {
-                    UpdateRequestsList(requests);
-                }
-                else
-                {
-                    await Dispatcher.InvokeAsync(() => UpdateRequestsList(requests));
-                }
-            }
-            catch (System.ServiceModel.CommunicationException)
+            if (Dispatcher.CheckAccess())
             {
-                throw;
+                UpdateRequestsList(requests);
             }
-            catch (TimeoutException)
+            else
             {
-                throw;
+                await Dispatcher.InvokeAsync(() => UpdateRequestsList(requests));
             }
         }
 
@@ -254,26 +228,15 @@ namespace GameClient.Views
                 return;
             }
 
-            try
-            {
-                var sent = await _friendshipManager.GetSentRequestsAsync();
+            var sent = await _friendshipManager.GetSentRequestsAsync();
 
-                if (Dispatcher.CheckAccess())
-                {
-                    UpdateSentRequestsList(sent);
-                }
-                else
-                {
-                    await Dispatcher.InvokeAsync(() => UpdateSentRequestsList(sent));
-                }
-            }
-            catch (System.ServiceModel.CommunicationException)
+            if (Dispatcher.CheckAccess())
             {
-                throw;
+                UpdateSentRequestsList(sent);
             }
-            catch (TimeoutException)
+            else
             {
-                throw;
+                await Dispatcher.InvokeAsync(() => UpdateSentRequestsList(sent));
             }
         }
 
@@ -357,7 +320,7 @@ namespace GameClient.Views
                     ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 }
             }
-            catch (System.ServiceModel.CommunicationException)
+            catch (CommunicationException)
             {
                 ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
             }
@@ -395,7 +358,7 @@ namespace GameClient.Views
                         btn.IsEnabled = true;
                     }
                 }
-                catch (System.ServiceModel.CommunicationException)
+                catch (CommunicationException)
                 {
                     ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
@@ -436,7 +399,7 @@ namespace GameClient.Views
                         btn.IsEnabled = true;
                     }
                 }
-                catch (System.ServiceModel.CommunicationException)
+                catch (CommunicationException)
                 {
                     ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
@@ -481,7 +444,7 @@ namespace GameClient.Views
                                 ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                             }
                         }
-                        catch (System.ServiceModel.CommunicationException)
+                        catch (CommunicationException)
                         {
                             ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                         }
@@ -527,7 +490,7 @@ namespace GameClient.Views
                                 await LoadFriendsAsync();
                             }
                         }
-                        catch (System.ServiceModel.CommunicationException)
+                        catch (CommunicationException)
                         {
                             ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                         }
@@ -542,6 +505,7 @@ namespace GameClient.Views
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
+
             if (mainWindow != null)
             {
                 await mainWindow.ShowMainMenu();
@@ -551,6 +515,7 @@ namespace GameClient.Views
         private void ShowErrorMessage(string message)
         {
             string title = GameClient.Resources.Strings.DialogErrorTitle;
+
             if (Dispatcher.CheckAccess())
             {
                 ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
@@ -564,6 +529,7 @@ namespace GameClient.Views
         private void ShowWarningMessage(string message)
         {
             string title = GameClient.Resources.Strings.DialogWarningTitle;
+
             if (Dispatcher.CheckAccess())
             {
                 ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
@@ -586,6 +552,7 @@ namespace GameClient.Views
         private void ShowSuccessMessage(string message)
         {
             string title = GameClient.Resources.Strings.DialogSuccessTitle;
+
             if (Dispatcher.CheckAccess())
             {
                 ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle);

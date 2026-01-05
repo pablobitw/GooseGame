@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.ServiceModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Navigation;
 
 namespace GameClient.Views
 {
@@ -40,7 +40,10 @@ namespace GameClient.Views
                     string serverLanguage = response.PreferredLanguage ?? "es-MX";
                     string currentLocalLanguage = GameClient.Properties.Settings.Default.LanguageCode;
 
-                    if (string.IsNullOrEmpty(currentLocalLanguage)) currentLocalLanguage = "es-MX";
+                    if (string.IsNullOrEmpty(currentLocalLanguage))
+                    {
+                        currentLocalLanguage = "es-MX";
+                    }
 
                     if (serverLanguage != currentLocalLanguage)
                     {
@@ -49,10 +52,15 @@ namespace GameClient.Views
 
                         try
                         {
-                            serviceClient.Logout(usernameOrEmail);
+                            await serviceClient.LogoutAsync(usernameOrEmail);
                         }
-                        catch
+                        catch (CommunicationException)
                         {
+                            // 
+                        }
+                        catch (TimeoutException)
+                        {
+                            //
                         }
 
                         Process.Start(Application.ResourceAssembly.Location);
@@ -77,19 +85,21 @@ namespace GameClient.Views
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.ErrorTitle);
+                MessageBox.Show(
+                    GameClient.Resources.Strings.EndpointNotFoundLabel,
+                    GameClient.Resources.Strings.ErrorTitle);
             }
             catch (TimeoutException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
+                MessageBox.Show(
+                    GameClient.Resources.Strings.TimeoutLabel,
+                    GameClient.Resources.Strings.ErrorTitle);
             }
             catch (CommunicationException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message, GameClient.Resources.Strings.ErrorTitle);
+                MessageBox.Show(
+                    GameClient.Resources.Strings.ComunicationLabel,
+                    GameClient.Resources.Strings.ErrorTitle);
             }
             finally
             {
@@ -97,10 +107,8 @@ namespace GameClient.Views
             }
         }
 
-        private void ApplyLanguage(string cultureCode)
+        private static void ApplyLanguage(string cultureCode)
         {
-            try
-            {
                 var culture = new CultureInfo(cultureCode);
                 Thread.CurrentThread.CurrentUICulture = culture;
                 Thread.CurrentThread.CurrentCulture = culture;
@@ -110,13 +118,11 @@ namespace GameClient.Views
                     GameClient.Properties.Settings.Default.LanguageCode = cultureCode;
                     GameClient.Properties.Settings.Default.Save();
                 }
-            }
-            catch (Exception)
-            {
-            }
+            
+            
         }
 
-        private void CloseClient(GameServiceClient client)
+        private static void CloseClient(GameServiceClient client)
         {
             try
             {
@@ -129,7 +135,11 @@ namespace GameClient.Views
                     client.Abort();
                 }
             }
-            catch
+            catch (CommunicationException)
+            {
+                client.Abort();
+            }
+            catch (TimeoutException)
             {
                 client.Abort();
             }
@@ -210,10 +220,11 @@ namespace GameClient.Views
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en este campo.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
+                MessageBox.Show(
+                    "Por seguridad, el pegado está deshabilitado en este campo.",
+                    "Acción bloqueada",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
@@ -222,10 +233,11 @@ namespace GameClient.Views
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
+                MessageBox.Show(
+                    "Por seguridad, el pegado está deshabilitado en campos de contraseña.",
+                    "Acción bloqueada",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
     }

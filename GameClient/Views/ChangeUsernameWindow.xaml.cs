@@ -156,7 +156,6 @@ namespace GameClient.Views
                             MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // CORRECCIÓN: Se eliminó 'async' porque solo realiza operaciones síncronas de UI
         private void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
         {
             string code = CodeTextBox.Text.Trim();
@@ -170,7 +169,7 @@ namespace GameClient.Views
             Step2_ChangeName.Visibility = Visibility.Visible;
         }
 
-        private void CloseClient(UserProfileServiceClient client)
+        private static void CloseClient(UserProfileServiceClient client)
         {
             try
             {

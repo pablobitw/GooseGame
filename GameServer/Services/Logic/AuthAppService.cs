@@ -153,7 +153,7 @@ namespace GameServer.Services.Logic
             }
         }
 
-        private bool IsValidEmail(string email)
+        private static bool IsValidEmail(string email)
         {
             try
             {
@@ -259,16 +259,13 @@ namespace GameServer.Services.Logic
             }
             catch (DbUpdateException ex)
             {
-                if (ex.InnerException?.InnerException is SqlException sqlEx)
+                if (ex.InnerException?.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
                 {
-                    if (sqlEx.Number == 2601 || sqlEx.Number == 2627)
+                    if (_repository.IsUsernameTaken(request.Username))
                     {
-                        if (_repository.IsUsernameTaken(request.Username))
-                        {
-                            return RegistrationResult.UsernameAlreadyExists;
-                        }
-                        return RegistrationResult.EmailAlreadyExists;
+                        return RegistrationResult.UsernameAlreadyExists;
                     }
+                    return RegistrationResult.EmailAlreadyExists;
                 }
                 Log.Error("Error al guardar usuario en base de datos.", ex);
                 return RegistrationResult.FatalError;
@@ -293,50 +290,38 @@ namespace GameServer.Services.Logic
             {
                 var player = await _repository.GetPlayerForLoginAsync(usernameOrEmail);
 
-                if (player != null)
+                if (player == null)
                 {
-                    if (player.IsBanned)
-                    {
-                        response.Message = "Tu cuenta ha sido baneada permanentemente por acumulación de faltas.";
-                    }
-                    else if (await _repository.IsAccountSanctionedAsync(player.Account.IdAccount))
-                    {
-                        response.Message = "Tu cuenta tiene una sanción temporal activa.";
-                    }
-                    else if (player.Account.AccountStatus != (int)AccountStatus.Inactive &&
-                             player.Account.AccountStatus != (int)AccountStatus.Banned)
-                    {
-                        if (!ConnectionManager.IsUserOnline(player.Username))
-                        {
-                            if (ValidateLoginCredentials(player, password))
-                            {
-                                if (player.GameIdGame != null)
-                                {
-                                    player.GameIdGame = null;
-                                    await _repository.SaveChangesAsync();
-                                }
-
-                                ConnectionManager.AddUser(player.Username);
-
-                                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
-
-                                response.IsSuccess = true;
-                                response.Message = "Login exitoso.";
-                                response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
-                            }
-                        }
-                        else
-                        {
-                            Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
-                            response.Message = "El usuario ya está conectado.";
-                        }
-                    }
-                    else
-                    {
-                        Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
-                        response.Message = "Cuenta inactiva o suspendida administrativamente.";
-                    }
+                    return response;
                 }
+
+                if (player.IsBanned)
+                {
+                    response.Message = "Tu cuenta ha sido baneada permanentemente por acumulación de faltas.";
+                    return response;
+                }
+
+                if (await _repository.IsAccountSanctionedAsync(player.Account.IdAccount))
+                {
+                    response.Message = "Tu cuenta tiene una sanción temporal activa.";
+                    return response;
+                }
+
+                if (!IsAccountActive(player))
+                {
+                    Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
+                    response.Message = "Cuenta inactiva o suspendida administrativamente.";
+                    return response;
+                }
+
+                if (ConnectionManager.IsUserOnline(player.Username))
+                {
+                    Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
+                    response.Message = "El usuario ya está conectado.";
+                    return response;
+                }
+
+                return await ProcessSuccessfulLogin(player, password, response);
             }
             catch (SqlException ex)
             {
@@ -362,7 +347,37 @@ namespace GameServer.Services.Logic
             return response;
         }
 
-        private bool ValidateLoginCredentials(Player player, string password)
+        private static bool IsAccountActive(Player player)
+        {
+            return player.Account.AccountStatus != (int)AccountStatus.Inactive &&
+                   player.Account.AccountStatus != (int)AccountStatus.Banned;
+        }
+
+        private async Task<LoginResponseDto> ProcessSuccessfulLogin(Player player, string password, LoginResponseDto response)
+        {
+            if (!ValidateLoginCredentials(player, password))
+            {
+                return response;
+            }
+
+            if (player.GameIdGame != null)
+            {
+                player.GameIdGame = null;
+                await _repository.SaveChangesAsync();
+            }
+
+            ConnectionManager.AddUser(player.Username);
+
+            _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+
+            response.IsSuccess = true;
+            response.Message = "Login exitoso.";
+            response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
+
+            return response;
+        }
+
+        private static bool ValidateLoginCredentials(Player player, string password)
         {
             if (player.Account == null || player.IsGuest) return false;
 
@@ -572,55 +587,77 @@ namespace GameServer.Services.Logic
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
 
-                if (player != null && player.Account != null)
-                {
-                    if (BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
-                    {
-                        if (currentPassword != newPassword)
-                        {
-                            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                            player.Account.PasswordHash = newHashedPassword;
-
-                            await _repository.SaveChangesAsync();
-
-                            Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
-
-                            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
-
-                            result = true;
-                        }
-                        else
-                        {
-                            Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
-                        }
-                    }
-                    else
-                    {
-                        Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
-                    }
-                }
-                else
+                if (player == null || player.Account == null)
                 {
                     Log.WarnFormat("Intento de cambio de pass para usuario inexistente: {0}", username);
+                    return false;
                 }
+
+                if (!BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
+                {
+                    Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
+                    return false;
+                }
+
+                if (currentPassword == newPassword)
+                {
+                    Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
+                    return false;
+                }
+
+                result = await UpdatePlayerPassword(player, newPassword, username);
             }
-            catch (SqlException ex) { Log.Fatal("Error SQL crítico al cambiar contraseña.", ex); }
-            catch (EntityException ex) { Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex); }
-            catch (DbUpdateException ex) { Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex); }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL crítico al cambiar contraseña.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex);
+            }
             catch (DbEntityValidationException ex)
             {
-                foreach (var validationErrors in ex.EntityValidationErrors)
-                {
-                    foreach (var validationError in validationErrors.ValidationErrors)
-                    {
-                        Log.WarnFormat("Error de validación en entidad: Propiedad: {0} Error: {1}", validationError.PropertyName, validationError.ErrorMessage);
-                    }
-                }
+                LogValidationErrors(ex);
             }
-            catch (TimeoutException ex) { Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex); }
-            catch (ArgumentException ex) { Log.Error("Error de argumento inválido durante el proceso de hashing.", ex); }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                Log.Error("Error de argumento inválido durante el proceso de hashing.", ex);
+            }
 
             return result;
+        }
+
+        private async Task<bool> UpdatePlayerPassword(Player player, string newPassword, string username)
+        {
+            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            player.Account.PasswordHash = newHashedPassword;
+
+            await _repository.SaveChangesAsync();
+
+            Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
+
+            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+
+            return true;
+        }
+
+        private static void LogValidationErrors(DbEntityValidationException ex)
+        {
+            foreach (var validationErrors in ex.EntityValidationErrors)
+            {
+                foreach (var validationError in validationErrors.ValidationErrors)
+                {
+                    Log.WarnFormat("Error de validación en entidad: Propiedad: {0} Error: {1}", validationError.PropertyName, validationError.ErrorMessage);
+                }
+            }
         }
 
         private static string GenerateSecureCode()

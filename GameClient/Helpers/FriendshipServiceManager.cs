@@ -71,14 +71,16 @@ namespace GameClient.Helpers
                 {
                     _proxy.Abort();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"[FriendshipServiceManager] Error al abortar proxy: {ex.Message}");
                 }
                 _proxy = null;
             }
             Reset();
             SessionManager.ForceLogout(message);
         }
+
 
         public void Disconnect()
         {

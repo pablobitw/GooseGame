@@ -9,14 +9,13 @@ namespace GameServer
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
         private const string LogSeparator = "===============================";
+        private const string PressEnterToExit = "\nPresiona [Enter] para salir...";
 
         static void Main(string[] args)
         {
             Console.Title = "GooseGame Server";
 
-            Log.Info(LogSeparator);
-            Log.Info("Initializing GooseGame Server...");
-            Log.Info(LogSeparator);
+            Log.Info($"{LogSeparator}\nInitializing GooseGame Server...\n{LogSeparator}");
 
             try
             {
@@ -51,7 +50,6 @@ namespace GameServer
 
                     Log.Info(LogSeparator);
                     Log.Warn(" SERVER IS FULLY OPERATIONAL. Press [Enter] to stop.");
-                    Log.Info(LogSeparator);
 
                     Console.ReadLine();
 
@@ -65,7 +63,7 @@ namespace GameServer
                 Console.WriteLine("\n[ERROR] ACCESO DENEGADO. Necesitas ejecutar Visual Studio como ADMINISTRADOR.");
                 Console.WriteLine($"Detalle: {ex.Message}");
                 Console.ResetColor();
-                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.WriteLine(PressEnterToExit);
                 Console.ReadLine();
             }
             catch (InvalidOperationException ex)
@@ -75,7 +73,7 @@ namespace GameServer
                 Console.WriteLine("\n[ERROR] Configuración inválida (Revisa App.config o cadenas de conexión).");
                 Console.WriteLine($"Detalle: {ex.Message}");
                 Console.ResetColor();
-                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.WriteLine(PressEnterToExit);
                 Console.ReadLine();
             }
             catch (CommunicationException ex)
@@ -85,7 +83,7 @@ namespace GameServer
                 Console.WriteLine("\n[ERROR] Error de comunicación (¿Puerto en uso o dirección incorrecta?).");
                 Console.WriteLine($"Detalle: {ex.Message}");
                 Console.ResetColor();
-                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.WriteLine(PressEnterToExit);
                 Console.ReadLine();
             }
             catch (TimeoutException ex)
@@ -93,7 +91,7 @@ namespace GameServer
                 Log.Fatal("❌ CRITICAL ERROR: Service start timeout.", ex);
                 Console.WriteLine("\n[ERROR] Timeout al iniciar servicios.");
                 Console.WriteLine($"Detalle: {ex.Message}");
-                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.WriteLine(PressEnterToExit);
                 Console.ReadLine();
             }
             catch (Exception ex)
@@ -105,7 +103,7 @@ namespace GameServer
                 Console.WriteLine($"Mensaje: {ex.Message}");
                 Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 Console.ResetColor();
-                Console.WriteLine("\nPresiona [Enter] para salir...");
+                Console.WriteLine(PressEnterToExit);
                 Console.ReadLine();
             }
             finally

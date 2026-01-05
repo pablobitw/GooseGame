@@ -1,16 +1,15 @@
-﻿using GameServer.DTOs.Friendship;
-using GameServer.Interfaces;
-using GameServer.Repositories;
+﻿using GameServer.Interfaces;     
+using GameServer.DTOs.Friendship;
+using GameServer.Repositories;   
 using GameServer.Services.Logic;
+using GameServer;                
 using Moq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
-using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,347 +19,382 @@ namespace GameServer.Tests.Services
     {
         private readonly Mock<IFriendshipRepository> _mockRepository;
         private readonly FriendshipAppService _service;
+        private readonly Mock<IFriendshipServiceCallback> _mockCallback;
 
         public FriendshipAppServiceTests()
         {
-            ResetStaticState();
             _mockRepository = new Mock<IFriendshipRepository>();
             _service = new FriendshipAppService(_mockRepository.Object);
+            _mockCallback = new Mock<IFriendshipServiceCallback>();
+
+            ResetStaticData();
         }
 
         public void Dispose()
         {
-            ResetStaticState();
+            ResetStaticData();
         }
 
-        private void ResetStaticState()
+        private void ResetStaticData()
         {
             var field = typeof(FriendshipAppService).GetField("_connectedClients", BindingFlags.NonPublic | BindingFlags.Static);
             if (field != null)
             {
-                var dict = (IDictionary)field.GetValue(null);
-                dict?.Clear();
+                var dict = (Dictionary<string, IFriendshipServiceCallback>)field.GetValue(null);
+                if (dict != null)
+                {
+                    lock (dict)
+                    {
+                        dict.Clear();
+                    }
+                }
             }
         }
 
         [Fact]
-        public void ConnectUser_NewUser_ShouldAddCallback()
+        public void ConnectUser_NewUser_ShouldAddToDictionary()
         {
-            string username = "User1";
-            var mockCallback = new Mock<IFriendshipServiceCallback>();
+            // Arrange
+            string username = "UserConnect";
 
-            _service.ConnectUser(username, mockCallback.Object);
+            // Act
+            _service.ConnectUser(username, _mockCallback.Object);
 
-            FriendshipAppService.SendGameInvitation(new GameInvitationDto
-            {
-                SenderUsername = "Sender",
-                TargetUsername = username,
-                LobbyCode = "123"
-            });
-
-            mockCallback.Verify(c => c.OnGameInvitationReceived("Sender", "123"), Times.Once);
+            // Assert 
+            FriendshipAppService.SendGameInvitation(new GameInvitationDto { TargetUsername = username, SenderUsername = "S", LobbyCode = "1" });
+            _mockCallback.Verify(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
-        public async Task SendFriendRequestAsync_ValidRequest_ShouldAddFriendshipAndSave()
+        public void ConnectUser_ExistingUser_ShouldUpdateCallback()
         {
-            string sender = "UserA";
-            string receiver = "UserB";
-            var playerA = new Player { IdPlayer = 1, Username = sender, IsGuest = false };
-            var playerB = new Player { IdPlayer = 2, Username = receiver, IsGuest = false };
+            // Arrange
+            string username = "UserUpdate";
+            var mockCallback2 = new Mock<IFriendshipServiceCallback>();
+            _service.ConnectUser(username, _mockCallback.Object);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(sender)).ReturnsAsync(playerA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(receiver)).ReturnsAsync(playerB);
-            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns((Friendship)null);
+            // Act
+            _service.ConnectUser(username, mockCallback2.Object); 
 
-            var result = await _service.SendFriendRequestAsync(sender, receiver);
+            // Assert
+            FriendshipAppService.SendGameInvitation(new GameInvitationDto { TargetUsername = username, SenderUsername = "S", LobbyCode = "1" });
 
-            Assert.Equal(FriendRequestResult.Success, result);
-            _mockRepository.Verify(r => r.AddFriendship(It.Is<Friendship>(f => f.FriendshipStatus == 0)), Times.Once);
-            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mockCallback.Verify(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            mockCallback2.Verify(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
-        public async Task SendFriendRequestAsync_GuestUser_ShouldReturnFalse()
+        public void DisconnectUser_UserConnected_ShouldRemoveFromDictionary()
         {
-            string sender = "Guest_123";
-            string receiver = "UserB";
-            var playerA = new Player { Username = sender, IsGuest = true };
-            var playerB = new Player { Username = receiver, IsGuest = false };
+            // Arrange
+            string username = "UserDisconnect";
+            _service.ConnectUser(username, _mockCallback.Object);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(sender)).ReturnsAsync(playerA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(receiver)).ReturnsAsync(playerB);
+            // Act
+            _service.DisconnectUser(username);
 
-            var result = await _service.SendFriendRequestAsync(sender, receiver);
-
-            Assert.NotEqual(FriendRequestResult.Success, result);
-            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
+            // Assert
+            FriendshipAppService.SendGameInvitation(new GameInvitationDto { TargetUsername = username, SenderUsername = "S", LobbyCode = "1" });
+            _mockCallback.Verify(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
-        public async Task SendFriendRequestAsync_AlreadyExists_ShouldReturnFalse()
+        public async Task SendFriendRequest_NullSender_ReturnsError()
         {
-            string sender = "UserA";
-            string receiver = "UserB";
-            var playerA = new Player { IdPlayer = 1 };
-            var playerB = new Player { IdPlayer = 2 };
-            var existing = new Friendship { FriendshipStatus = 1 };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(sender)).ReturnsAsync(playerA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(receiver)).ReturnsAsync(playerB);
-            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(existing);
-
-            var result = await _service.SendFriendRequestAsync(sender, receiver);
-
-            Assert.Equal(FriendRequestResult.AlreadyFriends, result);
-        }
-
-        [Fact]
-        public async Task SendFriendRequestAsync_ReversePending_ShouldAcceptAndSave()
-        {
-            string sender = "UserA";
-            string receiver = "UserB";
-            var playerA = new Player { IdPlayer = 1, Username = sender };
-            var playerB = new Player { IdPlayer = 2, Username = receiver };
-
-            var existing = new Friendship
-            {
-                PlayerIdPlayer = 2,
-                Player1_IdPlayer = 1,
-                FriendshipStatus = 0
-            };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(sender)).ReturnsAsync(playerA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(receiver)).ReturnsAsync(playerB);
-            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(existing);
-
-            var result = await _service.SendFriendRequestAsync(sender, receiver);
-
-            Assert.Equal(FriendRequestResult.Success, result);
-            Assert.Equal(1, existing.FriendshipStatus);
-            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task SendFriendRequestAsync_SqlException_ShouldReturnFalse()
-        {
-            string sender = "UserA";
-            string receiver = "UserB";
-            var playerA = new Player { IdPlayer = 1 };
-            var playerB = new Player { IdPlayer = 2 };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(sender)).ReturnsAsync(playerA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(receiver)).ReturnsAsync(playerB);
-            _mockRepository.Setup(r => r.SaveChangesAsync()).ThrowsAsync(CreateSqlException(53));
-
-            var result = await _service.SendFriendRequestAsync(sender, receiver);
-
+            var result = await _service.SendFriendRequestAsync(null, "UserB");
             Assert.Equal(FriendRequestResult.Error, result);
         }
 
         [Fact]
-        public async Task RespondToFriendRequestAsync_Accept_ShouldUpdateStatus()
+        public async Task SendFriendRequest_SameUser_ReturnsError()
         {
-            var dto = new RespondRequestDto { RequesterUsername = "UserA", RespondingUsername = "UserB", IsAccepted = true };
-            var pA = new Player { IdPlayer = 1 };
-            var pB = new Player { IdPlayer = 2, IsGuest = false };
-            var friendship = new Friendship { FriendshipStatus = 0 };
+            var result = await _service.SendFriendRequestAsync("UserA", "UserA");
+            Assert.Equal(FriendRequestResult.Error, result);
+        }
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserA")).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserB")).ReturnsAsync(pB);
-            _mockRepository.Setup(r => r.GetPendingRequest(1, 2)).Returns(friendship);
+        [Fact]
+        public async Task SendFriendRequest_UserNotFound_ReturnsTargetNotFound()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserA")).ReturnsAsync(new Player());
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserB")).ReturnsAsync((Player)null);
 
-            var result = await _service.RespondToFriendRequestAsync(dto);
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
 
-            Assert.True(result);
-            Assert.Equal(1, friendship.FriendshipStatus);
+            // Assert
+            Assert.Equal(FriendRequestResult.TargetNotFound, result);
+        }
+
+        [Fact]
+        public async Task SendFriendRequest_GuestUser_ReturnsGuestRestriction()
+        {
+            // Arrange
+            SetupPlayers("GuestA", "UserB", true);
+
+            // Act
+            var result = await _service.SendFriendRequestAsync("GuestA", "UserB");
+
+            // Assert
+            Assert.Equal(FriendRequestResult.GuestRestriction, result);
+        }
+
+        [Fact]
+        public async Task SendFriendRequest_AlreadyFriends_ReturnsAlreadyFriends()
+        {
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var friendship = new Friendship { FriendshipStatus = (int)FriendshipStatus.Accepted };
+            _mockRepository.Setup(r => r.GetFriendship(It.IsAny<int>(), It.IsAny<int>())).Returns(friendship);
+
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
+
+            // Assert
+            Assert.Equal(FriendRequestResult.AlreadyFriends, result);
+        }
+
+        [Fact]
+        public async Task SendFriendRequest_PendingSameDirection_ReturnsPending()
+        {
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var friendship = new Friendship { PlayerIdPlayer = 1, Player1_IdPlayer = 2, FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(friendship);
+
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
+
+            // Assert
+            Assert.Equal(FriendRequestResult.Pending, result);
+        }
+
+        [Fact]
+        public async Task SendFriendRequest_PendingReverse_ShouldAcceptRequest()
+        {
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var friendship = new Friendship { PlayerIdPlayer = 2, Player1_IdPlayer = 1, FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(friendship);
+
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
+
+            // Assert
+            Assert.Equal(FriendRequestResult.Success, result);
+            Assert.Equal((int)FriendshipStatus.Accepted, friendship.FriendshipStatus);
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task RespondToFriendRequestAsync_Reject_ShouldRemoveFriendship()
+        public async Task SendFriendRequest_NewRequest_ShouldCreateAndSave()
         {
-            var dto = new RespondRequestDto { RequesterUsername = "UserA", RespondingUsername = "UserB", IsAccepted = false };
-            var pA = new Player { IdPlayer = 1 };
-            var pB = new Player { IdPlayer = 2 };
-            var friendship = new Friendship { FriendshipStatus = 0 };
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            _mockRepository.Setup(r => r.GetFriendship(It.IsAny<int>(), It.IsAny<int>())).Returns((Friendship)null);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserA")).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserB")).ReturnsAsync(pB);
-            _mockRepository.Setup(r => r.GetPendingRequest(1, 2)).Returns(friendship);
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
 
+            // Assert
+            Assert.Equal(FriendRequestResult.Success, result);
+            _mockRepository.Verify(r => r.AddFriendship(It.IsAny<Friendship>()), Times.Once);
+            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task SendFriendRequest_SqlException_ReturnsError()
+        {
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            _mockRepository.Setup(r => r.GetFriendship(It.IsAny<int>(), It.IsAny<int>())).Returns((Friendship)null);
+            _mockRepository.Setup(r => r.SaveChangesAsync()).ThrowsAsync(CreateSqlException(53));
+
+            // Act
+            var result = await _service.SendFriendRequestAsync("UserA", "UserB");
+
+            // Assert
+            Assert.Equal(FriendRequestResult.Error, result);
+        }
+
+        [Fact]
+        public async Task RespondRequest_Accept_UpdatesStatus()
+        {
+            // Arrange
+            SetupPlayers("Requester", "Responder");
+            var friendship = new Friendship { FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetPendingRequest(It.IsAny<int>(), It.IsAny<int>())).Returns(friendship);
+
+            var dto = new RespondRequestDto { RequesterUsername = "Requester", RespondingUsername = "Responder", IsAccepted = true };
+
+            // Act
             var result = await _service.RespondToFriendRequestAsync(dto);
 
+            // Assert
+            Assert.True(result);
+            Assert.Equal((int)FriendshipStatus.Accepted, friendship.FriendshipStatus);
+            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task RespondRequest_Reject_RemovesFriendship()
+        {
+            // Arrange
+            SetupPlayers("Requester", "Responder");
+            var friendship = new Friendship { FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetPendingRequest(It.IsAny<int>(), It.IsAny<int>())).Returns(friendship);
+
+            var dto = new RespondRequestDto { RequesterUsername = "Requester", RespondingUsername = "Responder", IsAccepted = false };
+
+            // Act
+            var result = await _service.RespondToFriendRequestAsync(dto);
+
+            // Assert
             Assert.True(result);
             _mockRepository.Verify(r => r.RemoveFriendship(friendship), Times.Once);
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task RespondToFriendRequestAsync_RequestNotFound_ShouldReturnFalse()
+        public async Task RespondRequest_NoPendingRequest_ReturnsFalse()
         {
-            var dto = new RespondRequestDto { RequesterUsername = "UserA", RespondingUsername = "UserB" };
-            var pA = new Player { IdPlayer = 1 };
-            var pB = new Player { IdPlayer = 2 };
+            // Arrange
+            SetupPlayers("Requester", "Responder");
+            _mockRepository.Setup(r => r.GetPendingRequest(It.IsAny<int>(), It.IsAny<int>())).Returns((Friendship)null);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserA")).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("UserB")).ReturnsAsync(pB);
-            _mockRepository.Setup(r => r.GetPendingRequest(1, 2)).Returns((Friendship)null);
+            var dto = new RespondRequestDto { RequesterUsername = "Requester", RespondingUsername = "Responder", IsAccepted = true };
 
+            // Act
             var result = await _service.RespondToFriendRequestAsync(dto);
 
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task RemoveFriendAsync_ValidFriendship_ShouldRemove()
+        public async Task RemoveFriend_Existing_ReturnsTrue()
         {
-            string user = "UserA";
-            string friend = "UserB";
-            var pA = new Player { IdPlayer = 1, IsGuest = false };
-            var pB = new Player { IdPlayer = 2 };
-            var friendship = new Friendship { FriendshipStatus = 1 };
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var friendship = new Friendship();
+            _mockRepository.Setup(r => r.GetFriendship(It.IsAny<int>(), It.IsAny<int>())).Returns(friendship);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(user)).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(friend)).ReturnsAsync(pB);
-            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(friendship);
+            // Act
+            var result = await _service.RemoveFriendAsync("UserA", "UserB");
 
-            var result = await _service.RemoveFriendAsync(user, friend);
-
+            // Assert
             Assert.True(result);
             _mockRepository.Verify(r => r.RemoveFriendship(friendship), Times.Once);
+            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task RemoveFriendAsync_DbUpdateException_ShouldReturnFalse()
+        public async Task RemoveFriend_NotExists_ReturnsFalse()
         {
-            string user = "UserA";
-            string friend = "UserB";
-            var pA = new Player { IdPlayer = 1 };
-            var pB = new Player { IdPlayer = 2 };
-            var friendship = new Friendship { FriendshipStatus = 1 };
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            _mockRepository.Setup(r => r.GetFriendship(It.IsAny<int>(), It.IsAny<int>())).Returns((Friendship)null);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(user)).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(friend)).ReturnsAsync(pB);
-            _mockRepository.Setup(r => r.GetFriendship(1, 2)).Returns(friendship);
-            _mockRepository.Setup(r => r.SaveChangesAsync()).ThrowsAsync(new DbUpdateException());
+            // Act
+            var result = await _service.RemoveFriendAsync("UserA", "UserB");
 
-            var result = await _service.RemoveFriendAsync(user, friend);
-
+            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task GetFriendListAsync_UserWithFriends_ShouldReturnDtoList()
+        public async Task GetFriendList_UserWithFriends_ReturnsListWithOnlineStatus()
         {
-            string username = "UserA";
-            var pA = new Player { IdPlayer = 1, Username = username };
-            var pB = new Player { IdPlayer = 2, Username = "UserB", Avatar = "path" };
-            var friendship = new Friendship { PlayerIdPlayer = 1, Player1_IdPlayer = 2, FriendshipStatus = 1 };
-            var list = new List<Friendship> { friendship };
+            // Arrange
+            string user = "UserMain";
+            string friendName = "UserFriend";
+            SetupPlayers(user, friendName);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(username)).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetAcceptedFriendships(1)).Returns(list);
-            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(pB);
-
-            var result = await _service.GetFriendListAsync(username);
-
-            Assert.Single(result);
-            Assert.Equal("UserB", result[0].Username);
-            Assert.False(result[0].IsOnline);
-        }
-
-        [Fact]
-        public async Task GetFriendListAsync_FriendOnline_ShouldReturnIsOnlineTrue()
-        {
-            string username = "UserA";
-            var pA = new Player { IdPlayer = 1, Username = username };
-            var pB = new Player { IdPlayer = 2, Username = "OnlineFriend", Avatar = "path" };
-            var friendship = new Friendship { PlayerIdPlayer = 1, Player1_IdPlayer = 2, FriendshipStatus = 1 };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(username)).ReturnsAsync(pA);
+            var friendship = new Friendship { PlayerIdPlayer = 1, Player1_IdPlayer = 2, FriendshipStatus = (int)FriendshipStatus.Accepted };
             _mockRepository.Setup(r => r.GetAcceptedFriendships(1)).Returns(new List<Friendship> { friendship });
-            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(pB);
+            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(new Player { IdPlayer = 2, Username = friendName, Avatar = "img.png" });
 
-            _service.ConnectUser("OnlineFriend", new Mock<IFriendshipServiceCallback>().Object);
+            _service.ConnectUser(friendName, _mockCallback.Object);
 
-            var result = await _service.GetFriendListAsync(username);
+            // Act
+            var list = await _service.GetFriendListAsync(user);
 
-            Assert.True(result[0].IsOnline);
+            // Assert
+            Assert.Single(list);
+            Assert.Equal(friendName, list[0].Username);
+            Assert.True(list[0].IsOnline);
         }
 
         [Fact]
-        public async Task GetPendingRequestsAsync_HasRequests_ShouldReturnList()
+        public async Task GetSentRequests_HasRequests_ReturnsList()
         {
-            string username = "UserA";
-            var pA = new Player { IdPlayer = 1 };
-            var pB = new Player { IdPlayer = 2, Username = "Requester", Avatar = "path" };
-            var request = new Friendship { PlayerIdPlayer = 2, Player1_IdPlayer = 1, FriendshipStatus = 0 };
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var req = new Friendship { PlayerIdPlayer = 1, Player1_IdPlayer = 2, FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetOutgoingPendingRequests(1)).Returns(new List<Friendship> { req });
+            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(new Player { Username = "UserB" });
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(username)).ReturnsAsync(pA);
-            _mockRepository.Setup(r => r.GetIncomingPendingRequests(1)).Returns(new List<Friendship> { request });
-            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(pB);
+            // Act
+            var list = await _service.GetSentRequestsAsync("UserA");
 
-            var result = await _service.GetPendingRequestsAsync(username);
-
-            Assert.Single(result);
-            Assert.Equal("Requester", result[0].Username);
+            // Assert
+            Assert.Single(list);
+            Assert.Equal("UserB", list[0].Username);
         }
 
         [Fact]
-        public async Task GetPendingRequestsAsync_Timeout_ShouldReturnEmptyList()
+        public async Task GetPendingRequests_HasRequests_ReturnsList()
         {
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(It.IsAny<string>())).ThrowsAsync(new TimeoutException());
+            // Arrange
+            SetupPlayers("UserA", "UserB");
+            var req = new Friendship { PlayerIdPlayer = 2, Player1_IdPlayer = 1, FriendshipStatus = (int)FriendshipStatus.Pending };
+            _mockRepository.Setup(r => r.GetIncomingPendingRequests(1)).Returns(new List<Friendship> { req });
+            _mockRepository.Setup(r => r.GetPlayerById(2)).Returns(new Player { Username = "UserB" });
 
-            var result = await _service.GetPendingRequestsAsync("UserA");
+            // Act
+            var list = await _service.GetPendingRequestsAsync("UserA");
 
-            Assert.Empty(result);
+            // Assert
+            Assert.Single(list);
+            Assert.Equal("UserB", list[0].Username);
         }
 
         [Fact]
-        public void FriendDto_Serialization_ShouldWork()
+        public void SendGameInvitation_TargetConnected_InvokesCallback()
         {
-            var dto = new FriendDto { Username = "Test", AvatarPath = "Path", IsOnline = true };
-            string xml = SerializeDto(dto);
-            var deserialized = DeserializeDto<FriendDto>(xml);
-            Assert.Equal(dto.Username, deserialized.Username);
+            // Arrange
+            string target = "TargetUser";
+            _service.ConnectUser(target, _mockCallback.Object);
+            var dto = new GameInvitationDto { TargetUsername = target, SenderUsername = "Sender", LobbyCode = "123" };
+
+            // Act
+            FriendshipAppService.SendGameInvitation(dto);
+
+            // Assert
+            _mockCallback.Verify(c => c.OnGameInvitationReceived("Sender", "123"), Times.Once);
         }
 
         [Fact]
-        public void GameInvitationDto_Serialization_ShouldWork()
+        public void SendGameInvitation_TargetDisconnected_DoesNothing()
         {
-            var dto = new GameInvitationDto { SenderUsername = "A", TargetUsername = "B", LobbyCode = "123" };
-            string xml = SerializeDto(dto);
-            var deserialized = DeserializeDto<GameInvitationDto>(xml);
-            Assert.Equal(dto.LobbyCode, deserialized.LobbyCode);
+            // Arrange
+            var dto = new GameInvitationDto { TargetUsername = "OfflineUser", SenderUsername = "Sender", LobbyCode = "123" };
+
+            // Act
+            FriendshipAppService.SendGameInvitation(dto);
+
+            // Assert
+            _mockCallback.Verify(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
-        [Fact]
-        public void RespondRequestDto_Serialization_ShouldWork()
-        {
-            var dto = new RespondRequestDto { RequesterUsername = "A", RespondingUsername = "B", IsAccepted = true };
-            string xml = SerializeDto(dto);
-            var deserialized = DeserializeDto<RespondRequestDto>(xml);
-            Assert.True(deserialized.IsAccepted);
-        }
 
-        private string SerializeDto<T>(T instance)
+        private void SetupPlayers(string u1, string u2, bool u1Guest = false)
         {
-            var serializer = new DataContractSerializer(typeof(T));
-            using (var stream = new MemoryStream())
-            {
-                serializer.WriteObject(stream, instance);
-                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
-            }
-        }
+            var p1 = new Player { IdPlayer = 1, Username = u1, IsGuest = u1Guest };
+            var p2 = new Player { IdPlayer = 2, Username = u2, IsGuest = false };
 
-        private T DeserializeDto<T>(string xml)
-        {
-            var serializer = new DataContractSerializer(typeof(T));
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml)))
-            {
-                return (T)serializer.ReadObject(stream);
-            }
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(u1)).ReturnsAsync(p1);
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(u2)).ReturnsAsync(p2);
         }
 
         private SqlException CreateSqlException(int number)

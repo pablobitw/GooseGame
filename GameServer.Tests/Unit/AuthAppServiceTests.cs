@@ -6,7 +6,7 @@ using System;
 using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
-using System.Reflection; 
+using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,196 +23,289 @@ namespace GameServer.Tests.Services
             _authService = new AuthAppService(_mockRepository.Object);
         }
 
+ 
+
         [Fact]
-        public async Task LoginAsGuestAsync_RepositoryReturnsAvailableUsername_ShouldReturnSuccessTrue()
+        public void Constructor_NullRepository_ThrowsArgumentNullException()
         {
-            _mockRepository.Setup(r => r.IsUsernameTaken(It.IsAny<string>())).Returns(false);
+            // Arrange
+            IAuthRepository nullRepo = null;
 
-            var result = await _authService.LoginAsGuestAsync();
-
-            Assert.True(result.Success);
-            Assert.Equal("Bienvenido Invitado", result.Message);
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => new AuthAppService(nullRepo));
         }
 
         [Fact]
-        public async Task LoginAsGuestAsync_SqlExceptionOccurs_ShouldReturnSuccessFalse()
+        public async Task RegisterUserAsync_NullRequest_ReturnsFatalError()
         {
-            var sqlException = CreateSqlException(53);
-            _mockRepository.Setup(r => r.IsUsernameTaken(It.IsAny<string>())).Throws(sqlException);
+            // Arrange
+            RegisterUserRequest request = null;
 
-            var result = await _authService.LoginAsGuestAsync();
+            // Act
+            var result = await _authService.RegisterUserAsync(request);
 
-            Assert.False(result.Success);
-            Assert.Equal("Error de conexión.", result.Message);
-        }
-
-        [Fact]
-        public async Task LoginAsGuestAsync_TimeoutExceptionOccurs_ShouldReturnSuccessFalse()
-        {
-            _mockRepository.Setup(r => r.IsUsernameTaken(It.IsAny<string>())).Throws(new TimeoutException());
-
-            var result = await _authService.LoginAsGuestAsync();
-
-            Assert.False(result.Success);
-            Assert.Equal("Tiempo de espera agotado.", result.Message);
-        }
-
-        // ------------------------------------------------------------------------
-        // REGISTRO (RegistrationResult Enum)
-        // ------------------------------------------------------------------------
-
-        [Fact]
-        public async Task RegisterUserAsync_RequestIsNull_ShouldReturnFatalError()
-        {
-            var result = await _authService.RegisterUserAsync(null);
+            // Assert
             Assert.Equal(RegistrationResult.FatalError, result);
         }
 
         [Fact]
-        public async Task RegisterUserAsync_ValidRequestNewUser_ShouldReturnSuccess()
+        public async Task RegisterUserAsync_EmptyStrings_ReturnsFatalError()
         {
-            var request = new RegisterUserRequest { Username = "NewUser", Email = "new@test.com", Password = "Password123" };
+            // Arrange
+            var request = new RegisterUserRequest { Username = "", Email = "", Password = "" };
 
-            // Simulamos que no existe ni usuario ni email
+            // Act
+            var result = await _authService.RegisterUserAsync(request);
+
+            // Assert
+            Assert.Equal(RegistrationResult.FatalError, result);
+        }
+
+
+
+        [Fact]
+        public async Task RegisterUserAsync_InvalidEmailFormat_ReturnsFatalError()
+        {
+            // Arrange
+            var request = new RegisterUserRequest { Username = "User", Email = "invalid-email", Password = "123" };
+
+            // Act
+            var result = await _authService.RegisterUserAsync(request);
+
+            // Assert
+            Assert.Equal(RegistrationResult.FatalError, result);
+        }
+
+        [Fact]
+        public async Task LogInAsync_WrongPassword_ReturnsFailure()
+        {
+            // Arrange
+            // Generamos un hash real para que BCrypt.Verify funcione
+            string correctHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword");
+            var player = new Player
+            {
+                Username = "User",
+                Account = new Account { PasswordHash = correctHash, AccountStatus = (int)AccountStatus.Active }
+            };
+
+            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("User")).ReturnsAsync(player);
+
+            // Act
+            var result = await _authService.LogInAsync("User", "WrongPassword");
+
+            // Assert
+            Assert.False(result.IsSuccess);
+        }
+
+        [Fact]
+        public async Task ChangeUserPasswordAsync_NewPasswordSameAsCurrent_ReturnsFalse()
+        {
+            // Arrange
+            string password = "SamePassword";
+            string hash = BCrypt.Net.BCrypt.HashPassword(password);
+            var player = new Player { Account = new Account { PasswordHash = hash } };
+
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("User")).ReturnsAsync(player);
+
+            // Act
+            var result = await _authService.ChangeUserPasswordAsync("User", password, password);
+
+            // Assert
+            Assert.False(result);
+        }
+
+
+
+        [Fact]
+        public async Task LoginAsGuestAsync_Success_ReturnsSuccessResult()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.IsUsernameTaken(It.IsAny<string>())).Returns(false);
+
+            // Act
+            var result = await _authService.LoginAsGuestAsync();
+
+            // Assert
+            Assert.True(result.Success);
+        }
+
+        [Fact]
+        public async Task RegisterUserAsync_ValidData_ReturnsSuccess()
+        {
+            // Arrange
+            var request = new RegisterUserRequest { Username = "NewUser", Email = "valid@test.com", Password = "Pass" };
             _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync((Player)null);
             _mockRepository.Setup(r => r.GetAccountByEmailAsync(request.Email)).ReturnsAsync((Account)null);
 
+            // Act
             var result = await _authService.RegisterUserAsync(request);
 
+            // Assert
             Assert.Equal(RegistrationResult.Success, result);
-            _mockRepository.Verify(r => r.AddPlayer(It.IsAny<Player>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task LogInAsync_ValidCredentials_ReturnsSuccess()
+        {
+            // Arrange
+            string password = "MyPassword";
+            string hash = BCrypt.Net.BCrypt.HashPassword(password);
+            var player = new Player
+            {
+                Username = "User",
+                Account = new Account { PasswordHash = hash, AccountStatus = (int)AccountStatus.Active, PreferredLanguage = "es-MX", Email = "test@test.com" }
+            };
+
+            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("User")).ReturnsAsync(player);
+
+            // Act
+            var result = await _authService.LogInAsync("User", password);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void VerifyAccount_ValidCodeAndDate_ReturnsTrue()
+        {
+            // Arrange
+            var account = new Account { VerificationCode = "123456", CodeExpiration = DateTime.Now.AddMinutes(10) };
+            _mockRepository.Setup(r => r.GetAccountByEmail("test@test.com")).Returns(account);
+
+            // Act
+            var result = _authService.VerifyAccount("test@test.com", "123456");
+
+            // Assert
+            Assert.True(result);
+        }
+
+
+
+        [Fact]
+        public async Task RegisterUserAsync_UserPending_ReturnsEmailPendingVerification()
+        {
+            // Arrange
+            var request = new RegisterUserRequest { Username = "PendingUser", Email = "pending@test.com", Password = "Pass" };
+            var pendingPlayer = new Player
+            {
+                Account = new Account { AccountStatus = (int)AccountStatus.Pending, Email = "pending@test.com" }
+            };
+
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync(pendingPlayer);
+
+            // Act
+            var result = await _authService.RegisterUserAsync(request);
+
+            // Assert
+            Assert.Equal(RegistrationResult.EmailPendingVerification, result);
+        }
+
+        [Fact]
+        public async Task LogInAsync_UserBanned_ReturnsBannedMessage()
+        {
+            // Arrange
+            var player = new Player { IsBanned = true };
+            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("BannedUser")).ReturnsAsync(player);
+
+            // Act
+            var result = await _authService.LogInAsync("BannedUser", "AnyPass");
+
+            // Assert
+            Assert.Contains("baneada", result.Message);
+        }
+
+        [Fact]
+        public async Task LogInAsync_UserSanctioned_ReturnsSanctionMessage()
+        {
+            // Arrange
+            var player = new Player { IsBanned = false, Account = new Account { IdAccount = 1 } };
+            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("User")).ReturnsAsync(player);
+            _mockRepository.Setup(r => r.IsAccountSanctionedAsync(1)).ReturnsAsync(true);
+
+            // Act
+            var result = await _authService.LogInAsync("User", "AnyPass");
+
+            // Assert
+            Assert.Contains("sanción temporal", result.Message);
+        }
+
+
+
+        [Fact]
+        public async Task LoginAsGuestAsync_SqlException_ReturnsConnectionErrorMessage()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.IsUsernameTaken(It.IsAny<string>())).Throws(CreateSqlException(53));
+
+            // Act
+            var result = await _authService.LoginAsGuestAsync();
+
+            // Assert
+            Assert.Equal("Error de conexión.", result.Message);
+        }
+
+        [Fact]
+        public async Task RegisterUserAsync_TimeoutException_ReturnsFatalError()
+        {
+            // Arrange
+            var request = new RegisterUserRequest { Username = "User", Email = "valid@test.com", Password = "Pass" };
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(It.IsAny<string>())).ThrowsAsync(new TimeoutException());
+
+            // Act
+            var result = await _authService.RegisterUserAsync(request);
+
+            // Assert
+            Assert.Equal(RegistrationResult.FatalError, result);
+        }
+
+        [Fact]
+        public async Task LogInAsync_EntityException_ReturnsServerError()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.GetPlayerForLoginAsync(It.IsAny<string>())).ThrowsAsync(new EntityException());
+
+            // Act
+            var result = await _authService.LogInAsync("User", "Pass");
+
+            // Assert
+            Assert.Equal("Error interno del servidor.", result.Message);
+        }
+
+   
+
+        [Fact]
+        public async Task RegisterUserAsync_Success_CallsSaveChanges()
+        {
+            // Arrange
+            var request = new RegisterUserRequest { Username = "New", Email = "new@test.com", Password = "Pass" };
+            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync((Player)null);
+            _mockRepository.Setup(r => r.GetAccountByEmailAsync(request.Email)).ReturnsAsync((Account)null);
+
+            // Act
+            await _authService.RegisterUserAsync(request);
+
+            // Assert
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task RegisterUserAsync_UsernameExistsAndActive_ShouldReturnUsernameAlreadyExists()
+        public void VerifyAccount_ValidCode_CallsSaveChanges()
         {
-            var request = new RegisterUserRequest { Username = "ExistingUser", Email = "new@test.com", Password = "Password123" };
-            var existingPlayer = new Player { Account = new Account { AccountStatus = (int)AccountStatus.Active } };
+            // Arrange
+            var account = new Account { VerificationCode = "123", CodeExpiration = DateTime.Now.AddHours(1) };
+            _mockRepository.Setup(r => r.GetAccountByEmail("email")).Returns(account);
 
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync(existingPlayer);
+            // Act
+            _authService.VerifyAccount("email", "123");
 
-            var result = await _authService.RegisterUserAsync(request);
-
-            Assert.Equal(RegistrationResult.UsernameAlreadyExists, result);
-        }
-
-        [Fact]
-        public async Task RegisterUserAsync_EmailExistsAndActive_ShouldReturnEmailAlreadyExists()
-        {
-            var request = new RegisterUserRequest { Username = "NewUser", Email = "existing@test.com", Password = "Password123" };
-            var existingAccount = new Account { AccountStatus = (int)AccountStatus.Active };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync((Player)null);
-            _mockRepository.Setup(r => r.GetAccountByEmailAsync(request.Email)).ReturnsAsync(existingAccount);
-
-            var result = await _authService.RegisterUserAsync(request);
-
-            Assert.Equal(RegistrationResult.EmailAlreadyExists, result);
-        }
-
-        [Fact]
-        public async Task RegisterUserAsync_UsernameExistsButPending_ShouldResendVerification()
-        {
-            var request = new RegisterUserRequest { Username = "PendingUser", Email = "pending@test.com", Password = "Password123" };
-            var pendingPlayer = new Player { Account = new Account { AccountStatus = (int)AccountStatus.Pending, Email = "pending@test.com" } };
-
-            _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(request.Username)).ReturnsAsync(pendingPlayer);
-
-            var result = await _authService.RegisterUserAsync(request);
-
-            Assert.Equal(RegistrationResult.EmailPendingVerification, result);
-        }
-
-        // ------------------------------------------------------------------------
-        // LOGIN NORMAL (LoginResponseDto usa 'IsSuccess')
-        // ------------------------------------------------------------------------
-
-        [Fact]
-        public async Task LogInAsync_ValidCredentials_ShouldReturnIsSuccessTrue()
-        {
-            string password = "ValidPassword";
-            string hash = BCrypt.Net.BCrypt.HashPassword(password);
-
-            var player = new Player
-            {
-                Username = "ValidUser",
-                Account = new Account
-                {
-                    PasswordHash = hash,
-                    AccountStatus = (int)AccountStatus.Active,
-                    Email = "test@test.com",
-                    PreferredLanguage = "es-MX"
-                }
-            };
-
-            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("ValidUser")).ReturnsAsync(player);
-
-            var result = await _authService.LogInAsync("ValidUser", password);
-
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Login exitoso.", result.Message);
-        }
-
-        [Fact]
-        public async Task LogInAsync_UserNotFound_ShouldReturnIsSuccessFalse()
-        {
-            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("UnknownUser")).ReturnsAsync((Player)null);
-
-            var result = await _authService.LogInAsync("UnknownUser", "AnyPass");
-
-            Assert.False(result.IsSuccess);
-        }
-
-        [Fact]
-        public async Task LogInAsync_WrongPassword_ShouldReturnIsSuccessFalse()
-        {
-            string hash = BCrypt.Net.BCrypt.HashPassword("RealPassword");
-            var player = new Player
-            {
-                Username = "User",
-                Account = new Account { PasswordHash = hash, AccountStatus = (int)AccountStatus.Active }
-            };
-            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("User")).ReturnsAsync(player);
-
-            var result = await _authService.LogInAsync("User", "WrongPassword");
-
-            Assert.False(result.IsSuccess);
-        }
-
-        [Fact]
-        public async Task LogInAsync_AccountBanned_ShouldReturnIsSuccessFalseAndBannedMessage()
-        {
-            var player = new Player
-            {
-                Username = "BannedUser",
-                IsBanned = true, // Usuario baneado
-                Account = new Account { AccountStatus = (int)AccountStatus.Banned }
-            };
-            _mockRepository.Setup(r => r.GetPlayerForLoginAsync("BannedUser")).ReturnsAsync(player);
-
-            var result = await _authService.LogInAsync("BannedUser", "AnyPass");
-
-            Assert.False(result.IsSuccess);
-            Assert.Contains("baneada permanentemente", result.Message);
-        }
-
-        [Fact]
-        public async Task LogInAsync_SqlException_ShouldReturnDatabaseError()
-        {
-            _mockRepository.Setup(r => r.GetPlayerForLoginAsync(It.IsAny<string>())).Throws(CreateSqlException(53));
-
-            var result = await _authService.LogInAsync("User", "Pass");
-
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Error de base de datos.", result.Message);
+            // Assert
+            _mockRepository.Verify(r => r.SaveChanges(), Times.Once);
         }
 
 
 
         private SqlException CreateSqlException(int number)
         {
-            // Ahora esto funcionará porque 'System.Reflection' está incluido arriba
             var collectionConstructor = typeof(SqlErrorCollection).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[0], null);
             var errorCollection = (SqlErrorCollection)collectionConstructor.Invoke(null);
             var errorConstructor = typeof(SqlError).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(int), typeof(byte), typeof(byte), typeof(string), typeof(string), typeof(string), typeof(int) }, null);

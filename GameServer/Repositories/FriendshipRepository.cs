@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using GameServer;
 
 namespace GameServer.Repositories
 {
@@ -38,18 +39,24 @@ namespace GameServer.Repositories
         public Friendship GetFriendship(int userId1, int userId2)
         {
             ThrowIfDisposed();
-            return _context.Friendships.FirstOrDefault(f =>
-                ((f.PlayerIdPlayer == userId1 && f.Player1_IdPlayer == userId2) ||
-                 (f.PlayerIdPlayer == userId2 && f.Player1_IdPlayer == userId1)));
+            return _context.Friendships
+                .Include(f => f.Player)
+                .Include(f => f.Player1)
+                .FirstOrDefault(f =>
+                    (f.PlayerIdPlayer == userId1 && f.Player1_IdPlayer == userId2) ||
+                    (f.PlayerIdPlayer == userId2 && f.Player1_IdPlayer == userId1));
         }
 
         public Friendship GetPendingRequest(int requesterId, int responderId)
         {
             ThrowIfDisposed();
-            return _context.Friendships.FirstOrDefault(f =>
-                f.PlayerIdPlayer == requesterId &&
-                f.Player1_IdPlayer == responderId &&
-                f.FriendshipStatus == (int)FriendshipStatus.Pending);
+            return _context.Friendships
+                .Include(f => f.Player)
+                .Include(f => f.Player1)
+                .FirstOrDefault(f =>
+                    f.PlayerIdPlayer == requesterId &&
+                    f.Player1_IdPlayer == responderId &&
+                    f.FriendshipStatus == (int)FriendshipStatus.Pending);
         }
 
         public List<Friendship> GetAcceptedFriendships(int playerId)
@@ -57,6 +64,8 @@ namespace GameServer.Repositories
             ThrowIfDisposed();
             var accepted = (int)FriendshipStatus.Accepted;
             return _context.Friendships
+                .Include(f => f.Player)
+                .Include(f => f.Player1)
                 .AsNoTracking()
                 .Where(f => (f.PlayerIdPlayer == playerId || f.Player1_IdPlayer == playerId) && f.FriendshipStatus == accepted)
                 .ToList();
@@ -67,6 +76,8 @@ namespace GameServer.Repositories
             ThrowIfDisposed();
             var pending = (int)FriendshipStatus.Pending;
             return _context.Friendships
+                .Include(f => f.Player)
+                .Include(f => f.Player1)
                 .AsNoTracking()
                 .Where(f => f.Player1_IdPlayer == playerId && f.FriendshipStatus == pending)
                 .ToList();
@@ -77,6 +88,8 @@ namespace GameServer.Repositories
             ThrowIfDisposed();
             var pending = (int)FriendshipStatus.Pending;
             return _context.Friendships
+                .Include(f => f.Player)
+                .Include(f => f.Player1)
                 .AsNoTracking()
                 .Where(f => f.PlayerIdPlayer == playerId && f.FriendshipStatus == pending)
                 .ToList();

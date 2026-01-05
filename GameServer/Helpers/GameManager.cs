@@ -16,7 +16,6 @@ namespace GameServer.Helpers
         private static readonly object _lock = new object();
 
         private readonly ConcurrentDictionary<int, DateTime> _activeGames = new ConcurrentDictionary<int, DateTime>();
-
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private const int CheckIntervalMs = 1000;
@@ -38,7 +37,9 @@ namespace GameServer.Helpers
                     lock (_lock)
                     {
                         if (_instance == null)
+                        {
                             _instance = new GameManager();
+                        }
                     }
                 }
                 return _instance;
@@ -48,13 +49,13 @@ namespace GameServer.Helpers
         public void StartMonitoring(int gameId)
         {
             _activeGames.AddOrUpdate(gameId, DateTime.UtcNow, (key, oldValue) => DateTime.UtcNow);
-            Log.Info($"[GameManager] Monitoreo iniciado para partida {gameId}");
+            Log.Info("[GameManager] Monitoreo iniciado para partida " + gameId);
         }
 
         public void StopMonitoring(int gameId)
         {
             _activeGames.TryRemove(gameId, out _);
-            Log.Info($"[GameManager] Monitoreo detenido para partida {gameId}");
+            Log.Info("[GameManager] Monitoreo detenido para partida " + gameId);
         }
 
         public void UpdateActivity(int gameId)
@@ -91,21 +92,18 @@ namespace GameServer.Helpers
 
             foreach (var gameId in gamesIds)
             {
-                if (_activeGames.TryGetValue(gameId, out DateTime lastActivity))
+                if (_activeGames.TryGetValue(gameId, out DateTime lastActivity) && (now - lastActivity).TotalSeconds > TurnTimeLimitSeconds)
                 {
-                    if ((now - lastActivity).TotalSeconds > TurnTimeLimitSeconds)
-                    {
-                        Log.Info($"[GameManager] TIMEOUT detectado en partida {gameId}. Forzando cambio de turno...");
+                    Log.Info("[GameManager] TIMEOUT detectado en partida " + gameId + ". Forzando cambio de turno...");
 
-                        UpdateActivity(gameId);
+                    UpdateActivity(gameId);
 
-                        await ExecuteServerTimeout(gameId);
-                    }
+                    await ExecuteServerTimeout(gameId);
                 }
             }
         }
 
-        private async Task ExecuteServerTimeout(int gameId)
+        private static async Task ExecuteServerTimeout(int gameId)
         {
             try
             {
@@ -117,16 +115,28 @@ namespace GameServer.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error($"[GameManager] Error al ejecutar timeout forzado en partida {gameId}", ex);
+                Log.Error("[GameManager] Error al ejecutar timeout forzado en partida " + gameId, ex);
             }
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+            }
 
             _disposed = true;
             Log.Info("[GameManager] Recursos liberados correctamente.");

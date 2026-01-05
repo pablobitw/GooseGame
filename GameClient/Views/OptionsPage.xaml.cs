@@ -47,11 +47,17 @@ namespace GameClient.Views
             if (mainWindow != null)
             {
                 if (mainWindow.WindowStyle == WindowStyle.None && mainWindow.WindowState == WindowState.Maximized)
+                {
                     ScreenModeComboBox.SelectedIndex = 0;
+                }
                 else if (mainWindow.WindowStyle == WindowStyle.None && mainWindow.WindowState == WindowState.Normal)
+                {
                     ScreenModeComboBox.SelectedIndex = 1;
+                }
                 else
+                {
                     ScreenModeComboBox.SelectedIndex = 2;
+                }
             }
         }
 
@@ -61,13 +67,21 @@ namespace GameClient.Views
             _initialLanguage = currentCulture;
 
             if (currentCulture.StartsWith("es"))
+            {
                 LanguageComboBox.SelectedIndex = 0;
+            }
             else if (currentCulture.StartsWith("en"))
+            {
                 LanguageComboBox.SelectedIndex = 1;
+            }
             else if (currentCulture.StartsWith("fr"))
+            {
                 LanguageComboBox.SelectedIndex = 2;
+            }
             else
+            {
                 LanguageComboBox.SelectedIndex = 0;
+            }
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -140,17 +154,27 @@ namespace GameClient.Views
         {
             switch (LanguageComboBox.SelectedIndex)
             {
-                case 0: return "es-MX";
-                case 1: return "en-US";
-                case 2: return "fr-FR";
-                default: return "es-MX";
+                case 0:
+                    return "es-MX";
+
+                case 1:
+                    return "en-US";
+
+                case 2:
+                    return "fr-FR";
+
+                default:
+                    return "es-MX";
             }
         }
 
         private void ApplyVideoSettings()
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-            if (mainWindow == null) return;
+            if (mainWindow == null)
+            {
+                return;
+            }
 
             int selectedMode = ScreenModeComboBox.SelectedIndex;
             switch (selectedMode)
@@ -160,6 +184,7 @@ namespace GameClient.Views
                     mainWindow.WindowState = WindowState.Maximized;
                     mainWindow.ResizeMode = ResizeMode.NoResize;
                     break;
+
                 case 1:
                     mainWindow.WindowStyle = WindowStyle.None;
                     mainWindow.WindowState = WindowState.Normal;
@@ -168,6 +193,7 @@ namespace GameClient.Views
                     mainWindow.Height = 720;
                     mainWindow.CenterWindow();
                     break;
+
                 case 2:
                     mainWindow.WindowStyle = WindowStyle.SingleBorderWindow;
                     mainWindow.WindowState = WindowState.Normal;
@@ -176,12 +202,18 @@ namespace GameClient.Views
             }
         }
 
-        private void CloseClient(UserProfileServiceClient client)
+        private static void CloseClient(UserProfileServiceClient client)
         {
             try
             {
-                if (client.State == CommunicationState.Opened) client.Close();
-                else client.Abort();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
             }
             catch
             {

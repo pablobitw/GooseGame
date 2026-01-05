@@ -28,7 +28,9 @@ namespace GameServer.Helpers
             errorMessage = string.Empty;
 
             if (existingLinks == null)
+            {
                 existingLinks = Enumerable.Empty<SocialType>();
+            }
 
             var existingList = existingLinks.ToList();
 
@@ -58,20 +60,25 @@ namespace GameServer.Helpers
             socialType = default;
 
             if (string.IsNullOrWhiteSpace(url))
+            {
                 return false;
+            }
 
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
                 return false;
+            }
 
             string host = uri.Host.ToLowerInvariant();
 
-            foreach (var pair in AllowedDomains)
+            var matchingPair = AllowedDomains
+                .Where(pair => pair.Value.Any(domain => host.EndsWith(domain)))
+                .FirstOrDefault();
+
+            if (!matchingPair.Equals(default(KeyValuePair<SocialType, string[]>)))
             {
-                if (pair.Value.Any(domain => host.EndsWith(domain)))
-                {
-                    socialType = pair.Key;
-                    return true;
-                }
+                socialType = matchingPair.Key;
+                return true;
             }
 
             return false;

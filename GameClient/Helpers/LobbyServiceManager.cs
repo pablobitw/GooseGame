@@ -58,7 +58,7 @@ namespace GameClient.Helpers
             catch (Exception)
             {
                 MessageBox.Show(
-                    GameClient.Resources.Strings.SafeZone_DatabaseError, 
+                    GameClient.Resources.Strings.SafeZone_DatabaseError,
                     GameClient.Resources.Strings.DialogErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -175,7 +175,7 @@ namespace GameClient.Helpers
             catch (Exception)
             {
                 InvalidateClient();
-                throw new Exception(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
         }
 
@@ -204,7 +204,7 @@ namespace GameClient.Helpers
             catch (Exception)
             {
                 InvalidateClient();
-                throw new Exception(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
         }
 

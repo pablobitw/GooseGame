@@ -58,12 +58,12 @@ namespace GameClient
             }
         }
 
-        private bool IsCodeValid(string code)
+        private static bool IsCodeValid(string code)
         {
             return !string.IsNullOrEmpty(code) && code.Length == 6 && int.TryParse(code, out _);
         }
 
-        private bool HandleConnectionException(Exception ex)
+        private static bool HandleConnectionException(Exception ex)
         {
             if (ex is EndpointNotFoundException)
             {
@@ -85,7 +85,7 @@ namespace GameClient
             return true;
         }
 
-        private void CloseClientSafely(GameServiceClient client)
+        private static void CloseClientSafely(GameServiceClient client)
         {
             if (client.State == CommunicationState.Opened)
             {
@@ -109,7 +109,10 @@ namespace GameClient
         private async void ResendCodeButton(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button != null) button.IsEnabled = false;
+            if (button != null)
+            {
+                button.IsEnabled = false;
+            }
 
             var client = new GameServiceClient();
             bool requestSent = false;
@@ -143,7 +146,10 @@ namespace GameClient
             finally
             {
                 CloseClientSafely(client);
-                if (button != null) button.IsEnabled = true;
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                }
             }
 
             if (connectionError)
@@ -178,7 +184,9 @@ namespace GameClient
                 {
                     var sanitized = new string(raw.Where(char.IsDigit).ToArray());
                     if (sanitized.Length > CodeTextBox.MaxLength)
+                    {
                         sanitized = sanitized.Substring(0, CodeTextBox.MaxLength);
+                    }
 
                     CodeTextBox.Text = sanitized;
                     CodeTextBox.CaretIndex = CodeTextBox.Text.Length;

@@ -38,7 +38,10 @@ namespace GameClient.Views.Dialogs
             {
                 LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LuckyBoxDialog] Error al cargar imagen cerrada: {ex.Message}");
+            }
 
             if (LuckyBoxImage.RenderTransform is RotateTransform rt)
             {
@@ -115,7 +118,10 @@ namespace GameClient.Views.Dialogs
                 {
                     RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LuckyBoxDialog] Error al cargar imagen de recompensa: {ex.Message}");
+                }
             }
         }
 

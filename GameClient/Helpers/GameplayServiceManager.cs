@@ -191,7 +191,7 @@ namespace GameClient.Helpers
             }
         }
 
-        private Task ShowWarningAsync(string message)
+        private static Task ShowWarningAsync(string message)
         {
             return Application.Current.Dispatcher.InvokeAsync(() =>
                 MessageBox.Show(
@@ -201,7 +201,7 @@ namespace GameClient.Helpers
                     MessageBoxImage.Warning)).Task;
         }
 
-        private Task ShowErrorAsync()
+        private static Task ShowErrorAsync()
         {
             return Application.Current.Dispatcher.InvokeAsync(() =>
                 MessageBox.Show(

@@ -1,16 +1,16 @@
-﻿using GameClient.GameServiceReference;
-using GameClient.GameplayServiceReference;
+﻿using GameClient.GameplayServiceReference;
+using GameClient.GameServiceReference;
 using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
 using GameClient.UserProfileServiceReference;
 using GameClient.Views;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 
 namespace GameClient
 {
@@ -55,7 +55,12 @@ namespace GameClient
         private void DialogButton_Click(object sender, RoutedEventArgs e)
         {
             CustomDialogOverlay.Visibility = Visibility.Collapsed;
-            if (sender == DialogConfirmBtn) _onDialogConfirmAction?.Invoke();
+
+            if (sender == DialogConfirmBtn)
+            {
+                _onDialogConfirmAction?.Invoke();
+            }
+
             _onDialogConfirmAction = null;
         }
 
@@ -97,21 +102,14 @@ namespace GameClient
             catch (TimeoutException)
             {
                 CoinCountText.Text = "---";
-                Console.WriteLine(GameClient.Resources.Strings.ErrorCoinFetch);
             }
             catch (EndpointNotFoundException)
             {
                 CoinCountText.Text = "---";
-                Console.WriteLine(GameClient.Resources.Strings.ErrorDatabaseUnreachable);
             }
             catch (CommunicationException)
             {
                 CoinCountText.Text = "---";
-            }
-            catch (Exception ex)
-            {
-                CoinCountText.Text = "Err";
-                Console.WriteLine(ex.Message);
             }
         }
 
@@ -131,6 +129,7 @@ namespace GameClient
 
                 return true;
             }
+
             return false;
         }
 
@@ -144,7 +143,10 @@ namespace GameClient
 
         private void ProfileButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted(GameClient.Resources.Strings.ProfileFeatureName)) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.ProfileFeatureName))
+            {
+                return;
+            }
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new UserProfilePage(_username));
@@ -152,7 +154,10 @@ namespace GameClient
 
         private void FriendsButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted(GameClient.Resources.Strings.FriendsFeatureName)) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.FriendsFeatureName))
+            {
+                return;
+            }
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new FriendshipPage(_username));
@@ -172,11 +177,23 @@ namespace GameClient
                     media.LoadedBehavior = MediaState.Manual;
                     media.Play();
                 }
+                else
+                {
+                    Debug.WriteLine($"Video file not found: {videoPath}");
+                }
             }
-            catch (ArgumentException) { }
-            catch (UriFormatException) { }
-            catch (IOException) { }
-            catch (Exception) { }
+            catch (IOException ioEx)
+            {
+                Debug.WriteLine($"Error loading video file: {ioEx.Message}");
+            }
+            catch (UriFormatException uriEx)
+            {
+                Debug.WriteLine($"Invalid video path format: {uriEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected error loading video: {ex.Message}");
+            }
         }
 
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
@@ -220,7 +237,10 @@ namespace GameClient
 
         private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted(GameClient.Resources.Strings.LeaderboardFeatureName)) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.LeaderboardFeatureName))
+            {
+                return;
+            }
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new ScoreboardPage(_username));
@@ -230,8 +250,15 @@ namespace GameClient
         {
             try
             {
-                if (LobbyServiceManager.Instance != null) LobbyServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
-                if (GameplayServiceManager.Instance != null) GameplayServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                if (LobbyServiceManager.Instance != null)
+                {
+                    LobbyServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                }
+
+                if (GameplayServiceManager.Instance != null)
+                {
+                    GameplayServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                }
 
                 if (FriendshipServiceManager.Instance != null)
                 {
@@ -248,9 +275,7 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-            catch (CommunicationException) { }
-            catch (TimeoutException) { }
-            catch (Exception) { }
+           
             finally
             {
                 if (Application.Current.Windows.Count == 0)
@@ -266,14 +291,22 @@ namespace GameClient
             AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
 
             MainFrame.Content = null;
-            while (MainFrame.CanGoBack) MainFrame.RemoveBackEntry();
+
+            while (MainFrame.CanGoBack)
+            {
+                MainFrame.RemoveBackEntry();
+            }
+
             MainMenuGrid.Visibility = Visibility.Visible;
             await LoadUserCurrency();
         }
 
         private async void HandleInvitation(string host, string code)
         {
-            if (UserSession.GetInstance().IsGuest) return;
+            if (UserSession.GetInstance().IsGuest)
+            {
+                return;
+            }
 
             await this.Dispatcher.InvokeAsync(() =>
             {
@@ -316,15 +349,17 @@ namespace GameClient
             }
             catch (CommunicationException)
             {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorInviteComm, FontAwesome.WPF.FontAwesomeIcon.Wifi);
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.ErrorInviteComm,
+                    FontAwesome.WPF.FontAwesomeIcon.Wifi);
             }
             catch (TimeoutException)
             {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorInviteTimeout, FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
-            }
-            catch (Exception ex)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, ex.Message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.ErrorInviteTimeout,
+                    FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
             }
         }
 

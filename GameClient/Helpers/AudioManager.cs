@@ -8,13 +8,14 @@ namespace GameClient.Helpers
 {
     public static class AudioManager
     {
-        private static readonly MediaPlayer _musicPlayer;
+        private static readonly Dictionary<string, MediaPlayer> _preloadedSfx = new Dictionary<string, MediaPlayer>();
+        private static readonly Random _random = new Random();
+
+        private static readonly MediaPlayer _musicPlayer = CreateMusicPlayer();
+
         private static string _currentTrackPath;
         private static bool _isMusicEnabled = true;
         private static double _sfxVolume = 0.8;
-        private static readonly Random _random = new Random();
-
-        private static readonly Dictionary<string, MediaPlayer> _preloadedSfx = new Dictionary<string, MediaPlayer>();
 
         public static readonly string[] MenuTracks =
         {
@@ -36,13 +37,16 @@ namespace GameClient.Helpers
 
         public const string SfxDice = "Assets/Audio/Sfx/dice_roll.mp3";
 
-        static AudioManager()
+        private static MediaPlayer CreateMusicPlayer()
         {
-            _musicPlayer = new MediaPlayer();
-            _musicPlayer.Volume = 0.5;
-            _musicPlayer.MediaEnded += Player_MediaEnded;
+            var player = new MediaPlayer
+            {
+                Volume = 0.5
+            };
+            player.MediaEnded += Player_MediaEnded;
 
             PreloadSfx(SfxDice);
+            return player;
         }
 
         private static void PreloadSfx(string relativePath)
@@ -51,30 +55,29 @@ namespace GameClient.Helpers
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string fullPath = Path.GetFullPath(Path.Combine(baseDir, relativePath));
-
                 if (File.Exists(fullPath))
                 {
                     MediaPlayer player = new MediaPlayer();
                     player.Open(new Uri(fullPath));
                     player.Volume = _sfxVolume;
+
                     player.Play();
                     player.Stop();
-                    _preloadedSfx[relativePath] = player;
+
+                    _preloadedSfx[relativePath] = player; 
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"[AudioManager] Error pre-cargando SFX: {ex.Message}");
+             
+                Console.WriteLine($"Error cargando audio: {relativePath}");
             }
         }
 
         public static void PlayRandomMusic(string[] playlist)
         {
             if (!_isMusicEnabled || playlist == null || playlist.Length == 0) return;
-
-            if (_currentTrackPath != null && playlist.Contains(_currentTrackPath) && _musicPlayer.Position > TimeSpan.Zero)
-                return;
-
+            if (_currentTrackPath != null && playlist.Contains(_currentTrackPath) && _musicPlayer.Position > TimeSpan.Zero) return;
             int index = _random.Next(playlist.Length);
             PlayFile(playlist[index]);
         }
@@ -89,16 +92,13 @@ namespace GameClient.Helpers
 
                 _musicPlayer.Stop();
                 _musicPlayer.Close();
-
                 _musicPlayer.Open(new Uri(fullPath));
                 _musicPlayer.Play();
-
                 _currentTrackPath = relativePath;
                 _musicPlayer.Position = TimeSpan.FromMilliseconds(1);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine("Error al cargar música: " + ex.Message);
             }
         }
 
@@ -114,10 +114,20 @@ namespace GameClient.Helpers
             else
             {
                 PreloadSfx(relativePath);
+                if (_preloadedSfx.ContainsKey(relativePath))
+                {
+                    var player = _preloadedSfx[relativePath];
+                    player.Position = TimeSpan.Zero;
+                    player.Play();
+                }
             }
         }
 
-        public static void SetVolume(double volume) { if (volume >= 0 && volume <= 1) _musicPlayer.Volume = volume; }
+        public static void SetVolume(double volume)
+        {
+            if (volume >= 0 && volume <= 1) _musicPlayer.Volume = volume;
+        }
+
         public static double GetVolume() => _musicPlayer.Volume;
 
         public static void SetSfxVolume(double volume)
@@ -128,6 +138,7 @@ namespace GameClient.Helpers
                 foreach (var p in _preloadedSfx.Values) p.Volume = _sfxVolume;
             }
         }
+
         public static double GetSfxVolume() => _sfxVolume;
 
         public static void StopMusic()
