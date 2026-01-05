@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Windows; 
+using System.Windows;
 
 namespace GameClient.Helpers
 {
@@ -13,7 +13,7 @@ namespace GameClient.Helpers
             "/Assets/Game Pieces/yellow_piece.png"
         };
 
-        public static readonly List<Point> TileCoordinates = new List<Point>
+        public static readonly Point[] TileCoordinates =
         {
             new Point(489, 592), new Point(439, 594), new Point(393, 577), new Point(351, 540),
             new Point(330, 494), new Point(326, 434), new Point(326, 377), new Point(327, 319),
@@ -37,7 +37,7 @@ namespace GameClient.Helpers
         public static Point GetTileLocation(int index)
         {
             if (index < 0) index = 0;
-            if (index >= TileCoordinates.Count) index = TileCoordinates.Count - 1;
+            if (index >= TileCoordinates.Length) index = TileCoordinates.Length - 1;
             return TileCoordinates[index];
         }
     }
