@@ -54,6 +54,8 @@ namespace GameClient.Views
         public BoardPage(string lobbyCode, int boardId, string username)
         {
             InitializeComponent();
+            AudioManager.PlayRandomMusic(AudioManager.GameplayTracks);
+
             this.lobbyCode = lobbyCode;
             this.boardId = boardId;
             this.currentUsername = username;
@@ -332,13 +334,11 @@ namespace GameClient.Views
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
-                
                 if (Window.GetWindow(this) is GameMainWindow mainWindow)
                 {
-                  
                     var loginScreen = new AuthWindow();
                     loginScreen.Show();
-                     mainWindow.Close();
+                    mainWindow.Close();
                 }
             });
         }
@@ -794,8 +794,6 @@ namespace GameClient.Views
                 MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
 
         private void OnFriendRequestPopUpReceived(string senderName)
         {

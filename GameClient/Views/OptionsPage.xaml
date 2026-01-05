@@ -4,9 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:props="clr-namespace:GameClient.Resources"
-      
       xmlns:components="clr-namespace:GameClient.Views.Components"
-      
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="OptionsPage"
@@ -35,9 +33,9 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="{x:Static props:Strings.OptionsPageTitle}" Grid.Row="0" 
-                           FontSize="48" FontWeight="Bold" 
-                           Foreground="#333" HorizontalAlignment="Center" 
-                           Margin="0,0,0,20"/>
+                            FontSize="48" FontWeight="Bold" 
+                            Foreground="#333" HorizontalAlignment="Center" 
+                            Margin="0,0,0,20"/>
 
                 <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
 
@@ -170,6 +168,5 @@
         </Button>
 
         <components:GameAlertBox x:Name="GameAlert" Visibility="Collapsed"/>
-
     </Grid>
 </Page>

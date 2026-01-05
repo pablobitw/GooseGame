@@ -4,7 +4,7 @@ using GameClient.LobbyServiceReference;
 using GameClient.Models;
 using System;
 using System.Linq;
-using System.ServiceModel; 
+using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,6 +33,8 @@ namespace GameClient.Views
         public LobbyPage(string username)
         {
             InitializeComponent();
+            AudioManager.PlayRandomMusic(AudioManager.LobbyTracks);
+
             this.username = username;
             isHost = true;
 
@@ -52,6 +54,8 @@ namespace GameClient.Views
         public LobbyPage(string username, string lobbyCode, JoinLobbyResultDto joinResult)
         {
             InitializeComponent();
+            AudioManager.PlayRandomMusic(AudioManager.LobbyTracks);
+
             this.username = username;
             this.lobbyCode = lobbyCode;
 

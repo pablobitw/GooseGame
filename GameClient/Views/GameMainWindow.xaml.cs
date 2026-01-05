@@ -35,6 +35,8 @@ namespace GameClient
             this.Closed += GameMainWindow_Closed;
 
             _ = LoadUserCurrency();
+
+            AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
         }
 
         private void OnGlobalPlayerKicked(string reason)
@@ -237,6 +239,8 @@ namespace GameClient
 
         public async Task ShowMainMenu()
         {
+            AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
+
             MainFrame.Content = null;
             while (MainFrame.CanGoBack) MainFrame.RemoveBackEntry();
             MainMenuGrid.Visibility = Visibility.Visible;
@@ -261,7 +265,6 @@ namespace GameClient
                 }
             });
         }
-
 
         private async Task AttemptJoinLobbyAsync(string code)
         {

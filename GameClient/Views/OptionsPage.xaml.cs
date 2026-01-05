@@ -13,20 +13,27 @@ namespace GameClient.Views
     public partial class OptionsPage : Page
     {
         private string _initialLanguage;
+        private bool _restartPending = false;
 
         public OptionsPage()
         {
             InitializeComponent();
             this.Loaded += OptionsPage_Loaded;
-
-            // Suscribirse al evento de cierre de la alerta por si necesitamos hacer algo al cerrar
             GameAlert.AlertClosed += GameAlert_AlertClosed;
+
+            MusicSlider.Value = AudioManager.GetVolume() * 100;
+            MusicSlider.ValueChanged += MusicSlider_ValueChanged;
         }
 
         private void OptionsPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadCurrentSettings();
             LoadCurrentLanguage();
+        }
+
+        private void MusicSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            AudioManager.SetVolume(e.NewValue / 100.0);
         }
 
         private void AboutUsButton_Click(object sender, RoutedEventArgs e)
@@ -37,21 +44,14 @@ namespace GameClient.Views
         private void LoadCurrentSettings()
         {
             var mainWindow = Window.GetWindow(this) as GameMainWindow;
-
             if (mainWindow != null)
             {
                 if (mainWindow.WindowStyle == WindowStyle.None && mainWindow.WindowState == WindowState.Maximized)
-                {
                     ScreenModeComboBox.SelectedIndex = 0;
-                }
                 else if (mainWindow.WindowStyle == WindowStyle.None && mainWindow.WindowState == WindowState.Normal)
-                {
                     ScreenModeComboBox.SelectedIndex = 1;
-                }
                 else
-                {
                     ScreenModeComboBox.SelectedIndex = 2;
-                }
             }
         }
 
@@ -91,13 +91,10 @@ namespace GameClient.Views
                 try
                 {
                     bool success = await client.UpdateLanguageAsync(SessionManager.CurrentUsername, selectedLanguage);
-
                     if (success)
                     {
                         GameClient.Properties.Settings.Default.LanguageCode = selectedLanguage;
                         GameClient.Properties.Settings.Default.Save();
-
-                        // Mostramos la alerta y usamos una bandera para saber que al cerrarla debemos reiniciar
                         _restartPending = true;
                         GameAlert.Show("Cambio Exitoso", "El idioma ha cambiado. La aplicación se reiniciará al cerrar este mensaje.");
                     }
@@ -122,15 +119,11 @@ namespace GameClient.Views
             }
         }
 
-        // Bandera para controlar el reinicio post-alerta
-        private bool _restartPending = false;
-
         private void GameAlert_AlertClosed(object sender, EventArgs e)
         {
             if (_restartPending)
             {
                 _restartPending = false;
-                // Reiniciar aplicación
                 try
                 {
                     Process.Start(Application.ResourceAssembly.Location);
@@ -160,16 +153,14 @@ namespace GameClient.Views
             if (mainWindow == null) return;
 
             int selectedMode = ScreenModeComboBox.SelectedIndex;
-
             switch (selectedMode)
             {
-                case 0: // Fullscreen
+                case 0:
                     mainWindow.WindowStyle = WindowStyle.None;
                     mainWindow.WindowState = WindowState.Maximized;
                     mainWindow.ResizeMode = ResizeMode.NoResize;
                     break;
-
-                case 1: // Borderless
+                case 1:
                     mainWindow.WindowStyle = WindowStyle.None;
                     mainWindow.WindowState = WindowState.Normal;
                     mainWindow.ResizeMode = ResizeMode.NoResize;
@@ -177,8 +168,7 @@ namespace GameClient.Views
                     mainWindow.Height = 720;
                     mainWindow.CenterWindow();
                     break;
-
-                case 2: // Windowed
+                case 2:
                     mainWindow.WindowStyle = WindowStyle.SingleBorderWindow;
                     mainWindow.WindowState = WindowState.Normal;
                     mainWindow.ResizeMode = ResizeMode.CanResize;
