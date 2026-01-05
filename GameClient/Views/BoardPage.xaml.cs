@@ -388,6 +388,8 @@ namespace GameClient.Views
         {
             if (_isGameOverHandled || !IsEnabled) return;
 
+            AudioManager.PlaySfx(AudioManager.SfxDice);
+
             RollDiceButton.IsEnabled = false;
             try
             {

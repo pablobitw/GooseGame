@@ -239,6 +239,7 @@ namespace GameClient
 
         public async Task ShowMainMenu()
         {
+            AudioManager.StopMusic();
             AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
 
             MainFrame.Content = null;
