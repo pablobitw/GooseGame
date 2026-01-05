@@ -1,7 +1,9 @@
 ﻿using BCrypt.Net;
 using GameServer.DTOs.User;
 using GameServer.Helpers;
+using GameServer.Models;
 using GameServer.Repositories;
+using GameServer.Repositories.Interfaces;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -19,11 +21,14 @@ namespace GameServer.Services.Logic
         private static readonly Random RandomGenerator = new Random();
         private const int MaxUsernameChanges = 3;
         private const int CodeExpirationMinutes = 15;
-        private readonly UserProfileRepository _repository;
 
-        public UserProfileAppService(UserProfileRepository repository)
+        // CORRECCIÓN: Se usa la Interfaz para permitir Mocks en los tests
+        private readonly IUserProfileRepository _repository;
+
+        // CORRECCIÓN: Constructor flexible. Si no se pasa un repo, usa la implementación real.
+        public UserProfileAppService(IUserProfileRepository repository = null)
         {
-            _repository = repository;
+            _repository = repository ?? new UserProfileRepository();
         }
 
         public async Task<UserProfileDto> GetUserProfileAsync(string identifier)
@@ -60,7 +65,7 @@ namespace GameServer.Services.Logic
                         {
                             profile.SocialLinks.Add(new PlayerSocialLinkDto
                             {
-                                SocialType = link.SocialType.ToString(),
+                                SocialType = ((SocialType)link.SocialType).ToString(),
                                 Url = link.Url
                             });
                         }
@@ -289,12 +294,12 @@ namespace GameServer.Services.Logic
 
                 if (player != null && player.Account != null)
                 {
-                    if (languageCode.Length > 5) languageCode = languageCode.Substring(0, 5);
+                    string shortCode = languageCode.Length > 5 ? languageCode.Substring(0, 5) : languageCode;
 
-                    player.Account.PreferredLanguage = languageCode;
+                    player.Account.PreferredLanguage = shortCode;
                     await _repository.SaveChangesAsync();
 
-                    Log.InfoFormat("Idioma actualizado para {0} a {1}", identifier, languageCode);
+                    Log.InfoFormat("Idioma actualizado para {0} a {1}", identifier, shortCode);
                     return true;
                 }
 
@@ -332,7 +337,7 @@ namespace GameServer.Services.Logic
                     return false;
                 }
 
-                player.Account.AccountStatus = 2;
+                player.Account.AccountStatus = 2; // Desactivada
 
                 await _repository.SaveChangesAsync();
 
@@ -374,7 +379,7 @@ namespace GameServer.Services.Logic
                 await _repository.SaveChangesAsync();
                 Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
 
-                return null;
+                return null; // Éxito
             }
             catch (Exception ex)
             {
@@ -394,9 +399,7 @@ namespace GameServer.Services.Logic
 
                 if (link != null)
                 {
-                  
                     _repository.DeleteSocialLink(link);
-
                     await _repository.SaveChangesAsync();
                     Log.InfoFormat("Red social eliminada para {0}: {1}", identifier, urlToRemove);
                     return true;

@@ -199,6 +199,7 @@
     <Compile Include="Repositories\Interfaces\ILobbyRepository.cs" />
     <Compile Include="Repositories\Interfaces\IFriendshipRepository.cs" />
     <Compile Include="Repositories\Interfaces\IAuthRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IUserProfileRepository.cs" />
     <Compile Include="Repositories\LeaderboardRepository.cs" />
     <Compile Include="Repositories\LobbyRepository.cs" />
     <Compile Include="Repositories\SanctionRepository.cs" />

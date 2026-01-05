@@ -1,11 +1,12 @@
-﻿using System;
+﻿using GameServer.Repositories.Interfaces;
+using System;
 using System.Data.Entity;
-using System.Threading.Tasks;
 using System.Data.Entity.Core;
+using System.Threading.Tasks;
 
 namespace GameServer.Repositories
 {
-    public class UserProfileRepository : IDisposable
+    public class UserProfileRepository : IUserProfileRepository, IDisposable
     {
         private readonly GameDatabase_Container _context;
         private bool _disposed;
@@ -40,6 +41,14 @@ namespace GameServer.Repositories
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        public void DeleteSocialLink(PlayerSocialLink link)
+        {
+            ThrowIfDisposed();
+            _context.PlayerSocialLinks.Remove(link);
+        }
+
+        #region IDisposable Implementation
+
         public void Dispose()
         {
             Dispose(true);
@@ -59,15 +68,12 @@ namespace GameServer.Repositories
             _disposed = true;
         }
 
-        public void DeleteSocialLink(PlayerSocialLink link)
-        {
-            _context.PlayerSocialLinks.Remove(link);
-        }
-
         private void ThrowIfDisposed()
         {
             if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName);
         }
+
+        #endregion
     }
 }
