@@ -75,7 +75,7 @@ namespace GameServer.Tests.Services
 
             var result = await _service.SendFriendRequestAsync(sender, receiver);
 
-            Assert.True(result);
+            Assert.Equal(FriendRequestResult.Success, result);
             _mockRepository.Verify(r => r.AddFriendship(It.Is<Friendship>(f => f.FriendshipStatus == 0)), Times.Once);
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
@@ -93,7 +93,7 @@ namespace GameServer.Tests.Services
 
             var result = await _service.SendFriendRequestAsync(sender, receiver);
 
-            Assert.False(result);
+            Assert.NotEqual(FriendRequestResult.Success, result);
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
@@ -112,7 +112,7 @@ namespace GameServer.Tests.Services
 
             var result = await _service.SendFriendRequestAsync(sender, receiver);
 
-            Assert.False(result);
+            Assert.Equal(FriendRequestResult.AlreadyFriends, result);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace GameServer.Tests.Services
 
             var result = await _service.SendFriendRequestAsync(sender, receiver);
 
-            Assert.True(result);
+            Assert.Equal(FriendRequestResult.Success, result);
             Assert.Equal(1, existing.FriendshipStatus);
             _mockRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
@@ -155,7 +155,7 @@ namespace GameServer.Tests.Services
 
             var result = await _service.SendFriendRequestAsync(sender, receiver);
 
-            Assert.False(result);
+            Assert.Equal(FriendRequestResult.Error, result);
         }
 
         [Fact]
