@@ -4,9 +4,10 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:GameClient.Views"
+      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
-      Title="Guía de Juego"
+      Title="How To Play"
       FontFamily="/Assets/Fonts/#Dosis">
 
     <Grid>
@@ -22,7 +23,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="GUÍA DE CASILLAS ESPECIALES" 
+                <TextBlock Text="{x:Static props:Strings.HowToPlayTitle}" 
                            FontSize="54" FontWeight="Bold" 
                            HorizontalAlignment="Center" 
                            Foreground="#2C3E50" Margin="0,0,0,30">
@@ -77,21 +78,21 @@
                             <DropShadowEffect BlurRadius="15" Direction="315" Opacity="0.1" ShadowDepth="5"/>
                         </Border.Effect>
 
-                        <StackPanel VerticalAlignment="Center">
-                            <Image Source="{Binding SelectedItem.ImagePath, ElementName=TilesListBox}" 
+                        <StackPanel VerticalAlignment="Center" DataContext="{Binding SelectedItem, ElementName=TilesListBox}">
+                            <Image Source="{Binding ImagePath}" 
                                    Width="280" Height="280" 
                                    Margin="0,0,0,40" 
                                    Stretch="Uniform"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                            <TextBlock Text="{Binding SelectedItem.Name, ElementName=TilesListBox}" 
+                            <TextBlock Text="{Binding Name}" 
                                        FontSize="42" FontWeight="Heavy" 
                                        HorizontalAlignment="Center" 
                                        Foreground="#2980B9"/>
 
                             <Rectangle Height="3" Width="100" Fill="#3498DB" Margin="0,15,0,25" HorizontalAlignment="Center"/>
 
-                            <TextBlock Text="{Binding SelectedItem.Description, ElementName=TilesListBox}" 
+                            <TextBlock Text="{Binding Description}" 
                                        FontSize="24" TextWrapping="Wrap" 
                                        TextAlignment="Center" 
                                        Foreground="#566573" 
@@ -101,10 +102,10 @@
                 </Grid>
 
                 <Button x:Name="BackButton" 
-                        Content="ENTENDIDO, VOLVER AL MENÚ" 
+                        Content="{x:Static props:Strings.HowToPlayBackButton}" 
                         Grid.Row="2" 
                         HorizontalAlignment="Center" 
-                        Width="400" Height="60" 
+                        Width="500" Height="60" 
                         Margin="0,40,0,0"
                         Style="{StaticResource PrimaryButtonStyle}" 
                         Click="BackButton_Click"

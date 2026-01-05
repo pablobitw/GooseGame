@@ -610,6 +610,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a ENTENDIDO, VOLVER AL MENÚ.
+        /// </summary>
+        public static string HowToPlayBackButton {
+            get {
+                return ResourceManager.GetString("HowToPlayBackButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a GUÍA DE CASILLAS ESPECIALES.
+        /// </summary>
+        public static string HowToPlayTitle {
+            get {
+                return ResourceManager.GetString("HowToPlayTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Información.
         /// </summary>
         public static string InfoTitle {
@@ -1317,6 +1335,150 @@ namespace GameClient.Resources {
         public static string SuccessTitle {
             get {
                 return ResourceManager.GetString("SuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a De puente a puente y tiro porque me lleva la corriente. Salta al siguiente puente y espera tu turno..
+        /// </summary>
+        public static string TileBridgeDesc {
+            get {
+                return ResourceManager.GetString("TileBridgeDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El Puente.
+        /// </summary>
+        public static string TileBridgeName {
+            get {
+                return ResourceManager.GetString("TileBridgeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡De oca a oca y tiro porque me toca! Salta a la siguiente oca y vuelve a lanzar los dados..
+        /// </summary>
+        public static string TileGooseDesc {
+            get {
+                return ResourceManager.GetString("TileGooseDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La Oca.
+        /// </summary>
+        public static string TileGooseName {
+            get {
+                return ResourceManager.GetString("TileGooseName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Un descanso necesario pero costoso. Pierdes un turno mientras te relajas..
+        /// </summary>
+        public static string TileInnDesc {
+            get {
+                return ResourceManager.GetString("TileInnDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La Posada.
+        /// </summary>
+        public static string TileInnName {
+            get {
+                return ResourceManager.GetString("TileInnName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡El destino te sonríe! Recibes una recompensa aleatoria en monedas..
+        /// </summary>
+        public static string TileLuckyDesc {
+            get {
+                return ResourceManager.GetString("TileLuckyDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Casilla de Suerte.
+        /// </summary>
+        public static string TileLuckyName {
+            get {
+                return ResourceManager.GetString("TileLuckyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡Te has desorientado! Retrocedes inmediatamente a la casilla 30..
+        /// </summary>
+        public static string TileMazeDesc {
+            get {
+                return ResourceManager.GetString("TileMazeDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El Laberinto.
+        /// </summary>
+        public static string TileMazeName {
+            get {
+                return ResourceManager.GetString("TileMazeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has cometido una infracción. Quedas arrestado y pierdes dos turnos..
+        /// </summary>
+        public static string TilePrisonDesc {
+            get {
+                return ResourceManager.GetString("TilePrisonDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La Cárcel.
+        /// </summary>
+        public static string TilePrisonName {
+            get {
+                return ResourceManager.GetString("TilePrisonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El fin del camino... o el inicio. Regresas inmediatamente a la casilla 1 para empezar de nuevo..
+        /// </summary>
+        public static string TileSkullDesc {
+            get {
+                return ResourceManager.GetString("TileSkullDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La Calavera.
+        /// </summary>
+        public static string TileSkullName {
+            get {
+                return ResourceManager.GetString("TileSkullName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has caído en la oscuridad. No podrás moverte hasta que otro jugador caiga aquí o pase a rescatarte..
+        /// </summary>
+        public static string TileWellDesc {
+            get {
+                return ResourceManager.GetString("TileWellDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El Pozo.
+        /// </summary>
+        public static string TileWellName {
+            get {
+                return ResourceManager.GetString("TileWellName", resourceCulture);
             }
         }
         

@@ -300,6 +300,12 @@
   <data name="HostLabel" xml:space="preserve">
     <value>(Host)</value>
   </data>
+  <data name="HowToPlayBackButton" xml:space="preserve">
+    <value>ENTENDIDO, VOLVER AL MENÚ</value>
+  </data>
+  <data name="HowToPlayTitle" xml:space="preserve">
+    <value>GUÍA DE CASILLAS ESPECIALES</value>
+  </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Información</value>
   </data>
@@ -536,6 +542,54 @@
   </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Exitoso</value>
+  </data>
+  <data name="TileBridgeDesc" xml:space="preserve">
+    <value>De puente a puente y tiro porque me lleva la corriente. Salta al siguiente puente y espera tu turno.</value>
+  </data>
+  <data name="TileBridgeName" xml:space="preserve">
+    <value>El Puente</value>
+  </data>
+  <data name="TileGooseDesc" xml:space="preserve">
+    <value>¡De oca a oca y tiro porque me toca! Salta a la siguiente oca y vuelve a lanzar los dados.</value>
+  </data>
+  <data name="TileGooseName" xml:space="preserve">
+    <value>La Oca</value>
+  </data>
+  <data name="TileInnDesc" xml:space="preserve">
+    <value>Un descanso necesario pero costoso. Pierdes un turno mientras te relajas.</value>
+  </data>
+  <data name="TileInnName" xml:space="preserve">
+    <value>La Posada</value>
+  </data>
+  <data name="TileLuckyDesc" xml:space="preserve">
+    <value>¡El destino te sonríe! Recibes una recompensa aleatoria en monedas.</value>
+  </data>
+  <data name="TileLuckyName" xml:space="preserve">
+    <value>Casilla de Suerte</value>
+  </data>
+  <data name="TileMazeDesc" xml:space="preserve">
+    <value>¡Te has desorientado! Retrocedes inmediatamente a la casilla 30.</value>
+  </data>
+  <data name="TileMazeName" xml:space="preserve">
+    <value>El Laberinto</value>
+  </data>
+  <data name="TilePrisonDesc" xml:space="preserve">
+    <value>Has cometido una infracción. Quedas arrestado y pierdes dos turnos.</value>
+  </data>
+  <data name="TilePrisonName" xml:space="preserve">
+    <value>La Cárcel</value>
+  </data>
+  <data name="TileSkullDesc" xml:space="preserve">
+    <value>El fin del camino... o el inicio. Regresas inmediatamente a la casilla 1 para empezar de nuevo.</value>
+  </data>
+  <data name="TileSkullName" xml:space="preserve">
+    <value>La Calavera</value>
+  </data>
+  <data name="TileWellDesc" xml:space="preserve">
+    <value>Has caído en la oscuridad. No podrás moverte hasta que otro jugador caiga aquí o pase a rescatarte.</value>
+  </data>
+  <data name="TileWellName" xml:space="preserve">
+    <value>El Pozo</value>
   </data>
   <data name="TimeoutLabel" xml:space="preserve">
     <value>La solicitud tardó demasiado en responder. Revisa tu conexión</value>

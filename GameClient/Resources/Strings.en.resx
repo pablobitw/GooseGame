@@ -288,6 +288,12 @@
   <data name="HostLabel" xml:space="preserve">
     <value>(Host)</value>
   </data>
+  <data name="HowToPlayBackButton" xml:space="preserve">
+    <value>UNDERSTOOD, BACK TO MENU</value>
+  </data>
+  <data name="HowToPlayTitle" xml:space="preserve">
+    <value>SPECIAL TILES GUIDE</value>
+  </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Information</value>
   </data>
@@ -521,6 +527,54 @@
   </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Sucess</value>
+  </data>
+  <data name="TileBridgeDesc" xml:space="preserve">
+    <value>From bridge to bridge and I throw because of the current. Jump to the next bridge and wait your turn.</value>
+  </data>
+  <data name="TileBridgeName" xml:space="preserve">
+    <value>The Bridge</value>
+  </data>
+  <data name="TileGooseDesc" xml:space="preserve">
+    <value>From goose to goose and I throw because it's my turn! Jump to the next goose and roll again.</value>
+  </data>
+  <data name="TileGooseName" xml:space="preserve">
+    <value>The Goose</value>
+  </data>
+  <data name="TileInnDesc" xml:space="preserve">
+    <value>A necessary but costly rest. You lose a turn while you relax.</value>
+  </data>
+  <data name="TileInnName" xml:space="preserve">
+    <value>The Inn</value>
+  </data>
+  <data name="TileLuckyDesc" xml:space="preserve">
+    <value>Fate smiles upon you! You receive a random reward in coins.</value>
+  </data>
+  <data name="TileLuckyName" xml:space="preserve">
+    <value>Lucky Tile</value>
+  </data>
+  <data name="TileMazeDesc" xml:space="preserve">
+    <value>You are disoriented! You immediately go back to space 30.</value>
+  </data>
+  <data name="TileMazeName" xml:space="preserve">
+    <value>The Maze</value>
+  </data>
+  <data name="TilePrisonDesc" xml:space="preserve">
+    <value>You have committed an infraction. You are arrested and lose two turns.</value>
+  </data>
+  <data name="TilePrisonName" xml:space="preserve">
+    <value>The Prison</value>
+  </data>
+  <data name="TileSkullDesc" xml:space="preserve">
+    <value>The end of the road... or the beginning. Immediately return to space 1 to start over.</value>
+  </data>
+  <data name="TileSkullName" xml:space="preserve">
+    <value>The Skull</value>
+  </data>
+  <data name="TileWellDesc" xml:space="preserve">
+    <value>You have fallen into the darkness. You cannot move until another player falls here or rescues you.</value>
+  </data>
+  <data name="TileWellName" xml:space="preserve">
+    <value>The Well</value>
   </data>
   <data name="UnexpectedError" xml:space="preserve">
     <value>An unexpected error occurred: {0}</value>
