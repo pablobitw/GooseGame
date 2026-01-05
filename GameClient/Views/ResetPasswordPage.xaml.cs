@@ -1,6 +1,8 @@
 ﻿using GameClient.GameServiceReference;
 using System;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,6 +13,7 @@ namespace GameClient.Views
     public partial class ResetPasswordPage : Page
     {
         private string _username;
+        private Action _onConfirmAction;
 
         public ResetPasswordPage(string username)
         {
@@ -20,6 +23,26 @@ namespace GameClient.Views
 
         public ResetPasswordPage() : this(string.Empty)
         {
+        }
+
+        private void ShowCustomDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        {
+            DialogTitle.Text = title;
+            DialogMessage.Text = message;
+            DialogIcon.Icon = icon;
+            CancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            CancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            ConfirmBtn.Content = isConfirmation ? GameClient.Resources.Strings.DialogConfirmBtn : GameClient.Resources.Strings.DialogOkBtn;
+            CancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
+            _onConfirmAction = onConfirm;
+            DialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void DialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogOverlay.Visibility = Visibility.Collapsed;
+            _onConfirmAction?.Invoke();
+            _onConfirmAction = null;
         }
 
         private async void OnConfirmButtonClick(object sender, RoutedEventArgs e)
@@ -54,23 +77,25 @@ namespace GameClient.Views
 
         private bool HandleConnectionException(Exception ex)
         {
+            string errorTitle = GameClient.Resources.Strings.DialogErrorTitle;
+
             if (ex is EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
+                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ConnectionError, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
                 return true;
             }
             if (ex is TimeoutException)
             {
-                MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
+                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ErrorTitle, FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
                 return true;
             }
             if (ex is CommunicationException)
             {
-                MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
+                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ConnectionError, FontAwesome.WPF.FontAwesomeIcon.Wifi);
                 return true;
             }
 
-            MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
+            ShowCustomDialog(errorTitle, ex.Message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
             return true;
         }
 
@@ -80,21 +105,29 @@ namespace GameClient.Views
             {
                 client.Close();
             }
+            else
+            {
+                client.Abort();
+            }
         }
 
         private void HandleUpdateResult(bool updateSuccess)
         {
             if (updateSuccess)
             {
-                MessageBox.Show("¡Contraseña actualizada con éxito!", "Éxito");
-                if (NavigationService.CanGoBack)
-                {
-                    NavigationService.GoBack();
-                }
+                ShowCustomDialog(GameClient.Resources.Strings.DialogSuccessTitle,
+                                 GameClient.Resources.Strings.PasswordUpdateSuccess,
+                                 FontAwesome.WPF.FontAwesomeIcon.CheckCircle, false, () =>
+                                 {
+                                     if (NavigationService.CanGoBack)
+                                     {
+                                         NavigationService.GoBack();
+                                     }
+                                 });
             }
             else
             {
-                ShowError(CurrentPasswordBox, "La contraseña actual es incorrecta o hubo un error.");
+                ShowError(CurrentPasswordBox, GameClient.Resources.Strings.ErrorCurrentPasswordIncorrect);
             }
         }
 
@@ -104,6 +137,12 @@ namespace GameClient.Views
             {
                 NavigationService.GoBack();
             }
+        }
+
+        private bool IsPasswordStrong(string password)
+        {
+            var regex = new Regex(@"^(?=.*[0-9])(?=.*[!@#$%^&*()_+={}\[\]:;<>,.?/~`|-]).{8,}$");
+            return regex.IsMatch(password);
         }
 
         private bool IsFormValid()
@@ -117,31 +156,36 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(currentPass))
             {
-                ShowError(CurrentPasswordBox, "Debes ingresar tu contraseña actual.");
+                ShowError(CurrentPasswordBox, GameClient.Resources.Strings.ErrorCurrentPassRequired);
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(newPass))
             {
-                ShowError(NewPasswordBox, "La contraseña nueva no puede estar vacía.");
+                ShowError(NewPasswordBox, GameClient.Resources.Strings.ErrorNewPassEmpty);
+                isValid = false;
+            }
+            else if (!IsPasswordStrong(newPass))
+            {
+                ShowError(NewPasswordBox, GameClient.Resources.Strings.ErrorPassTooWeak);
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(repeatPass))
             {
-                ShowError(RepeatNewPasswordBox, "Debes repetir la contraseña nueva.");
+                ShowError(RepeatNewPasswordBox, GameClient.Resources.Strings.ErrorCurrentPassRequired);
                 isValid = false;
             }
             else if (newPass != repeatPass)
             {
-                ShowError(NewPasswordBox, "Las contraseñas nuevas no coinciden.");
-                ShowError(RepeatNewPasswordBox, "Las contraseñas nuevas no coinciden.");
+                ShowError(NewPasswordBox, GameClient.Resources.Strings.ErrorPassMismatch);
+                ShowError(RepeatNewPasswordBox, GameClient.Resources.Strings.ErrorPassMismatch);
                 isValid = false;
             }
 
             if (isValid && currentPass == newPass)
             {
-                ShowError(NewPasswordBox, "La nueva contraseña no puede ser igual a la actual.");
+                ShowError(NewPasswordBox, GameClient.Resources.Strings.ErrorSamePass);
                 isValid = false;
             }
 
@@ -151,6 +195,7 @@ namespace GameClient.Views
         private void ShowError(Control field, string errorMessage)
         {
             field.BorderBrush = new SolidColorBrush(Colors.Red);
+            field.BorderThickness = new Thickness(2);
             field.ToolTip = new ToolTip { Content = errorMessage };
         }
 
@@ -170,18 +215,13 @@ namespace GameClient.Views
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
-
-            if (placeholder != null)
-            {
-                placeholder.Visibility = Visibility.Collapsed;
-            }
+            if (placeholder != null) placeholder.Visibility = Visibility.Collapsed;
         }
 
         private void OnGenericPasswordLost(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as PasswordBox;
             var placeholder = passwordBox.Tag as TextBlock;
-
             if (placeholder != null && string.IsNullOrWhiteSpace(passwordBox.Password))
             {
                 placeholder.Visibility = Visibility.Visible;
@@ -191,15 +231,10 @@ namespace GameClient.Views
         private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            ShowCustomDialog(GameClient.Resources.Strings.DialogActionBlockedTitle,
+                             GameClient.Resources.Strings.ErrorPastingDisabled,
+                             FontAwesome.WPF.FontAwesomeIcon.Lock);
         }
-
 
         private void OnGenericPasswordChanged(object sender, RoutedEventArgs e)
         {

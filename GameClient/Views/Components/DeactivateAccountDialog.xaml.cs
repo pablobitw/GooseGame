@@ -37,13 +37,17 @@ namespace GameClient.Views.Components
 
             if (string.IsNullOrWhiteSpace(pass1) || string.IsNullOrWhiteSpace(pass2))
             {
-                MessageBox.Show("Por favor ingresa tu contraseña en ambos campos.", "Campos requeridos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorPasswordsEmpty,
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (pass1 != pass2)
             {
-                MessageBox.Show("Las contraseñas no coinciden.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorPasswordsMismatch,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -66,13 +70,15 @@ namespace GameClient.Views.Components
                 }
                 else
                 {
-                    MessageBox.Show("La contraseña es incorrecta o no se pudo desactivar la cuenta.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(GameClient.Resources.Strings.ErrorDeactivationFailed,
+                                    GameClient.Resources.Strings.DialogErrorTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
                     ConfirmDeactivateButton.IsEnabled = true;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error de conexión: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 ConfirmDeactivateButton.IsEnabled = true;
             }
             finally
@@ -87,8 +93,8 @@ namespace GameClient.Views.Components
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
-                                "Acción bloqueada",
+                MessageBox.Show(GameClient.Resources.Strings.ErrorPastingDisabled,
+                                GameClient.Resources.Strings.DialogWarningTitle,
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
             }), System.Windows.Threading.DispatcherPriority.Background);

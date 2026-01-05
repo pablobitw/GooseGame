@@ -5,12 +5,13 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:props="clr-namespace:GameClient.Resources"
       xmlns:components="clr-namespace:GameClient.Views.Components"
+      xmlns:fa="http://schemas.fontawesome.io/icons/"
       mc:Ignorable="d" 
       d:DesignHeight="1080" d:DesignWidth="1920"
       Title="UserProfilePage"
       FontFamily="Segoe UI">
 
-    <Grid Cursor="Hand">
+    <Grid Cursor="Arrow">
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/fondo2.png" Stretch="UniformToFill" Opacity="1"/>
         </Grid.Background>
@@ -39,7 +40,6 @@
                         Click="BackButton_Click"/>
 
                 <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-
                     <Border Width="300" Height="300" CornerRadius="150" BorderThickness="0" Margin="0,0,0,30">
                         <Border.Effect>
                             <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
@@ -61,7 +61,6 @@
                     <Border Background="#20000000" CornerRadius="10" Padding="20" Margin="0,40,0,0">
                         <StackPanel>
                             <TextBlock Text="{x:Static props:Strings.StatsTitle}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -70,7 +69,6 @@
                                 <TextBlock Text="{x:Static props:Strings.GamesPlayedLabel}" FontSize="20"/>
                                 <TextBlock x:Name="GamesPlayedText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1"/>
                             </Grid>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -79,7 +77,6 @@
                                 <TextBlock Text="{x:Static props:Strings.GamesWonLabel}" FontSize="20"/>
                                 <TextBlock x:Name="GamesWonText" Text="0" FontSize="20" FontWeight="Bold" Grid.Column="1" Foreground="#28A745"/>
                             </Grid>
-
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -97,7 +94,6 @@
 
                 <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Hidden" Margin="60,0,0,0">
                     <StackPanel VerticalAlignment="Center">
-
                         <TextBlock Text="{x:Static props:Strings.UserProfilePageTitle}" FontSize="48" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
                         <Separator Background="#CCC" Margin="0,0,0,40"/>
 
@@ -113,7 +109,7 @@
                         <TextBlock x:Name="UsernameInfoLabel" Visibility="Collapsed" FontSize="14" Margin="0,0,0,30"/>
 
                         <TextBlock Text="{x:Static props:Strings.EmailLabel}" FontSize="20" FontWeight="SemiBold" Foreground="#555"/>
-                        <TextBox x:Name="EmailTextBox" Text="{x:Static props:Strings.LoadingText}" FontSize="24" Padding="10" Height="50" IsEnabled="False" Background="#EEE" Foreground="#888" Margin="0,0,0,30"/>
+                        <TextBox x:Name="EmailTextBox" Text="{x:Static props:Strings.LoadingText}" FontSize="24" Padding="10" Height="59" IsEnabled="False" Background="#EEE" Foreground="#888" Margin="0,0,0,30"/>
 
                         <Border Background="#10000000" CornerRadius="8" Padding="15" Margin="0,0,0,30">
                             <StackPanel>
@@ -122,7 +118,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Redes Sociales" FontSize="20" FontWeight="Bold" Foreground="#444" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static props:Strings.SocialNetworksTitle}" FontSize="20" FontWeight="Bold" Foreground="#444" VerticalAlignment="Center"/>
                                     <Button x:Name="AddSocialLinkButton" Content="+" Style="{StaticResource PrimaryButtonStyle}" Width="40" Height="40" FontSize="24" FontWeight="Bold" Padding="0,-2,0,0" Grid.Column="1" Click="AddSocialLinkButton_Click"/>
                                 </Grid>
 
@@ -137,13 +133,11 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="🔗" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
                                                     <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16">
                                                         <Hyperlink NavigateUri="{Binding Path=.}" RequestNavigate="Hyperlink_RequestNavigate">
                                                             <Run Text="{Binding Path=.}"/>
                                                         </Hyperlink>
                                                     </TextBlock>
-
                                                     <Button Grid.Column="2" Content="❌" Background="Transparent" BorderThickness="0" Foreground="#DC3545" FontWeight="Bold" FontSize="14" Cursor="Hand" Tag="{Binding Path=.}" Click="DeleteSocialLink_Click"/>
                                                 </Grid>
                                             </Border>
@@ -156,35 +150,52 @@
                         <Button x:Name="ChangePasswordButton"
                                 Content="{x:Static props:Strings.ChangePasswordButton}"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Width="300" Height="60"
+                                Width="221" Height="47"
                                 FontSize="20" FontWeight="Bold"
                                 Margin="0,0,0,30"
                                 HorizontalAlignment="Left"
                                 Click="ChangePasswordButton_Click"/>
 
                         <Button x:Name="DeactivateAccountButton"
-                                Content="Desactivar Cuenta"
-                                Background="#DC3545"
-                                Foreground="White"
+                                Content="{x:Static props:Strings.DeactivateAccountBtn}"
+                                Background="#DC3545" Foreground="White"
                                 Width="184" Height="44"
                                 FontSize="18" FontWeight="Bold"
-                                HorizontalAlignment="Left"
-                                Margin="0,0,0,30"
-                                Cursor="Hand"
-                                Click="ShowDeactivatePopup_Click">
+                                HorizontalAlignment="Left" Margin="0,0,0,30"
+                                Cursor="Hand" Click="ShowDeactivatePopup_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8"/>
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
         </Border>
 
-        <components:DeactivateAccountDialog x:Name="DeactivateDialog" Visibility="Collapsed"/>
-        <components:AddSocialLinkDialog x:Name="AddLinkPopup" Visibility="Collapsed"/>
+        <components:DeactivateAccountDialog x:Name="DeactivateDialog" Visibility="Collapsed" Panel.ZIndex="50"/>
+        <components:AddSocialLinkDialog x:Name="AddLinkPopup" Visibility="Collapsed" Panel.ZIndex="50"/>
+
+        <Border x:Name="DialogOverlay" Background="#B3000000" Visibility="Collapsed" Panel.ZIndex="1000">
+            <Border Background="White" CornerRadius="20" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <fa:ImageAwesome x:Name="DialogIcon" Icon="InfoCircle" Height="60" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,20"/>
+                    <TextBlock x:Name="DialogTitle" Text="Título" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10" TextAlignment="Center"/>
+                    <TextBlock x:Name="DialogMessage" Text="Mensaje" FontSize="18" TextWrapping="Wrap" TextAlignment="Center" Foreground="#666" Margin="0,0,0,30"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition x:Name="CancelColumn" Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ConfirmBtn" Content="Aceptar" Style="{StaticResource PrimaryButtonStyle}" Height="45" Margin="5" Click="DialogButton_Click"/>
+                        <Button x:Name="CancelBtn" Grid.Column="1" Content="Cancelar" Style="{StaticResource OrangeButtonStyle}" Height="45" Margin="5" Click="DialogButton_Click" Visibility="Collapsed"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </Page>

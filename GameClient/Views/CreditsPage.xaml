@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:props="clr-namespace:GameClient.Resources"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="CreditsPage"
@@ -19,9 +20,8 @@
         <Border Background="#33FFFFFF" CornerRadius="20" Margin="100" Padding="40">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                <TextBlock Text="ACERCA DE NOSOTROS" 
-                           Foreground="White" FontSize="48" FontWeight="Bold" Height="55" 
-                           >
+                <TextBlock Text="{x:Static props:Strings.CreditsTitle}" 
+                           Foreground="White" FontSize="48" FontWeight="Bold" Height="55">
                     <TextBlock.Effect>
                         <DropShadowEffect Color="Black" ShadowDepth="4" Opacity="0.5"/>
                     </TextBlock.Effect>
@@ -29,20 +29,20 @@
 
                 <Image Source="/Assets/Icons/aboutus.png" Width="116" Height="126" Margin="0,0,0,30"/>
 
-                <TextBlock Text="Desarrollado por:" Foreground="#FFD700" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                <TextBlock Text="{x:Static props:Strings.DevelopedByLabel}" Foreground="#FFD700" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                 <TextBlock Foreground="White" FontSize="32" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,30" Text="Pablo Silva"/>
 
-                <TextBlock Text="Arte y Asistencia IA:" Foreground="#FFD700" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                <TextBlock Text="{x:Static props:Strings.ArtAndAILabel}" Foreground="#FFD700" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="Gemini AI (Google)" Foreground="White" FontSize="32" FontWeight="SemiBold"/>
                 </StackPanel>
 
-                <TextBlock Text="Versión 1.0.0 Alpha" Foreground="Gray" FontSize="16" HorizontalAlignment="Center" Margin="0,40,0,0"/>
+                <TextBlock Text="{x:Static props:Strings.CreditsVersion}" Foreground="Gray" FontSize="16" HorizontalAlignment="Center" Margin="0,40,0,0"/>
 
             </StackPanel>
         </Border>
 
-        <Button x:Name="BackButton" Content="VOLVER" 
+        <Button x:Name="BackButton" Content="{x:Static props:Strings.BackButton}" 
                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="40"
                 Width="120" Height="50" Background="Transparent" Foreground="White"
                 FontSize="20" FontWeight="Bold" BorderBrush="White" BorderThickness="2"

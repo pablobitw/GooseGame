@@ -55,11 +55,11 @@ namespace GameClient.Helpers
                 var context = new InstanceContext(this);
                 _client = new LobbyServiceClient(context);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show(
-                    "Error al conectar con el servidor:\n" + ex.Message,
-                    "Error de conexión",
+                    GameClient.Resources.Strings.ErrorLobbyInit,
+                    GameClient.Resources.Strings.DialogErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -79,8 +79,6 @@ namespace GameClient.Helpers
 
             return _client;
         }
-
-
 
         public void OnPlayerKicked(string reason)
         {
@@ -111,7 +109,6 @@ namespace GameClient.Helpers
         {
             MessageReceived?.Invoke(username, message);
         }
-
 
         public Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
@@ -153,7 +150,6 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.KickPlayerAsync(request));
         }
 
-
         private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action)
         {
             try
@@ -164,19 +160,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(
-                    "No se puede conectar al servidor.");
+                throw new InvalidOperationException(GameClient.Resources.Strings.ErrorLobbyConnect);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(
-                    "El servidor tardó demasiado en responder.");
+                throw new TimeoutException(GameClient.Resources.Strings.ErrorLobbyTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw;
+                throw new CommunicationException(GameClient.Resources.Strings.ErrorLobbyComm);
+            }
+            catch (Exception)
+            {
+                InvalidateClient();
+                throw new Exception(GameClient.Resources.Strings.ErrorLobbyOperation);
             }
         }
 
@@ -190,22 +189,24 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(
-                    "No se puede conectar al servidor.");
+                throw new InvalidOperationException(GameClient.Resources.Strings.ErrorLobbyConnect);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(
-                    "El servidor tardó demasiado en responder.");
+                throw new TimeoutException(GameClient.Resources.Strings.ErrorLobbyTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw;
+                throw new CommunicationException(GameClient.Resources.Strings.ErrorLobbyComm);
+            }
+            catch (Exception)
+            {
+                InvalidateClient();
+                throw new Exception(GameClient.Resources.Strings.ErrorLobbyOperation);
             }
         }
-
 
         private void InvalidateClient()
         {

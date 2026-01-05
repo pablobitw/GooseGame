@@ -20,7 +20,6 @@
         </Grid.Background>
 
         <Border Style="{StaticResource LobbyContainerBorderStyle}" Width="1000" Height="800">
-
             <Grid Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -40,16 +39,13 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <fa:ImageAwesome Icon="Search" Foreground="Gray" Margin="10,0,5,0" VerticalAlignment="Center" Height="20"/>
-
                             <TextBox x:Name="SearchUserBox" Grid.Column="1" Width="250" FontSize="18" 
-                            VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
-                            Tag="{x:Static props:Strings.SearchUserPlaceholder}"
-                            MaxLength="30"
-                            DataObject.Pasting="OnTextBoxPasting"/>
-
+                                     VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent"
+                                     Tag="{x:Static props:Strings.SearchUserPlaceholder}"
+                                     MaxLength="30"
+                                     DataObject.Pasting="OnTextBoxPasting"/>
                         </Grid>
                     </Border>
-
                     <Button x:Name="SendRequestButton" Content="{x:Static props:Strings.SendRequestButton}" 
                             Style="{StaticResource PrimaryButtonStyle}" Height="45" Width="160" 
                             FontSize="16" FontWeight="Bold" Click="SendFriendRequest_Click"/>
@@ -98,16 +94,12 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-
                                                 <fa:ImageAwesome Icon="UserCircle" Foreground="#555" Height="40" Width="40" VerticalAlignment="Center" Margin="0,0,15,0"/>
-
                                                 <TextBlock Grid.Column="1" Text="{Binding Username}" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
-
                                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
                                                     <TextBlock Text="{Binding StatusText}" FontSize="16" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                                     <Ellipse Width="15" Height="15" Fill="{Binding StatusColorBrush}"/>
                                                 </StackPanel>
-
                                                 <Button Grid.Column="3" Style="{StaticResource OrangeButtonStyle}" 
                                                         Width="50" Height="40" 
                                                         ToolTip="{x:Static props:Strings.DeleteFriendToolTip}"
@@ -132,7 +124,6 @@
                                 </Border>
                             </Grid>
                         </TabItem.Header>
-
                         <Grid>
                             <ListBox x:Name="FriendRequestsListBox" Margin="20" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
                                 <ListBox.ItemTemplate>
@@ -165,7 +156,7 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="Enviadas">
+                    <TabItem Header="{x:Static props:Strings.SentRequestsTab}">
                         <Grid>
                             <ListBox x:Name="SentRequestsListBox" Margin="20" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
                                 <ListBox.ItemTemplate>
@@ -180,15 +171,12 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-
                                                 <fa:ImageAwesome Icon="PaperPlane" Foreground="Gray" Height="25" Width="25" VerticalAlignment="Center" Margin="0,0,15,0"/>
-
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Username}" FontSize="24" FontWeight="Bold"/>
-                                                    <TextBlock Text="Esperando respuesta..." FontSize="14" Foreground="Gray" FontStyle="Italic"/>
+                                                    <TextBlock Text="{x:Static props:Strings.WaitingResponse}" FontSize="14" Foreground="Gray" FontStyle="Italic"/>
                                                 </StackPanel>
-
-                                                <Button Grid.Column="2" Content="Cancelar" Style="{StaticResource OrangeButtonStyle}" 
+                                                <Button Grid.Column="2" Content="{x:Static props:Strings.CancelButton}" Style="{StaticResource OrangeButtonStyle}" 
                                                         Width="120" Height="40" FontSize="16" 
                                                         Tag="{Binding Username}" Click="CancelSentRequest_Click"/>
                                             </Grid>
@@ -196,7 +184,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock x:Name="NoSentRequestsMessage" Text="No has enviado solicitudes pendientes" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="NoSentRequestsMessage" Text="{x:Static props:Strings.NoSentRequestsMessage}" FontSize="24" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
                     </TabItem>
                 </TabControl>
@@ -210,5 +198,25 @@
                 Margin="20" Width="100" Height="50"
                 Click="BackButton_Click"/>
 
+        <Border x:Name="DialogOverlay" Background="#B3000000" Visibility="Collapsed" Panel.ZIndex="1000">
+            <Border Background="White" CornerRadius="20" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <fa:ImageAwesome x:Name="DialogIcon" Icon="InfoCircle" Height="60" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,20"/>
+                    <TextBlock x:Name="DialogTitle" Text="Título" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10" TextAlignment="Center"/>
+                    <TextBlock x:Name="DialogMessage" Text="Mensaje" FontSize="18" TextWrapping="Wrap" TextAlignment="Center" Foreground="#666" Margin="0,0,0,30"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition x:Name="CancelColumn" Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ConfirmBtn" Content="Aceptar" Style="{StaticResource PrimaryButtonStyle}" Height="45" Margin="5" Click="DialogButton_Click"/>
+                        <Button x:Name="CancelBtn" Grid.Column="1" Content="Cancelar" Style="{StaticResource OrangeButtonStyle}" Height="45" Margin="5" Click="DialogButton_Click" Visibility="Collapsed"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </Page>

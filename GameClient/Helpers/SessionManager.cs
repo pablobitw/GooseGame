@@ -1,4 +1,4 @@
-﻿using GameClient.Views; 
+﻿using GameClient.Views;
 using System.Linq;
 using System.Windows;
 
@@ -24,15 +24,20 @@ namespace GameClient.Helpers
             IsGuest = false;
         }
 
-        public static void ForceLogout(string message = "Se ha perdido la conexión con el servidor.")
+        public static void ForceLogout(string message = null)
         {
             if (Application.Current == null) return;
+
+            string finalMessage = message ?? GameClient.Resources.Strings.ErrorConnectionLost;
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 ClearSession();
 
-                MessageBox.Show(message, "Sesión Terminada", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(finalMessage,
+                                GameClient.Resources.Strings.SessionTerminatedTitle,
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
 
                 AuthWindow loginWindow = new AuthWindow();
                 loginWindow.Show();

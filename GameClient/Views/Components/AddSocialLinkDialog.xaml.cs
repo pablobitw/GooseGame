@@ -19,7 +19,7 @@ namespace GameClient.Views.Components
             UrlTextBox.Text = string.Empty;
             SocialTypeComboBox.SelectedIndex = -1;
             PrefixTextBlock.Text = "https://...";
-            HintText.Text = "Selecciona una red social.";
+            HintText.Text = GameClient.Resources.Strings.SocialHintDefault;
         }
 
         private void SocialTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -30,7 +30,7 @@ namespace GameClient.Views.Components
                 PrefixTextBlock.Text = prefix;
 
                 UrlTextBox.Focus();
-                HintText.Text = "Máximo 70 caracteres. Pegado deshabilitado.";
+                HintText.Text = GameClient.Resources.Strings.SocialHintActive;
             }
         }
 
@@ -40,8 +40,8 @@ namespace GameClient.Views.Components
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado.",
-                                "Acción bloqueada",
+                MessageBox.Show(GameClient.Resources.Strings.ErrorPastingDisabled,
+                                GameClient.Resources.Strings.DialogActionBlockedTitle,
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
             }));
@@ -55,19 +55,25 @@ namespace GameClient.Views.Components
 
             if (SocialTypeComboBox.SelectedIndex == -1)
             {
-                MessageBox.Show("Selecciona una red social.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorSelectPlatform,
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(username))
             {
-                MessageBox.Show("Escribe tu nombre de usuario.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorEmptyUsername,
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (username.Length > 70)
             {
-                MessageBox.Show("El nombre de usuario es demasiado largo.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorUsernameTooLong,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

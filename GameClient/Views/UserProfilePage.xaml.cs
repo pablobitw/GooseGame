@@ -1,5 +1,5 @@
 ﻿using GameClient.UserProfileServiceReference;
-using GameClient.Views.Components; 
+using GameClient.Views.Components;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -22,6 +22,7 @@ namespace GameClient.Views
 
         private readonly string userEmail;
         private ObservableCollection<string> _socialLinks;
+        private Action _onConfirmAction;
 
         public UserProfilePage(string email)
         {
@@ -29,23 +30,43 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                MessageBox.Show("Sesión inválida. Por favor inicia sesión nuevamente.");
+                ShowErrorMessage("Sesión inválida. Por favor inicia sesión nuevamente.");
                 Helpers.SessionManager.ForceLogout();
                 return;
             }
 
             userEmail = email;
-
             _socialLinks = new ObservableCollection<string>();
             SocialLinksPanel.ItemsSource = _socialLinks;
 
             Loaded += UserProfilePage_Loaded;
-
             DeactivateDialog.DialogClosed += DeactivateDialog_DialogClosed;
             DeactivateDialog.AccountDeactivated += DeactivateDialog_AccountDeactivated;
-
             AddLinkPopup.DialogClosed += AddLinkPopup_DialogClosed;
             AddLinkPopup.LinkAdded += AddLinkPopup_LinkAdded;
+        }
+
+        private void ShowCustomDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        {
+            DialogTitle.Text = title;
+            DialogMessage.Text = message;
+            DialogIcon.Icon = icon;
+            CancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            CancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            ConfirmBtn.Content = isConfirmation ? GameClient.Resources.Strings.DialogConfirmBtn : GameClient.Resources.Strings.DialogOkBtn;
+            CancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
+            _onConfirmAction = onConfirm;
+            DialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void DialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogOverlay.Visibility = Visibility.Collapsed;
+            if (sender == ConfirmBtn)
+            {
+                _onConfirmAction?.Invoke();
+            }
+            _onConfirmAction = null;
         }
 
         private async void UserProfilePage_Loaded(object sender, RoutedEventArgs e)
@@ -56,17 +77,14 @@ namespace GameClient.Views
         private async Task LoadUserProfile()
         {
             var client = new UserProfileServiceClient();
-
             try
             {
                 var profile = await client.GetUserProfileAsync(userEmail);
-
                 if (profile == null)
                 {
-                    MessageBox.Show(GameClient.Resources.Strings.ProfileLoadError, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorMessage(GameClient.Resources.Strings.ProfileLoadError);
                     return;
                 }
-
                 UpdateProfileUI(profile);
                 LoadAvatar(profile.AvatarPath);
             }
@@ -153,12 +171,11 @@ namespace GameClient.Views
                 await mainWindow.ShowMainMenu();
         }
 
-
         private void AddSocialLinkButton_Click(object sender, RoutedEventArgs e)
         {
             if (_socialLinks.Count >= 3)
             {
-                MessageBox.Show("Solo puedes agregar hasta 3 redes sociales.", "Límite", MessageBoxButton.OK, MessageBoxImage.Information);
+                ShowCustomDialog(GameClient.Resources.Strings.SocialLimitTitle, GameClient.Resources.Strings.SocialLimitMessage, FontAwesome.WPF.FontAwesomeIcon.InfoCircle);
                 return;
             }
             AddLinkPopup.Reset();
@@ -174,20 +191,19 @@ namespace GameClient.Views
             try
             {
                 string error = await client.AddSocialLinkAsync(userEmail, url);
-
                 if (error == null)
                 {
-                    MessageBox.Show("Red social agregada.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ShowSuccessMessage(GameClient.Resources.Strings.LinkAddedSuccess);
                     await LoadUserProfile();
                 }
                 else
                 {
-                    MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ShowCustomDialog(GameClient.Resources.Strings.DialogWarningTitle, error, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error de conexión: " + ex.Message);
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle + ": " + ex.Message);
             }
             finally
             {
@@ -196,26 +212,26 @@ namespace GameClient.Views
             }
         }
 
-        private async void DeleteSocialLink_Click(object sender, RoutedEventArgs e)
+        private void DeleteSocialLink_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is string urlToRemove)
             {
-                if (MessageBox.Show("¿Eliminar enlace?", "Confirmar", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.DeleteLinkConfirm, FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, true, async () =>
                 {
                     var client = new UserProfileServiceClient();
                     try
                     {
                         bool success = await client.RemoveSocialLinkAsync(userEmail, urlToRemove);
                         if (success) await LoadUserProfile();
-                        else MessageBox.Show("No se pudo eliminar.");
+                        else ShowErrorMessage(GameClient.Resources.Strings.LinkDeleteError);
                     }
-                    catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+                    catch (Exception ex) { ShowErrorMessage("Error: " + ex.Message); }
                     finally
                     {
                         if (client.State == CommunicationState.Opened) client.Close();
                         else client.Abort();
                     }
-                }
+                });
             }
         }
 
@@ -226,10 +242,8 @@ namespace GameClient.Views
                 Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
                 e.Handled = true;
             }
-            catch { MessageBox.Show("No se pudo abrir el enlace."); }
+            catch { ShowErrorMessage("No se pudo abrir el enlace."); }
         }
-
-
 
         private void ShowDeactivatePopup_Click(object sender, RoutedEventArgs e)
         {
@@ -243,10 +257,15 @@ namespace GameClient.Views
         private void DeactivateDialog_AccountDeactivated(object sender, EventArgs e)
         {
             DeactivateDialog.Visibility = Visibility.Collapsed;
-            MessageBox.Show("Cuenta desactivada.", "Adiós", MessageBoxButton.OK, MessageBoxImage.Information);
-            var authWindow = new AuthWindow();
-            authWindow.Show();
-            Window.GetWindow(this)?.Close();
+            ShowCustomDialog(GameClient.Resources.Strings.DeactivatedSuccessTitle, GameClient.Resources.Strings.DeactivatedSuccessMsg, FontAwesome.WPF.FontAwesomeIcon.SignOut, false, () =>
+            {
+                var authWindow = new AuthWindow();
+                authWindow.Show();
+                Window.GetWindow(this)?.Close();
+            });
         }
+
+        private void ShowErrorMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogErrorTitle, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
+        private void ShowSuccessMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogSuccessTitle, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
     }
 }

@@ -49,17 +49,17 @@ namespace GameClient.Helpers
                 _proxy = new FriendshipServiceClient(context);
                 _proxy.Connect(_username);
             }
-            catch (EndpointNotFoundException ex)
+            catch (EndpointNotFoundException)
             {
-                HandleFatalConnectionError($"No se pudo conectar al servidor: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendServiceConnect);
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Error de conexión con el servicio de amigos: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendServiceComm);
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                HandleFatalConnectionError($"Tiempo de espera agotado al conectar: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendServiceTimeout);
             }
         }
 
@@ -73,7 +73,6 @@ namespace GameClient.Helpers
                 }
                 catch
                 {
-                    // Ignorar errores al abortar
                 }
                 _proxy = null;
             }
@@ -144,19 +143,19 @@ namespace GameClient.Helpers
                 }
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationObjectFaultedException ex)
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError($"Canal corrupto al obtener lista de amigos: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListChannel);
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Error de comunicación al obtener lista de amigos: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListComm);
                 return Array.Empty<FriendDto>();
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                HandleFatalConnectionError($"Timeout al obtener lista de amigos: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListTimeout);
                 return Array.Empty<FriendDto>();
             }
         }
@@ -171,19 +170,19 @@ namespace GameClient.Helpers
                 }
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationObjectFaultedException ex)
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError($"Canal corrupto al obtener solicitudes pendientes: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListChannel);
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Error de comunicación al obtener solicitudes: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorPendingRequestsComm);
                 return Array.Empty<FriendDto>();
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                HandleFatalConnectionError($"Timeout al obtener solicitudes: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListTimeout);
                 return Array.Empty<FriendDto>();
             }
         }
@@ -198,19 +197,19 @@ namespace GameClient.Helpers
                 }
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationObjectFaultedException ex)
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError($"Canal corrupto al obtener solicitudes enviadas: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListChannel);
                 return Array.Empty<FriendDto>();
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Error de comunicación al obtener solicitudes enviadas: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorSentRequestsComm);
                 return Array.Empty<FriendDto>();
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                HandleFatalConnectionError($"Timeout al obtener solicitudes enviadas: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorFriendListTimeout);
                 return Array.Empty<FriendDto>();
             }
         }
@@ -311,17 +310,17 @@ namespace GameClient.Helpers
                     _proxy.SendGameInvitation(invitation);
                 }
             }
-            catch (CommunicationObjectFaultedException ex)
+            catch (CommunicationObjectFaultedException)
             {
-                HandleFatalConnectionError($"Canal corrupto al enviar invitación: {ex.Message}");
+                HandleFatalConnectionError(string.Format(GameClient.Resources.Strings.ErrorInviteFriendChannel, targetUser));
             }
-            catch (CommunicationException ex)
+            catch (CommunicationException)
             {
-                HandleFatalConnectionError($"Error de comunicación al enviar invitación: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorInviteFriendComm);
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
-                HandleFatalConnectionError($"Timeout al enviar invitación: {ex.Message}");
+                HandleFatalConnectionError(GameClient.Resources.Strings.ErrorInviteFriendTimeout);
             }
         }
     }

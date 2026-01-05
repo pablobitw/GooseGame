@@ -29,7 +29,6 @@ namespace GameServer.Services.Logic
         private readonly IGameplayRepository _repository;
         private readonly VoteLogic _voteLogic;
 
-        // Factory para SanctionService para garantizar un contexto limpio en cada uso
         private readonly Func<SanctionAppService> _sanctionServiceFactory;
 
         private class BoardMoveResult

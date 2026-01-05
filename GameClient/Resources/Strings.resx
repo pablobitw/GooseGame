@@ -123,8 +123,14 @@
   <data name="AceptButton" xml:space="preserve">
     <value>Aceptar</value>
   </data>
+  <data name="AddSocialTitle" xml:space="preserve">
+    <value>Agregar Red Social</value>
+  </data>
   <data name="AlreadyHaveAccountText" xml:space="preserve">
     <value>Ya tienes una cuenta? Click aqui</value>
+  </data>
+  <data name="ArtAndAILabel" xml:space="preserve">
+    <value>Arte y Asistencia IA:</value>
   </data>
   <data name="AsGuestButton" xml:space="preserve">
     <value>Jugar como invitado</value>
@@ -177,17 +183,35 @@
   <data name="ChangesLeftMessage" xml:space="preserve">
     <value>Te quedan {0} cambios de nombre.</value>
   </data>
+  <data name="ChangeUsernameTitle" xml:space="preserve">
+    <value>Cambiar Nombre</value>
+  </data>
   <data name="ChatSystemWelcome" xml:space="preserve">
     <value>[Sistema]: ¡Bienvenido a la partida!</value>
   </data>
   <data name="ChatTabHeader" xml:space="preserve">
     <value>CHAT</value>
   </data>
+  <data name="ChatYou" xml:space="preserve">
+    <value>Tú:</value>
+  </data>
   <data name="CodeCopiedMessage" xml:space="preserve">
     <value>Código copiado</value>
   </data>
+  <data name="CodeIncorrectError" xml:space="preserve">
+    <value>Código incorrecto o expirado</value>
+  </data>
   <data name="CodeLabel" xml:space="preserve">
     <value>CÓDIGO:</value>
+  </data>
+  <data name="CodeLengthError" xml:space="preserve">
+    <value>El código debe tener 6 dígitos.</value>
+  </data>
+  <data name="CodePlaceholder" xml:space="preserve">
+    <value>Ej. 123456</value>
+  </data>
+  <data name="CodeSentInfo" xml:space="preserve">
+    <value>Código reenviado a tu correo.</value>
   </data>
   <data name="CoinsLabel" xml:space="preserve">
     <value>Monedas:</value>
@@ -213,8 +237,14 @@
   <data name="ConfirmExitLabel" xml:space="preserve">
     <value>¿Seguro que quieres salir?</value>
   </data>
+  <data name="ConfirmPasswordLabel" xml:space="preserve">
+    <value>Confirmar Contraseña:</value>
+  </data>
   <data name="ConfirmTitle" xml:space="preserve">
     <value>Confirmar</value>
+  </data>
+  <data name="ConnectionError" xml:space="preserve">
+    <value>Error de conexion</value>
   </data>
   <data name="CopyCodeToolTip" xml:space="preserve">
     <value>Copiar Código</value>
@@ -231,11 +261,65 @@
   <data name="CreateMatchTitle" xml:space="preserve">
     <value>Crear partida</value>
   </data>
+  <data name="CreditsTitle" xml:space="preserve">
+    <value>ACERCA DE NOSOTROS</value>
+  </data>
+  <data name="CreditsVersion" xml:space="preserve">
+    <value>Versión 1.0.0 Alpha</value>
+  </data>
+  <data name="DeactivateAccountBtn" xml:space="preserve">
+    <value>Desactivar Cuenta</value>
+  </data>
+  <data name="DeactivateConfirmPrompt" xml:space="preserve">
+    <value>¿Estás seguro? Para confirmar, ingresa tu contraseña actual dos veces:</value>
+  </data>
+  <data name="DeactivatedSuccessMsg" xml:space="preserve">
+    <value>Cuenta desactivada.</value>
+  </data>
+  <data name="DeactivatedSuccessTitle" xml:space="preserve">
+    <value>Adiós</value>
+  </data>
+  <data name="DeactivateTitle" xml:space="preserve">
+    <value>⚠ Desactivar Cuenta</value>
+  </data>
   <data name="DeleteConfirmation" xml:space="preserve">
     <value>¿Eliminar a {0}?</value>
   </data>
   <data name="DeleteFriendToolTip" xml:space="preserve">
     <value>Eliminar Amigo</value>
+  </data>
+  <data name="DeleteLinkConfirm" xml:space="preserve">
+    <value>¿Estás seguro de que quieres eliminar este enlace?</value>
+  </data>
+  <data name="DevelopedByLabel" xml:space="preserve">
+    <value>Desarrollado por:</value>
+  </data>
+  <data name="DialogActionBlockedTitle" xml:space="preserve">
+    <value>Acción bloqueada</value>
+  </data>
+  <data name="DialogCancelBtn" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="DialogConfirmBtn" xml:space="preserve">
+    <value>Confirmar</value>
+  </data>
+  <data name="DialogConfirmTitle" xml:space="preserve">
+    <value>Confirmación</value>
+  </data>
+  <data name="DialogErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="DialogInfoTitle" xml:space="preserve">
+    <value>Información</value>
+  </data>
+  <data name="DialogOkBtn" xml:space="preserve">
+    <value>Entendido</value>
+  </data>
+  <data name="DialogSuccessTitle" xml:space="preserve">
+    <value>Éxito</value>
+  </data>
+  <data name="DialogWarningTitle" xml:space="preserve">
+    <value>Aviso</value>
   </data>
   <data name="EmailLabel" xml:space="preserve">
     <value>Correo Electronico</value>
@@ -248,6 +332,9 @@
   </data>
   <data name="EmptyPasswordLabel" xml:space="preserve">
     <value>La contraseña no puede estar vacia</value>
+  </data>
+  <data name="EmptySlotText" xml:space="preserve">
+    <value>Slot vacío</value>
   </data>
   <data name="EmptyUsernameError" xml:space="preserve">
     <value>Por favor escribe un nombre de usuario.</value>
@@ -264,17 +351,194 @@
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Instrucciones:</value>
   </data>
+  <data name="ErrorCoinFetch" xml:space="preserve">
+    <value>Could not sync your coins.</value>
+  </data>
+  <data name="ErrorConnectionLost" xml:space="preserve">
+    <value>Se ha perdido la conexión con el servidor.</value>
+  </data>
+  <data name="ErrorCurrentPassRequired" xml:space="preserve">
+    <value>Debes ingresar tu contraseña actual.</value>
+  </data>
+  <data name="ErrorCurrentPasswordIncorrect" xml:space="preserve">
+    <value>La contraseña actual es incorrecta o hubo un error.</value>
+  </data>
+  <data name="ErrorDatabaseDown" xml:space="preserve">
+    <value>Lo sentimos, nuestra base de datos no responde.</value>
+  </data>
+  <data name="ErrorDatabaseUnreachable" xml:space="preserve">
+    <value>Sorry, our database is not responding right now.</value>
+  </data>
+  <data name="ErrorDeactivationFailed" xml:space="preserve">
+    <value>La contraseña es incorrecta o no se pudo desactivar la cuenta.</value>
+  </data>
+  <data name="ErrorEmptyUsername" xml:space="preserve">
+    <value>Escribe tu nombre de usuario.</value>
+  </data>
+  <data name="ErrorFriendListChannel" xml:space="preserve">
+    <value>El canal de comunicación se ha corrompido al intentar obtener tu lista de amigos.</value>
+  </data>
+  <data name="ErrorFriendListComm" xml:space="preserve">
+    <value>No se pudo recuperar la lista de amigos debido a un error de red o base de datos.</value>
+  </data>
+  <data name="ErrorFriendListTimeout" xml:space="preserve">
+    <value>Tiempo de espera agotado al solicitar la lista de amigos.</value>
+  </data>
+  <data name="ErrorFriendServiceComm" xml:space="preserve">
+    <value>Error de comunicación con el servicio de amigos. Nuestra base de datos o el servicio podrían estar experimentando problemas.</value>
+  </data>
+  <data name="ErrorFriendServiceConnect" xml:space="preserve">
+    <value>No se pudo establecer conexión con el servidor de amigos.</value>
+  </data>
+  <data name="ErrorFriendServiceTimeout" xml:space="preserve">
+    <value>El servidor de amigos tardó demasiado en responder. Reintenta en unos momentos.</value>
+  </data>
+  <data name="ErrorGameplayConnect" xml:space="preserve">
+    <value>No se pudo establecer conexión con el servidor de juego.</value>
+  </data>
+  <data name="ErrorGameplayConnectionLost" xml:space="preserve">
+    <value>Se ha perdido la conexión con la partida en curso.</value>
+  </data>
+  <data name="ErrorGameplayServerUnavailable" xml:space="preserve">
+    <value>El servidor de juego no está disponible actualmente. Nuestra base de datos podría estar en mantenimiento.</value>
+  </data>
+  <data name="ErrorGameplayTimeout" xml:space="preserve">
+    <value>El servidor de juego no respondió a tiempo. Tu jugada podría no haberse registrado.</value>
+  </data>
+  <data name="ErrorGameplayUnexpected" xml:space="preserve">
+    <value>Ocurrió un error inesperado durante la partida.</value>
+  </data>
+  <data name="ErrorInviteComm" xml:space="preserve">
+    <value>Communication error while trying to join the invitation.</value>
+  </data>
+  <data name="ErrorInviteFriend" xml:space="preserve">
+    <value>Error al enviar invitación.</value>
+  </data>
+  <data name="ErrorInviteFriendChannel" xml:space="preserve">
+    <value>El canal falló. No se pudo enviar la invitación de juego a {0}.</value>
+  </data>
+  <data name="ErrorInviteFriendComm" xml:space="preserve">
+    <value>Error de red al enviar la invitación. Es posible que el servidor de base de datos esté caído.</value>
+  </data>
+  <data name="ErrorInviteFriendTimeout" xml:space="preserve">
+    <value>La invitación no pudo enviarse a tiempo. El servidor está saturado.</value>
+  </data>
+  <data name="ErrorInviteTimeout" xml:space="preserve">
+    <value>The server took too long to respond to the invitation.</value>
+  </data>
+  <data name="ErrorJoinLobby" xml:space="preserve">
+    <value>Could not join the room: {0}</value>
+  </data>
   <data name="ErrorLabel" xml:space="preserve">
     <value>Hubo un error</value>
+  </data>
+  <data name="ErrorLeaderboardConnection" xml:space="preserve">
+    <value>No se pudo conectar con el servidor de ranking.</value>
+  </data>
+  <data name="ErrorLeaveLobby" xml:space="preserve">
+    <value>Error de red al intentar salir.</value>
+  </data>
+  <data name="ErrorLoadFriends" xml:space="preserve">
+    <value>No se pudo cargar la lista de amigos.</value>
+  </data>
+  <data name="ErrorLobbyComm" xml:space="preserve">
+    <value>Se perdió la comunicación con el servidor de salas.</value>
+  </data>
+  <data name="ErrorLobbyConnect" xml:space="preserve">
+    <value>No se pudo establecer conexión con el servidor de salas.</value>
+  </data>
+  <data name="ErrorLobbyDatabase" xml:space="preserve">
+    <value>No se pudo acceder a la base de datos de salas.</value>
+  </data>
+  <data name="ErrorLobbyInit" xml:space="preserve">
+    <value>Error al inicializar el servicio de salas.</value>
+  </data>
+  <data name="ErrorLobbyOperation" xml:space="preserve">
+    <value>La operación en la sala no pudo completarse.</value>
+  </data>
+  <data name="ErrorLobbyTimeout" xml:space="preserve">
+    <value>El servidor de salas tardó demasiado en responder.</value>
+  </data>
+  <data name="ErrorLobbyUpdateComm" xml:space="preserve">
+    <value>Error de comunicación con el servidor al actualizar el lobby.</value>
+  </data>
+  <data name="ErrorLobbyUpdateTimeout" xml:space="preserve">
+    <value>El tiempo de espera para actualizar el lobby se ha agotado.</value>
+  </data>
+  <data name="ErrorNewPassEmpty" xml:space="preserve">
+    <value>La contraseña nueva no puede estar vacía.</value>
+  </data>
+  <data name="ErrorNotifyServer" xml:space="preserve">
+    <value>No se pudo notificar al servidor, cerrando localmente.</value>
+  </data>
+  <data name="ErrorPassMismatch" xml:space="preserve">
+    <value>Las contraseñas nuevas no coinciden.</value>
+  </data>
+  <data name="ErrorPassTooWeak" xml:space="preserve">
+    <value>La contraseña debe tener al menos 8 caracteres, un número y un carácter especial.</value>
+  </data>
+  <data name="ErrorPasswordsEmpty" xml:space="preserve">
+    <value>Por favor ingresa tu contraseña en ambos campos.</value>
+  </data>
+  <data name="ErrorPasswordsMismatch" xml:space="preserve">
+    <value>Las contraseñas no coinciden.</value>
+  </data>
+  <data name="ErrorPastingDisabled" xml:space="preserve">
+    <value>Por seguridad, el pegado está deshabilitado en campos de contraseña.</value>
+  </data>
+  <data name="ErrorPendingRequestsComm" xml:space="preserve">
+    <value>Error al obtener las solicitudes pendientes. El servidor no responde.</value>
+  </data>
+  <data name="ErrorSamePass" xml:space="preserve">
+    <value>La nueva contraseña no puede ser igual a la actual.</value>
+  </data>
+  <data name="ErrorSelectPlatform" xml:space="preserve">
+    <value>Selecciona una red social.</value>
+  </data>
+  <data name="ErrorSentRequestsComm" xml:space="preserve">
+    <value>Error al obtener las solicitudes enviadas. Revisa tu conexión a internet.</value>
+  </data>
+  <data name="ErrorStartGame" xml:space="preserve">
+    <value>Error al intentar iniciar la partida. Verifique su conexión.</value>
   </data>
   <data name="ErrorTitle" xml:space="preserve">
     <value>Error de Red</value>
   </data>
+  <data name="ErrorUsernameTooLong" xml:space="preserve">
+    <value>El nombre de usuario es demasiado largo.</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
   </data>
+  <data name="FriendActionBlockedTitle" xml:space="preserve">
+    <value>Acción bloqueada</value>
+  </data>
+  <data name="FriendAlreadyFriends" xml:space="preserve">
+    <value>Ya eres amigo de este jugador.</value>
+  </data>
+  <data name="FriendCancelRequestConfirm" xml:space="preserve">
+    <value>¿Deseas cancelar la solicitud enviada?</value>
+  </data>
+  <data name="FriendDeleteConfirm" xml:space="preserve">
+    <value>¿Eliminar a {0} de tus amigos?</value>
+  </data>
   <data name="FriendDeletedSuccess" xml:space="preserve">
     <value>Amigo eliminado.</value>
+  </data>
+  <data name="FriendNotFound" xml:space="preserve">
+    <value>El usuario ingresado no existe.</value>
+  </data>
+  <data name="FriendPasteBlocked" xml:space="preserve">
+    <value>Por seguridad, el pegado está deshabilitado en el buscador.</value>
+  </data>
+  <data name="FriendRequestSentSuccess" xml:space="preserve">
+    <value>Solicitud enviada a {0}.</value>
+  </data>
+  <data name="FriendSelfRequestError" xml:space="preserve">
+    <value>No puedes enviarte una solicitud a ti mismo.</value>
+  </data>
+  <data name="FriendsFeatureName" xml:space="preserve">
+    <value>Lista de Amigos</value>
   </data>
   <data name="FriendshipTitle" xml:space="preserve">
     <value>Gestión de Amigos</value>
@@ -285,6 +549,9 @@
   <data name="GameLanguageLabel" xml:space="preserve">
     <value>Idioma del Juego</value>
   </data>
+  <data name="GameplayWarningTitle" xml:space="preserve">
+    <value>Aviso de Partida</value>
+  </data>
   <data name="GamesPlayedLabel" xml:space="preserve">
     <value>Partidas Jugadas:</value>
   </data>
@@ -293,6 +560,12 @@
   </data>
   <data name="GreatButton" xml:space="preserve">
     <value>¡Genial!</value>
+  </data>
+  <data name="GuestRestrictedMsg" xml:space="preserve">
+    <value>La función '{0}' solo está disponible para usuarios registrados. ¿Te gustaría crear una cuenta ahora para disfrutar de amigos, estadísticas y más? (Se cerrará tu sesión actual)</value>
+  </data>
+  <data name="GuestRestrictedTitle" xml:space="preserve">
+    <value>Modo Invitado</value>
   </data>
   <data name="HostHeader" xml:space="preserve">
     <value>Anfitrión</value>
@@ -306,6 +579,9 @@
   <data name="HowToPlayTitle" xml:space="preserve">
     <value>GUÍA DE CASILLAS ESPECIALES</value>
   </data>
+  <data name="ImpossibleStartTitle" xml:space="preserve">
+    <value>Imposible Iniciar</value>
+  </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Información</value>
   </data>
@@ -315,11 +591,17 @@
   <data name="InvalidCodeTitle" xml:space="preserve">
     <value>Código Inválido</value>
   </data>
+  <data name="InvitationMessage" xml:space="preserve">
+    <value>{0} te ha invitado a una partida. ¿Quieres unirte?</value>
+  </data>
   <data name="InvitationSentButton" xml:space="preserve">
     <value>Enviado</value>
   </data>
   <data name="InvitationSentMessage" xml:space="preserve">
     <value>Invitación enviada a {0}.</value>
+  </data>
+  <data name="InvitationTitle" xml:space="preserve">
+    <value>Invitación de Juego</value>
   </data>
   <data name="InviteButton" xml:space="preserve">
     <value>Invitar</value>
@@ -330,6 +612,9 @@
   <data name="InviteFriendsToolTip" xml:space="preserve">
     <value>Invitar Amigos</value>
   </data>
+  <data name="InviteSentStatus" xml:space="preserve">
+    <value>Enviado</value>
+  </data>
   <data name="JoinButton" xml:space="preserve">
     <value>Unirse</value>
   </data>
@@ -338,6 +623,12 @@
   </data>
   <data name="JoinMatchCodeTitle" xml:space="preserve">
     <value>Ingresa el Código de Partida</value>
+  </data>
+  <data name="KickedByHost" xml:space="preserve">
+    <value>Has sido expulsado de la sala por el anfitrión.</value>
+  </data>
+  <data name="KickedGlobalMsg" xml:space="preserve">
+    <value>Has sido expulsado de la sesión: {0}</value>
   </data>
   <data name="KickedTitle" xml:space="preserve">
     <value>Expulsado</value>
@@ -354,6 +645,9 @@
   <data name="LanguageHeader" xml:space="preserve">
     <value>Idioma</value>
   </data>
+  <data name="LeaderboardFeatureName" xml:space="preserve">
+    <value>Tabla de Clasificación</value>
+  </data>
   <data name="LeaveGameTitle" xml:space="preserve">
     <value>Abandonar Partida</value>
   </data>
@@ -363,11 +657,38 @@
   <data name="LimitReachedMessage" xml:space="preserve">
     <value>Has alcanzado el límite de cambios de nombre (3/3).</value>
   </data>
+  <data name="LinkAddedSuccess" xml:space="preserve">
+    <value>Red social agregada.</value>
+  </data>
+  <data name="LinkDeleteError" xml:space="preserve">
+    <value>No se pudo eliminar el enlace. Inténtalo de nuevo.</value>
+  </data>
   <data name="LoadingText" xml:space="preserve">
     <value>Cargando...</value>
   </data>
+  <data name="LobbyClosedMsg" xml:space="preserve">
+    <value>El anfitrión cerró la sala.</value>
+  </data>
+  <data name="LobbyClosedTitle" xml:space="preserve">
+    <value>Sala cerrada</value>
+  </data>
+  <data name="LobbyCodeTitle" xml:space="preserve">
+    <value>CÓDIGO: {0}</value>
+  </data>
+  <data name="LobbyDisbandedByHost" xml:space="preserve">
+    <value>El anfitrión ha disuelto la sala. Serás redirigido al menú.</value>
+  </data>
+  <data name="LobbyHostExitConfirm" xml:space="preserve">
+    <value>Eres el anfitrión. Si sales, la sala se cerrará para todos. ¿Estás seguro?</value>
+  </data>
+  <data name="LobbyHostTag" xml:space="preserve">
+    <value>(Host)</value>
+  </data>
   <data name="LobbyPageTitle" xml:space="preserve">
     <value>Crear Partida</value>
+  </data>
+  <data name="LobbyYouTag" xml:space="preserve">
+    <value>(Tú)</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Iniciar Sesion</value>
@@ -377,6 +698,9 @@
   </data>
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
+  </data>
+  <data name="MinPlayersRequired" xml:space="preserve">
+    <value>Se necesitan al menos 2 jugadores.</value>
   </data>
   <data name="ModifyProfileTitle" xml:space="preserve">
     <value>Modificar perfil</value>
@@ -389,6 +713,9 @@
   </data>
   <data name="NewPasswordLabel" xml:space="preserve">
     <value>Nueva contraseña</value>
+  </data>
+  <data name="NewUsernameLabel" xml:space="preserve">
+    <value>Nuevo Nombre de Usuario</value>
   </data>
   <data name="NoFriendsMessage" xml:space="preserve">
     <value>No tienes amigos aún.</value>
@@ -405,6 +732,9 @@
   <data name="NoRequestsMessage" xml:space="preserve">
     <value>No tienes solicitudes pendientes.</value>
   </data>
+  <data name="NoSentRequestsMessage" xml:space="preserve">
+    <value>No has enviado solicitudes pendientes</value>
+  </data>
   <data name="OptionsButton" xml:space="preserve">
     <value>Opciones</value>
   </data>
@@ -413,6 +743,9 @@
   </data>
   <data name="PasswordLabel" xml:space="preserve">
     <value>Contraseña:</value>
+  </data>
+  <data name="PasswordUpdateSuccess" xml:space="preserve">
+    <value>¡Contraseña actualizada con éxito!</value>
   </data>
   <data name="PlayButton" xml:space="preserve">
     <value>Jugar</value>
@@ -423,11 +756,23 @@
   <data name="PlayerCountRange" xml:space="preserve">
     <value>2-4</value>
   </data>
+  <data name="PlayerJoinedMsg" xml:space="preserve">
+    <value>{0} se ha unido.</value>
+  </data>
+  <data name="PlayerLeftMsg" xml:space="preserve">
+    <value>{0} ha salido.</value>
+  </data>
+  <data name="PlayersCountTitle" xml:space="preserve">
+    <value>JUGADORES ({0}/{1})</value>
+  </data>
   <data name="PlayersHeader" xml:space="preserve">
     <value>Jugadores</value>
   </data>
   <data name="PlayersTabHeader" xml:space="preserve">
     <value>Jugadores</value>
+  </data>
+  <data name="ProfileFeatureName" xml:space="preserve">
+    <value>Perfil de Usuario</value>
   </data>
   <data name="ProfileLoadError" xml:space="preserve">
     <value>No se pudo cargar el perfil del usuario.</value>
@@ -477,6 +822,9 @@
   <data name="RequestsTab" xml:space="preserve">
     <value>Solicitudes</value>
   </data>
+  <data name="ResendCodeBtn" xml:space="preserve">
+    <value>Reenviar Código</value>
+  </data>
   <data name="ResendCodeButton" xml:space="preserve">
     <value>Reenviar codigo</value>
   </data>
@@ -495,6 +843,21 @@
   <data name="SaveButton" xml:space="preserve">
     <value>Guardar Cambios</value>
   </data>
+  <data name="SaveChangesBtn" xml:space="preserve">
+    <value>Guardar Cambios</value>
+  </data>
+  <data name="ScoreboardPlayer" xml:space="preserve">
+    <value>JUGADOR</value>
+  </data>
+  <data name="ScoreboardRank" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="ScoreboardTitle" xml:space="preserve">
+    <value>MEJORES JUGADORES</value>
+  </data>
+  <data name="ScoreboardWins" xml:space="preserve">
+    <value>VICTORIAS</value>
+  </data>
   <data name="ScreenModeLabel" xml:space="preserve">
     <value>Modo de Pantalla</value>
   </data>
@@ -510,6 +873,9 @@
   <data name="SelectMatchWarning" xml:space="preserve">
     <value>Por favor selecciona una partida de la lista.</value>
   </data>
+  <data name="SelectPlatformLabel" xml:space="preserve">
+    <value>Selecciona la plataforma:</value>
+  </data>
   <data name="SelfRequestError" xml:space="preserve">
     <value>No puedes enviarte solicitud a ti mismo.</value>
   </data>
@@ -519,11 +885,41 @@
   <data name="SendRequestButton" xml:space="preserve">
     <value>Enviar Solicitud</value>
   </data>
+  <data name="SentRequestsTab" xml:space="preserve">
+    <value>Enviadas</value>
+  </data>
+  <data name="SessionTerminatedTitle" xml:space="preserve">
+    <value>Sesión Terminada</value>
+  </data>
   <data name="SfxLabel" xml:space="preserve">
     <value>Efectos (SFX)</value>
   </data>
+  <data name="ShopPendingMsg" xml:space="preserve">
+    <value>¡Funcionalidad pendiente! Te recomendamos que ahorres tus monedas y consigas buenos tickets para cuando abra.</value>
+  </data>
+  <data name="ShopPendingTitle" xml:space="preserve">
+    <value>Tienda (Próximamente)</value>
+  </data>
   <data name="SlotEmptyLabel" xml:space="preserve">
     <value>Slot Vacío</value>
+  </data>
+  <data name="SocialHintActive" xml:space="preserve">
+    <value>Máximo 70 caracteres. Pegado deshabilitado.</value>
+  </data>
+  <data name="SocialHintDefault" xml:space="preserve">
+    <value>Selecciona una red social.</value>
+  </data>
+  <data name="SocialLimitMessage" xml:space="preserve">
+    <value>Solo puedes agregar un máximo de 3 redes sociales.</value>
+  </data>
+  <data name="SocialLimitTitle" xml:space="preserve">
+    <value>Límite alcanzado</value>
+  </data>
+  <data name="SocialNetworksTitle" xml:space="preserve">
+    <value>Redes Sociales</value>
+  </data>
+  <data name="SocialSaveBtn" xml:space="preserve">
+    <value>Guardar</value>
   </data>
   <data name="SoundHeader" xml:space="preserve">
     <value>Sonido</value>
@@ -540,11 +936,17 @@
   <data name="StatsTitle" xml:space="preserve">
     <value>ESTADÍSTICAS</value>
   </data>
+  <data name="Step2Instruction" xml:space="preserve">
+    <value>¡Código verificado! Escribe tu nuevo nombre.</value>
+  </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Exitoso</value>
   </data>
+  <data name="SystemPrefix" xml:space="preserve">
+    <value>[Sistema]:</value>
+  </data>
   <data name="TileBridgeDesc" xml:space="preserve">
-    <value>De puente a puente y tiro porque me lleva la corriente. Salta al siguiente puente y espera tu turno.</value>
+    <value>De puente a puente y tiro porque me lleva la corriente. Salta al otro puente y vuelve a lanzar.</value>
   </data>
   <data name="TileBridgeName" xml:space="preserve">
     <value>El Puente</value>
@@ -574,7 +976,7 @@
     <value>El Laberinto</value>
   </data>
   <data name="TilePrisonDesc" xml:space="preserve">
-    <value>Has cometido una infracción. Quedas arrestado y pierdes dos turnos.</value>
+    <value>Has cometido una infracción. Quedas arrestado y pierdes tres turnos.</value>
   </data>
   <data name="TilePrisonName" xml:space="preserve">
     <value>La Cárcel</value>
@@ -586,7 +988,7 @@
     <value>La Calavera</value>
   </data>
   <data name="TileWellDesc" xml:space="preserve">
-    <value>Has caído en la oscuridad. No podrás moverte hasta que otro jugador caiga aquí o pase a rescatarte.</value>
+    <value>Has caído en la oscuridad. Pierdes dos turnos esperando ser rescatado.</value>
   </data>
   <data name="TileWellName" xml:space="preserve">
     <value>El Pozo</value>
@@ -600,8 +1002,26 @@
   <data name="UnexpectedErrorMessage" xml:space="preserve">
     <value>Ocurrió un error inesperado: {0}</value>
   </data>
+  <data name="UsernameChannelLabel" xml:space="preserve">
+    <value>Nombre de usuario / Canal:</value>
+  </data>
+  <data name="UsernameExistsError" xml:space="preserve">
+    <value>Este nombre ya está en uso.</value>
+  </data>
   <data name="UsernameLabel" xml:space="preserve">
     <value>Usuario:</value>
+  </data>
+  <data name="UsernameLimitError" xml:space="preserve">
+    <value>Límite de cambios alcanzado (3/3).</value>
+  </data>
+  <data name="UsernameMinLengthError" xml:space="preserve">
+    <value>El nombre es muy corto (mínimo 3).</value>
+  </data>
+  <data name="UsernamePlaceholder" xml:space="preserve">
+    <value>Mínimo 3 caracteres</value>
+  </data>
+  <data name="UsernameSuccess" xml:space="preserve">
+    <value>¡Nombre cambiado exitosamente!</value>
   </data>
   <data name="UsernameUsedLabel" xml:space="preserve">
     <value>El nombre de usuario ya está en uso.</value>
@@ -624,6 +1044,12 @@
   <data name="VerifyButton" xml:space="preserve">
     <value>Verificar</value>
   </data>
+  <data name="VerifyCodeBtn" xml:space="preserve">
+    <value>Verificar Código</value>
+  </data>
+  <data name="VerifyCodeInstruction" xml:space="preserve">
+    <value>Por seguridad, hemos enviado un código a tu correo. Ingrésalo para continuar.</value>
+  </data>
   <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
     <value>Recuperacion</value>
   </data>
@@ -644,6 +1070,9 @@
   </data>
   <data name="WaitingForPlayersLabel" xml:space="preserve">
     <value>Esperando jugadores…</value>
+  </data>
+  <data name="WaitingResponse" xml:space="preserve">
+    <value>Esperando respuesta...</value>
   </data>
   <data name="WarningTitle" xml:space="preserve">
     <value>Aviso</value>

@@ -16,8 +16,8 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
-        private const string ErrorTitle = "Error";
         private readonly string _username;
+        private Action _onDialogConfirmAction;
 
         public GameMainWindow(string loggedInUsername)
         {
@@ -39,6 +39,26 @@ namespace GameClient
             AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
         }
 
+        private void ShowOverlayDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        {
+            DialogTitle.Text = title;
+            DialogMessage.Text = message;
+            DialogIcon.Icon = icon;
+            DialogCancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            DialogCancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            DialogConfirmBtn.Content = isConfirmation ? GameClient.Resources.Strings.DialogConfirmBtn : GameClient.Resources.Strings.DialogOkBtn;
+            DialogCancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
+            _onDialogConfirmAction = onConfirm;
+            CustomDialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void DialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            CustomDialogOverlay.Visibility = Visibility.Collapsed;
+            if (sender == DialogConfirmBtn) _onDialogConfirmAction?.Invoke();
+            _onDialogConfirmAction = null;
+        }
+
         private void OnGlobalPlayerKicked(string reason)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -48,8 +68,13 @@ namespace GameClient
                     boardPage.StopTimers();
                 }
 
-                MessageBox.Show($"Has sido expulsado de la sesión: {reason}", "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
-                _ = ShowMainMenu();
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.KickedTitle,
+                    string.Format(GameClient.Resources.Strings.KickedGlobalMsg, reason),
+                    FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle,
+                    false,
+                    () => _ = ShowMainMenu()
+                );
             });
         }
 
@@ -72,18 +97,21 @@ namespace GameClient
             catch (TimeoutException)
             {
                 CoinCountText.Text = "---";
+                Console.WriteLine(GameClient.Resources.Strings.ErrorCoinFetch);
             }
             catch (EndpointNotFoundException)
             {
                 CoinCountText.Text = "---";
+                Console.WriteLine(GameClient.Resources.Strings.ErrorDatabaseUnreachable);
             }
             catch (CommunicationException)
             {
                 CoinCountText.Text = "---";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 CoinCountText.Text = "Err";
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -91,16 +119,15 @@ namespace GameClient
         {
             if (UserSession.GetInstance().IsGuest)
             {
-                string message = $"La función '{featureName}' solo está disponible para usuarios registrados.\n\n" +
-                                 "¿Te gustaría crear una cuenta ahora para disfrutar de amigos, estadísticas y más?\n" +
-                                 "(Se cerrará tu sesión actual)";
+                string message = string.Format(GameClient.Resources.Strings.GuestRestrictedMsg, featureName);
 
-                var result = MessageBox.Show(message, "Modo Invitado", MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    ReturnToRegister();
-                }
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.GuestRestrictedTitle,
+                    message,
+                    FontAwesome.WPF.FontAwesomeIcon.UserSecret,
+                    true,
+                    () => ReturnToRegister()
+                );
 
                 return true;
             }
@@ -117,7 +144,7 @@ namespace GameClient
 
         private void ProfileButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted("Perfil de Usuario")) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.ProfileFeatureName)) return;
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new UserProfilePage(_username));
@@ -125,7 +152,7 @@ namespace GameClient
 
         private void FriendsButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted("Lista de Amigos")) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.FriendsFeatureName)) return;
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new FriendshipPage(_username));
@@ -173,31 +200,27 @@ namespace GameClient
 
         private void QuitButtonClick(object sender, RoutedEventArgs e)
         {
-            string confirmationMessage = GameClient.Resources.Strings.ConfirmExitLabel;
-            string yesButtonText = GameClient.Resources.Strings.YesLabel;
-            string noButtonText = GameClient.Resources.Strings.NoLabel;
-
-            var confirmationDialog = new CustomMessageBox(confirmationMessage, yesButtonText, noButtonText);
-
-            bool? result = confirmationDialog.ShowDialog();
-            if (result == true)
-            {
-                this.Close();
-            }
+            ShowOverlayDialog(
+                GameClient.Resources.Strings.DialogConfirmTitle,
+                GameClient.Resources.Strings.ConfirmExitLabel,
+                FontAwesome.WPF.FontAwesomeIcon.SignOut,
+                true,
+                () => this.Close()
+            );
         }
 
         private void ShopButtonClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(
-                "¡Funcionalidad pendiente!\nTe recomendamos que ahorres tus monedas y consigas buenos tickets para cuando abra.",
-                "Tienda (Próximamente)",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            ShowOverlayDialog(
+                GameClient.Resources.Strings.ShopPendingTitle,
+                GameClient.Resources.Strings.ShopPendingMsg,
+                FontAwesome.WPF.FontAwesomeIcon.ShoppingBag
+            );
         }
 
         private void LeaderboardButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsGuestActionRestricted("Tabla de Clasificación")) return;
+            if (IsGuestActionRestricted(GameClient.Resources.Strings.LeaderboardFeatureName)) return;
 
             MainMenuGrid.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new ScoreboardPage(_username));
@@ -252,18 +275,15 @@ namespace GameClient
         {
             if (UserSession.GetInstance().IsGuest) return;
 
-            await this.Dispatcher.InvokeAsync(async () =>
+            await this.Dispatcher.InvokeAsync(() =>
             {
-                var result = MessageBox.Show(
-                    $"{host} te ha invitado a una partida. ¿Quieres unirte?",
-                    "Invitación de Juego",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    await AttemptJoinLobbyAsync(code);
-                }
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.InvitationTitle,
+                    string.Format(GameClient.Resources.Strings.InvitationMessage, host),
+                    FontAwesome.WPF.FontAwesomeIcon.Gamepad,
+                    true,
+                    async () => await AttemptJoinLobbyAsync(code)
+                );
             });
         }
 
@@ -287,20 +307,24 @@ namespace GameClient
                 }
                 else
                 {
-                    MessageBox.Show($"No se pudo unir: {joinResult.ErrorMessage}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowOverlayDialog(
+                        GameClient.Resources.Strings.DialogErrorTitle,
+                        string.Format(GameClient.Resources.Strings.ErrorJoinLobby, joinResult.ErrorMessage),
+                        FontAwesome.WPF.FontAwesomeIcon.TimesCircle
+                    );
                 }
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación al unirse.", ErrorTitle);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorInviteComm, FontAwesome.WPF.FontAwesomeIcon.Wifi);
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("Tiempo de espera agotado.", ErrorTitle);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorInviteTimeout, FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al intentar unirse: {ex.Message}", ErrorTitle);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, ex.Message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
             }
         }
 

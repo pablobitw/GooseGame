@@ -18,6 +18,7 @@ namespace GameClient.Views
 
         private readonly string _currentUsername;
         private FriendshipServiceManager _friendshipManager;
+        private Action _onConfirmAction;
 
         private int _requestCount;
         public int RequestCount
@@ -71,6 +72,35 @@ namespace GameClient.Views
             Unloaded += FriendshipPage_Unloaded;
         }
 
+        private void ShowCustomDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        {
+            DialogTitle.Text = title;
+            DialogMessage.Text = message;
+            DialogIcon.Icon = icon;
+
+            CancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            CancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+
+            ConfirmBtn.Content = isConfirmation
+                ? GameClient.Resources.Strings.DialogConfirmBtn
+                : GameClient.Resources.Strings.DialogOkBtn;
+
+            CancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
+
+            _onConfirmAction = onConfirm;
+            DialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void DialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogOverlay.Visibility = Visibility.Collapsed;
+            if (sender == ConfirmBtn)
+            {
+                _onConfirmAction?.Invoke();
+            }
+            _onConfirmAction = null;
+        }
+
         private async void FriendshipPage_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
@@ -95,11 +125,11 @@ namespace GameClient.Views
                 }
                 catch (System.ServiceModel.CommunicationException)
                 {
-                    ShowErrorMessage("Error de comunicación con el servidor al actualizar.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 }
                 catch (TimeoutException)
                 {
-                    ShowErrorMessage("Tiempo de espera agotado al actualizar.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 }
             });
         }
@@ -114,11 +144,11 @@ namespace GameClient.Views
             }
             catch (System.ServiceModel.CommunicationException)
             {
-                ShowErrorMessage("Error de comunicación con el servidor. Por favor, verifica tu conexión.");
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
             }
             catch (TimeoutException)
             {
-                ShowErrorMessage("El servidor tardó demasiado en responder. Inténtalo de nuevo.");
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
             }
         }
 
@@ -281,13 +311,16 @@ namespace GameClient.Views
 
             if (target.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
             {
-                ShowWarningMessage("No puedes enviarte una solicitud a ti mismo.");
+                ShowCustomDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.FriendSelfRequestError,
+                    FontAwesome.WPF.FontAwesomeIcon.UserTimes);
                 return;
             }
 
             if (_friendshipManager == null)
             {
-                ShowErrorMessage("No hay conexión con el servidor.");
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 return;
             }
 
@@ -297,34 +330,40 @@ namespace GameClient.Views
 
                 if (result == FriendRequestResult.Success)
                 {
-                    ShowSuccessMessage($"Solicitud enviada a {target}.");
+                    ShowSuccessMessage(string.Format(GameClient.Resources.Strings.FriendRequestSentSuccess, target));
                     SearchUserBox.Text = string.Empty;
                     await LoadSentRequestsAsync();
                 }
                 else if (result == FriendRequestResult.AlreadyFriends)
                 {
-                    ShowInfoMessage("Ya eres amigo de este jugador.");
+                    ShowCustomDialog(
+                        GameClient.Resources.Strings.DialogInfoTitle,
+                        GameClient.Resources.Strings.FriendAlreadyFriends,
+                        FontAwesome.WPF.FontAwesomeIcon.Users);
                 }
                 else if (result == FriendRequestResult.Pending)
                 {
-                    ShowWarningMessage("Ya hay una solicitud pendiente con este jugador.");
+                    ShowWarningMessage(GameClient.Resources.Strings.FriendAlreadyFriends);
                 }
                 else if (result == FriendRequestResult.TargetNotFound)
                 {
-                    ShowWarningMessage("El usuario no existe.");
+                    ShowCustomDialog(
+                        GameClient.Resources.Strings.DialogWarningTitle,
+                        GameClient.Resources.Strings.FriendNotFound,
+                        FontAwesome.WPF.FontAwesomeIcon.SearchMinus);
                 }
                 else
                 {
-                    ShowErrorMessage("No se pudo enviar la solicitud. Verifica tu conexión.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                 }
             }
             catch (System.ServiceModel.CommunicationException)
             {
-                ShowErrorMessage("Error de comunicación con el servidor.");
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
             }
             catch (TimeoutException)
             {
-                ShowErrorMessage("El servidor tardó demasiado en responder.");
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
             }
         }
 
@@ -337,7 +376,7 @@ namespace GameClient.Views
 
                 if (_friendshipManager == null)
                 {
-                    ShowErrorMessage("No hay conexión con el servidor.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                     return;
                 }
@@ -352,18 +391,18 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        ShowErrorMessage("No se pudo aceptar la solicitud en este momento.");
+                        ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                         btn.IsEnabled = true;
                     }
                 }
                 catch (System.ServiceModel.CommunicationException)
                 {
-                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                 }
                 catch (TimeoutException)
                 {
-                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                 }
             }
@@ -378,7 +417,7 @@ namespace GameClient.Views
 
                 if (_friendshipManager == null)
                 {
-                    ShowErrorMessage("No hay conexión con el servidor.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                     return;
                 }
@@ -393,110 +432,110 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        ShowErrorMessage("No se pudo rechazar la solicitud.");
+                        ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                         btn.IsEnabled = true;
                     }
                 }
                 catch (System.ServiceModel.CommunicationException)
                 {
-                    ShowErrorMessage("Error de comunicación con el servidor.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                 }
                 catch (TimeoutException)
                 {
-                    ShowErrorMessage("El servidor tardó demasiado en responder.");
+                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
                     btn.IsEnabled = true;
                 }
             }
         }
 
-        private async void CancelSentRequest_Click(object sender, RoutedEventArgs e)
+        private void CancelSentRequest_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag != null)
             {
                 string target = btn.Tag.ToString();
-                btn.IsEnabled = false;
 
-                if (_friendshipManager == null)
-                {
-                    ShowErrorMessage("No hay conexión con el servidor.");
-                    btn.IsEnabled = true;
-                    return;
-                }
-
-                try
-                {
-                    bool success = await _friendshipManager.RemoveFriendAsync(target);
-
-                    if (success)
+                ShowCustomDialog(
+                    GameClient.Resources.Strings.DialogConfirmTitle,
+                    GameClient.Resources.Strings.FriendCancelRequestConfirm,
+                    FontAwesome.WPF.FontAwesomeIcon.Undo,
+                    true,
+                    async () =>
                     {
-                        await LoadSentRequestsAsync();
-                    }
-                    else
-                    {
-                        ShowErrorMessage("No se pudo cancelar la solicitud enviada.");
-                        btn.IsEnabled = true;
-                    }
-                }
-                catch (System.ServiceModel.CommunicationException)
-                {
-                    ShowErrorMessage("Error de comunicación con el servidor.");
-                    btn.IsEnabled = true;
-                }
-                catch (TimeoutException)
-                {
-                    ShowErrorMessage("El servidor tardó demasiado en responder.");
-                    btn.IsEnabled = true;
-                }
+                        if (_friendshipManager == null)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                            return;
+                        }
+
+                        try
+                        {
+                            bool success = await _friendshipManager.RemoveFriendAsync(target);
+
+                            if (success)
+                            {
+                                await LoadSentRequestsAsync();
+                            }
+                            else
+                            {
+                                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                            }
+                        }
+                        catch (System.ServiceModel.CommunicationException)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                        }
+                        catch (TimeoutException)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                        }
+                    });
             }
         }
 
-        private async void DeleteFriend_Click(object sender, RoutedEventArgs e)
+        private void DeleteFriend_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag != null)
             {
                 string friend = btn.Tag.ToString();
-                var result = MessageBox.Show(
-                    $"¿Eliminar a {friend} de tus amigos?",
-                    "Confirmación",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question
-                );
 
-                if (result != MessageBoxResult.Yes)
-                {
-                    return;
-                }
+                string confirmMessage = string.Format(GameClient.Resources.Strings.FriendDeleteConfirm, friend);
 
-                btn.IsEnabled = false;
-
-                if (_friendshipManager == null)
-                {
-                    ShowErrorMessage("No hay conexión con el servidor.");
-                    btn.IsEnabled = true;
-                    return;
-                }
-
-                try
-                {
-                    bool success = await _friendshipManager.RemoveFriendAsync(friend);
-
-                    if (!success)
+                ShowCustomDialog(
+                    GameClient.Resources.Strings.DialogConfirmTitle,
+                    confirmMessage,
+                    FontAwesome.WPF.FontAwesomeIcon.UserTimes,
+                    true,
+                    async () =>
                     {
-                        ShowErrorMessage("No se pudo eliminar al amigo. Inténtalo de nuevo.");
-                        btn.IsEnabled = true;
-                    }
-                }
-                catch (System.ServiceModel.CommunicationException)
-                {
-                    ShowErrorMessage("Error de comunicación con el servidor.");
-                    btn.IsEnabled = true;
-                }
-                catch (TimeoutException)
-                {
-                    ShowErrorMessage("El servidor tardó demasiado en responder.");
-                    btn.IsEnabled = true;
-                }
+                        if (_friendshipManager == null)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                            return;
+                        }
+
+                        try
+                        {
+                            bool success = await _friendshipManager.RemoveFriendAsync(friend);
+
+                            if (!success)
+                            {
+                                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                            }
+                            else
+                            {
+                                await LoadFriendsAsync();
+                            }
+                        }
+                        catch (System.ServiceModel.CommunicationException)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                        }
+                        catch (TimeoutException)
+                        {
+                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                        }
+                    });
             }
         }
 
@@ -511,61 +550,49 @@ namespace GameClient.Views
 
         private void ShowErrorMessage(string message)
         {
+            string title = GameClient.Resources.Strings.DialogErrorTitle;
             if (Dispatcher.CheckAccess())
             {
-                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
             }
             else
             {
-                Dispatcher.Invoke(() => MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error));
+                Dispatcher.Invoke(() => ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle));
             }
         }
 
         private void ShowWarningMessage(string message)
         {
+            string title = GameClient.Resources.Strings.DialogWarningTitle;
             if (Dispatcher.CheckAccess())
             {
-                MessageBox.Show(message, "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
             }
             else
             {
-                Dispatcher.Invoke(() => MessageBox.Show(message, "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning));
+                Dispatcher.Invoke(() => ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle));
             }
         }
 
-        private void ShowInfoMessage(string message)
-        {
-            if (Dispatcher.CheckAccess())
-            {
-                MessageBox.Show(message, "Información", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                Dispatcher.Invoke(() => MessageBox.Show(message, "Información", MessageBoxButton.OK, MessageBoxImage.Information));
-            }
-        }
         private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en el buscador.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            ShowCustomDialog(
+                GameClient.Resources.Strings.FriendActionBlockedTitle,
+                GameClient.Resources.Strings.FriendPasteBlocked,
+                FontAwesome.WPF.FontAwesomeIcon.Lock);
         }
-
 
         private void ShowSuccessMessage(string message)
         {
+            string title = GameClient.Resources.Strings.DialogSuccessTitle;
             if (Dispatcher.CheckAccess())
             {
-                MessageBox.Show(message, "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
             }
             else
             {
-                Dispatcher.Invoke(() => MessageBox.Show(message, "Éxito", MessageBoxButton.OK, MessageBoxImage.Information));
+                Dispatcher.Invoke(() => ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle));
             }
         }
     }

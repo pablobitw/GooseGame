@@ -33,7 +33,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="MEJORES JUGADORES" 
+                    <TextBlock Text="{x:Static props:Strings.ScoreboardTitle}" 
                                FontSize="48" FontWeight="Bold" 
                                HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
@@ -55,9 +55,9 @@
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="#" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="JUGADOR" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="20,0"/>
-                            <TextBlock Grid.Column="3" Text="VICTORIAS" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{x:Static props:Strings.ScoreboardRank}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="{x:Static props:Strings.ScoreboardPlayer}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="20,0"/>
+                            <TextBlock Grid.Column="3" Text="{x:Static props:Strings.ScoreboardWins}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Grid>
 
                         <ListBox x:Name="LeaderboardList" Grid.Row="1" 

@@ -54,7 +54,7 @@ namespace GameClient.Helpers
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnect);
             }
         }
 
@@ -72,8 +72,6 @@ namespace GameClient.Helpers
 
             return _client;
         }
-
-
 
         public void OnTurnChanged(GameStateDto newState)
         {
@@ -98,7 +96,6 @@ namespace GameClient.Helpers
             Application.Current.Dispatcher.InvokeAsync(() =>
                 VoteKickStarted?.Invoke(targetUsername, reason));
         }
-
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
@@ -125,7 +122,6 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.CastVoteAsync(vote));
         }
 
-
         private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
             try
@@ -140,19 +136,19 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("El servidor no está disponible.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayServerUnavailable);
                 return default(T);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayTimeout);
                 return default(T);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnectionLost);
                 return default(T);
             }
             catch (Exception ex)
@@ -176,17 +172,17 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("El servidor no está disponible.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayServerUnavailable);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout("Se perdió la conexión con el servidor.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ErrorGameplayConnectionLost);
             }
             catch (Exception ex)
             {
@@ -195,13 +191,12 @@ namespace GameClient.Helpers
             }
         }
 
-
         private Task ShowWarningAsync(string message)
         {
             return Application.Current.Dispatcher.InvokeAsync(() =>
                 MessageBox.Show(
                     message,
-                    "Aviso",
+                    GameClient.Resources.Strings.GameplayWarningTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning)).Task;
         }
@@ -210,8 +205,8 @@ namespace GameClient.Helpers
         {
             return Application.Current.Dispatcher.InvokeAsync(() =>
                 MessageBox.Show(
-                    "Ocurrió un error inesperado.",
-                    "Error",
+                    GameClient.Resources.Strings.ErrorGameplayUnexpected,
+                    GameClient.Resources.Strings.DialogErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information)).Task;
         }

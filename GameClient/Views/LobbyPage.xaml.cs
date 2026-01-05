@@ -29,6 +29,7 @@ namespace GameClient.Views
         private int boardId = 1;
 
         private LobbyChatController chatController;
+        private Action _onDialogConfirmAction;
 
         public LobbyPage(string username)
         {
@@ -76,6 +77,26 @@ namespace GameClient.Views
             Unloaded += Page_Unloaded;
         }
 
+        private void ShowOverlayDialog(string title, string message, FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        {
+            DialogTitle.Text = title;
+            DialogMessage.Text = message;
+            DialogIcon.Icon = icon;
+            DialogCancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            DialogCancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            DialogConfirmBtn.Content = isConfirmation ? GameClient.Resources.Strings.DialogConfirmBtn : GameClient.Resources.Strings.DialogOkBtn;
+            DialogCancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
+            _onDialogConfirmAction = onConfirm;
+            CustomDialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void DialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            CustomDialogOverlay.Visibility = Visibility.Collapsed;
+            _onDialogConfirmAction?.Invoke();
+            _onDialogConfirmAction = null;
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             CommandBindings.Add(new CommandBinding(
@@ -113,7 +134,7 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                AddMessageToUI("[Sistema]:", $"{player.Username} se ha unido.");
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
                 RefreshLobbyState();
             });
         }
@@ -122,7 +143,7 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                AddMessageToUI("[Sistema]:", $"{username} ha salido.");
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
                 RefreshLobbyState();
             });
         }
@@ -131,8 +152,7 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                MessageBox.Show(reason, "Expulsado", MessageBoxButton.OK, MessageBoxImage.Warning);
-                ExitLobby();
+                ShowOverlayDialog(GameClient.Resources.Strings.KickedTitle, GameClient.Resources.Strings.KickedByHost, FontAwesomeIcon.ExclamationTriangle, false, () => ExitLobby());
             });
         }
 
@@ -149,8 +169,7 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("El anfitrión cerró la sala.", "Sala cerrada", MessageBoxButton.OK, MessageBoxImage.Information);
-                ExitLobby();
+                ShowOverlayDialog(GameClient.Resources.Strings.LobbyClosedTitle, GameClient.Resources.Strings.LobbyDisbandedByHost, FontAwesomeIcon.InfoCircle, false, () => ExitLobby());
             });
         }
 
@@ -164,11 +183,11 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                HandleConnectionError("El tiempo de espera para actualizar el lobby se ha agotado.");
+                HandleConnectionError(GameClient.Resources.Strings.ErrorLobbyUpdateTimeout);
             }
             catch (CommunicationException)
             {
-                HandleConnectionError("Error de comunicación con el servidor al actualizar el lobby.");
+                HandleConnectionError(GameClient.Resources.Strings.ErrorLobbyUpdateComm);
             }
             catch (Exception ex)
             {
@@ -178,8 +197,7 @@ namespace GameClient.Views
 
         private void HandleConnectionError(string message)
         {
-            MessageBox.Show(message, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-            ExitLobby();
+            ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, message, FontAwesomeIcon.TimesCircle, false, () => ExitLobby());
         }
 
         private void UpdateLobbyUI(LobbyStateDto state)
@@ -205,6 +223,24 @@ namespace GameClient.Views
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
+            if (isHost && isLobbyCreated)
+            {
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogConfirmTitle,
+                    GameClient.Resources.Strings.LobbyHostExitConfirm,
+                    FontAwesomeIcon.ExclamationTriangle,
+                    true,
+                    async () => await ProcessExitLobby()
+                );
+            }
+            else
+            {
+                await ProcessExitLobby();
+            }
+        }
+
+        private async Task ProcessExitLobby()
+        {
             try
             {
                 if (isHost && isLobbyCreated)
@@ -214,11 +250,11 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("No se pudo notificar al servidor, cerrando localmente.", "Timeout", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowOverlayDialog(GameClient.Resources.Strings.ErrorTitle, GameClient.Resources.Strings.ErrorNotifyServer, FontAwesomeIcon.ClockOutline);
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de red al intentar salir.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLeaveLobby, FontAwesomeIcon.Wifi);
             }
             finally
             {
@@ -258,7 +294,7 @@ namespace GameClient.Views
 
                 if (!result.Success)
                 {
-                    MessageBox.Show(result.ErrorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, result.ErrorMessage, FontAwesomeIcon.TimesCircle);
                     StartMatchButton.IsEnabled = true;
                     return;
                 }
@@ -270,12 +306,12 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("El servidor no respondió a tiempo.", "Timeout", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowOverlayDialog(GameClient.Resources.Strings.ErrorTitle, GameClient.Resources.Strings.ErrorNotifyServer, FontAwesomeIcon.ClockOutline);
                 StartMatchButton.IsEnabled = true;
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación al crear el lobby.", "Error de Red", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLobbyUpdateComm, FontAwesomeIcon.Wifi);
                 StartMatchButton.IsEnabled = true;
             }
         }
@@ -288,7 +324,7 @@ namespace GameClient.Views
 
                 if (state == null || state.Players.Length < MinPlayersToStart)
                 {
-                    MessageBox.Show("Se necesitan al menos 2 jugadores.", "Imposible Iniciar", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ShowOverlayDialog(GameClient.Resources.Strings.ImpossibleStartTitle, GameClient.Resources.Strings.MinPlayersRequired, FontAwesomeIcon.InfoCircle);
                     return;
                 }
 
@@ -296,7 +332,7 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is TimeoutException || ex is CommunicationException)
             {
-                MessageBox.Show("Error al intentar iniciar la partida. Verifique su conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorStartGame, FontAwesomeIcon.TimesCircle);
             }
         }
 
@@ -312,7 +348,7 @@ namespace GameClient.Views
             if (LobbyTabControl.Items.Count > 1)
                 (LobbyTabControl.Items[1] as TabItem).IsEnabled = true;
 
-            TitleBlock.Text = $"CÓDIGO: {code}";
+            TitleBlock.Text = string.Format(GameClient.Resources.Strings.LobbyCodeTitle, code);
             CopyCodeButton.Visibility = Visibility.Visible;
         }
 
@@ -333,7 +369,7 @@ namespace GameClient.Views
                 PlayerList.Items.Add(CreateEmptySlotItem());
             }
 
-            PlayersTabHeader.Text = $"JUGADORES ({slotsFilled}/{playerCount})";
+            PlayersTabHeader.Text = string.Format(GameClient.Resources.Strings.PlayersCountTitle, slotsFilled, playerCount);
 
             UpdateStartButtonState(slotsFilled);
         }
@@ -366,7 +402,7 @@ namespace GameClient.Views
                 AddMessageToUI(sender + ":", message);
 
             chatController.SystemMessage += (message) =>
-                AddMessageToUI("[Sistema]:", message);
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, message);
 
             chatController.Connect();
             ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown;
@@ -392,13 +428,13 @@ namespace GameClient.Views
 
             if (player.IsHost)
             {
-                textBlock.Text += " (Host)";
+                textBlock.Text += " " + GameClient.Resources.Strings.LobbyHostTag;
                 textBlock.FontWeight = FontWeights.Bold;
             }
 
             if (player.Username == username)
             {
-                textBlock.Text += " (Tú)";
+                textBlock.Text += " " + GameClient.Resources.Strings.LobbyYouTag;
             }
 
             var icon = new FontAwesome.WPF.FontAwesome
@@ -419,7 +455,7 @@ namespace GameClient.Views
 
         private ListBoxItem CreateEmptySlotItem()
         {
-            var block = new TextBlock { Text = "Slot vacío", FontSize = 22, Opacity = 0.6 };
+            var block = new TextBlock { Text = GameClient.Resources.Strings.EmptySlotText, FontSize = 22, Opacity = 0.6 };
             var icon = new ImageAwesome { Icon = FontAwesomeIcon.HourglassStart, Height = 30, Width = 30 };
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
             panel.Children.Add(icon);
@@ -440,7 +476,7 @@ namespace GameClient.Views
                 return;
 
             chatController?.SendMessage(ChatMessageTextBox.Text);
-            AddMessageToUI("Tú:", ChatMessageTextBox.Text);
+            AddMessageToUI(GameClient.Resources.Strings.ChatYou, ChatMessageTextBox.Text);
             ChatMessageTextBox.Clear();
         }
 
@@ -515,7 +551,7 @@ namespace GameClient.Views
             }
             catch (Exception)
             {
-                MessageBox.Show("No se pudo cargar la lista de amigos.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLoadFriends, FontAwesomeIcon.ExclamationTriangle);
             }
         }
 
@@ -555,13 +591,14 @@ namespace GameClient.Views
                 {
                     FriendshipServiceManager.Instance.SendGameInvitation(btn.Tag.ToString(), lobbyCode);
                     btn.IsEnabled = false;
-                    btn.Content = "Enviado";
+                    btn.Content = GameClient.Resources.Strings.InviteSentStatus;
                 }
                 catch (CommunicationException)
                 {
-                    MessageBox.Show("Error al enviar invitación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorInviteFriend, FontAwesomeIcon.TimesCircle);
                 }
             }
         }
+
     }
 }

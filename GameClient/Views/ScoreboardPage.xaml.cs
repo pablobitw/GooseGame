@@ -37,15 +37,15 @@ namespace GameClient.Views
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show("No se pudo conectar con el servidor de ranking.", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorLeaderboardConnection, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (TimeoutException)
             {
-                MessageBox.Show("El tiempo de espera se ha agotado.", "Error de Tiempo", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorTitle, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (CommunicationException)
             {
-                MessageBox.Show("Error de comunicación con el servidor.", "Error de Red", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorTitle, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

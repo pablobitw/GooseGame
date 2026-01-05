@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameClient"
         xmlns:props="clr-namespace:GameClient.Resources"
+        xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
         mc:Ignorable="d"
         Title="GameMainWindow"
         WindowStyle="None"
@@ -318,6 +319,27 @@
             </Grid>
 
             <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+
+            <Border x:Name="CustomDialogOverlay" Background="#B3000000" Visibility="Collapsed" Panel.ZIndex="1000">
+                <Border Background="White" CornerRadius="20" Width="500" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="40">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.6"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <fa:ImageAwesome x:Name="DialogIcon" Icon="InfoCircle" Height="80" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,25"/>
+                        <TextBlock x:Name="DialogTitle" Text="Título" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center"/>
+                        <TextBlock x:Name="DialogMessage" Text="Mensaje" FontSize="20" TextWrapping="Wrap" TextAlignment="Center" Foreground="#444" Margin="0,0,0,35"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition x:Name="DialogCancelColumn" Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="DialogConfirmBtn" Content="Aceptar" Style="{StaticResource PrimaryButtonStyle}" Height="55" Margin="8" Click="DialogButton_Click"/>
+                            <Button x:Name="DialogCancelBtn" Grid.Column="1" Content="Cancelar" Style="{StaticResource OrangeButtonStyle}" Height="55" Margin="8" Click="DialogButton_Click" Visibility="Collapsed"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Border>
 
         </Grid>
     </Viewbox>

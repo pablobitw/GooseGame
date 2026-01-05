@@ -19,8 +19,8 @@ namespace GameClient.Views
             _userEmail = email;
 
             Step1_VerifyCode.Visibility = Visibility.Visible;
-            Step2_ChangeName.Visibility = Visibility.Visible;
-            VerifyCodeButton.Visibility = Visibility.Collapsed;
+            Step2_ChangeName.Visibility = Visibility.Collapsed;
+            VerifyCodeButton.Visibility = Visibility.Visible;
 
             this.Loaded += OnWindowLoaded;
         }
@@ -40,7 +40,9 @@ namespace GameClient.Views
 
                 if (!sent)
                 {
-                    MessageBox.Show("No se pudo enviar el código. Intenta más tarde.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(GameClient.Resources.Strings.ErrorTitle,
+                                    GameClient.Resources.Strings.DialogWarningTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (TimeoutException)
@@ -73,13 +75,13 @@ namespace GameClient.Views
 
             if (string.IsNullOrEmpty(code) || code.Length != 6)
             {
-                ShowError(CodeBorder, CodeErrorLabel, "El código debe tener 6 dígitos.");
+                ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeLengthError);
                 return;
             }
 
             if (string.IsNullOrEmpty(newName) || newName.Length < 3)
             {
-                ShowError(UsernameBorder, UsernameErrorLabel, "El nombre es muy corto (mínimo 3).");
+                ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.UsernameMinLengthError);
                 return;
             }
 
@@ -93,16 +95,18 @@ namespace GameClient.Views
                 switch (result)
                 {
                     case UsernameChangeResult.Success:
-                        MessageBox.Show("¡Nombre cambiado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(GameClient.Resources.Strings.UsernameSuccess,
+                                        GameClient.Resources.Strings.DialogSuccessTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Information);
                         this.Close();
                         break;
 
                     case UsernameChangeResult.UsernameAlreadyExists:
-                        ShowError(UsernameBorder, UsernameErrorLabel, "Este nombre ya está en uso.");
+                        ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.UsernameExistsError);
                         break;
 
                     case UsernameChangeResult.LimitReached:
-                        ShowError(UsernameBorder, UsernameErrorLabel, "Límite de cambios alcanzado (3/3).");
+                        ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.UsernameLimitError);
                         break;
 
                     case UsernameChangeResult.UserNotFound:
@@ -110,7 +114,9 @@ namespace GameClient.Views
                         break;
 
                     case UsernameChangeResult.FatalError:
-                        ShowError(CodeBorder, CodeErrorLabel, "Código incorrecto o error del servidor.");
+                        ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeIncorrectError);
+                        Step2_ChangeName.Visibility = Visibility.Collapsed;
+                        Step1_VerifyCode.Visibility = Visibility.Visible;
                         break;
 
                     default:
@@ -145,11 +151,23 @@ namespace GameClient.Views
         private async void ResendCode_Click(object sender, RoutedEventArgs e)
         {
             await SendVerificationCode();
-            MessageBox.Show("Código reenviado a tu correo.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(GameClient.Resources.Strings.CodeSentInfo,
+                            GameClient.Resources.Strings.DialogInfoTitle,
+                            MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        // CORRECCIÓN: Se eliminó 'async' porque solo realiza operaciones síncronas de UI
         private void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
         {
+            string code = CodeTextBox.Text.Trim();
+            if (string.IsNullOrEmpty(code) || code.Length != 6)
+            {
+                ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeLengthError);
+                return;
+            }
+
+            Step1_VerifyCode.Visibility = Visibility.Collapsed;
+            Step2_ChangeName.Visibility = Visibility.Visible;
         }
 
         private void CloseClient(UserProfileServiceClient client)
@@ -189,13 +207,23 @@ namespace GameClient.Views
 
         private void OnCodeTextChanged(object sender, TextChangedEventArgs e)
         {
-            CodePlaceholder.Visibility = string.IsNullOrEmpty(CodeTextBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            if (CodePlaceholder != null)
+            {
+                CodePlaceholder.Visibility = string.IsNullOrWhiteSpace(CodeTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
             ClearError(CodeBorder, CodeErrorLabel);
         }
 
         private void OnUsernameTextChanged(object sender, TextChangedEventArgs e)
         {
-            UsernamePlaceholder.Visibility = string.IsNullOrEmpty(NewUsernameTextBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+            if (UsernamePlaceholder != null)
+            {
+                UsernamePlaceholder.Visibility = string.IsNullOrWhiteSpace(NewUsernameTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
             ClearError(UsernameBorder, UsernameErrorLabel);
         }
 
@@ -204,8 +232,8 @@ namespace GameClient.Views
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en este campo.",
-                                "Acción bloqueada",
+                MessageBox.Show(GameClient.Resources.Strings.ErrorPastingDisabled,
+                                GameClient.Resources.Strings.DialogActionBlockedTitle,
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
             }), System.Windows.Threading.DispatcherPriority.Background);
