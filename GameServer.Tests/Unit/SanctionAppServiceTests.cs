@@ -4,6 +4,7 @@ using global::GameServer.Services.Logic;
 using global::GameServer;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity.Core;
 using System.Data.SqlClient;
 using System.Reflection;
@@ -22,8 +23,7 @@ namespace GameServer.Tests.Services
         public SanctionAppServiceTests()
         {
             _mockRepository = new Mock<IGameplayRepository>();
-            // Inyectamos el repo mockeado mediante reflexión si el constructor no lo permite, 
-            // o ajustamos el servicio para recibir la interfaz.
+            // El servicio ahora recibe la interfaz mockeada por constructor
             _service = new SanctionAppService(_mockRepository.Object);
         }
 
@@ -52,29 +52,39 @@ namespace GameServer.Tests.Services
         public async Task ProcessKickAsync_ThirdStrike_AppliesAutoBan()
         {
             // Arrange
+            // El jugador ya tiene 2 faltas, la siguiente será la 3ra (Ban)
             var player = new Player { IdPlayer = 1, Username = TestUser, KickCount = 2, Account_IdAccount = 10 };
+            var game = new Game { IdGame = 100, LobbyCode = TestLobby };
+
             _mockRepository.Setup(r => r.GetPlayerByUsernameAsync(TestUser)).ReturnsAsync(player);
             _mockRepository.Setup(r => r.GetPlayerWithStatsByIdAsync(1)).ReturnsAsync(new Player { PlayerStat = new PlayerStat() });
+
+            // CORRECCIÓN CLAVE: Configuramos el juego para que el service encuentre un GameId != 0
+            _mockRepository.Setup(r => r.GetGameByLobbyCodeAsync(TestLobby)).ReturnsAsync(game);
 
             // Act
             await _service.ProcessKickAsync(TestUser, TestLobby, "Toxic", "CHAT");
 
             // Assert
             Assert.True(player.IsBanned);
+            // Verificamos que se llamó a AddSanction con SanctionType 2 (Auto-Ban)
             _mockRepository.Verify(r => r.AddSanction(It.Is<Sanction>(s => s.SanctionType == 2)), Times.Once);
+            _mockRepository.Verify(r => r.SaveChangesAsync(), Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task ProcessKickAsync_GuestPlayer_SkipsPersistentSanction()
         {
             // Arrange
-            var guest = new Player { IdPlayer = 1, Username = "Guest_123", Account_IdAccount = 0 }; // ID 0 o null indica invitado
+            // Account_IdAccount null o 0 simula un invitado
+            var guest = new Player { IdPlayer = 1, Username = "Guest_123", Account_IdAccount = 0 };
             _mockRepository.Setup(r => r.GetPlayerByUsernameAsync("Guest_123")).ReturnsAsync(guest);
 
             // Act
             await _service.ProcessKickAsync("Guest_123", TestLobby, "Leaver", "GAME");
 
             // Assert
+            // No debe intentar agregar nada a la tabla de sanciones persistentes
             _mockRepository.Verify(r => r.AddSanction(It.IsAny<Sanction>()), Times.Never);
         }
 
@@ -107,7 +117,7 @@ namespace GameServer.Tests.Services
             var exception = await Record.ExceptionAsync(() => _service.ProcessKickAsync(TestUser, TestLobby, "Error", "TEST"));
 
             // Assert
-            Assert.Null(exception); // El servicio debe capturar el error y loguearlo, no explotar.
+            Assert.Null(exception); // Debe capturar el error internamente y no crashear el servidor
         }
 
         [Fact]
@@ -147,7 +157,6 @@ namespace GameServer.Tests.Services
             Assert.Null(exception);
         }
 
-        // --- Helper para crear excepciones SQL ---
         private SqlException CreateSqlException(int number)
         {
             var collectionConstructor = typeof(SqlErrorCollection).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[0], null);
@@ -156,7 +165,7 @@ namespace GameServer.Tests.Services
             var error = (SqlError)errorConstructor.Invoke(new object[] { number, (byte)0, (byte)0, "server", "msg", "proc", 100 });
             typeof(SqlErrorCollection).GetMethod("Add", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(errorCollection, new object[] { error });
             var exceptionConstructor = typeof(SqlException).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(string), typeof(SqlErrorCollection), typeof(Exception), typeof(Guid) }, null);
-            return (SqlException)exceptionConstructor.Invoke(new object[] { "Error", errorCollection, null, Guid.NewGuid() });
+            return (SqlException)exceptionConstructor.Invoke(new object[] { "Error simulated", errorCollection, null, Guid.NewGuid() });
         }
     }
 }

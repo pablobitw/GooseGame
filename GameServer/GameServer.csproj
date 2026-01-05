@@ -194,6 +194,7 @@
     <Compile Include="Repositories\AuthRepository.cs" />
     <Compile Include="Repositories\FriendshipRepository.cs" />
     <Compile Include="Repositories\GameplayRepository.cs" />
+    <Compile Include="Repositories\ILeaderboardRepository.cs" />
     <Compile Include="Repositories\Interfaces\IGameplayRepository.cs" />
     <Compile Include="Repositories\Interfaces\ILobbyRepository.cs" />
     <Compile Include="Repositories\Interfaces\IFriendshipRepository.cs" />

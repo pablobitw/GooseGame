@@ -13,11 +13,12 @@ namespace GameServer.Services.Logic
     public class LeaderboardAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LeaderboardAppService));
-        private readonly LeaderboardRepository _repository;
 
-        public LeaderboardAppService()
+        private readonly ILeaderboardRepository _repository;
+
+        public LeaderboardAppService(ILeaderboardRepository repository = null)
         {
-            _repository = new LeaderboardRepository();
+            _repository = repository ?? new LeaderboardRepository();
         }
 
         public async Task<List<LeaderboardDto>> GetGlobalLeaderboardAsync(string requestingUsername)
@@ -76,6 +77,11 @@ namespace GameServer.Services.Logic
             catch (ArgumentNullException ex)
             {
                 Log.Error($"Referencia nula detectada generando leaderboard para {requestingUsername}", ex);
+                return new List<LeaderboardDto>();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error inesperado generando leaderboard para {requestingUsername}", ex);
                 return new List<LeaderboardDto>();
             }
         }

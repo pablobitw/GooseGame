@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs;
+using GameServer.Models; 
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Repositories
 {
-    public class LeaderboardRepository
+    public class LeaderboardRepository : ILeaderboardRepository
     {
         public class PlayerStatResult
         {
@@ -22,7 +23,7 @@ namespace GameServer.Repositories
             {
                 var query = context.Players
                                    .Where(p => p.PlayerStat != null)
-                                   .Where(p => p.IsGuest == false) 
+                                   .Where(p => p.IsGuest == false)
                                    .Select(p => new PlayerStatResult
                                    {
                                        Username = p.Username,
