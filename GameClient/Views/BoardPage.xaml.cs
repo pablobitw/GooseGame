@@ -151,11 +151,11 @@ namespace GameClient.Views
             }
             catch (EndpointNotFoundException)
             {
-                SessionManager.ForceLogout("No se pudo conectar al servidor de chat. Verifica la configuración.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ChatConnectError);
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de conexión al intentar unirse al chat.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.ChatJoinError);
             }
         }
 
@@ -196,11 +196,11 @@ namespace GameClient.Views
                 }
                 catch (CommunicationException)
                 {
-                    Dispatcher.InvokeAsync(() => MessageBox.Show("No se pudo enviar el mensaje. Revisa tu conexión."));
+                    Dispatcher.InvokeAsync(() => MessageBox.Show(GameClient.Resources.Strings.ChatErrorSend));
                 }
                 catch (Exception)
                 {
-                    Dispatcher.InvokeAsync(() => MessageBox.Show("Error interno al enviar mensaje."));
+                    Dispatcher.InvokeAsync(() => MessageBox.Show(GameClient.Resources.Strings.ChatErrorInternal));
                 }
             });
         }
@@ -232,7 +232,9 @@ namespace GameClient.Views
         {
             PauseMenu.Visibility = Visibility.Collapsed;
 
-            if (MessageBox.Show("¿Estás seguro de salir? Perderás la partida.", "Abandonar", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            if (MessageBox.Show(GameClient.Resources.Strings.LeaveGameConfirm,
+                                GameClient.Resources.Strings.LeaveGameTitle,
+                                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
             UnsubscribeFromEvents();
@@ -249,15 +251,15 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de conexión al intentar abandonar la partida.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorConn);
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor no respondió al intentar salir.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorServer);
             }
             catch (Exception ex)
             {
-                SessionManager.ForceLogout($"Error inesperado al salir: {ex.Message}");
+                SessionManager.ForceLogout(string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
             }
         }
 
@@ -280,15 +282,19 @@ namespace GameClient.Views
             {
                 var req = new VoteRequestDto { Username = currentUsername, TargetUsername = e.TargetUsername, Reason = e.Reason };
                 await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
-                MessageBox.Show($"Votación iniciada contra {e.TargetUsername}.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickStarted, e.TargetUsername),
+                                GameClient.Resources.Strings.DialogInfoTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (FaultException ex)
             {
-                MessageBox.Show($"No se pudo iniciar votación: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickErrorInit, ex.Message),
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Conexión perdida al intentar iniciar la votación.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.VoteKickErrorConn);
             }
         }
 
@@ -301,11 +307,13 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                MessageBox.Show($"No se pudo registrar el voto: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickErrorVote, ex.Message),
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Se perdió la conexión al enviar tu voto.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.VoteKickErrorVoteConn);
             }
         }
 
@@ -363,11 +371,11 @@ namespace GameClient.Views
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("No se pudo cargar el estado inicial de la partida por problemas de conexión.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.InitialStateErrorConn);
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor tardó demasiado en enviar el estado inicial.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.InitialStateErrorTimeout);
             }
         }
 
@@ -403,16 +411,18 @@ namespace GameClient.Views
             }
             catch (FaultException ex)
             {
-                MessageBox.Show($"Error del juego: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.GameErrorDice, ex.Message),
+                                GameClient.Resources.Strings.DialogWarningTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Conexión perdida con el servidor de juego.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.GameErrorConnLost);
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor no respondió al intento de tirar dados.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.GameErrorTimeout);
             }
         }
 
@@ -421,7 +431,7 @@ namespace GameClient.Views
             if (_isGameStarting)
             {
                 RollDiceButton.IsEnabled = false;
-                RollDiceButton.Content = "Esperando inicio...";
+                RollDiceButton.Content = GameClient.Resources.Strings.TurnWaitBtn;
                 RollDiceButton.Opacity = OpacityDisabled;
                 return;
             }
@@ -429,13 +439,13 @@ namespace GameClient.Views
             if (state.IsMyTurn)
             {
                 RollDiceButton.IsEnabled = true;
-                RollDiceButton.Content = "¡Tirar Dados!";
+                RollDiceButton.Content = GameClient.Resources.Strings.TurnMyTurnBtn;
                 RollDiceButton.Opacity = OpacityActive;
             }
             else
             {
                 RollDiceButton.IsEnabled = false;
-                RollDiceButton.Content = $"Turno de {state.CurrentTurnUsername}";
+                RollDiceButton.Content = string.Format(GameClient.Resources.Strings.TurnOtherPlayer, state.CurrentTurnUsername);
                 RollDiceButton.Opacity = OpacitySemi;
             }
         }
@@ -448,7 +458,7 @@ namespace GameClient.Views
                 _turnSecondsRemaining = GameConfiguration.TurnDurationSeconds;
 
                 TurnTimerPanel.Visibility = Visibility.Visible;
-                TurnTimerText.Text = $"Tiempo: {GameConfiguration.TurnDurationSeconds}s";
+                TurnTimerText.Text = string.Format(GameClient.Resources.Strings.TimerLabel, GameConfiguration.TurnDurationSeconds);
                 TurnTimerText.Foreground = Brushes.White;
                 _turnCountdownTimer.Start();
             }
@@ -460,7 +470,7 @@ namespace GameClient.Views
 
             if (_turnSecondsRemaining < 0) _turnSecondsRemaining = 0;
 
-            TurnTimerText.Text = $"Tiempo: {_turnSecondsRemaining}s";
+            TurnTimerText.Text = string.Format(GameClient.Resources.Strings.TimerLabel, _turnSecondsRemaining);
 
             TurnTimerText.Foreground = _turnSecondsRemaining <= GameConfiguration.TurnWarningThreshold
                 ? Brushes.Red
@@ -469,7 +479,7 @@ namespace GameClient.Views
             if (_turnSecondsRemaining <= 0)
             {
                 _turnCountdownTimer.Stop();
-                TurnTimerText.Text = "¡Tiempo Agotado!";
+                TurnTimerText.Text = GameClient.Resources.Strings.TimerExpired;
 
                 await Task.Delay(1500);
 
@@ -572,7 +582,7 @@ namespace GameClient.Views
             }
             catch (IOException ex)
             {
-                Console.Error.WriteLine($"No se pudo cargar la imagen del tablero: {ex.Message}");
+                Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.GameErrorBoardImage, ex.Message));
             }
         }
 
@@ -710,7 +720,7 @@ namespace GameClient.Views
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[UI Error] No se pudo cargar el avatar '{avatarPath}'. Error: {ex.Message}");
+                Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.AvatarErrorLoad, avatarPath, ex.Message));
 
                 try
                 {
@@ -718,7 +728,7 @@ namespace GameClient.Views
                 }
                 catch (Exception fallbackEx)
                 {
-                    Console.Error.WriteLine($"[UI Critical] Falló la carga del avatar por defecto: {fallbackEx.Message}");
+                    Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.AvatarErrorFallback, fallbackEx.Message));
                 }
             }
         }
@@ -768,32 +778,46 @@ namespace GameClient.Views
                 switch (result)
                 {
                     case FriendRequestResult.Success:
-                        MessageBox.Show($"Solicitud enviada a {targetUser}.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestSent, targetUser),
+                                        GameClient.Resources.Strings.DialogSuccessTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                     case FriendRequestResult.AlreadyFriends:
-                        MessageBox.Show($"Actualmente ya eres amigo de {targetUser}.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendAlreadyAdded, targetUser),
+                                        GameClient.Resources.Strings.DialogInfoTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                     case FriendRequestResult.Pending:
-                        MessageBox.Show($"Ya le has mandado solicitud a este jugador.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestPending,
+                                        GameClient.Resources.Strings.DialogWarningTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Warning);
                         break;
                     case FriendRequestResult.GuestRestriction:
-                        MessageBox.Show("Los invitados no pueden tener amigos.", "Restricción", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(GameClient.Resources.Strings.FriendGuestRestriction,
+                                        GameClient.Resources.Strings.DialogWarningTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Warning);
                         break;
                     case FriendRequestResult.TargetNotFound:
-                        MessageBox.Show("No se encontró al jugador.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(GameClient.Resources.Strings.FriendNotFound,
+                                        GameClient.Resources.Strings.DialogErrorTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
                         break;
                     default:
-                        MessageBox.Show("Ocurrió un error al intentar enviar la solicitud.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestError,
+                                        GameClient.Resources.Strings.DialogErrorTitle,
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
                         break;
                 }
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de conexión al enviar solicitud de amistad.");
+                SessionManager.ForceLogout(GameClient.Resources.Strings.FriendConnError);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message),
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -812,7 +836,9 @@ namespace GameClient.Views
 
             StopTimers();
 
-            MessageBox.Show($"¡Juego Terminado!\n\nGanador: {winner}", "Fin de Partida", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(string.Format(GameClient.Resources.Strings.GameOverMessage, winner),
+                            GameClient.Resources.Strings.GameOverTitle,
+                            MessageBoxButton.OK, MessageBoxImage.Information);
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {

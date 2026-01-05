@@ -135,6 +135,12 @@
   <data name="AsGuestButton" xml:space="preserve">
     <value>Play As Guest</value>
   </data>
+  <data name="AvatarErrorFallback" xml:space="preserve">
+    <value>[UI Critical] Default avatar load failed: {0}</value>
+  </data>
+  <data name="AvatarErrorLoad" xml:space="preserve">
+    <value>[UI Error] Could not load avatar '{0}'. Error: {1}</value>
+  </data>
   <data name="AvatarFormatError" xml:space="preserve">
     <value>Avatar image format error.</value>
   </data>
@@ -185,6 +191,18 @@
   </data>
   <data name="ChangeUsernameTitle" xml:space="preserve">
     <value>Change Name</value>
+  </data>
+  <data name="ChatConnectError" xml:space="preserve">
+    <value>Could not connect to chat server. Check configuration.</value>
+  </data>
+  <data name="ChatErrorInternal" xml:space="preserve">
+    <value>Internal error sending message.</value>
+  </data>
+  <data name="ChatErrorSend" xml:space="preserve">
+    <value>Could not send message. Check your connection.</value>
+  </data>
+  <data name="ChatJoinError" xml:space="preserve">
+    <value>Connection error while trying to join chat.</value>
   </data>
   <data name="ChatSystemWelcome" xml:space="preserve">
     <value>[System]: Welcome to the match!</value>
@@ -288,6 +306,9 @@
   <data name="DevelopedByLabel" xml:space="preserve">
     <value>Developed by:</value>
   </data>
+  <data name="DialogAcceptBtnUpper" xml:space="preserve">
+    <value>ACCEPT</value>
+  </data>
   <data name="DialogActionBlockedTitle" xml:space="preserve">
     <value>Action blocked</value>
   </data>
@@ -308,6 +329,9 @@
   </data>
   <data name="DialogOkBtn" xml:space="preserve">
     <value>Understood</value>
+  </data>
+  <data name="DialogRejectBtnUpper" xml:space="preserve">
+    <value>DECLINE</value>
   </data>
   <data name="DialogSuccessTitle" xml:space="preserve">
     <value>Success</value>
@@ -501,11 +525,17 @@
   <data name="FriendActionBlockedTitle" xml:space="preserve">
     <value>Action blocked</value>
   </data>
+  <data name="FriendAlreadyAdded" xml:space="preserve">
+    <value>You are already friends with {0}.</value>
+  </data>
   <data name="FriendAlreadyFriends" xml:space="preserve">
     <value>You are already friends with this player.</value>
   </data>
   <data name="FriendCancelRequestConfirm" xml:space="preserve">
     <value>Do you want to cancel the sent request?</value>
+  </data>
+  <data name="FriendConnError" xml:space="preserve">
+    <value>Connection error while sending friend request.</value>
   </data>
   <data name="FriendDeleteConfirm" xml:space="preserve">
     <value>Remove {0} from your friends?</value>
@@ -513,11 +543,32 @@
   <data name="FriendDeletedSuccess" xml:space="preserve">
     <value>Friend removed.</value>
   </data>
+  <data name="FriendGuestRestriction" xml:space="preserve">
+    <value>Guests cannot have friends.</value>
+  </data>
   <data name="FriendNotFound" xml:space="preserve">
     <value>The entered user does not exist.</value>
   </data>
   <data name="FriendPasteBlocked" xml:space="preserve">
     <value>For security, pasting is disabled in the search bar.</value>
+  </data>
+  <data name="FriendRequestDialogTitle" xml:space="preserve">
+    <value>FRIEND REQUEST!</value>
+  </data>
+  <data name="FriendRequestError" xml:space="preserve">
+    <value>An error occurred while trying to send the request.</value>
+  </data>
+  <data name="FriendRequestPending" xml:space="preserve">
+    <value>You have already sent a request to this player.</value>
+  </data>
+  <data name="FriendRequestPlayerPrefix" xml:space="preserve">
+    <value>The player</value>
+  </data>
+  <data name="FriendRequestPlayerSuffix" xml:space="preserve">
+    <value>wants to be your friend</value>
+  </data>
+  <data name="FriendRequestSent" xml:space="preserve">
+    <value>Request sent to {0}.</value>
   </data>
   <data name="FriendRequestSentSuccess" xml:space="preserve">
     <value>Request sent to {0}.</value>
@@ -534,8 +585,29 @@
   <data name="FullScreenMode" xml:space="preserve">
     <value>Full Screen</value>
   </data>
+  <data name="GameErrorBoardImage" xml:space="preserve">
+    <value>Could not load board image: {0}</value>
+  </data>
+  <data name="GameErrorConnLost" xml:space="preserve">
+    <value>Connection lost with the game server.</value>
+  </data>
+  <data name="GameErrorDice" xml:space="preserve">
+    <value>Game error: {0}</value>
+  </data>
+  <data name="GameErrorTimeout" xml:space="preserve">
+    <value>Server did not respond to dice roll attempt.</value>
+  </data>
+  <data name="GameErrorTitle" xml:space="preserve">
+    <value>Game Error</value>
+  </data>
   <data name="GameLanguageLabel" xml:space="preserve">
     <value>Game Language</value>
+  </data>
+  <data name="GameOverMessage" xml:space="preserve">
+    <value>Game Over! Winner: {0}</value>
+  </data>
+  <data name="GameOverTitle" xml:space="preserve">
+    <value>Game Over</value>
   </data>
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Game Notice</value>
@@ -572,6 +644,12 @@
   </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Information</value>
+  </data>
+  <data name="InitialStateErrorConn" xml:space="preserve">
+    <value>Could not load initial game state due to connection issues.</value>
+  </data>
+  <data name="InitialStateErrorTimeout" xml:space="preserve">
+    <value>Server took too long to send initial state.</value>
   </data>
   <data name="InvalidCodeMessage" xml:space="preserve">
     <value>Please enter a valid 5-letter code.</value>
@@ -612,6 +690,12 @@
   <data name="JoinMatchCodeTitle" xml:space="preserve">
     <value>Enter Match Code</value>
   </data>
+  <data name="KickDialogTargetPrefix" xml:space="preserve">
+    <value>Reason to kick '{0}':</value>
+  </data>
+  <data name="KickDialogTitle" xml:space="preserve">
+    <value>START VOTE KICK</value>
+  </data>
   <data name="KickedByHost" xml:space="preserve">
     <value>You have been kicked from the room by the host.</value>
   </data>
@@ -620,6 +704,21 @@
   </data>
   <data name="KickedTitle" xml:space="preserve">
     <value>Kick out</value>
+  </data>
+  <data name="KickReasonAFK" xml:space="preserve">
+    <value>Inactivity (AFK)</value>
+  </data>
+  <data name="KickReasonCheating" xml:space="preserve">
+    <value>Cheating</value>
+  </data>
+  <data name="KickReasonNone" xml:space="preserve">
+    <value>No reason</value>
+  </data>
+  <data name="KickReasonSpam" xml:space="preserve">
+    <value>Spam / Harassment</value>
+  </data>
+  <data name="KickReasonToxic" xml:space="preserve">
+    <value>Toxic Behavior</value>
   </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
@@ -635,6 +734,18 @@
   </data>
   <data name="LeaderboardFeatureName" xml:space="preserve">
     <value>Leaderboard</value>
+  </data>
+  <data name="LeaveGameConfirm" xml:space="preserve">
+    <value>Are you sure you want to quit? You will forfeit the game.</value>
+  </data>
+  <data name="LeaveGameErrorConn" xml:space="preserve">
+    <value>Connection error while trying to leave the game.</value>
+  </data>
+  <data name="LeaveGameErrorServer" xml:space="preserve">
+    <value>Server did not respond while trying to leave.</value>
+  </data>
+  <data name="LeaveGameErrorUnexpected" xml:space="preserve">
+    <value>Unexpected error while leaving: {0}</value>
   </data>
   <data name="LeaveGameTitle" xml:space="preserve">
     <value>Quit Match</value>
@@ -696,6 +807,9 @@
   <data name="MusicLabel" xml:space="preserve">
     <value>Music</value>
   </data>
+  <data name="MusicVolumeLabel" xml:space="preserve">
+    <value>Music Volume</value>
+  </data>
   <data name="MyFriendsTab" xml:space="preserve">
     <value>My Friends</value>
   </data>
@@ -735,6 +849,9 @@
   <data name="PasswordUpdateSuccess" xml:space="preserve">
     <value>Password updated successfully!</value>
   </data>
+  <data name="PauseMenuTitle" xml:space="preserve">
+    <value>PAUSE</value>
+  </data>
   <data name="PlayButton" xml:space="preserve">
     <value>Play</value>
   </data>
@@ -770,6 +887,9 @@
   </data>
   <data name="QuitButton" xml:space="preserve">
     <value>Quit</value>
+  </data>
+  <data name="QuitGameButton" xml:space="preserve">
+    <value>QUIT GAME</value>
   </data>
   <data name="RefreshButton" xml:space="preserve">
     <value>Refresh</value>
@@ -822,6 +942,21 @@
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset Password</value>
   </data>
+  <data name="ResumeButton" xml:space="preserve">
+    <value>RESUME</value>
+  </data>
+  <data name="RewardCommon" xml:space="preserve">
+    <value>COMMON TICKET</value>
+  </data>
+  <data name="RewardEpic" xml:space="preserve">
+    <value>EPIC TICKET</value>
+  </data>
+  <data name="RewardGold" xml:space="preserve">
+    <value>+{0} GOLD</value>
+  </data>
+  <data name="RewardLegendary" xml:space="preserve">
+    <value>LEGENDARY!</value>
+  </data>
   <data name="SaveAvatarButton" xml:space="preserve">
     <value>Save Avatar</value>
   </data>
@@ -843,8 +978,17 @@
   <data name="ScoreboardWins" xml:space="preserve">
     <value>WINS</value>
   </data>
+  <data name="ScreenModeBorderless" xml:space="preserve">
+    <value>Borderless Window</value>
+  </data>
+  <data name="ScreenModeFullscreen" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
   <data name="ScreenModeLabel" xml:space="preserve">
     <value>Screen Mode</value>
+  </data>
+  <data name="ScreenModeWindowed" xml:space="preserve">
+    <value>Windowed</value>
   </data>
   <data name="SearchUserPlaceholder" xml:space="preserve">
     <value>Search user...</value>
@@ -878,6 +1022,9 @@
   </data>
   <data name="SfxLabel" xml:space="preserve">
     <value>Effects (SFX)</value>
+  </data>
+  <data name="SfxVolumeLabel" xml:space="preserve">
+    <value>Sound Effects</value>
   </data>
   <data name="ShopPendingMsg" xml:space="preserve">
     <value>Feature pending! We recommend you save your coins and get good tickets for when it opens.</value>
@@ -978,6 +1125,21 @@
   <data name="TileWellName" xml:space="preserve">
     <value>The Well</value>
   </data>
+  <data name="TimerExpired" xml:space="preserve">
+    <value>Time's Up!</value>
+  </data>
+  <data name="TimerLabel" xml:space="preserve">
+    <value>Time: {0}s</value>
+  </data>
+  <data name="TurnMyTurnBtn" xml:space="preserve">
+    <value>Roll Dice!</value>
+  </data>
+  <data name="TurnOtherPlayer" xml:space="preserve">
+    <value>{0}'s Turn</value>
+  </data>
+  <data name="TurnWaitBtn" xml:space="preserve">
+    <value>Waiting to start...</value>
+  </data>
   <data name="UnexpectedError" xml:space="preserve">
     <value>An unexpected error occurred: {0}</value>
   </data>
@@ -1049,6 +1211,21 @@
   </data>
   <data name="VisibilityPublic" xml:space="preserve">
     <value>Public</value>
+  </data>
+  <data name="VoteKickErrorConn" xml:space="preserve">
+    <value>Connection lost while trying to start vote kick.</value>
+  </data>
+  <data name="VoteKickErrorInit" xml:space="preserve">
+    <value>Could not start vote kick: {0}</value>
+  </data>
+  <data name="VoteKickErrorVote" xml:space="preserve">
+    <value>Could not register vote: {0}</value>
+  </data>
+  <data name="VoteKickErrorVoteConn" xml:space="preserve">
+    <value>Connection lost while sending your vote.</value>
+  </data>
+  <data name="VoteKickStarted" xml:space="preserve">
+    <value>Vote kick started against {0}.</value>
   </data>
   <data name="WaitingForPlayersLabel" xml:space="preserve">
     <value>Waiting for players...</value>

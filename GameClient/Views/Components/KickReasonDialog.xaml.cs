@@ -25,14 +25,15 @@ namespace GameClient.Views.Dialogs
         public void Show(string targetUsername)
         {
             _targetUsername = targetUsername;
-            TargetLabel.Text = $"Motivo para expulsar a '{targetUsername}':";
-            KickReasonCombo.SelectedIndex = 0; 
+            TargetLabel.Text = string.Format(GameClient.Resources.Strings.KickDialogTargetPrefix, targetUsername);
+            KickReasonCombo.SelectedIndex = 0;
             this.Visibility = Visibility.Visible;
         }
 
         private void ConfirmKickButton_Click(object sender, RoutedEventArgs e)
         {
-            string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Sin razón";
+            string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString()
+                            ?? GameClient.Resources.Strings.KickReasonNone;
 
             this.Visibility = Visibility.Collapsed;
 

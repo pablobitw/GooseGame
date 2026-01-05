@@ -87,7 +87,6 @@ namespace GameClient.Helpers
                 string fullPath = Path.GetFullPath(Path.Combine(baseDir, relativePath));
                 if (!File.Exists(fullPath)) return;
 
-                // Hard reset para asegurar cambio de ambiente
                 _musicPlayer.Stop();
                 _musicPlayer.Close();
 

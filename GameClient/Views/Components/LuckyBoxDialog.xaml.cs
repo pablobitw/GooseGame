@@ -87,21 +87,21 @@ namespace GameClient.Views.Dialogs
             {
                 case "COINS":
                     imagePath = "coin_pile.png";
-                    text = $"+{_currentRewardAmount} ORO";
+                    text = string.Format(GameClient.Resources.Strings.RewardGold, _currentRewardAmount);
                     color = Brushes.Gold;
                     break;
                 case "COMMON":
                     imagePath = "ticket_common.png";
-                    text = "TICKET COMÚN";
+                    text = GameClient.Resources.Strings.RewardCommon;
                     break;
                 case "EPIC":
                     imagePath = "ticket_epic.png";
-                    text = "TICKET ÉPICO";
+                    text = GameClient.Resources.Strings.RewardEpic;
                     color = Brushes.Purple;
                     break;
                 case "LEGENDARY":
                     imagePath = "ticket_legendary.png";
-                    text = "¡LEGENDARIO!";
+                    text = GameClient.Resources.Strings.RewardLegendary;
                     color = Brushes.OrangeRed;
                     break;
             }

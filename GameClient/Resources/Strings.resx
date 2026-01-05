@@ -135,6 +135,12 @@
   <data name="AsGuestButton" xml:space="preserve">
     <value>Jugar como invitado</value>
   </data>
+  <data name="AvatarErrorFallback" xml:space="preserve">
+    <value>[UI Critical] Falló la carga del avatar por defecto: {0}</value>
+  </data>
+  <data name="AvatarErrorLoad" xml:space="preserve">
+    <value>[UI Error] No se pudo cargar el avatar '{0}'. Error: {1}</value>
+  </data>
   <data name="AvatarFormatError" xml:space="preserve">
     <value>Error de formato en la imagen de avatar.</value>
   </data>
@@ -185,6 +191,18 @@
   </data>
   <data name="ChangeUsernameTitle" xml:space="preserve">
     <value>Cambiar Nombre</value>
+  </data>
+  <data name="ChatConnectError" xml:space="preserve">
+    <value>No se pudo conectar al servidor de chat. Verifica la configuración.</value>
+  </data>
+  <data name="ChatErrorInternal" xml:space="preserve">
+    <value>Error interno al enviar mensaje.</value>
+  </data>
+  <data name="ChatErrorSend" xml:space="preserve">
+    <value>No se pudo enviar el mensaje. Revisa tu conexión.</value>
+  </data>
+  <data name="ChatJoinError" xml:space="preserve">
+    <value>Error de conexión al intentar unirse al chat.</value>
   </data>
   <data name="ChatSystemWelcome" xml:space="preserve">
     <value>[Sistema]: ¡Bienvenido a la partida!</value>
@@ -294,6 +312,9 @@
   <data name="DevelopedByLabel" xml:space="preserve">
     <value>Desarrollado por:</value>
   </data>
+  <data name="DialogAcceptBtnUpper" xml:space="preserve">
+    <value>ACEPTAR</value>
+  </data>
   <data name="DialogActionBlockedTitle" xml:space="preserve">
     <value>Acción bloqueada</value>
   </data>
@@ -314,6 +335,9 @@
   </data>
   <data name="DialogOkBtn" xml:space="preserve">
     <value>Entendido</value>
+  </data>
+  <data name="DialogRejectBtnUpper" xml:space="preserve">
+    <value>RECHAZAR</value>
   </data>
   <data name="DialogSuccessTitle" xml:space="preserve">
     <value>Éxito</value>
@@ -513,11 +537,17 @@
   <data name="FriendActionBlockedTitle" xml:space="preserve">
     <value>Acción bloqueada</value>
   </data>
+  <data name="FriendAlreadyAdded" xml:space="preserve">
+    <value>Actualmente ya eres amigo de {0}.</value>
+  </data>
   <data name="FriendAlreadyFriends" xml:space="preserve">
     <value>Ya eres amigo de este jugador.</value>
   </data>
   <data name="FriendCancelRequestConfirm" xml:space="preserve">
     <value>¿Deseas cancelar la solicitud enviada?</value>
+  </data>
+  <data name="FriendConnError" xml:space="preserve">
+    <value>Error de conexión al enviar solicitud de amistad.</value>
   </data>
   <data name="FriendDeleteConfirm" xml:space="preserve">
     <value>¿Eliminar a {0} de tus amigos?</value>
@@ -525,11 +555,32 @@
   <data name="FriendDeletedSuccess" xml:space="preserve">
     <value>Amigo eliminado.</value>
   </data>
+  <data name="FriendGuestRestriction" xml:space="preserve">
+    <value>Los invitados no pueden tener amigos.</value>
+  </data>
   <data name="FriendNotFound" xml:space="preserve">
     <value>El usuario ingresado no existe.</value>
   </data>
   <data name="FriendPasteBlocked" xml:space="preserve">
     <value>Por seguridad, el pegado está deshabilitado en el buscador.</value>
+  </data>
+  <data name="FriendRequestDialogTitle" xml:space="preserve">
+    <value>¡SOLICITUD DE AMISTAD!</value>
+  </data>
+  <data name="FriendRequestError" xml:space="preserve">
+    <value>Ocurrió un error al intentar enviar la solicitud.</value>
+  </data>
+  <data name="FriendRequestPending" xml:space="preserve">
+    <value>Ya le has mandado solicitud a este jugador.</value>
+  </data>
+  <data name="FriendRequestPlayerPrefix" xml:space="preserve">
+    <value>El jugador</value>
+  </data>
+  <data name="FriendRequestPlayerSuffix" xml:space="preserve">
+    <value>quiere ser tu amigo</value>
+  </data>
+  <data name="FriendRequestSent" xml:space="preserve">
+    <value>Solicitud enviada a {0}.</value>
   </data>
   <data name="FriendRequestSentSuccess" xml:space="preserve">
     <value>Solicitud enviada a {0}.</value>
@@ -546,8 +597,29 @@
   <data name="FullScreenMode" xml:space="preserve">
     <value>Pantalla Completa</value>
   </data>
+  <data name="GameErrorBoardImage" xml:space="preserve">
+    <value>No se pudo cargar la imagen del tablero: {0}</value>
+  </data>
+  <data name="GameErrorConnLost" xml:space="preserve">
+    <value>Conexión perdida con el servidor de juego.</value>
+  </data>
+  <data name="GameErrorDice" xml:space="preserve">
+    <value>Error del juego: {0}</value>
+  </data>
+  <data name="GameErrorTimeout" xml:space="preserve">
+    <value>El servidor no respondió al intento de tirar dados.</value>
+  </data>
+  <data name="GameErrorTitle" xml:space="preserve">
+    <value>Error del juego</value>
+  </data>
   <data name="GameLanguageLabel" xml:space="preserve">
     <value>Idioma del Juego</value>
+  </data>
+  <data name="GameOverMessage" xml:space="preserve">
+    <value>¡Juego Terminado! Ganador: {0}</value>
+  </data>
+  <data name="GameOverTitle" xml:space="preserve">
+    <value>Fin de Partida</value>
   </data>
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Aviso de Partida</value>
@@ -584,6 +656,12 @@
   </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Información</value>
+  </data>
+  <data name="InitialStateErrorConn" xml:space="preserve">
+    <value>No se pudo cargar el estado inicial de la partida por problemas de conexión.</value>
+  </data>
+  <data name="InitialStateErrorTimeout" xml:space="preserve">
+    <value>El servidor tardó demasiado en enviar el estado inicial.</value>
   </data>
   <data name="InvalidCodeMessage" xml:space="preserve">
     <value>Por favor, ingresa un código válido de 5 letras.</value>
@@ -624,6 +702,12 @@
   <data name="JoinMatchCodeTitle" xml:space="preserve">
     <value>Ingresa el Código de Partida</value>
   </data>
+  <data name="KickDialogTargetPrefix" xml:space="preserve">
+    <value>Motivo para expulsar a '{0}':</value>
+  </data>
+  <data name="KickDialogTitle" xml:space="preserve">
+    <value>INICIAR VOTACIÓN</value>
+  </data>
   <data name="KickedByHost" xml:space="preserve">
     <value>Has sido expulsado de la sala por el anfitrión.</value>
   </data>
@@ -632,6 +716,21 @@
   </data>
   <data name="KickedTitle" xml:space="preserve">
     <value>Expulsado</value>
+  </data>
+  <data name="KickReasonAFK" xml:space="preserve">
+    <value>Inactividad (AFK)</value>
+  </data>
+  <data name="KickReasonCheating" xml:space="preserve">
+    <value>Hacer Trampa</value>
+  </data>
+  <data name="KickReasonNone" xml:space="preserve">
+    <value>Sin razón</value>
+  </data>
+  <data name="KickReasonSpam" xml:space="preserve">
+    <value>Molestar / Spam</value>
+  </data>
+  <data name="KickReasonToxic" xml:space="preserve">
+    <value>Comportamiento Tóxico</value>
   </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
@@ -647,6 +746,18 @@
   </data>
   <data name="LeaderboardFeatureName" xml:space="preserve">
     <value>Tabla de Clasificación</value>
+  </data>
+  <data name="LeaveGameConfirm" xml:space="preserve">
+    <value>¿Estás seguro de salir? Perderás la partida.</value>
+  </data>
+  <data name="LeaveGameErrorConn" xml:space="preserve">
+    <value>Error de conexión al intentar abandonar la partida.</value>
+  </data>
+  <data name="LeaveGameErrorServer" xml:space="preserve">
+    <value>El servidor no respondió al intentar salir.</value>
+  </data>
+  <data name="LeaveGameErrorUnexpected" xml:space="preserve">
+    <value>Error inesperado al salir: {0}</value>
   </data>
   <data name="LeaveGameTitle" xml:space="preserve">
     <value>Abandonar Partida</value>
@@ -708,6 +819,9 @@
   <data name="MusicLabel" xml:space="preserve">
     <value>Música</value>
   </data>
+  <data name="MusicVolumeLabel" xml:space="preserve">
+    <value>Volumen Música</value>
+  </data>
   <data name="MyFriendsTab" xml:space="preserve">
     <value>Mis Amigos</value>
   </data>
@@ -747,6 +861,9 @@
   <data name="PasswordUpdateSuccess" xml:space="preserve">
     <value>¡Contraseña actualizada con éxito!</value>
   </data>
+  <data name="PauseMenuTitle" xml:space="preserve">
+    <value>PAUSA</value>
+  </data>
   <data name="PlayButton" xml:space="preserve">
     <value>Jugar</value>
   </data>
@@ -782,6 +899,9 @@
   </data>
   <data name="QuitButton" xml:space="preserve">
     <value>Salir</value>
+  </data>
+  <data name="QuitGameButton" xml:space="preserve">
+    <value>ABANDONAR PARTIDA</value>
   </data>
   <data name="RefreshButton" xml:space="preserve">
     <value>Actualizar</value>
@@ -837,6 +957,21 @@
   <data name="RestartMessage" xml:space="preserve">
     <value>El idioma ha sido cambiado</value>
   </data>
+  <data name="ResumeButton" xml:space="preserve">
+    <value>REANUDAR</value>
+  </data>
+  <data name="RewardCommon" xml:space="preserve">
+    <value>TICKET COMÚN</value>
+  </data>
+  <data name="RewardEpic" xml:space="preserve">
+    <value>TICKET ÉPICO</value>
+  </data>
+  <data name="RewardGold" xml:space="preserve">
+    <value>+{0} ORO</value>
+  </data>
+  <data name="RewardLegendary" xml:space="preserve">
+    <value>¡LEGENDARIO!</value>
+  </data>
   <data name="SaveAvatarButton" xml:space="preserve">
     <value>Guardar Avatar</value>
   </data>
@@ -858,8 +993,17 @@
   <data name="ScoreboardWins" xml:space="preserve">
     <value>VICTORIAS</value>
   </data>
+  <data name="ScreenModeBorderless" xml:space="preserve">
+    <value>Ventana sin bordes</value>
+  </data>
+  <data name="ScreenModeFullscreen" xml:space="preserve">
+    <value>Pantalla Completa</value>
+  </data>
   <data name="ScreenModeLabel" xml:space="preserve">
     <value>Modo de Pantalla</value>
+  </data>
+  <data name="ScreenModeWindowed" xml:space="preserve">
+    <value>Ventana</value>
   </data>
   <data name="SearchUserPlaceholder" xml:space="preserve">
     <value>Buscar usuario...</value>
@@ -893,6 +1037,9 @@
   </data>
   <data name="SfxLabel" xml:space="preserve">
     <value>Efectos (SFX)</value>
+  </data>
+  <data name="SfxVolumeLabel" xml:space="preserve">
+    <value>Efectos de Sonido</value>
   </data>
   <data name="ShopPendingMsg" xml:space="preserve">
     <value>¡Funcionalidad pendiente! Te recomendamos que ahorres tus monedas y consigas buenos tickets para cuando abra.</value>
@@ -996,6 +1143,21 @@
   <data name="TimeoutLabel" xml:space="preserve">
     <value>La solicitud tardó demasiado en responder. Revisa tu conexión</value>
   </data>
+  <data name="TimerExpired" xml:space="preserve">
+    <value>¡Tiempo Agotado!</value>
+  </data>
+  <data name="TimerLabel" xml:space="preserve">
+    <value>Tiempo: {0}s</value>
+  </data>
+  <data name="TurnMyTurnBtn" xml:space="preserve">
+    <value>¡Tirar Dados!</value>
+  </data>
+  <data name="TurnOtherPlayer" xml:space="preserve">
+    <value>Turno de {0}</value>
+  </data>
+  <data name="TurnWaitBtn" xml:space="preserve">
+    <value>Esperando inicio...</value>
+  </data>
   <data name="UnexpectedError" xml:space="preserve">
     <value>Ha ocurrido un error inesperado: {0} </value>
   </data>
@@ -1067,6 +1229,36 @@
   </data>
   <data name="VisibilityPublic" xml:space="preserve">
     <value>Publica</value>
+  </data>
+  <data name="VoteKickErrorConn" xml:space="preserve">
+    <value>Conexión perdida al intentar iniciar la votación.</value>
+  </data>
+  <data name="VoteKickErrorInit" xml:space="preserve">
+    <value>No se pudo iniciar votación: {0}</value>
+  </data>
+  <data name="VoteKickErrorVote" xml:space="preserve">
+    <value>No se pudo registrar el voto: {0}</value>
+  </data>
+  <data name="VoteKickErrorVoteConn" xml:space="preserve">
+    <value>Se perdió la conexión al enviar tu voto.</value>
+  </data>
+  <data name="VoteKickQuestion" xml:space="preserve">
+    <value>¿Expulsar a '{0}'?</value>
+  </data>
+  <data name="VoteKickReasonPrefix" xml:space="preserve">
+    <value>Motivo: {0}</value>
+  </data>
+  <data name="VoteKickStarted" xml:space="preserve">
+    <value>Votación iniciada contra {0}.</value>
+  </data>
+  <data name="VoteKickTitle" xml:space="preserve">
+    <value>¡VOTACIÓN DE EXPULSIÓN!</value>
+  </data>
+  <data name="VoteNoBtn" xml:space="preserve">
+    <value>NO (F2)</value>
+  </data>
+  <data name="VoteYesBtn" xml:space="preserve">
+    <value>SÍ (F1)</value>
   </data>
   <data name="WaitingForPlayersLabel" xml:space="preserve">
     <value>Esperando jugadores…</value>

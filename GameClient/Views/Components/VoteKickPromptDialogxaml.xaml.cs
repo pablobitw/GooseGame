@@ -15,8 +15,9 @@ namespace GameClient.Views.Dialogs
 
         public void ShowVote(string targetUsername, string reason)
         {
-            VoteKickTargetText.Text = $"¿Expulsar a '{targetUsername}'?";
-            VoteReasonText.Text = $"Motivo: {reason}";
+            VoteKickTargetText.Text = string.Format(GameClient.Resources.Strings.VoteKickQuestion, targetUsername);
+            VoteReasonText.Text = string.Format(GameClient.Resources.Strings.VoteKickReasonPrefix, reason);
+
             this.Visibility = Visibility.Visible;
         }
 
