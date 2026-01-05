@@ -14,6 +14,8 @@ namespace GameServer.DTOs.Auth
         [EnumMember]
         EmailPendingVerification,
         [EnumMember]
-        FatalError
+        FatalError,
+            [EnumMember]
+            NoInternet
     }
 }

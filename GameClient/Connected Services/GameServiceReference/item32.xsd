@@ -16,6 +16,7 @@
       <xs:enumeration value="EmailAlreadyExists" />
       <xs:enumeration value="EmailPendingVerification" />
       <xs:enumeration value="FatalError" />
+      <xs:enumeration value="NoInternet" />
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="RegistrationResult" nillable="true" type="tns:RegistrationResult" />

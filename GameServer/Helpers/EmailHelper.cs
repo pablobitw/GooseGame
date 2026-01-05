@@ -64,7 +64,6 @@ namespace GameServer.Helpers
         public static async Task SendPasswordChangedNotificationAsync(string recipientEmail, string username, string languageCode = "es-MX")
         {
             SetCulture(languageCode);
-            // Si no agregaste este key al resx, usa un string fijo o agrégalo como Email_PasswordChangedSubject
             string subject = "Goose Game - Password Updated";
             string date = DateTime.Now.ToString("g");
 

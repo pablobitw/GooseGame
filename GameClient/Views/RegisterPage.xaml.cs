@@ -10,6 +10,7 @@ using GameClient.Views;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Threading;
+using System.Data.Common;
 
 namespace GameClient.Views
 {
@@ -114,11 +115,17 @@ namespace GameClient.Views
             catch (TimeoutException)
             {
                 ShowTranslatedMessageBox("TimeoutLabel", "ErrorTitle");
+
+            }
+            catch (FaultException)
+            {
+                ShowTranslatedMessageBox("ServerDownLabel", "ErrorTitle");
             }
             catch (CommunicationException)
             {
                 ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
             }
+           
             catch (Exception ex)
             {
                 MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
@@ -146,6 +153,9 @@ namespace GameClient.Views
                     ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
                     NavigationService.Navigate(new VerifyAccountPage(email));
                     break;
+                case RegistrationResult.NoInternet:
+                    MessageBox.Show("No hay intenernet, registro fallido!!:");
+                    break;
 
                 case RegistrationResult.EmailPendingVerification:
                     ShowTranslatedMessageBox("AccountPendingLabel", "AccountPendingTitle");
@@ -163,7 +173,7 @@ namespace GameClient.Views
                     break;
 
                 default:
-                    ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
+                    ShowTranslatedMessageBox("ServerDownLabel", "ErrorTitle");
                     break;
             }
         }

@@ -412,7 +412,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Error de comunicación con el servidor. Revisa tu conexión..
+        ///   Busca una cadena traducida similar a No hay internet, registro fallido.
         /// </summary>
         public static string ComunicationLabel {
             get {
@@ -421,7 +421,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a .
+        ///   Busca una cadena traducida similar a Error de internet.
         /// </summary>
         public static string ComunicationTile {
             get {
@@ -2964,6 +2964,15 @@ namespace GameClient.Resources {
         public static string SentRequestsTab {
             get {
                 return ResourceManager.GetString("SentRequestsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor esta apagado.
+        /// </summary>
+        public static string ServerDownLabel {
+            get {
+                return ResourceManager.GetString("ServerDownLabel", resourceCulture);
             }
         }
         

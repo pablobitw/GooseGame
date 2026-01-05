@@ -234,6 +234,9 @@
   <data name="CoinsLabel" xml:space="preserve">
     <value>Coins:</value>
   </data>
+  <data name="ComunicationLabel" xml:space="preserve">
+    <value>No internet conection, try again</value>
+  </data>
   <data name="ConfigSavedMessage" xml:space="preserve">
     <value>Configuration applied successfully!</value>
   </data>
@@ -1070,6 +1073,9 @@
   </data>
   <data name="SentRequestsTab" xml:space="preserve">
     <value>Sent</value>
+  </data>
+  <data name="ServerDownLabel" xml:space="preserve">
+    <value>The server is down</value>
   </data>
   <data name="SessionTerminatedTitle" xml:space="preserve">
     <value>Session Terminated</value>

@@ -124,6 +124,9 @@ namespace GameClient.GameServiceReference {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
         FatalError = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        NoInternet = 5,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]

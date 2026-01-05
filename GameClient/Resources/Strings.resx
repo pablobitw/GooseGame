@@ -235,10 +235,10 @@
     <value>Monedas:</value>
   </data>
   <data name="ComunicationLabel" xml:space="preserve">
-    <value>Error de comunicación con el servidor. Revisa tu conexión.</value>
+    <value>No hay internet, registro fallido</value>
   </data>
   <data name="ComunicationTile" xml:space="preserve">
-    <value />
+    <value>Error de internet</value>
   </data>
   <data name="ConfigSavedMessage" xml:space="preserve">
     <value>¡Configuración aplicada correctamente!</value>
@@ -1085,6 +1085,9 @@
   </data>
   <data name="SentRequestsTab" xml:space="preserve">
     <value>Enviadas</value>
+  </data>
+  <data name="ServerDownLabel" xml:space="preserve">
+    <value>El servidor esta apagado</value>
   </data>
   <data name="SessionTerminatedTitle" xml:space="preserve">
     <value>Sesión Terminada</value>

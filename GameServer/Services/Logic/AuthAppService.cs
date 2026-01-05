@@ -7,6 +7,7 @@ using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
+using System.Net.NetworkInformation; 
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -22,6 +23,32 @@ namespace GameServer.Services.Logic
         public AuthAppService(IAuthRepository repository)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        }
+
+        private bool CheckInternetConnection()
+        {
+            try
+            {
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return false;
+                }
+
+                using (var ping = new Ping())
+                {
+                    var buffer = new byte[32];
+                    var timeout = 2000; 
+                    var options = new PingOptions();
+
+                    var reply = ping.Send("8.8.8.8", timeout, buffer, options);
+                    return reply != null && reply.Status == IPStatus.Success;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Falló la verificación de internet (Ping): " + ex.Message);
+                return false;
+            }
         }
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
@@ -94,6 +121,12 @@ namespace GameServer.Services.Logic
         public async Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request)
         {
             if (request == null) return RegistrationResult.FatalError;
+
+            if (!CheckInternetConnection())
+            {
+                Log.WarnFormat("Intento de registro fallido para usuario '{0}': No hay conexión a internet en el servidor.", request.Username);
+                return RegistrationResult.FatalError;
+            }
 
             if (string.IsNullOrWhiteSpace(request.Username) ||
                 string.IsNullOrWhiteSpace(request.Email) ||
@@ -196,6 +229,8 @@ namespace GameServer.Services.Logic
 
         private async Task<RegistrationResult> ResendVerificationForPlayer(Player player)
         {
+            if (!CheckInternetConnection()) return RegistrationResult.FatalError;
+
             string newCode = GenerateSecureCode();
             player.Account.VerificationCode = newCode;
             player.Account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
@@ -208,6 +243,8 @@ namespace GameServer.Services.Logic
 
         private async Task<RegistrationResult> ResendVerificationForAccount(Account account)
         {
+            if (!CheckInternetConnection()) return RegistrationResult.FatalError;
+
             string newCode = GenerateSecureCode();
             account.VerificationCode = newCode;
             account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
@@ -272,8 +309,8 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error general al crear usuario.", ex);
-                return RegistrationResult.FatalError;
+                Log.Error("Error general al crear usuario o enviar correo.", ex);
+                return RegistrationResult.Success;
             }
         }
 
@@ -331,7 +368,7 @@ namespace GameServer.Services.Logic
             catch (EntityException ex)
             {
                 Log.Error("Error de Entity Framework en Login.", ex);
-                response.Message = "Error interno del servidor.";
+                response.Message = "El servidor esta apagado, intentalo mas tarde.";
             }
             catch (DbUpdateException ex)
             {
@@ -429,6 +466,8 @@ namespace GameServer.Services.Logic
 
         public async Task<bool> RequestPasswordResetAsync(string email)
         {
+            if (!CheckInternetConnection()) return false; 
+
             try
             {
                 var account = await _repository.GetAccountByEmailAsync(email);
@@ -540,6 +579,8 @@ namespace GameServer.Services.Logic
 
         public async Task<bool> ResendVerificationCodeAsync(string email)
         {
+            if (!CheckInternetConnection()) return false; 
+
             try
             {
                 var account = await _repository.GetAccountByEmailAsync(email);

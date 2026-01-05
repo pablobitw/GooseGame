@@ -56,11 +56,15 @@ namespace GameClient.Views
                         }
                         catch (CommunicationException)
                         {
-                            // 
+                                    MessageBox.Show(
+                           GameClient.Resources.Strings.ComunicationLabel,
+                           GameClient.Resources.Strings.ErrorTitle);
                         }
                         catch (TimeoutException)
                         {
-                            //
+                            MessageBox.Show(
+                    GameClient.Resources.Strings.TimeoutLabel,
+                    GameClient.Resources.Strings.ErrorTitle);
                         }
 
                         Process.Start(Application.ResourceAssembly.Location);
