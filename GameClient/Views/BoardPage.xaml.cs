@@ -71,7 +71,7 @@ namespace GameClient.Views
             _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource("ChatTabItemStyle"));
 
             PauseMenu.ResumeRequested += (s, e) => PauseMenu.Visibility = Visibility.Collapsed;
-            PauseMenu.QuitRequested += (s, e) => QuitGameProcess();
+            PauseMenu.QuitRequested += (s, e) => QuitGameProcessAsync();
 
             KickReasonPrompt.KickConfirmed += KickReasonPrompt_KickConfirmed;
             KickReasonPrompt.KickCancelled += (s, e) => KickReasonPrompt.Visibility = Visibility.Collapsed;
@@ -228,21 +228,29 @@ namespace GameClient.Views
             PauseMenu.Visibility = Visibility.Visible;
         }
 
-        private async void QuitGameProcess()
+        private async Task QuitGameProcessAsync()
         {
             PauseMenu.Visibility = Visibility.Collapsed;
 
             if (MessageBox.Show(GameClient.Resources.Strings.LeaveGameConfirm,
                                 GameClient.Resources.Strings.LeaveGameTitle,
-                                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Question) != MessageBoxResult.Yes)
+            {
                 return;
+            }
 
             UnsubscribeFromEvents();
             StopTimers();
 
             try
             {
-                await GameplayServiceManager.Instance.LeaveGameAsync(new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername });
+                await GameplayServiceManager.Instance.LeaveGameAsync(
+                    new GameplayRequest
+                    {
+                        LobbyCode = lobbyCode,
+                        Username = currentUsername
+                    });
 
                 if (Window.GetWindow(this) is GameMainWindow mw)
                 {
@@ -259,9 +267,11 @@ namespace GameClient.Views
             }
             catch (Exception ex)
             {
-                SessionManager.ForceLogout(string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
+                SessionManager.ForceLogout(
+                    string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
             }
         }
+
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -324,7 +334,7 @@ namespace GameClient.Views
 
         private void OnGameFinished(string winner)
         {
-            Dispatcher.InvokeAsync(() => HandleGameOver(winner));
+            Dispatcher.InvokeAsync(() => HandleGameOverAsync(winner));
         }
 
         private void OnPlayerKicked(string reason)
@@ -829,28 +839,30 @@ namespace GameClient.Views
             });
         }
 
-        private async void HandleGameOver(string winner)
+        private async Task HandleGameOverAsync(string winner)
         {
-            if (_isGameOverHandled) return;
-            _isGameOverHandled = true;
+            if (_isGameOverHandled)
+            {
+                return;
+            }
 
+            _isGameOverHandled = true;
             StopTimers();
 
             MessageBox.Show(string.Format(GameClient.Resources.Strings.GameOverMessage, winner),
                             GameClient.Resources.Strings.GameOverTitle,
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
                 await mainWindow.ShowMainMenu();
             }
-            else
+            else if (NavigationService != null && NavigationService.CanGoBack)
             {
-                if (NavigationService != null && NavigationService.CanGoBack)
-                {
-                    NavigationService.GoBack();
-                }
+                NavigationService.GoBack();
             }
         }
+
     }
 }

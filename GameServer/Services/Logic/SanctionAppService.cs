@@ -1,7 +1,7 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Helpers;
 using GameServer.Repositories;
-using GameServer; // Necesario para las entidades (Player, Sanction)
+using GameServer;
 using log4net;
 using System;
 using System.Data.Entity.Core;
@@ -13,13 +13,12 @@ namespace GameServer.Services.Logic
     public class SanctionAppService : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(SanctionAppService));
-
-        private readonly GameplayRepository _repository;
+        private readonly IGameplayRepository _repository;
         private bool _disposed = false;
 
-        public SanctionAppService()
+        public SanctionAppService(IGameplayRepository repository = null)
         {
-            _repository = new GameplayRepository();
+            _repository = repository ?? new GameplayRepository();
         }
 
         public async Task ProcessKickAsync(string username, string lobbyCode, string reason, string source)
@@ -48,10 +47,17 @@ namespace GameServer.Services.Logic
                         Log.InfoFormat("[SanctionHub] Jugador {0} BANEADO por acumulación de faltas.", username);
                     }
 
-                    if (player.Account_IdAccount != null)
+                    // CORRECCIÓN: Usamos .HasValue y .Value para manejar el tipo int?
+                    if (player.Account_IdAccount.HasValue && player.Account_IdAccount.Value != 0)
                     {
                         var game = await _repository.GetGameByLobbyCodeAsync(lobbyCode);
-                        int gameId = game?.IdGame ?? 0;
+
+                        // CORRECCIÓN: Casting explícito o valor por defecto para gameId
+                        int gameId = 0;
+                        if (game != null)
+                        {
+                            gameId = game.IdGame;
+                        }
 
                         if (gameId == 0 && player.GameIdGame.HasValue)
                         {
@@ -62,11 +68,12 @@ namespace GameServer.Services.Logic
                         {
                             var sanction = new Sanction
                             {
+                                // CORRECCIÓN: Asignación segura de int? a int
                                 Account_IdAccount = player.Account_IdAccount.Value,
                                 Game_IdGame = gameId,
                                 StartDate = DateTime.UtcNow,
                                 Reason = $"{source}: {reason}",
-                                SanctionType = isBanApplied ? 2 : 1, 
+                                SanctionType = isBanApplied ? 2 : 1,
                                 EndDate = isBanApplied ? DateTime.UtcNow.AddYears(1) : DateTime.UtcNow
                             };
                             _repository.AddSanction(sanction);
@@ -123,9 +130,9 @@ namespace GameServer.Services.Logic
                 {
                     client.OnPlayerKicked(reason);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Ignorar errores de comunicación al notificar kick
+                    Log.Warn($"[SanctionHub] No se pudo notificar al cliente {username}.", ex);
                 }
                 finally
                 {
@@ -151,7 +158,7 @@ namespace GameServer.Services.Logic
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error sacando a {username} del lobby tras kick.", ex);
+                    Log.Error($"[SanctionHub] Error sacando a {username} del lobby tras kick.", ex);
                 }
             });
         }
