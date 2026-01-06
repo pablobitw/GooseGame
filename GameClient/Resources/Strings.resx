@@ -624,6 +624,15 @@
   <data name="ErrorLeaderboardConnection" xml:space="preserve">
     <value>No se pudo conectar con el servidor de ranking.</value>
   </data>
+  <data name="ErrorLeaderboardDatabase" xml:space="preserve">
+    <value>No ha sido posible recuperar las estadísticas globales. El sistema de base de datos no está respondiendo o se encuentra en mantenimiento temporal.</value>
+  </data>
+  <data name="ErrorLeaderboardGeneral" xml:space="preserve">
+    <value>Ocurrió un error inesperado al intentar procesar la tabla de puntuaciones. Si el problema persiste, contacta a soporte.</value>
+  </data>
+  <data name="ErrorLeaderboardTimeout" xml:space="preserve">
+    <value>La operación de carga ha excedido el tiempo de espera. El servidor está tardando demasiado en responder, por favor inténtalo más tarde.</value>
+  </data>
   <data name="ErrorLeaveLobby" xml:space="preserve">
     <value>Error de red al intentar salir.</value>
   </data>
@@ -653,6 +662,9 @@
   </data>
   <data name="ErrorLobbyUpdateTimeout" xml:space="preserve">
     <value>El tiempo de espera para actualizar el lobby se ha agotado.</value>
+  </data>
+  <data name="ErrorNetworkInterruption" xml:space="preserve">
+    <value>Se ha perdido la conexión con el servicio durante la descarga de datos. Por favor, verifica tu conexión a Internet e intenta nuevamente.</value>
   </data>
   <data name="ErrorNewPassEmpty" xml:space="preserve">
     <value>La contraseña nueva no puede estar vacía.</value>
@@ -686,6 +698,9 @@
   </data>
   <data name="ErrorSentRequestsComm" xml:space="preserve">
     <value>Error al obtener las solicitudes enviadas. Revisa tu conexión a internet.</value>
+  </data>
+  <data name="ErrorServerUnreachable" xml:space="preserve">
+    <value>No se puede establecer conexión con el servidor de GooseGame. Es posible que el servidor esté apagado o tu dirección de red sea incorrecta.</value>
   </data>
   <data name="ErrorStartGame" xml:space="preserve">
     <value>Error al intentar iniciar la partida. Verifique su conexión.</value>
@@ -728,6 +743,30 @@
   </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
+  </data>
+  <data name="Forgot_Error_Empty" xml:space="preserve">
+    <value>El correo no puede estar vacío.</value>
+  </data>
+  <data name="Forgot_Error_Format" xml:space="preserve">
+    <value>El formato del correo no es válido.</value>
+  </data>
+  <data name="Forgot_Error_Mismatch" xml:space="preserve">
+    <value>Los correos no coinciden.</value>
+  </data>
+  <data name="Forgot_Error_Process" xml:space="preserve">
+    <value>Hubo un error al procesar tu solicitud. Intenta más tarde.</value>
+  </data>
+  <data name="Forgot_Paste_Blocked" xml:space="preserve">
+    <value>Por seguridad, el pegado está deshabilitado en este campo.</value>
+  </data>
+  <data name="Forgot_Success_Msg" xml:space="preserve">
+    <value>Si el correo está registrado, recibirás un código de verificación.</value>
+  </data>
+  <data name="Forgot_Success_Title" xml:space="preserve">
+    <value>Revisa tu Correo</value>
+  </data>
+  <data name="Forgot_Title_Blocked" xml:space="preserve">
+    <value>Acción bloqueada</value>
   </data>
   <data name="FriendActionBlockedTitle" xml:space="preserve">
     <value>Acción bloqueada</value>
@@ -906,6 +945,9 @@
   <data name="ImpossibleStartTitle" xml:space="preserve">
     <value>Imposible Iniciar</value>
   </data>
+  <data name="InformationTitle" xml:space="preserve">
+    <value>Info</value>
+  </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Información</value>
   </data>
@@ -984,6 +1026,12 @@
   <data name="KickReasonToxic" xml:space="preserve">
     <value>Comportamiento Tóxico</value>
   </data>
+  <data name="LabelEmptyLeaderboard" xml:space="preserve">
+    <value>Aún no hay registros de partidas. ¡Sé el primero en ganar!</value>
+  </data>
+  <data name="LabelLoadingLeaderboard" xml:space="preserve">
+    <value>Obteniendo datos de los mejores jugadores...</value>
+  </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
   </data>
@@ -996,8 +1044,23 @@
   <data name="LanguageHeader" xml:space="preserve">
     <value>Idioma</value>
   </data>
+  <data name="LeaderboardDbError" xml:space="preserve">
+    <value>No pudimos obtener el ranking mundial en este momento.</value>
+  </data>
+  <data name="LeaderboardEmpty" xml:space="preserve">
+    <value>Aún no hay registros en la tabla de clasificación.</value>
+  </data>
   <data name="LeaderboardFeatureName" xml:space="preserve">
     <value>Tabla de Clasificación</value>
+  </data>
+  <data name="LeaderboardGeneralError" xml:space="preserve">
+    <value>Error al cargar la tabla de puntuaciones.</value>
+  </data>
+  <data name="LeaderboardLoadErrorTitle" xml:space="preserve">
+    <value>Error al Cargar Clasificación</value>
+  </data>
+  <data name="LeaderboardTimeout" xml:space="preserve">
+    <value>La carga del ranking tardó demasiado. Intenta de nuevo.</value>
   </data>
   <data name="LeaveGameConfirm" xml:space="preserve">
     <value>¿Estás seguro de salir? Perderás la partida.</value>

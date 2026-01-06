@@ -11,7 +11,9 @@ namespace GameClient.Views
 {
     public partial class JoinMatchCodePage : Page
     {
-        private string username;
+        private const int LOBBY_CODE_LENGTH = 5;
+        private const int NAVIGATION_DELAY_MS = 200;
+        private readonly string username;
 
         public JoinMatchCodePage(string username)
         {
@@ -22,12 +24,26 @@ namespace GameClient.Views
         private async void JoinButton_Click(object sender, RoutedEventArgs e)
         {
             string code = LobbyCodeBox.Text.Trim().ToUpper();
-            if (string.IsNullOrWhiteSpace(code) || code.Length != 5)
+
+            if (!IsValidLobbyCode(code))
             {
-                MessageBox.Show(GameClient.Resources.Strings.InvalidCodeMessage, GameClient.Resources.Strings.InvalidCodeTitle);
+                ShowMessage(
+                    GameClient.Resources.Strings.InvalidCodeMessage,
+                    GameClient.Resources.Strings.InvalidCodeTitle
+                );
                 return;
             }
 
+            await ProcessJoinLobbyAsync(code);
+        }
+
+        private bool IsValidLobbyCode(string code)
+        {
+            return !string.IsNullOrWhiteSpace(code) && code.Length == LOBBY_CODE_LENGTH;
+        }
+
+        private async Task ProcessJoinLobbyAsync(string code)
+        {
             JoinButton.IsEnabled = false;
 
             try
@@ -42,7 +58,7 @@ namespace GameClient.Views
 
                 if (result.Success)
                 {
-                    await Task.Delay(200);
+                    await Task.Delay(NAVIGATION_DELAY_MS);
                     NavigationService.Navigate(new LobbyPage(username, code, result));
                 }
                 else
@@ -52,19 +68,24 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.TimeoutLabel, GameClient.Resources.Strings.ErrorTitle);
+                ShowErrorMessage(GameClient.Resources.Strings.TimeoutLabel);
             }
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.EndpointNotFoundLabel, GameClient.Resources.Strings.EndpointNotFoundTitle);
+                ShowMessage(
+                    GameClient.Resources.Strings.EndpointNotFoundLabel,
+                    GameClient.Resources.Strings.EndpointNotFoundTitle
+                );
             }
             catch (CommunicationException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.ComunicationLabel, GameClient.Resources.Strings.ErrorTitle);
+                ShowErrorMessage(GameClient.Resources.Strings.ComunicationLabel);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.UnexpectedErrorMessage, ex.Message), GameClient.Resources.Strings.ErrorTitle);
+                ShowErrorMessage(
+                    string.Format(GameClient.Resources.Strings.UnexpectedErrorMessage, ex.Message)
+                );
             }
             finally
             {
@@ -74,32 +95,44 @@ namespace GameClient.Views
 
         private void HandleLobbyError(LobbyErrorType errorType, string fallbackMessage)
         {
-            string message = fallbackMessage;
-            string title = GameClient.Resources.Strings.ErrorTitle;
+            string message = GetErrorMessage(errorType, fallbackMessage);
+            ShowWarningMessage(message);
+        }
 
+        private string GetErrorMessage(LobbyErrorType errorType, string fallbackMessage)
+        {
             switch (errorType)
             {
                 case LobbyErrorType.DatabaseError:
-                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
-                    break;
+                    return GameClient.Resources.Strings.SafeZone_DatabaseError;
                 case LobbyErrorType.ServerTimeout:
-                    message = GameClient.Resources.Strings.SafeZone_ServerTimeout;
-                    break;
+                    return GameClient.Resources.Strings.SafeZone_ServerTimeout;
                 case LobbyErrorType.GameFull:
-                    message = "La sala está llena.";
-                    break;
+                    return "La sala está llena.";
                 case LobbyErrorType.GameStarted:
-                    message = "La partida ya ha comenzado.";
-                    break;
+                    return "La partida ya ha comenzado.";
                 case LobbyErrorType.GameNotFound:
-                    message = "No se encontró una partida con ese código.";
-                    break;
+                    return "No se encontró una partida con ese código.";
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    message = "El sistema indica que ya estás en una partida activa.";
-                    break;
+                    return "El sistema indica que ya estás en una partida activa.";
+                default:
+                    return fallbackMessage;
             }
+        }
 
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+        private void ShowMessage(string message, string title, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Information)
+        {
+            MessageBox.Show(message, title, button, icon);
+        }
+
+        private void ShowErrorMessage(string message)
+        {
+            ShowMessage(message, GameClient.Resources.Strings.ErrorTitle);
+        }
+
+        private void ShowWarningMessage(string message)
+        {
+            ShowMessage(message, GameClient.Resources.Strings.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

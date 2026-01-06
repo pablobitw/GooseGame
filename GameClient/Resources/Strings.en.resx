@@ -618,6 +618,15 @@
   <data name="ErrorLeaderboardConnection" xml:space="preserve">
     <value>Could not connect to the ranking server.</value>
   </data>
+  <data name="ErrorLeaderboardDatabase" xml:space="preserve">
+    <value>Unable to retrieve global statistics. The database system is not responding or is currently under temporary maintenance.</value>
+  </data>
+  <data name="ErrorLeaderboardGeneral" xml:space="preserve">
+    <value>An unexpected error occurred while processing the leaderboard. If the problem persists, please contact support.</value>
+  </data>
+  <data name="ErrorLeaderboardTimeout" xml:space="preserve">
+    <value>The loading operation has timed out. The server is taking too long to respond, please try again later.</value>
+  </data>
   <data name="ErrorLeaveLobby" xml:space="preserve">
     <value>Network error while trying to leave.</value>
   </data>
@@ -647,6 +656,9 @@
   </data>
   <data name="ErrorLobbyUpdateTimeout" xml:space="preserve">
     <value>Lobby update timed out.</value>
+  </data>
+  <data name="ErrorNetworkInterruption" xml:space="preserve">
+    <value>The connection to the service was lost while downloading data. Please check your internet connection and try again.</value>
   </data>
   <data name="ErrorNewPassEmpty" xml:space="preserve">
     <value>The new password cannot be empty.</value>
@@ -680,6 +692,9 @@
   </data>
   <data name="ErrorSentRequestsComm" xml:space="preserve">
     <value>Error getting sent requests. Please check your internet connection.</value>
+  </data>
+  <data name="ErrorServerUnreachable" xml:space="preserve">
+    <value>Unable to connect to the GooseGame server. The server may be offline or your network address may be incorrect.</value>
   </data>
   <data name="ErrorStartGame" xml:space="preserve">
     <value>Error trying to start the game. Check your connection.</value>
@@ -719,6 +734,30 @@
   </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Forgot password?</value>
+  </data>
+  <data name="Forgot_Error_Empty" xml:space="preserve">
+    <value>Email cannot be empty.</value>
+  </data>
+  <data name="Forgot_Error_Format" xml:space="preserve">
+    <value>Invalid email format.</value>
+  </data>
+  <data name="Forgot_Error_Mismatch" xml:space="preserve">
+    <value>Emails do not match.</value>
+  </data>
+  <data name="Forgot_Error_Process" xml:space="preserve">
+    <value>Error processing request. Try again later.</value>
+  </data>
+  <data name="Forgot_Paste_Blocked" xml:space="preserve">
+    <value>For security, pasting is disabled in this field.</value>
+  </data>
+  <data name="Forgot_Success_Msg" xml:space="preserve">
+    <value>If the email is registered, you will receive a code.</value>
+  </data>
+  <data name="Forgot_Success_Title" xml:space="preserve">
+    <value>Check your Email</value>
+  </data>
+  <data name="Forgot_Title_Blocked" xml:space="preserve">
+    <value>Action blocked</value>
   </data>
   <data name="FriendActionBlockedTitle" xml:space="preserve">
     <value>Action blocked</value>
@@ -897,6 +936,9 @@
   <data name="ImpossibleStartTitle" xml:space="preserve">
     <value>Impossible to Start</value>
   </data>
+  <data name="InformationTitle" xml:space="preserve">
+    <value>Info</value>
+  </data>
   <data name="InfoTitle" xml:space="preserve">
     <value>Information</value>
   </data>
@@ -975,6 +1017,12 @@
   <data name="KickReasonToxic" xml:space="preserve">
     <value>Toxic Behavior</value>
   </data>
+  <data name="LabelEmptyLeaderboard" xml:space="preserve">
+    <value>There are no match records yet. Be the first to win!</value>
+  </data>
+  <data name="LabelLoadingLeaderboard" xml:space="preserve">
+    <value>Retrieving top player data...</value>
+  </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
   </data>
@@ -987,8 +1035,23 @@
   <data name="LanguageHeader" xml:space="preserve">
     <value>Language</value>
   </data>
+  <data name="LeaderboardDbError" xml:space="preserve">
+    <value>Failed to retrieve leaderboard stats.</value>
+  </data>
+  <data name="LeaderboardEmpty" xml:space="preserve">
+    <value>No player stats found in database.</value>
+  </data>
   <data name="LeaderboardFeatureName" xml:space="preserve">
     <value>Leaderboard</value>
+  </data>
+  <data name="LeaderboardGeneralError" xml:space="preserve">
+    <value>Unhandled error in LeaderboardService.</value>
+  </data>
+  <data name="LeaderboardLoadErrorTitle" xml:space="preserve">
+    <value>Error Loading Leaderboard</value>
+  </data>
+  <data name="LeaderboardTimeout" xml:space="preserve">
+    <value>Leaderboard query exceeded execution limit.</value>
   </data>
   <data name="LeaveGameConfirm" xml:space="preserve">
     <value>Are you sure you want to quit? You will forfeit the game.</value>

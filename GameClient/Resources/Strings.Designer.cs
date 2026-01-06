@@ -1672,6 +1672,33 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No ha sido posible recuperar las estadísticas globales. El sistema de base de datos no está respondiendo o se encuentra en mantenimiento temporal..
+        /// </summary>
+        public static string ErrorLeaderboardDatabase {
+            get {
+                return ResourceManager.GetString("ErrorLeaderboardDatabase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al intentar procesar la tabla de puntuaciones. Si el problema persiste, contacta a soporte..
+        /// </summary>
+        public static string ErrorLeaderboardGeneral {
+            get {
+                return ResourceManager.GetString("ErrorLeaderboardGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La operación de carga ha excedido el tiempo de espera. El servidor está tardando demasiado en responder, por favor inténtalo más tarde..
+        /// </summary>
+        public static string ErrorLeaderboardTimeout {
+            get {
+                return ResourceManager.GetString("ErrorLeaderboardTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Error de red al intentar salir..
         /// </summary>
         public static string ErrorLeaveLobby {
@@ -1758,6 +1785,15 @@ namespace GameClient.Resources {
         public static string ErrorLobbyUpdateTimeout {
             get {
                 return ResourceManager.GetString("ErrorLobbyUpdateTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Se ha perdido la conexión con el servicio durante la descarga de datos. Por favor, verifica tu conexión a Internet e intenta nuevamente..
+        /// </summary>
+        public static string ErrorNetworkInterruption {
+            get {
+                return ResourceManager.GetString("ErrorNetworkInterruption", resourceCulture);
             }
         }
         
@@ -1861,6 +1897,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se puede establecer conexión con el servidor de GooseGame. Es posible que el servidor esté apagado o tu dirección de red sea incorrecta..
+        /// </summary>
+        public static string ErrorServerUnreachable {
+            get {
+                return ResourceManager.GetString("ErrorServerUnreachable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Error al intentar iniciar la partida. Verifique su conexión..
         /// </summary>
         public static string ErrorStartGame {
@@ -1884,6 +1929,78 @@ namespace GameClient.Resources {
         public static string ErrorUsernameTooLong {
             get {
                 return ResourceManager.GetString("ErrorUsernameTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El correo no puede estar vacío..
+        /// </summary>
+        public static string Forgot_Error_Empty {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El formato del correo no es válido..
+        /// </summary>
+        public static string Forgot_Error_Format {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Los correos no coinciden..
+        /// </summary>
+        public static string Forgot_Error_Mismatch {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Mismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Hubo un error al procesar tu solicitud. Intenta más tarde..
+        /// </summary>
+        public static string Forgot_Error_Process {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Process", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Por seguridad, el pegado está deshabilitado en este campo..
+        /// </summary>
+        public static string Forgot_Paste_Blocked {
+            get {
+                return ResourceManager.GetString("Forgot_Paste_Blocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Si el correo está registrado, recibirás un código de verificación..
+        /// </summary>
+        public static string Forgot_Success_Msg {
+            get {
+                return ResourceManager.GetString("Forgot_Success_Msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Revisa tu Correo.
+        /// </summary>
+        public static string Forgot_Success_Title {
+            get {
+                return ResourceManager.GetString("Forgot_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Acción bloqueada.
+        /// </summary>
+        public static string Forgot_Title_Blocked {
+            get {
+                return ResourceManager.GetString("Forgot_Title_Blocked", resourceCulture);
             }
         }
         
@@ -2428,6 +2545,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Info.
+        /// </summary>
+        public static string InformationTitle {
+            get {
+                return ResourceManager.GetString("InformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Información.
         /// </summary>
         public static string InfoTitle {
@@ -2662,6 +2788,24 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Aún no hay registros de partidas. ¡Sé el primero en ganar!.
+        /// </summary>
+        public static string LabelEmptyLeaderboard {
+            get {
+                return ResourceManager.GetString("LabelEmptyLeaderboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Obteniendo datos de los mejores jugadores....
+        /// </summary>
+        public static string LabelLoadingLeaderboard {
+            get {
+                return ResourceManager.GetString("LabelLoadingLeaderboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a English (US).
         /// </summary>
         public static string LanguageEn {
@@ -2698,11 +2842,56 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No pudimos obtener el ranking mundial en este momento..
+        /// </summary>
+        public static string LeaderboardDbError {
+            get {
+                return ResourceManager.GetString("LeaderboardDbError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Aún no hay registros en la tabla de clasificación..
+        /// </summary>
+        public static string LeaderboardEmpty {
+            get {
+                return ResourceManager.GetString("LeaderboardEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Tabla de Clasificación.
         /// </summary>
         public static string LeaderboardFeatureName {
             get {
                 return ResourceManager.GetString("LeaderboardFeatureName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar la tabla de puntuaciones..
+        /// </summary>
+        public static string LeaderboardGeneralError {
+            get {
+                return ResourceManager.GetString("LeaderboardGeneralError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al Cargar Clasificación.
+        /// </summary>
+        public static string LeaderboardLoadErrorTitle {
+            get {
+                return ResourceManager.GetString("LeaderboardLoadErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La carga del ranking tardó demasiado. Intenta de nuevo..
+        /// </summary>
+        public static string LeaderboardTimeout {
+            get {
+                return ResourceManager.GetString("LeaderboardTimeout", resourceCulture);
             }
         }
         

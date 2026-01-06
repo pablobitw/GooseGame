@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using GameServer.DTOs; 
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using static GameServer.Repositories.LeaderboardRepository;
 
-namespace GameServer.Repositories
+namespace GameServer.Interfaces
 {
     public interface ILeaderboardRepository
     {

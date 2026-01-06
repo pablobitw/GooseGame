@@ -24,8 +24,8 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Margin="10,21,0,0"
-                Width="78"
-                Click="OnBackButton" Height="35"/>
+                Width="73"
+                Click="OnBackButton" Height="38"/>
 
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <Border Background="White" CornerRadius="20" MaxWidth="360" Padding="25,20" Width="364">
@@ -44,7 +44,7 @@
                                  TextChanged="OnGenericTextBoxChanged"
                                  Tag="{x:Reference EmailPlaceholder}"
                                  MaxLength="254"
-                                 DataObject.Pasting="OnTextBoxPasting"/>
+                                 DataObject.Pasting="OnPasting"/>
                         <TextBlock x:Name="EmailPlaceholder" Text="{x:Static props:Strings.EmailLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
@@ -55,7 +55,7 @@
                                  TextChanged="OnGenericTextBoxChanged"
                                  Tag="{x:Reference UsernamePlaceholder}"
                                  MaxLength="20"
-                                 DataObject.Pasting="OnTextBoxPasting"/>
+                                 DataObject.Pasting="OnPasting"/>
                         <TextBlock x:Name="UsernamePlaceholder" Text="{x:Static props:Strings.UsernameLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
@@ -68,7 +68,7 @@
                                      PasswordChanged="OnGenericPasswordChanged"
                                      Tag="{x:Reference PassPlaceholder}"
                                      MaxLength="50"
-                                     DataObject.Pasting="OnPasswordBoxPasting"/>
+                                     DataObject.Pasting="OnPasting"/>
                         <TextBlock x:Name="PassPlaceholder" Text="{x:Static props:Strings.PasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>
@@ -81,7 +81,7 @@
                                      PasswordChanged="OnGenericPasswordChanged"
                                      Tag="{x:Reference RepeatPlaceholder}"
                                      MaxLength="50"
-                                     DataObject.Pasting="OnPasswordBoxPasting"/>
+                                     DataObject.Pasting="OnPasting"/>
                         <TextBlock x:Name="RepeatPlaceholder" Text="{x:Static props:Strings.RepeatPasswordLabel}" 
                                    Foreground="Gray" Margin="10,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
                     </Grid>

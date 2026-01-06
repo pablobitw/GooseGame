@@ -9,6 +9,7 @@ namespace GameServer.Interfaces
     public interface ILeaderboardService
     {
         [OperationContract]
+        [FaultContract(typeof(GameServiceFault))]
         Task<List<LeaderboardDto>> GetGlobalLeaderboardAsync(string requestingUsername);
     }
 }

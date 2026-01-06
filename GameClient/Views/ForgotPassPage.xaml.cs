@@ -3,6 +3,7 @@ using GameClient.Views;
 using System;
 using System.Net.Mail;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -19,67 +20,81 @@ namespace GameClient
 
         private async void OnSendButtonClick(object sender, RoutedEventArgs e)
         {
-            if (IsFormValid())
+            if (!IsFormValid()) return;
+
+            string email = EmailTextBox.Text;
+            var client = new GameServiceClient();
+            bool requestSent = false;
+
+            try
             {
-                string email = EmailTextBox.Text;
-                var client = new GameServiceClient();
-                bool requestSent = false;
-                bool connectionError = false;
+                SendButton.IsEnabled = false;
+                requestSent = await client.RequestPasswordResetAsync(email);
 
-                try
+                if (requestSent)
                 {
-                    requestSent = await client.RequestPasswordResetAsync(email);
-                }
-                catch (EndpointNotFoundException)
-                {
-                    MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-                    connectionError = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error conectando al servidor: " + ex.Message, "Error");
-                    connectionError = true;
-                }
-                finally
-                {
-                    if (client.State == CommunicationState.Opened)
-                    {
-                        client.Close();
-                    }
-                }
+                    MessageBox.Show(GameClient.Resources.Strings.Forgot_Success_Msg,
+                                    GameClient.Resources.Strings.Forgot_Success_Title,
+                                    MessageBoxButton.OK, MessageBoxImage.Information);
 
-                if (!connectionError)
+                    NavigationService.Navigate(new VerifyRecoveryCodePage(email));
+                }
+                else
                 {
-                    if (requestSent)
-                    {
-                        MessageBox.Show("Si tu correo está registrado, recibirás un código de verificación.", "Revisa tu Correo");
-                        NavigationService.Navigate(new VerifyRecoveryCodePage(email));
-                    }
-                    else
-                    {
-                        ShowError(EmailTextBox, "Hubo un error al procesar tu solicitud. Intenta más tarde.");
-                    }
+                    ShowError(EmailTextBox, GameClient.Resources.Strings.Forgot_Error_Process);
                 }
             }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_ServerDown", "Auth_Title_Error", MessageBoxImage.Error);
+            }
+            catch (TimeoutException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_Timeout", "Auth_Title_Error", MessageBoxImage.Warning);
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_Communication", "Auth_Title_Error", MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                string generalError = GameClient.Resources.Strings.Auth_Error_General;
+                MessageBox.Show($"{generalError}\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                CloseServiceClient(client);
+                SendButton.IsEnabled = true;
+            }
+        }
+
+        private void ShowTranslatedMessageBox(string messageKey, string titleKey, MessageBoxImage icon)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, icon);
+        }
+
+        private static void CloseServiceClient(GameServiceClient client)
+        {
+            try
+            {
+                if (client.State == CommunicationState.Opened) client.Close();
+                else client.Abort();
+            }
+            catch { client.Abort(); }
         }
 
         private void OnBackButtonClick(object sender, RoutedEventArgs e)
         {
-            if (NavigationService != null)
-            {
-                NavigationService.Navigate(new LoginPage());
-            }
+            NavigationService?.Navigate(new LoginPage());
         }
 
         private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            var placeholder = textBox.Tag as TextBlock;
-            if (placeholder != null)
+            if (sender is TextBox textBox && textBox.Tag is TextBlock placeholder)
             {
-                placeholder.Visibility = string.IsNullOrEmpty(textBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
+                placeholder.Visibility = string.IsNullOrEmpty(textBox.Text) ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -93,24 +108,24 @@ namespace GameClient
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                ShowError(EmailTextBox, "El correo no puede estar vacío.");
+                ShowError(EmailTextBox, GameClient.Resources.Strings.Forgot_Error_Empty);
                 isValid = false;
             }
             else if (!IsValidEmail(email))
             {
-                ShowError(EmailTextBox, "El formato del correo no es válido.");
+                ShowError(EmailTextBox, GameClient.Resources.Strings.Forgot_Error_Format);
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(repeatEmail))
             {
-                ShowError(RepeatEmailTextBox, "Debes repetir tu correo.");
+                ShowError(RepeatEmailTextBox, GameClient.Resources.Strings.Forgot_Error_Empty);
                 isValid = false;
             }
             else if (email != repeatEmail)
             {
-                ShowError(EmailTextBox, "Los correos no coinciden.");
-                ShowError(RepeatEmailTextBox, "Los correos no coinciden.");
+                ShowError(EmailTextBox, GameClient.Resources.Strings.Forgot_Error_Mismatch);
+                ShowError(RepeatEmailTextBox, GameClient.Resources.Strings.Forgot_Error_Mismatch);
                 isValid = false;
             }
 
@@ -127,41 +142,26 @@ namespace GameClient
         {
             EmailTextBox.ClearValue(Border.BorderBrushProperty);
             EmailTextBox.ToolTip = null;
-
             RepeatEmailTextBox.ClearValue(Border.BorderBrushProperty);
             RepeatEmailTextBox.ToolTip = null;
         }
 
         private static bool IsValidEmail(string email)
         {
-            bool isValid = false;
-
-            if (!string.IsNullOrWhiteSpace(email))
+            try
             {
-                try
-                {
-                    var addr = new MailAddress(email);
-                    isValid = (addr.Address == email);
-                }
-                catch
-                {
-                    isValid = false;
-                }
+                var addr = new MailAddress(email);
+                return addr.Address == email;
             }
-
-            return isValid;
+            catch { return false; }
         }
 
         private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de correo.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            MessageBox.Show(GameClient.Resources.Strings.Forgot_Paste_Blocked,
+                            GameClient.Resources.Strings.Forgot_Title_Blocked,
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

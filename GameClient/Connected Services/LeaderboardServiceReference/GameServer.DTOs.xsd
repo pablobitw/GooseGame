@@ -16,4 +16,21 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="LeaderboardDto" nillable="true" type="tns:LeaderboardDto" />
+  <xs:complexType name="GameServiceFault">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Details" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ErrorType" type="tns:GameServiceErrorType" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GameServiceFault" nillable="true" type="tns:GameServiceFault" />
+  <xs:simpleType name="GameServiceErrorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DatabaseError" />
+      <xs:enumeration value="OperationTimeout" />
+      <xs:enumeration value="UnknownError" />
+      <xs:enumeration value="EmptyData" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="GameServiceErrorType" nillable="true" type="tns:GameServiceErrorType" />
 </xs:schema>

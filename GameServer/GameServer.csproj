@@ -118,8 +118,9 @@
     <Compile Include="DTOs\Gameplay\PlayerPositionDto.cs" />
     <Compile Include="DTOs\Gameplay\VoteRequestDto.cs" />
     <Compile Include="DTOs\Gameplay\VoteResponseDto.cs" />
-    <Compile Include="DTOs\GooseServiceFault.cs" />
+    <Compile Include="DTOs\Leaderboard\GameServiceFault.cs" />
     <Compile Include="DTOs\Leaderboard\LeaderboardDto.cs" />
+    <Compile Include="DTOs\Leaderboard\PlayerStatResult.cs" />
     <Compile Include="DTOs\Lobby\ActiveMatchDto.cs" />
     <Compile Include="DTOs\Lobby\CreateLobbyRequest.cs" />
     <Compile Include="DTOs\Lobby\JoinLobbyRequest.cs" />

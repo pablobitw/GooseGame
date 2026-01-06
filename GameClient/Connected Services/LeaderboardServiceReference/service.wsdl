@@ -13,8 +13,8 @@
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import namespace="http://tempuri.org/" />
-      <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs" />
+      <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="ILeaderboardService_GetGlobalLeaderboard_InputMessage">
@@ -23,10 +23,14 @@
   <wsdl:message name="ILeaderboardService_GetGlobalLeaderboard_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetGlobalLeaderboardResponse" />
   </wsdl:message>
+  <wsdl:message name="ILeaderboardService_GetGlobalLeaderboard_GameServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.DTOs" name="detail" element="q1:GameServiceFault" />
+  </wsdl:message>
   <wsdl:portType name="ILeaderboardService">
     <wsdl:operation name="GetGlobalLeaderboard">
       <wsdl:input wsaw:Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboard" message="tns:ILeaderboardService_GetGlobalLeaderboard_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboardResponse" message="tns:ILeaderboardService_GetGlobalLeaderboard_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboardGameServiceFaultFault" name="GameServiceFaultFault" message="tns:ILeaderboardService_GetGlobalLeaderboard_GameServiceFaultFault_FaultMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_ILeaderboardService" type="tns:ILeaderboardService">
@@ -41,6 +45,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="GameServiceFaultFault">
+        <soap12:fault use="literal" name="GameServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="LeaderboardService">

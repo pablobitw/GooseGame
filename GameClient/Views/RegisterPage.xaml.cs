@@ -338,19 +338,7 @@ namespace GameClient.Views
             }
         }
 
-        private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
-        {
-            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
-            {
-                e.CancelCommand();
-            }
-            else
-            {
-                e.CancelCommand();
-            }
-        }
-
-        private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
+        private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
         }

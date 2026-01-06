@@ -122,11 +122,106 @@ namespace GameClient.LeaderboardServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs")]
+    [System.SerializableAttribute()]
+    public partial class GameServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string DetailsField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.LeaderboardServiceReference.GameServiceErrorType ErrorTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Details {
+            get {
+                return this.DetailsField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.DetailsField, value) != true)) {
+                    this.DetailsField = value;
+                    this.RaisePropertyChanged("Details");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.LeaderboardServiceReference.GameServiceErrorType ErrorType {
+            get {
+                return this.ErrorTypeField;
+            }
+            set {
+                if ((this.ErrorTypeField.Equals(value) != true)) {
+                    this.ErrorTypeField = value;
+                    this.RaisePropertyChanged("ErrorType");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameServiceErrorType", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs")]
+    public enum GameServiceErrorType : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        DatabaseError = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        OperationTimeout = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        UnknownError = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        EmptyData = 3,
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LeaderboardServiceReference.ILeaderboardService")]
     public interface ILeaderboardService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboard", ReplyAction="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboardResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LeaderboardServiceReference.GameServiceFault), Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboardGameServiceFaultFault", Name="GameServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs")]
         GameClient.LeaderboardServiceReference.LeaderboardDto[] GetGlobalLeaderboard(string requestingUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboard", ReplyAction="http://tempuri.org/ILeaderboardService/GetGlobalLeaderboardResponse")]
