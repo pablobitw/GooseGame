@@ -31,7 +31,7 @@ namespace GameClient.Views
             if (string.IsNullOrWhiteSpace(email))
             {
                 ShowErrorMessage("Sesión inválida. Por favor inicia sesión nuevamente.");
-                Helpers.SessionManager.ForceLogout();
+                Helpers.UserSession.GetInstance().HandleCatastrophicError("Sesión inválida.");
                 return;
             }
 

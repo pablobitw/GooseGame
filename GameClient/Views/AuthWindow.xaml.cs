@@ -57,8 +57,7 @@ namespace GameClient
 
                     if (result.Success)
                     {
-                        UserSession.GetInstance().SetSession(result.Username, true);
-
+                        UserSession.GetInstance().SetSession(result.Username, "Guest", true);
                         MessageBox.Show(result.Message,
                                         GameClient.Resources.Strings.Auth_Title_Welcome,
                                         MessageBoxButton.OK, MessageBoxImage.Information);

@@ -55,26 +55,35 @@ namespace GameClient.Views.Dialogs
 
         private async void OpenBoxButton_Click(object sender, RoutedEventArgs e)
         {
-            _luckyBoxClicks++;
-            var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard;
-
-            if (_luckyBoxClicks < 3)
+            try
             {
-                shakeAnim?.Begin();
+                _luckyBoxClicks++;
+                var shakeAnim = this.Resources["ShakeAnimation"] as Storyboard;
+
+                if (_luckyBoxClicks < 3)
+                {
+                    shakeAnim?.Begin();
+                }
+                else
+                {
+                    OpenBoxButton.IsEnabled = false;
+                    LuckyBoxImage.Visibility = Visibility.Collapsed;
+
+                    SetRewardVisuals();
+                    RewardContainer.Visibility = Visibility.Visible;
+
+                    var revealAnim = this.Resources["RevealAnimation"] as Storyboard;
+                    revealAnim?.Begin();
+
+                    await Task.Delay(3000);
+
+                    this.Visibility = Visibility.Collapsed;
+                    DialogClosed?.Invoke(this, EventArgs.Empty);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                OpenBoxButton.IsEnabled = false;
-                LuckyBoxImage.Visibility = Visibility.Collapsed;
-
-                SetRewardVisuals();
-                RewardContainer.Visibility = Visibility.Visible;
-
-                var revealAnim = this.Resources["RevealAnimation"] as Storyboard;
-                revealAnim?.Begin();
-
-                await Task.Delay(3000);
-
+                Console.WriteLine($"[LuckyBoxDialog] Animation Error: {ex.Message}");
                 this.Visibility = Visibility.Collapsed;
                 DialogClosed?.Invoke(this, EventArgs.Empty);
             }
@@ -90,22 +99,25 @@ namespace GameClient.Views.Dialogs
             {
                 case "COINS":
                     imagePath = "coin_pile.png";
-                    text = string.Format(GameClient.Resources.Strings.RewardGold, _currentRewardAmount);
+                    text = string.Format(GetResourceString("RewardGold"), _currentRewardAmount);
                     color = Brushes.Gold;
                     break;
                 case "COMMON":
                     imagePath = "ticket_common.png";
-                    text = GameClient.Resources.Strings.RewardCommon;
+                    text = GetResourceString("RewardCommon");
                     break;
                 case "EPIC":
                     imagePath = "ticket_epic.png";
-                    text = GameClient.Resources.Strings.RewardEpic;
+                    text = GetResourceString("RewardEpic");
                     color = Brushes.Purple;
                     break;
                 case "LEGENDARY":
                     imagePath = "ticket_legendary.png";
-                    text = GameClient.Resources.Strings.RewardLegendary;
+                    text = GetResourceString("RewardLegendary");
                     color = Brushes.OrangeRed;
+                    break;
+                default:
+                    text = "Premio Sorpresa";
                     break;
             }
 
@@ -125,9 +137,14 @@ namespace GameClient.Views.Dialogs
             }
         }
 
+        private string GetResourceString(string key)
+        {
+            return GameClient.Resources.Strings.ResourceManager.GetString(key) ?? key;
+        }
+
         private void Overlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true;
+            e.Handled = true; 
         }
     }
 }

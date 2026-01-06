@@ -6,6 +6,15 @@ namespace GameServer.DTOs.Gameplay
     public class DiceRollDto
     {
         [DataMember]
+        public bool Success { get; set; } = true; 
+
+        [DataMember]
+        public GameplayErrorType ErrorType { get; set; }
+
+        [DataMember]
+        public string ErrorMessage { get; set; }
+
+        [DataMember]
         public int DiceOne { get; set; }
         [DataMember]
         public int DiceTwo { get; set; }

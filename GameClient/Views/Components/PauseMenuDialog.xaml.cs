@@ -14,13 +14,27 @@ namespace GameClient.Views.Dialogs
         public PauseMenuDialog()
         {
             InitializeComponent();
-            IngameMusicSlider.Value = AudioManager.GetVolume() * 100;
+            try
+            {
+                IngameMusicSlider.Value = AudioManager.GetVolume() * 100;
+            }
+            catch (Exception)
+            {
+                IngameMusicSlider.Value = 50;
+            }
             IngameMusicSlider.ValueChanged += IngameMusicSlider_ValueChanged;
         }
 
         private void IngameMusicSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            AudioManager.SetVolume(e.NewValue / 100.0);
+            try
+            {
+                AudioManager.SetVolume(e.NewValue / 100.0);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PauseMenu] Audio Error: {ex.Message}");
+            }
         }
 
         private void ResumeButton_Click(object sender, RoutedEventArgs e)
@@ -45,9 +59,16 @@ namespace GameClient.Views.Dialogs
 
         private void IngameScreenModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (Window.GetWindow(this) is GameMainWindow mw)
+            try
             {
-                ApplyScreenSettings(mw);
+                if (Window.GetWindow(this) is GameMainWindow mw)
+                {
+                    ApplyScreenSettings(mw);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PauseMenu] Screen Error: {ex.Message}");
             }
         }
 
@@ -55,20 +76,23 @@ namespace GameClient.Views.Dialogs
         {
             int index = IngameScreenModeCombo.SelectedIndex;
 
-            if (index == 0)
+            if (mw == null) return;
+
+            if (index == 0) 
             {
                 mw.WindowStyle = WindowStyle.None;
                 mw.WindowState = WindowState.Maximized;
             }
-            else if (index == 1)
+            else if (index == 1) 
             {
                 mw.WindowStyle = WindowStyle.None;
                 mw.WindowState = WindowState.Normal;
                 mw.Width = 1280;
                 mw.Height = 720;
-                mw.CenterWindow();
+
+                try { mw.CenterWindow(); } catch { /* */ }
             }
-            else
+            else 
             {
                 mw.WindowStyle = WindowStyle.SingleBorderWindow;
                 mw.WindowState = WindowState.Normal;

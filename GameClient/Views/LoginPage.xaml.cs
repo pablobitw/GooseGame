@@ -141,8 +141,7 @@ namespace GameClient.Views
             }
 
             ApplyLanguage(serverLanguage);
-            SessionManager.StartSession(username, username, false);
-
+            UserSession.GetInstance().SetSession(username, username, false);
             GameMainWindow gameMenu = new GameMainWindow(username);
             gameMenu.Show();
             Window.GetWindow(this).Close();

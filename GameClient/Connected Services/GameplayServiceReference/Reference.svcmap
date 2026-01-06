@@ -26,6 +26,7 @@
     <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="c236603f-d113-41da-9eab-956f4ab2f2bb" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
     <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="2e0f1145-06df-47a7-8beb-1ac4b24a1d62" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
     <MetadataFile FileName="GameServer.DTOs.Gameplay.xsd" MetadataType="Schema" ID="6474313e-a645-4ea0-ac92-4ed5e2a47c61" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
+    <MetadataFile FileName="GameServer.xsd" MetadataType="Schema" ID="edffbbce-fe4e-42aa-855f-3b91ad7b5cb0" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
     <MetadataFile FileName="Arrays.xsd" MetadataType="Schema" ID="dccdb7c2-60af-4b79-a6ce-cf9877a2cd90" SourceId="1" SourceUrl="net.tcp://localhost:8093/mex" />
   </Metadata>
   <Extensions>

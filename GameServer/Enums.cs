@@ -72,5 +72,16 @@ namespace GameServer
         GameStarted,       
         GameFull            
     }
+    public enum GameplayErrorType
+    {
+        None,               
+        DatabaseError,      
+        GameNotFound,       
+        NotYourTurn,        
+        GameFinished,      
+        PlayerKicked,       
+        Timeout,            
+        Unknown             
+    }
 
 }

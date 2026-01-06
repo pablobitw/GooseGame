@@ -407,7 +407,6 @@ namespace GameClient.Views
 
                 try
                 {
-                    // CAMBIO: Ahora recibe Enum en lugar de bool
                     var result = await _friendshipManager.RespondToFriendRequestAsync(requester, accept);
 
                     if (result == FriendRequestResult.Success)
@@ -488,7 +487,6 @@ namespace GameClient.Views
 
             try
             {
-                // CAMBIO: Ahora recibe Enum en lugar de bool
                 var result = await _friendshipManager.RemoveFriendAsync(targetUsername);
 
                 if (result == FriendRequestResult.Success)

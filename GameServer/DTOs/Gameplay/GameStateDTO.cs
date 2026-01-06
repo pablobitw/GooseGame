@@ -6,6 +6,16 @@ namespace GameServer.DTOs.Gameplay
     [DataContract]
     public class GameStateDto
     {
+
+
+        [DataMember]
+        public bool Success { get; set; } = true;
+
+        [DataMember]
+        public GameplayErrorType ErrorType { get; set; }
+
+        [DataMember]
+        public string ErrorMessage { get; set; }
         [DataMember]
         public string CurrentTurnUsername { get; set; }
         [DataMember]

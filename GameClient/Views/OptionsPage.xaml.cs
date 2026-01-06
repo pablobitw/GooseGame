@@ -93,7 +93,7 @@ namespace GameClient.Views
 
             if (languageChanged)
             {
-                if (string.IsNullOrEmpty(SessionManager.CurrentUsername))
+                if (string.IsNullOrEmpty(GameClient.Helpers.UserSession.GetInstance().Username))
                 {
                     GameAlert.Show("Error de Sesión", "No se detectó una sesión activa. Por favor, vuelve a iniciar sesión.");
                     return;
@@ -104,7 +104,8 @@ namespace GameClient.Views
 
                 try
                 {
-                    bool success = await client.UpdateLanguageAsync(SessionManager.CurrentUsername, selectedLanguage);
+                    bool success = await client.UpdateLanguageAsync(GameClient.Helpers.UserSession.GetInstance().Username, selectedLanguage);
+
                     if (success)
                     {
                         GameClient.Properties.Settings.Default.LanguageCode = selectedLanguage;

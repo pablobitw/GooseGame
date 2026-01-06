@@ -28,7 +28,6 @@ namespace GameServer.Services.Logic
 
         private readonly IGameplayRepository _repository;
         private readonly VoteLogic _voteLogic;
-
         private readonly Func<SanctionAppService> _sanctionServiceFactory;
 
         private class BoardMoveResult
@@ -47,95 +46,42 @@ namespace GameServer.Services.Logic
             _sanctionServiceFactory = () => new SanctionAppService();
         }
 
-        private async Task NotifyTurnUpdate(int gameId)
-        {
-            try
-            {
-                var players = await _repository.GetPlayersInGameAsync(gameId);
-                var usernames = players.Select(player => player.Username).ToList();
-
-                foreach (var username in usernames)
-                {
-                    var client = ConnectionManager.GetGameplayClient(username);
-                    if (client != null)
-                    {
-                        try
-                        {
-                            var stateDto = await BuildActiveGameStateAsync(gameId, username);
-                            client.OnTurnChanged(stateDto);
-                        }
-                        catch (CommunicationException ex)
-                        {
-                            Log.WarnFormat("Communication error notifying turn: {0}", ex.Message);
-                            ConnectionManager.UnregisterGameplayClient(username);
-                        }
-                        catch (TimeoutException ex)
-                        {
-                            Log.WarnFormat("Timeout notifying turn: {0}", ex.Message);
-                            ConnectionManager.UnregisterGameplayClient(username);
-                        }
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                Log.ErrorFormat("SQL Error in turn broadcast: {0}", ex.Message);
-            }
-            catch (EntityException ex)
-            {
-                Log.ErrorFormat("Entity Error in turn broadcast: {0}", ex.Message);
-            }
-        }
-
-        private static async Task NotifyGameFinished(List<Player> players, string winnerUsername)
-        {
-            await Task.Yield();
-
-            if (players != null && players.Count > 0)
-            {
-                foreach (var player in players)
-                {
-                    var client = ConnectionManager.GetGameplayClient(player.Username);
-                    if (client != null)
-                    {
-                        try
-                        {
-                            client.OnGameFinished(winnerUsername);
-                        }
-                        catch (CommunicationException ex)
-                        {
-                            Log.WarnFormat("Communication error notifying game finish: {0}", ex.Message);
-                        }
-                        catch (TimeoutException ex)
-                        {
-                            Log.WarnFormat("Timeout notifying game finish: {0}", ex.Message);
-                        }
-                    }
-                }
-            }
-        }
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            DiceRollDto result = null;
+            var result = new DiceRollDto { Success = false };
             int gameIdForLock = 0;
 
             if (request == null)
             {
+                result.ErrorType = GameplayErrorType.Unknown;
+                result.ErrorMessage = "Solicitud vacía.";
                 return result;
             }
 
             try
             {
                 var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                if (game == null || game.GameStatus != (int)GameStatus.InProgress)
+                if (game == null)
                 {
+                    result.ErrorType = GameplayErrorType.GameNotFound;
+                    result.ErrorMessage = "La partida no existe.";
+                    return result;
+                }
+
+                if (game.GameStatus != (int)GameStatus.InProgress)
+                {
+                    result.ErrorType = GameplayErrorType.GameFinished;
+                    result.ErrorMessage = "La partida no está en progreso.";
                     return result;
                 }
 
                 gameIdForLock = game.IdGame;
+
                 if (!_processingGames.TryAdd(game.IdGame, true))
                 {
+                    result.ErrorType = GameplayErrorType.Timeout;
+                    result.ErrorMessage = "Procesando turno anterior...";
                     return result;
                 }
 
@@ -144,10 +90,23 @@ namespace GameServer.Services.Logic
             catch (SqlException ex)
             {
                 Log.Error("SQL Error in RollDice", ex);
+                result.ErrorType = GameplayErrorType.DatabaseError;
+                result.ErrorMessage = "Error de conexión con base de datos.";
+                result.Success = false;
             }
             catch (EntityException ex)
             {
                 Log.Error("Entity Error in RollDice", ex);
+                result.ErrorType = GameplayErrorType.DatabaseError;
+                result.ErrorMessage = "Error interno de datos.";
+                result.Success = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Unexpected Error in RollDice", ex);
+                result.ErrorType = GameplayErrorType.Unknown;
+                result.ErrorMessage = "Error inesperado en el servidor.";
+                result.Success = false;
             }
             finally
             {
@@ -160,6 +119,170 @@ namespace GameServer.Services.Logic
             return result;
         }
 
+        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
+        {
+            var gameState = new GameStateDto { Success = false };
+
+            if (request == null)
+            {
+                gameState.ErrorMessage = "Solicitud inválida.";
+                return gameState;
+            }
+
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+
+                if (game == null)
+                {
+                    gameState.ErrorType = GameplayErrorType.GameNotFound;
+                    gameState.ErrorMessage = "Partida no encontrada.";
+                    return gameState;
+                }
+
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+
+                if (player != null && player.GameIdGame != game.IdGame)
+                {
+                    gameState.Success = true; 
+                    gameState.IsKicked = true;
+                    gameState.IsBanned = player.IsBanned;
+                    gameState.ErrorType = GameplayErrorType.PlayerKicked;
+                    return gameState;
+                }
+
+                if (game.GameStatus == (int)GameStatus.Finished)
+                {
+                    gameState = await BuildFinishedGameStateAsync(game);
+                }
+                else
+                {
+                    gameState = await BuildActiveGameStateAsync(game.IdGame, request.Username);
+                }
+
+                gameState.Success = true;
+                gameState.ErrorType = GameplayErrorType.None;
+            }
+            catch (SqlException ex)
+            {
+                Log.Error("SQL Error obtaining state", ex);
+                gameState.ErrorType = GameplayErrorType.DatabaseError;
+                gameState.ErrorMessage = "Error de base de datos.";
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Entity Error obtaining state", ex);
+                gameState.ErrorType = GameplayErrorType.DatabaseError;
+                gameState.ErrorMessage = "Error interno de datos.";
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obtaining state", ex);
+                gameState.ErrorType = GameplayErrorType.Timeout;
+                gameState.ErrorMessage = "Tiempo de espera agotado.";
+            }
+            catch (Exception ex)
+            {
+                Log.Error("General Error obtaining state", ex);
+                gameState.ErrorType = GameplayErrorType.Unknown;
+                gameState.ErrorMessage = "Error desconocido.";
+            }
+
+            return gameState;
+        }
+
+        public async Task<bool> LeaveGameAsync(GameplayRequest request)
+        {
+            bool success = false;
+            try
+            {
+                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
+                if (game != null)
+                {
+                    var player = await _repository.GetPlayerByUsernameAsync(request.Username);
+                    if (player != null)
+                    {
+                        _voteLogic.CancelVote(game.IdGame);
+
+                        await ProcessLeavingPlayerStats(player);
+
+                        var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                        var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
+
+                        if (remainingPlayers.Count < 2)
+                        {
+                            await FinishGameByAbandonment(game, remainingPlayers);
+                        }
+                        else
+                        {
+                            await NotifyTurnUpdate(game.IdGame);
+                        }
+
+                        await _repository.SaveChangesAsync();
+                        success = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error leaving game", ex);
+            }
+
+            return success;
+        }
+
+        private async Task ProcessLeavingPlayerStats(Player player)
+        {
+            var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
+            if (playerWithStats?.PlayerStat != null)
+            {
+                playerWithStats.PlayerStat.MatchesPlayed++;
+                playerWithStats.PlayerStat.MatchesLost++;
+            }
+            player.GameIdGame = null;
+            player.TurnsSkipped = 0;
+        }
+
+        private async Task FinishGameByAbandonment(Game game, List<Player> remainingPlayers)
+        {
+            game.GameStatus = (int)GameStatus.Finished;
+            string winnerName = "Nadie";
+
+            if (remainingPlayers.Count == 1)
+            {
+                var winner = remainingPlayers[0];
+                game.WinnerIdPlayer = winner.IdPlayer;
+                winnerName = winner.Username;
+
+                var winnerWithStats = await _repository.GetPlayerWithStatsByIdAsync(winner.IdPlayer);
+                if (winnerWithStats?.PlayerStat != null)
+                {
+                    winnerWithStats.PlayerStat.MatchesPlayed++;
+                    winnerWithStats.PlayerStat.MatchesWon++;
+                    winnerWithStats.TicketCommon += 1;
+                    winnerWithStats.Coins += 300;
+                }
+                Log.InfoFormat("Game {0} finished by abandonment. Winner: {1}", game.LobbyCode, winner.Username);
+            }
+            else
+            {
+                game.WinnerIdPlayer = null;
+                Log.InfoFormat("Game {0} finished. All players abandoned.", game.LobbyCode);
+            }
+
+            await NotifyGameFinished(remainingPlayers, winnerName);
+
+            foreach (var p in remainingPlayers)
+            {
+                p.GameIdGame = null;
+                p.TurnsSkipped = 0;
+            }
+            await _repository.SaveChangesAsync();
+
+            GameManager.Instance.StopMonitoring(game.IdGame);
+        }
+
+
         private async Task<DiceRollDto> ProcessGameTurn(Game game, string username)
         {
             var players = await _repository.GetPlayersInGameAsync(game.IdGame);
@@ -167,7 +290,12 @@ namespace GameServer.Services.Logic
 
             if (!await ValidateTurnAsync(game.IdGame, sortedPlayers, username))
             {
-                return null;
+                return new DiceRollDto
+                {
+                    Success = false,
+                    ErrorType = GameplayErrorType.NotYourTurn,
+                    ErrorMessage = "No es tu turno."
+                };
             }
 
             _afkStrikes.TryRemove(username, out _);
@@ -185,6 +313,9 @@ namespace GameServer.Services.Logic
                 result = await ProcessNormalTurnAsync(game, player);
             }
 
+            result.Success = true;
+            result.ErrorType = GameplayErrorType.None;
+
             var gameCheck = await _repository.GetGameByIdAsync(game.IdGame);
             if (gameCheck.GameStatus == (int)GameStatus.InProgress)
             {
@@ -192,6 +323,43 @@ namespace GameServer.Services.Logic
             }
 
             return result;
+        }
+
+        private async Task NotifyTurnUpdate(int gameId)
+        {
+            try
+            {
+                var players = await _repository.GetPlayersInGameAsync(gameId);
+                var usernames = players.Select(player => player.Username).ToList();
+
+                foreach (var username in usernames)
+                {
+                    var client = ConnectionManager.GetGameplayClient(username);
+                    if (client != null)
+                    {
+                        try
+                        {
+                            var stateDto = await BuildActiveGameStateAsync(gameId, username);
+                            stateDto.Success = true;
+                            client.OnTurnChanged(stateDto);
+                        }
+                        catch (CommunicationException ex)
+                        {
+                            Log.WarnFormat("Communication error notifying turn: {0}", ex.Message);
+                            ConnectionManager.UnregisterGameplayClient(username);
+                        }
+                        catch (TimeoutException ex)
+                        {
+                            Log.WarnFormat("Timeout notifying turn: {0}", ex.Message);
+                            ConnectionManager.UnregisterGameplayClient(username);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorFormat("Critical Error in turn broadcast: {0}", ex.Message);
+            }
         }
 
         private async Task<bool> ValidateTurnAsync(int gameId, List<Player> sortedPlayers, string requestUsername)
@@ -451,58 +619,6 @@ namespace GameServer.Services.Logic
             return fullDescription;
         }
 
-        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
-        {
-            var gameState = new GameStateDto();
-
-            if (request == null)
-            {
-                return gameState;
-            }
-
-            try
-            {
-                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-
-                if (game == null)
-                {
-                    return gameState;
-                }
-
-                var player = await _repository.GetPlayerByUsernameAsync(request.Username);
-
-                if (player != null && player.GameIdGame != game.IdGame)
-                {
-                    gameState.IsKicked = true;
-                    gameState.IsBanned = player.IsBanned;
-                    return gameState;
-                }
-
-                if (game.GameStatus == (int)GameStatus.Finished)
-                {
-                    gameState = await BuildFinishedGameStateAsync(game);
-                }
-                else
-                {
-                    gameState = await BuildActiveGameStateAsync(game.IdGame, request.Username);
-                }
-            }
-            catch (SqlException ex)
-            {
-                Log.Error("SQL Error obtaining state", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Entity Error obtaining state", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout obtaining state", ex);
-            }
-
-            return gameState;
-        }
-
         private async Task<GameStateDto> BuildFinishedGameStateAsync(Game game)
         {
             string winner = "Desconocido";
@@ -528,6 +644,7 @@ namespace GameServer.Services.Logic
 
             return new GameStateDto
             {
+                Success = true,
                 IsGameOver = true,
                 WinnerUsername = winner,
                 GameLog = new List<string> { "La partida ha finalizado." },
@@ -590,99 +707,28 @@ namespace GameServer.Services.Logic
             return positions;
         }
 
-        public async Task<bool> LeaveGameAsync(GameplayRequest request)
+        private static async Task NotifyGameFinished(List<Player> players, string winnerUsername)
         {
-            bool success = false;
-            try
+            await Task.Yield();
+
+            if (players != null && players.Count > 0)
             {
-                var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode);
-                if (game != null)
+                foreach (var player in players)
                 {
-                    var player = await _repository.GetPlayerByUsernameAsync(request.Username);
-                    if (player != null)
+                    var client = ConnectionManager.GetGameplayClient(player.Username);
+                    if (client != null)
                     {
-                        _voteLogic.CancelVote(game.IdGame);
-
-                        await ProcessLeavingPlayerStats(player);
-
-                        var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-                        var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
-
-                        if (remainingPlayers.Count < 2)
+                        try
                         {
-                            await FinishGameByAbandonment(game, remainingPlayers);
+                            client.OnGameFinished(winnerUsername);
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            await NotifyTurnUpdate(game.IdGame);
+                            Log.WarnFormat("Error notifying game finish: {0}", ex.Message);
                         }
-
-                        await _repository.SaveChangesAsync();
-                        success = true;
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Error("SQL Error leaving game", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Entity Error leaving game", ex);
-            }
-
-            return success;
-        }
-
-        private async Task ProcessLeavingPlayerStats(Player player)
-        {
-            var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
-            if (playerWithStats?.PlayerStat != null)
-            {
-                playerWithStats.PlayerStat.MatchesPlayed++;
-                playerWithStats.PlayerStat.MatchesLost++;
-            }
-            player.GameIdGame = null;
-            player.TurnsSkipped = 0;
-        }
-
-        private async Task FinishGameByAbandonment(Game game, List<Player> remainingPlayers)
-        {
-            game.GameStatus = (int)GameStatus.Finished;
-            string winnerName = "Nadie";
-
-            if (remainingPlayers.Count == 1)
-            {
-                var winner = remainingPlayers[0];
-                game.WinnerIdPlayer = winner.IdPlayer;
-                winnerName = winner.Username;
-
-                var winnerWithStats = await _repository.GetPlayerWithStatsByIdAsync(winner.IdPlayer);
-                if (winnerWithStats?.PlayerStat != null)
-                {
-                    winnerWithStats.PlayerStat.MatchesPlayed++;
-                    winnerWithStats.PlayerStat.MatchesWon++;
-                    winnerWithStats.TicketCommon += 1;
-                    winnerWithStats.Coins += 300;
-                }
-                Log.InfoFormat("Game {0} finished by abandonment. Winner: {1}", game.LobbyCode, winner.Username);
-            }
-            else
-            {
-                game.WinnerIdPlayer = null;
-                Log.InfoFormat("Game {0} finished. All players abandoned.", game.LobbyCode);
-            }
-
-            await NotifyGameFinished(remainingPlayers, winnerName);
-
-            foreach (var p in remainingPlayers)
-            {
-                p.GameIdGame = null;
-                p.TurnsSkipped = 0;
-            }
-            await _repository.SaveChangesAsync();
-
-            GameManager.Instance.StopMonitoring(game.IdGame);
         }
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)

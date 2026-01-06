@@ -2266,6 +2266,69 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a &quot;Error al sincronizar con el tablero. Reintentando...&quot;.
+        /// </summary>
+        public static string Gameplay_Error_Database {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;La partida ya ha finalizado.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_Finished {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;La partida ya no existe o ha caducado.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_GameNotFound {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_GameNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;Error inesperado en el juego.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_General {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;Has sido expulsado de la sala.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_Kicked {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Kicked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;¡Calma! Aún no es tu turno.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_NotTurn {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_NotTurn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;El servidor está procesando otro turno. Intenta de nuevo.&quot;.
+        /// </summary>
+        public static string Gameplay_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Aviso de Partida.
         /// </summary>
         public static string GameplayWarningTitle {
@@ -4242,6 +4305,15 @@ namespace GameClient.Resources {
         public static string String1 {
             get {
                 return ResourceManager.GetString("String1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string String2 {
+            get {
+                return ResourceManager.GetString("String2", resourceCulture);
             }
         }
         

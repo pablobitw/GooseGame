@@ -165,7 +165,7 @@ namespace GameClient.Views
                     break;
 
                 case UsernameChangeResult.UserNotFound:
-                    SessionManager.ForceLogout("Usuario no encontrado. Sesión inválida.");
+                    GameClient.Helpers.UserSession.GetInstance().HandleCatastrophicError("Usuario no encontrado. Sesión inválida."); 
                     break;
 
                 case UsernameChangeResult.FatalError:

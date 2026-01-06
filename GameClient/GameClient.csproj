@@ -437,6 +437,9 @@
     <None Include="Connected Services\GameplayServiceReference\GameServer.DTOs.Gameplay.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\GameplayServiceReference\GameServer.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\GameplayServiceReference\service.wsdl" />
     <None Include="Connected Services\GameplayServiceReference\service.xsd">
       <SubType>Designer</SubType>

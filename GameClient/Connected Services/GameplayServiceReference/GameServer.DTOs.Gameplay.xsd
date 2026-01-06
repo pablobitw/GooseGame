@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.datacontract.org/2004/07/GameServer" />
   <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
   <xs:complexType name="GameplayRequest">
     <xs:sequence>
@@ -12,6 +13,9 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="DiceOne" type="xs:int" />
       <xs:element minOccurs="0" name="DiceTwo" type="xs:int" />
+      <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+      <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer" minOccurs="0" name="ErrorType" type="q1:GameplayErrorType" />
+      <xs:element minOccurs="0" name="Success" type="xs:boolean" />
       <xs:element minOccurs="0" name="Total" type="xs:int" />
     </xs:sequence>
   </xs:complexType>
@@ -19,7 +23,9 @@
   <xs:complexType name="GameStateDto">
     <xs:sequence>
       <xs:element minOccurs="0" name="CurrentTurnUsername" nillable="true" type="xs:string" />
-      <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="GameLog" nillable="true" type="q1:ArrayOfstring" />
+      <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+      <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer" minOccurs="0" name="ErrorType" type="q2:GameplayErrorType" />
+      <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="GameLog" nillable="true" type="q3:ArrayOfstring" />
       <xs:element minOccurs="0" name="IsBanned" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsGameOver" type="xs:boolean" />
       <xs:element minOccurs="0" name="IsKicked" type="xs:boolean" />
@@ -27,6 +33,7 @@
       <xs:element minOccurs="0" name="LastDiceOne" type="xs:int" />
       <xs:element minOccurs="0" name="LastDiceTwo" type="xs:int" />
       <xs:element minOccurs="0" name="PlayerPositions" nillable="true" type="tns:ArrayOfPlayerPositionDto" />
+      <xs:element minOccurs="0" name="Success" type="xs:boolean" />
       <xs:element minOccurs="0" name="WinnerUsername" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>

@@ -54,7 +54,7 @@ namespace GameClient.Helpers
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
         }
 
@@ -72,6 +72,7 @@ namespace GameClient.Helpers
 
             return _client;
         }
+
 
         public void OnTurnChanged(GameStateDto newState)
         {
@@ -96,6 +97,7 @@ namespace GameClient.Helpers
             Application.Current.Dispatcher.InvokeAsync(() =>
                 VoteKickStarted?.Invoke(targetUsername, reason));
         }
+
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
@@ -122,6 +124,7 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.CastVoteAsync(vote));
         }
 
+
         private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
             try
@@ -136,25 +139,25 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError); 
                 return default(T);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ServerTimeout);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ServerTimeout);
                 return default(T);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ConnectionLost);
                 return default(T);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                await ShowErrorAsync();
+                await ShowErrorAsync(); 
                 return default(T);
             }
         }
@@ -172,17 +175,17 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ServerTimeout);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ServerTimeout);
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                SessionManager.ForceLogout(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ConnectionLost);
             }
             catch (Exception ex)
             {

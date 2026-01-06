@@ -855,6 +855,27 @@
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Aviso de Partida</value>
   </data>
+  <data name="Gameplay_Error_Database" xml:space="preserve">
+    <value>"Error al sincronizar con el tablero. Reintentando..."</value>
+  </data>
+  <data name="Gameplay_Error_Finished" xml:space="preserve">
+    <value>"La partida ya ha finalizado."</value>
+  </data>
+  <data name="Gameplay_Error_GameNotFound" xml:space="preserve">
+    <value>"La partida ya no existe o ha caducado."</value>
+  </data>
+  <data name="Gameplay_Error_General" xml:space="preserve">
+    <value>"Error inesperado en el juego."</value>
+  </data>
+  <data name="Gameplay_Error_Kicked" xml:space="preserve">
+    <value>"Has sido expulsado de la sala."</value>
+  </data>
+  <data name="Gameplay_Error_NotTurn" xml:space="preserve">
+    <value>"¡Calma! Aún no es tu turno."</value>
+  </data>
+  <data name="Gameplay_Error_Timeout" xml:space="preserve">
+    <value>"El servidor está procesando otro turno. Intenta de nuevo."</value>
+  </data>
   <data name="GamesPlayedLabel" xml:space="preserve">
     <value>Partidas Jugadas:</value>
   </data>
@@ -1510,6 +1531,9 @@
     <value>¡Código verificado! Escribe tu nuevo nombre.</value>
   </data>
   <data name="String1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="String2" xml:space="preserve">
     <value />
   </data>
   <data name="SuccessTitle" xml:space="preserve">

@@ -90,6 +90,15 @@ namespace GameClient.GameplayServiceReference {
         private int DiceTwoField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ErrorMessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.GameplayServiceReference.GameplayErrorType ErrorTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool SuccessField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int TotalField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
@@ -129,6 +138,45 @@ namespace GameClient.GameplayServiceReference {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ErrorMessage {
+            get {
+                return this.ErrorMessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ErrorMessageField, value) != true)) {
+                    this.ErrorMessageField = value;
+                    this.RaisePropertyChanged("ErrorMessage");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.GameplayServiceReference.GameplayErrorType ErrorType {
+            get {
+                return this.ErrorTypeField;
+            }
+            set {
+                if ((this.ErrorTypeField.Equals(value) != true)) {
+                    this.ErrorTypeField = value;
+                    this.RaisePropertyChanged("ErrorType");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool Success {
+            get {
+                return this.SuccessField;
+            }
+            set {
+                if ((this.SuccessField.Equals(value) != true)) {
+                    this.SuccessField = value;
+                    this.RaisePropertyChanged("Success");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public int Total {
             get {
                 return this.TotalField;
@@ -151,6 +199,35 @@ namespace GameClient.GameplayServiceReference {
         }
     }
     
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GameplayErrorType", Namespace="http://schemas.datacontract.org/2004/07/GameServer")]
+    public enum GameplayErrorType : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        None = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        DatabaseError = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GameNotFound = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        NotYourTurn = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GameFinished = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        PlayerKicked = 5,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Timeout = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Unknown = 7,
+    }
+    
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
@@ -162,6 +239,12 @@ namespace GameClient.GameplayServiceReference {
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string CurrentTurnUsernameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ErrorMessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.GameplayServiceReference.GameplayErrorType ErrorTypeField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string[] GameLogField;
@@ -188,6 +271,9 @@ namespace GameClient.GameplayServiceReference {
         private GameClient.GameplayServiceReference.PlayerPositionDto[] PlayerPositionsField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool SuccessField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string WinnerUsernameField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
@@ -209,6 +295,32 @@ namespace GameClient.GameplayServiceReference {
                 if ((object.ReferenceEquals(this.CurrentTurnUsernameField, value) != true)) {
                     this.CurrentTurnUsernameField = value;
                     this.RaisePropertyChanged("CurrentTurnUsername");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ErrorMessage {
+            get {
+                return this.ErrorMessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ErrorMessageField, value) != true)) {
+                    this.ErrorMessageField = value;
+                    this.RaisePropertyChanged("ErrorMessage");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.GameplayServiceReference.GameplayErrorType ErrorType {
+            get {
+                return this.ErrorTypeField;
+            }
+            set {
+                if ((this.ErrorTypeField.Equals(value) != true)) {
+                    this.ErrorTypeField = value;
+                    this.RaisePropertyChanged("ErrorType");
                 }
             }
         }
@@ -313,6 +425,19 @@ namespace GameClient.GameplayServiceReference {
                 if ((object.ReferenceEquals(this.PlayerPositionsField, value) != true)) {
                     this.PlayerPositionsField = value;
                     this.RaisePropertyChanged("PlayerPositions");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool Success {
+            get {
+                return this.SuccessField;
+            }
+            set {
+                if ((this.SuccessField.Equals(value) != true)) {
+                    this.SuccessField = value;
+                    this.RaisePropertyChanged("Success");
                 }
             }
         }

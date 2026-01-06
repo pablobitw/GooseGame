@@ -846,6 +846,27 @@
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Game Notice</value>
   </data>
+  <data name="Gameplay_Error_Database" xml:space="preserve">
+    <value>Error syncing with the board. Retrying...</value>
+  </data>
+  <data name="Gameplay_Error_Finished" xml:space="preserve">
+    <value>The match has already ended.</value>
+  </data>
+  <data name="Gameplay_Error_GameNotFound" xml:space="preserve">
+    <value>The match no longer exists or has expired.</value>
+  </data>
+  <data name="Gameplay_Error_General" xml:space="preserve">
+    <value>Unexpected error occurred during gameplay.</value>
+  </data>
+  <data name="Gameplay_Error_Kicked" xml:space="preserve">
+    <value>You have been kicked from the room.</value>
+  </data>
+  <data name="Gameplay_Error_NotTurn" xml:space="preserve">
+    <value>Easy there! It's not your turn yet.</value>
+  </data>
+  <data name="Gameplay_Error_Timeout" xml:space="preserve">
+    <value>The server is processing another turn. Please try again.</value>
+  </data>
   <data name="GamesPlayedLabel" xml:space="preserve">
     <value>Games Played:</value>
   </data>

@@ -149,13 +149,9 @@ namespace GameClient.Views
                 var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
                 chatClient.JoinLobbyChat(request);
             }
-            catch (EndpointNotFoundException)
+            catch (Exception)
             {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ChatConnectError);
-            }
-            catch (CommunicationException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.ChatJoinError);
+                _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatConnectError, false, "General", currentUsername);
             }
         }
 
@@ -194,13 +190,10 @@ namespace GameClient.Views
                         chatClient.SendPrivateMessage(dto);
                     }
                 }
-                catch (CommunicationException)
-                {
-                    Dispatcher.InvokeAsync(() => MessageBox.Show(GameClient.Resources.Strings.ChatErrorSend));
-                }
                 catch (Exception)
                 {
-                    Dispatcher.InvokeAsync(() => MessageBox.Show(GameClient.Resources.Strings.ChatErrorInternal));
+                    Dispatcher.InvokeAsync(() =>
+                        _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatErrorSend, false, target, currentUsername));
                 }
             });
         }
@@ -223,6 +216,7 @@ namespace GameClient.Views
             }
         }
 
+
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             PauseMenu.Visibility = Visibility.Visible;
@@ -243,35 +237,18 @@ namespace GameClient.Views
             UnsubscribeFromEvents();
             StopTimers();
 
-            try
-            {
-                await GameplayServiceManager.Instance.LeaveGameAsync(
-                    new GameplayRequest
-                    {
-                        LobbyCode = lobbyCode,
-                        Username = currentUsername
-                    });
-
-                if (Window.GetWindow(this) is GameMainWindow mw)
+            await GameplayServiceManager.Instance.LeaveGameAsync(
+                new GameplayRequest
                 {
-                    await mw.ShowMainMenu();
-                }
-            }
-            catch (CommunicationException)
+                    LobbyCode = lobbyCode,
+                    Username = currentUsername
+                });
+
+            if (Window.GetWindow(this) is GameMainWindow mw)
             {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorConn);
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.LeaveGameErrorServer);
-            }
-            catch (Exception ex)
-            {
-                SessionManager.ForceLogout(
-                    string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message));
+                await mw.ShowMainMenu();
             }
         }
-
 
         private void VoteKickMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -288,48 +265,67 @@ namespace GameClient.Views
         private async void KickReasonPrompt_KickConfirmed(object sender, KickEventArgs e)
         {
             KickReasonPrompt.Visibility = Visibility.Collapsed;
-            try
-            {
-                var req = new VoteRequestDto { Username = currentUsername, TargetUsername = e.TargetUsername, Reason = e.Reason };
-                await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickStarted, e.TargetUsername),
-                                GameClient.Resources.Strings.DialogInfoTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (FaultException ex)
-            {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickErrorInit, ex.Message),
-                                GameClient.Resources.Strings.DialogWarningTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            catch (CommunicationException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.VoteKickErrorConn);
-            }
+            var req = new VoteRequestDto { Username = currentUsername, TargetUsername = e.TargetUsername, Reason = e.Reason };
+
+            await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
+
+            MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickStarted, e.TargetUsername),
+                            GameClient.Resources.Strings.DialogInfoTitle,
+                            MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void VoteKickPrompt_VoteSubmitted(object sender, bool accept)
         {
-            try
+            var resp = new VoteResponseDto { Username = currentUsername, AcceptKick = accept };
+            await GameplayServiceManager.Instance.CastVoteAsync(resp);
+        }
+
+        private void HandleGameplayError(GameplayErrorType errorType, string fallbackMessage)
+        {
+            string message = fallbackMessage;
+            string title = GameClient.Resources.Strings.DialogErrorTitle;
+
+            switch (errorType)
             {
-                var resp = new VoteResponseDto { Username = currentUsername, AcceptKick = accept };
-                await GameplayServiceManager.Instance.CastVoteAsync(resp);
+                case GameplayErrorType.DatabaseError:
+                    message = GameClient.Resources.Strings.Gameplay_Error_Database;
+                    break;
+                case GameplayErrorType.NotYourTurn:
+                    message = GameClient.Resources.Strings.Gameplay_Error_NotTurn;
+                    break;
+                case GameplayErrorType.GameNotFound:
+                    message = GameClient.Resources.Strings.Gameplay_Error_GameNotFound;
+                    break;
+                case GameplayErrorType.GameFinished:
+                    message = GameClient.Resources.Strings.Gameplay_Error_Finished;
+                    break;
+                case GameplayErrorType.Timeout:
+                    message = GameClient.Resources.Strings.Gameplay_Error_Timeout;
+                    break;
+                case GameplayErrorType.PlayerKicked:
+                    message = GameClient.Resources.Strings.Gameplay_Error_Kicked;
+                    break;
+                case GameplayErrorType.Unknown:
+                    message = GameClient.Resources.Strings.Gameplay_Error_General;
+                    break;
             }
-            catch (FaultException ex)
-            {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickErrorVote, ex.Message),
-                                GameClient.Resources.Strings.DialogWarningTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            catch (CommunicationException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.VoteKickErrorVoteConn);
-            }
+
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void OnTurnChanged(GameStateDto newState)
         {
-            Dispatcher.InvokeAsync(() => ProcessGameState(newState));
+            if (newState == null) return;
+
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (!newState.Success)
+                {
+                    HandleGameplayError(newState.ErrorType, newState.ErrorMessage);
+                    return;
+                }
+                ProcessGameState(newState);
+            });
         }
 
         private void OnGameFinished(string winner)
@@ -373,25 +369,32 @@ namespace GameClient.Views
 
         private async Task InitialStateLoad()
         {
-            try
+            var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
+
+            var state = await GameplayServiceManager.Instance.GetGameStateAsync(request);
+
+            if (state != null)
             {
-                var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
-                var state = await GameplayServiceManager.Instance.GetGameStateAsync(request);
-                if (state != null) ProcessGameState(state);
-            }
-            catch (CommunicationException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.InitialStateErrorConn);
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.InitialStateErrorTimeout);
+                if (state.Success)
+                {
+                    ProcessGameState(state);
+                }
+                else
+                {
+                    HandleGameplayError(state.ErrorType, state.ErrorMessage);
+                }
             }
         }
 
         private void ProcessGameState(GameStateDto state)
         {
             if (state == null) return;
+
+            if (state.IsKicked)
+            {
+                OnPlayerKicked("Has sido expulsado de la partida.");
+                return;
+            }
 
             UpdateTurnUI(state);
             UpdateTurnTimer(state.CurrentTurnUsername);
@@ -407,32 +410,22 @@ namespace GameClient.Views
             if (_isGameOverHandled || !IsEnabled) return;
 
             AudioManager.PlaySfx(AudioManager.SfxDice);
-
             RollDiceButton.IsEnabled = false;
-            try
-            {
-                var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
-                var result = await GameplayServiceManager.Instance.RollDiceAsync(request);
 
-                if (result != null)
-                {
-                    UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
-                }
-            }
-            catch (FaultException ex)
+            var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
+
+            var result = await GameplayServiceManager.Instance.RollDiceAsync(request);
+
+            if (result == null) return;
+
+            if (result.Success)
             {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.GameErrorDice, ex.Message),
-                                GameClient.Resources.Strings.DialogWarningTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
+            }
+            else
+            {
+                HandleGameplayError(result.ErrorType, result.ErrorMessage);
                 if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
-            }
-            catch (CommunicationException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.GameErrorConnLost);
-            }
-            catch (TimeoutException)
-            {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.GameErrorTimeout);
             }
         }
 
@@ -493,15 +486,7 @@ namespace GameClient.Views
 
                 await Task.Delay(1500);
 
-                try
-                {
-                    var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
-                    await GameplayServiceManager.Instance.GetGameStateAsync(request);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error triggering server timeout: " + ex.Message);
-                }
+                await InitialStateLoad();
             }
         }
 
@@ -599,6 +584,7 @@ namespace GameClient.Views
         private void UpdateBoardVisuals(PlayerPositionDto[] players)
         {
             if (players == null) return;
+
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
 
             for (int i = 0; i < sortedPlayers.Count; i++)
@@ -670,7 +656,9 @@ namespace GameClient.Views
         private void UpdatePlayerAvatars(PlayerPositionDto[] players)
         {
             if (players == null) return;
+
             HideAllPlayerPanels();
+
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
 
             for (int i = 0; i < sortedPlayers.Count; i++)
@@ -731,15 +719,7 @@ namespace GameClient.Views
             catch (Exception ex)
             {
                 Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.AvatarErrorLoad, avatarPath, ex.Message));
-
-                try
-                {
-                    brush.ImageSource = new BitmapImage(new Uri("/Assets/default_avatar.png", UriKind.Relative));
-                }
-                catch (Exception fallbackEx)
-                {
-                    Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.AvatarErrorFallback, fallbackEx.Message));
-                }
+                brush.ImageSource = new BitmapImage(new Uri("/Assets/default_avatar.png", UriKind.Relative));
             }
         }
 
@@ -781,53 +761,25 @@ namespace GameClient.Views
 
             if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
 
+            
             try
             {
                 var result = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
-
                 switch (result)
                 {
                     case FriendRequestResult.Success:
                         MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestSent, targetUser),
-                                        GameClient.Resources.Strings.DialogSuccessTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-                    case FriendRequestResult.AlreadyFriends:
-                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendAlreadyAdded, targetUser),
-                                        GameClient.Resources.Strings.DialogInfoTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-                    case FriendRequestResult.Pending:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestPending,
-                                        GameClient.Resources.Strings.DialogWarningTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
-                    case FriendRequestResult.GuestRestriction:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendGuestRestriction,
-                                        GameClient.Resources.Strings.DialogWarningTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
-                    case FriendRequestResult.TargetNotFound:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendNotFound,
-                                        GameClient.Resources.Strings.DialogErrorTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                        GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                     default:
                         MessageBox.Show(GameClient.Resources.Strings.FriendRequestError,
-                                        GameClient.Resources.Strings.DialogErrorTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                        GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                         break;
                 }
             }
-            catch (CommunicationException)
+            catch (Exception)
             {
-                SessionManager.ForceLogout(GameClient.Resources.Strings.FriendConnError);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(string.Format(GameClient.Resources.Strings.LeaveGameErrorUnexpected, ex.Message),
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.FriendConnError, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -841,10 +793,7 @@ namespace GameClient.Views
 
         private async Task HandleGameOverAsync(string winner)
         {
-            if (_isGameOverHandled)
-            {
-                return;
-            }
+            if (_isGameOverHandled) return;
 
             _isGameOverHandled = true;
             StopTimers();
@@ -863,6 +812,5 @@ namespace GameClient.Views
                 NavigationService.GoBack();
             }
         }
-
     }
 }

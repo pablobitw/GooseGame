@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/GameServer" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/GameServer" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="GameplayErrorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None" />
+      <xs:enumeration value="DatabaseError" />
+      <xs:enumeration value="GameNotFound" />
+      <xs:enumeration value="NotYourTurn" />
+      <xs:enumeration value="GameFinished" />
+      <xs:enumeration value="PlayerKicked" />
+      <xs:enumeration value="Timeout" />
+      <xs:enumeration value="Unknown" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="GameplayErrorType" nillable="true" type="tns:GameplayErrorType" />
+</xs:schema>
