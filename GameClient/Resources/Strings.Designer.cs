@@ -565,6 +565,78 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error interno del servidor de chat..
+        /// </summary>
+        public static string Chat_Error_Internal {
+            get {
+                return ResourceManager.GetString("Chat_Error_Internal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Mensaje bloqueado por contenido inapropiado..
+        /// </summary>
+        public static string Chat_Result_ContentBlocked {
+            get {
+                return ResourceManager.GetString("Chat_Result_ContentBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La sala de chat no existe..
+        /// </summary>
+        public static string Chat_Result_LobbyNotFound {
+            get {
+                return ResourceManager.GetString("Chat_Result_LobbyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El mensaje es demasiado largo..
+        /// </summary>
+        public static string Chat_Result_MessageTooLong {
+            get {
+                return ResourceManager.GetString("Chat_Result_MessageTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Mensaje bloqueado por spam. Espera unos segundos..
+        /// </summary>
+        public static string Chat_Result_SpamBlocked {
+            get {
+                return ResourceManager.GetString("Chat_Result_SpamBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Mensaje enviado..
+        /// </summary>
+        public static string Chat_Result_Success {
+            get {
+                return ResourceManager.GetString("Chat_Result_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El usuario no está en línea o no existe..
+        /// </summary>
+        public static string Chat_Result_TargetNotFound {
+            get {
+                return ResourceManager.GetString("Chat_Result_TargetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has sido expulsado del chat..
+        /// </summary>
+        public static string Chat_Result_UserKicked {
+            get {
+                return ResourceManager.GetString("Chat_Result_UserKicked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se pudo conectar al servidor de chat. Verifica la configuración..
         /// </summary>
         public static string ChatConnectError {

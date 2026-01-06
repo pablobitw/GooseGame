@@ -109,6 +109,7 @@
     </Compile>
     <Compile Include="Helpers\AudioManager.cs" />
     <Compile Include="Helpers\BoardDataHelper.cs" />
+    <Compile Include="Helpers\ChatServiceManager.cs" />
     <Compile Include="Helpers\ChatUiManager.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\FriendshipServiceManager.cs" />
@@ -396,6 +397,9 @@
     </EmbeddedResource>
     <Resource Include="Assets\Fonts\Dosis.ttf" />
     <Resource Include="Assets\Fonts\Fredoka-Medium.ttf" />
+    <None Include="Connected Services\ChatServiceReference\GameClient.ChatServiceReference.ChatOperationResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Connected Services\ChatServiceReference\GameServer.DTOs.Chat.xsd">
       <SubType>Designer</SubType>
     </None>

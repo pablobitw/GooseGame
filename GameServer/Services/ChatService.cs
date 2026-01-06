@@ -2,6 +2,7 @@
 using GameServer.Interfaces;
 using GameServer.Services.Logic;
 using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace GameServer.Services
 {
@@ -15,26 +16,25 @@ namespace GameServer.Services
             _logic = new ChatAppService();
         }
 
-        public void JoinLobbyChat(JoinChatRequest request)
+        public Task<ChatOperationResult> JoinLobbyChat(JoinChatRequest request)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IChatCallback>();
-
-            _logic.JoinChat(request, callback);
+            return Task.FromResult(_logic.JoinChat(request, callback));
         }
 
-        public void SendLobbyMessage(ChatMessageDto messageDto)
+        public Task<ChatOperationResult> SendLobbyMessage(ChatMessageDto messageDto)
         {
-            _logic.SendMessage(messageDto);
+            return Task.FromResult(_logic.SendMessage(messageDto));
         }
 
-        public void SendPrivateMessage(ChatMessageDto messageDto)
+        public Task<ChatOperationResult> SendPrivateMessage(ChatMessageDto messageDto)
         {
-            _logic.SendPrivateMessage(messageDto);
+            return Task.FromResult(_logic.SendPrivateMessage(messageDto));
         }
 
-        public void LeaveLobbyChat(JoinChatRequest request)
+        public Task<ChatOperationResult> LeaveLobbyChat(JoinChatRequest request)
         {
-            _logic.LeaveChat(request);
+            return Task.FromResult(_logic.LeaveChat(request));
         }
     }
 }

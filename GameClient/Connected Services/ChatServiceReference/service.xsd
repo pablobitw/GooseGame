@@ -8,31 +8,59 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SendLobbyMessage">
+  <xs:element name="JoinLobbyChatResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="messageDto" nillable="true" type="q2:ChatMessageDto" />
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="JoinLobbyChatResult" type="q2:ChatOperationResult" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SendPrivateMessage">
+  <xs:element name="SendLobbyMessage">
     <xs:complexType>
       <xs:sequence>
         <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="messageDto" nillable="true" type="q3:ChatMessageDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="SendLobbyMessageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="SendLobbyMessageResult" type="q4:ChatOperationResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendPrivateMessage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="messageDto" nillable="true" type="q5:ChatMessageDto" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SendPrivateMessageResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="SendPrivateMessageResult" type="q6:ChatOperationResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="LeaveLobbyChat">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="request" nillable="true" type="q4:JoinChatRequest" />
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="request" nillable="true" type="q7:JoinChatRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LeaveLobbyChatResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="LeaveLobbyChatResult" type="q8:ChatOperationResult" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="ReceiveMessage">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="message" nillable="true" type="q5:ChatMessageDto" />
+        <xs:element xmlns:q9="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat" minOccurs="0" name="message" nillable="true" type="q9:ChatMessageDto" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

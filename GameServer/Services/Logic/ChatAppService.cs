@@ -1,13 +1,14 @@
-﻿using GameServer.Chat.Moderation; // Asegúrate de tener estas clases o coméntalas si son mocks
+﻿using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
 using GameServer.Interfaces;
+using GameServer.Services.Logic; 
 using log4net;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace GameServer.Services.Logic
 {
@@ -32,89 +33,138 @@ namespace GameServer.Services.Logic
             _sanctionServiceFactory = () => new SanctionAppService();
         }
 
-        public void JoinChat(JoinChatRequest request, IChatCallback callback)
+        public ChatOperationResult JoinChat(JoinChatRequest request, IChatCallback callback)
         {
-            if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.LobbyCode))
-                return;
-
-            _callbacks.AddOrUpdate(request.Username, callback, (k, v) => callback);
-
-            var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, _ => new ConcurrentDictionary<string, string>());
-            lobbyChatters[request.Username] = request.Username;
-
-            Log.Info($"Chat: {request.Username} se unió al lobby {request.LobbyCode}");
-            BroadcastSystemMessage(request.LobbyCode, $"{request.Username} se ha unido.");
-        }
-
-        public void SendMessage(ChatMessageDto messageDto)
-        {
-            if (messageDto == null || string.IsNullOrEmpty(messageDto.LobbyCode)) return;
-
-            if (string.IsNullOrWhiteSpace(messageDto.Message)) return;
-
-            if (messageDto.Message.Length > MaxMessageLength)
+            try
             {
-                SendSystemMessageToUser(messageDto.Sender, "Mensaje demasiado largo.");
-                return;
-            }
-
-            var spamResult = _spamTracker.Analyze(messageDto.LobbyCode, messageDto.Sender);
-            if (!spamResult.IsAllowed)
-            {
-                SendSystemMessageToUser(messageDto.Sender, spamResult.SystemNotification);
-                if (spamResult.RequiresKick)
+                if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.LobbyCode))
                 {
-                    KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Spam masivo", "CHAT_SPAM");
+                    return ChatOperationResult.InternalError;
                 }
-                return;
-            }
 
-            var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
-            if (profanityResult.IsBlocked)
+                _callbacks.AddOrUpdate(request.Username, callback, (k, v) => callback);
+
+                var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, _ => new ConcurrentDictionary<string, string>());
+                lobbyChatters[request.Username] = request.Username;
+
+                Log.Info($"Chat: {request.Username} se unió al lobby {request.LobbyCode}");
+                BroadcastSystemMessage(request.LobbyCode, $"{request.Username} se ha unido.");
+
+                return ChatOperationResult.Success;
+            }
+            catch (Exception ex)
             {
-                SendSystemMessageToUser(messageDto.Sender, profanityResult.SystemNotification);
-                return;
+                Log.Error("Error en JoinChat", ex);
+                return ChatOperationResult.InternalError;
             }
-
-            if (profanityResult.IsCensored)
-            {
-                var level = WarningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
-                HandleWarning(messageDto.LobbyCode, messageDto.Sender, level);
-                if (level == WarningLevel.Punishment) return; 
-            }
-
-            messageDto.Message = profanityResult.FinalMessage;
-            messageDto.IsPrivate = false;
-
-            BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto);
         }
 
-        public void SendPrivateMessage(ChatMessageDto messageDto)
+        public ChatOperationResult SendMessage(ChatMessageDto messageDto)
         {
-            if (messageDto == null || string.IsNullOrEmpty(messageDto.TargetUser)) return;
-
-            messageDto.IsPrivate = true;
-
-            bool sent = SafeSendMessageToClient(messageDto.TargetUser, messageDto);
-
-            if (sent)
+            try
             {
-                SafeSendMessageToClient(messageDto.Sender, messageDto);
+                if (messageDto == null || string.IsNullOrEmpty(messageDto.LobbyCode) || string.IsNullOrWhiteSpace(messageDto.Message))
+                {
+                    return ChatOperationResult.InternalError;
+                }
+
+                if (messageDto.Message.Length > MaxMessageLength)
+                {
+                    SendSystemMessageToUser(messageDto.Sender, "Mensaje demasiado largo.");
+                    return ChatOperationResult.MessageTooLong;
+                }
+
+                var spamResult = _spamTracker.Analyze(messageDto.LobbyCode, messageDto.Sender);
+                if (!spamResult.IsAllowed)
+                {
+                    SendSystemMessageToUser(messageDto.Sender, spamResult.SystemNotification);
+                    if (spamResult.RequiresKick)
+                    {
+                        KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Spam masivo", "CHAT_SPAM");
+                    }
+                    return ChatOperationResult.SpamBlocked;
+                }
+
+                var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
+                if (profanityResult.IsBlocked)
+                {
+                    SendSystemMessageToUser(messageDto.Sender, profanityResult.SystemNotification);
+                    return ChatOperationResult.ContentBlocked;
+                }
+
+                if (profanityResult.IsCensored)
+                {
+                    var level = WarningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
+                    HandleWarning(messageDto.LobbyCode, messageDto.Sender, level);
+                    if (level == WarningLevel.Punishment)
+                    {
+                        return ChatOperationResult.ContentBlocked; 
+                    }
+                }
+
+                messageDto.Message = profanityResult.FinalMessage;
+                messageDto.IsPrivate = false;
+
+                BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto);
+                return ChatOperationResult.Success;
             }
-            else
+            catch (Exception ex)
             {
-                SendSystemMessageToUser(messageDto.Sender, $"El usuario {messageDto.TargetUser} no está disponible.");
+                Log.Error("Error en SendMessage", ex);
+                return ChatOperationResult.InternalError;
             }
         }
 
-        public void LeaveChat(JoinChatRequest request)
+        public ChatOperationResult SendPrivateMessage(ChatMessageDto messageDto)
         {
-            if (request == null || string.IsNullOrEmpty(request.LobbyCode)) return;
+            try
+            {
+                if (messageDto == null || string.IsNullOrEmpty(messageDto.TargetUser))
+                {
+                    return ChatOperationResult.InternalError;
+                }
 
-            RemoveClient(request.LobbyCode, request.Username);
-            BroadcastSystemMessage(request.LobbyCode, $"{request.Username} ha salido.");
+                messageDto.IsPrivate = true;
+
+                bool sent = SafeSendMessageToClient(messageDto.TargetUser, messageDto);
+
+                if (sent)
+                {
+                    SafeSendMessageToClient(messageDto.Sender, messageDto);
+                    return ChatOperationResult.Success;
+                }
+                else
+                {
+                    SendSystemMessageToUser(messageDto.Sender, $"El usuario {messageDto.TargetUser} no está disponible.");
+                    return ChatOperationResult.TargetNotFound;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error en SendPrivateMessage", ex);
+                return ChatOperationResult.InternalError;
+            }
         }
 
+        public ChatOperationResult LeaveChat(JoinChatRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.LobbyCode))
+                {
+                    return ChatOperationResult.InternalError;
+                }
+
+                RemoveClient(request.LobbyCode, request.Username);
+                BroadcastSystemMessage(request.LobbyCode, $"{request.Username} ha salido.");
+                return ChatOperationResult.Success;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error en LeaveChat", ex);
+                return ChatOperationResult.InternalError;
+            }
+        }
 
         private void HandleWarning(string lobbyCode, string username, WarningLevel level)
         {

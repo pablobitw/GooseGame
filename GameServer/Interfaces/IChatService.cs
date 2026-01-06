@@ -1,21 +1,22 @@
 ﻿using GameServer.DTOs.Chat;
 using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace GameServer.Interfaces
 {
     [ServiceContract(CallbackContract = typeof(IChatCallback))]
     public interface IChatService
     {
-        [OperationContract(IsOneWay = true)]
-        void JoinLobbyChat(JoinChatRequest request);
+        [OperationContract]
+        Task<ChatOperationResult> JoinLobbyChat(JoinChatRequest request);
 
-        [OperationContract(IsOneWay = true)]
-        void SendLobbyMessage(ChatMessageDto messageDto);
+        [OperationContract]
+        Task<ChatOperationResult> SendLobbyMessage(ChatMessageDto messageDto);
 
-        [OperationContract(IsOneWay = true)]
-        void SendPrivateMessage(ChatMessageDto messageDto);
+        [OperationContract]
+        Task<ChatOperationResult> SendPrivateMessage(ChatMessageDto messageDto);
 
-        [OperationContract(IsOneWay = true)]
-        void LeaveLobbyChat(JoinChatRequest request);
+        [OperationContract]
+        Task<ChatOperationResult> LeaveLobbyChat(JoinChatRequest request);
     }
 }

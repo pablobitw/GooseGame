@@ -106,6 +106,7 @@
     <Compile Include="DTOs\Auth\RegisterUserRequest.cs" />
     <Compile Include="DTOs\Auth\RegistrationResult.cs" />
     <Compile Include="DTOs\Chat\ChatMessageDto.cs" />
+    <Compile Include="DTOs\Chat\ChatOperationResult.cs" />
     <Compile Include="DTOs\Chat\JoinChatRequest.cs" />
     <Compile Include="DTOs\Friendship\FriendDto.cs" />
     <Compile Include="DTOs\Friendship\FriendRequestResult.cs" />

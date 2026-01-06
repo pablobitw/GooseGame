@@ -74,6 +74,35 @@ namespace GameClient.ChatServiceReference {
         }
     }
     
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ChatOperationResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat")]
+    public enum ChatOperationResult : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Success = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        SpamBlocked = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        ContentBlocked = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        TargetNotFound = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        LobbyNotFound = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        MessageTooLong = 5,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        InternalError = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GeneralError = 7,
+    }
+    
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="ChatMessageDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat")]
@@ -97,6 +126,9 @@ namespace GameClient.ChatServiceReference {
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string TargetUserField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.DateTime TimestampField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
@@ -173,6 +205,19 @@ namespace GameClient.ChatServiceReference {
             }
         }
         
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.DateTime Timestamp {
+            get {
+                return this.TimestampField;
+            }
+            set {
+                if ((this.TimestampField.Equals(value) != true)) {
+                    this.TimestampField = value;
+                    this.RaisePropertyChanged("Timestamp");
+                }
+            }
+        }
+        
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
         protected void RaisePropertyChanged(string propertyName) {
@@ -187,29 +232,29 @@ namespace GameClient.ChatServiceReference {
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ChatServiceReference.IChatService", CallbackContract=typeof(GameClient.ChatServiceReference.IChatServiceCallback))]
     public interface IChatService {
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/JoinLobbyChat")]
-        void JoinLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinLobbyChat", ReplyAction="http://tempuri.org/IChatService/JoinLobbyChatResponse")]
+        GameClient.ChatServiceReference.ChatOperationResult JoinLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/JoinLobbyChat")]
-        System.Threading.Tasks.Task JoinLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinLobbyChat", ReplyAction="http://tempuri.org/IChatService/JoinLobbyChatResponse")]
+        System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> JoinLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendLobbyMessage")]
-        void SendLobbyMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendLobbyMessage", ReplyAction="http://tempuri.org/IChatService/SendLobbyMessageResponse")]
+        GameClient.ChatServiceReference.ChatOperationResult SendLobbyMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendLobbyMessage")]
-        System.Threading.Tasks.Task SendLobbyMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendLobbyMessage", ReplyAction="http://tempuri.org/IChatService/SendLobbyMessageResponse")]
+        System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendLobbyMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendPrivateMessage")]
-        void SendPrivateMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendPrivateMessage", ReplyAction="http://tempuri.org/IChatService/SendPrivateMessageResponse")]
+        GameClient.ChatServiceReference.ChatOperationResult SendPrivateMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/SendPrivateMessage")]
-        System.Threading.Tasks.Task SendPrivateMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendPrivateMessage", ReplyAction="http://tempuri.org/IChatService/SendPrivateMessageResponse")]
+        System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendPrivateMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/LeaveLobbyChat")]
-        void LeaveLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/LeaveLobbyChat", ReplyAction="http://tempuri.org/IChatService/LeaveLobbyChatResponse")]
+        GameClient.ChatServiceReference.ChatOperationResult LeaveLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IChatService/LeaveLobbyChat")]
-        System.Threading.Tasks.Task LeaveLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/LeaveLobbyChat", ReplyAction="http://tempuri.org/IChatService/LeaveLobbyChatResponse")]
+        System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> LeaveLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -247,35 +292,35 @@ namespace GameClient.ChatServiceReference {
                 base(callbackInstance, binding, remoteAddress) {
         }
         
-        public void JoinLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request) {
-            base.Channel.JoinLobbyChat(request);
+        public GameClient.ChatServiceReference.ChatOperationResult JoinLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request) {
+            return base.Channel.JoinLobbyChat(request);
         }
         
-        public System.Threading.Tasks.Task JoinLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request) {
+        public System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> JoinLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request) {
             return base.Channel.JoinLobbyChatAsync(request);
         }
         
-        public void SendLobbyMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
-            base.Channel.SendLobbyMessage(messageDto);
+        public GameClient.ChatServiceReference.ChatOperationResult SendLobbyMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
+            return base.Channel.SendLobbyMessage(messageDto);
         }
         
-        public System.Threading.Tasks.Task SendLobbyMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
+        public System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendLobbyMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
             return base.Channel.SendLobbyMessageAsync(messageDto);
         }
         
-        public void SendPrivateMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
-            base.Channel.SendPrivateMessage(messageDto);
+        public GameClient.ChatServiceReference.ChatOperationResult SendPrivateMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
+            return base.Channel.SendPrivateMessage(messageDto);
         }
         
-        public System.Threading.Tasks.Task SendPrivateMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
+        public System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendPrivateMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto) {
             return base.Channel.SendPrivateMessageAsync(messageDto);
         }
         
-        public void LeaveLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request) {
-            base.Channel.LeaveLobbyChat(request);
+        public GameClient.ChatServiceReference.ChatOperationResult LeaveLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request) {
+            return base.Channel.LeaveLobbyChat(request);
         }
         
-        public System.Threading.Tasks.Task LeaveLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request) {
+        public System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> LeaveLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request) {
             return base.Channel.LeaveLobbyChatAsync(request);
         }
     }

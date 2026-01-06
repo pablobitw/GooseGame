@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace GameServer.DTOs.Chat
 {
@@ -19,5 +20,8 @@ namespace GameServer.DTOs.Chat
 
         [DataMember]
         public bool IsPrivate { get; set; }
+
+        [DataMember]
+        public DateTime Timestamp { get; set; }
     }
 }

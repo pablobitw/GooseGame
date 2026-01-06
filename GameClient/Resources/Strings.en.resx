@@ -306,6 +306,30 @@
   <data name="ChatYou" xml:space="preserve">
     <value>You:</value>
   </data>
+  <data name="Chat_Error_Internal" xml:space="preserve">
+    <value>Internal chat server error.</value>
+  </data>
+  <data name="Chat_Result_ContentBlocked" xml:space="preserve">
+    <value>Message blocked due to inappropriate content.</value>
+  </data>
+  <data name="Chat_Result_LobbyNotFound" xml:space="preserve">
+    <value>Chat lobby not found.</value>
+  </data>
+  <data name="Chat_Result_MessageTooLong" xml:space="preserve">
+    <value>Message is too long.</value>
+  </data>
+  <data name="Chat_Result_SpamBlocked" xml:space="preserve">
+    <value>Message blocked due to spam. Wait a few seconds.</value>
+  </data>
+  <data name="Chat_Result_Success" xml:space="preserve">
+    <value>Message sent.</value>
+  </data>
+  <data name="Chat_Result_TargetNotFound" xml:space="preserve">
+    <value>User is offline or does not exist.</value>
+  </data>
+  <data name="Chat_Result_UserKicked" xml:space="preserve">
+    <value>You have been kicked from the chat.</value>
+  </data>
   <data name="CodeCopiedMessage" xml:space="preserve">
     <value>Code copied</value>
   </data>
