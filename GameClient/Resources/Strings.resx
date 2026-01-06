@@ -954,6 +954,66 @@
   <data name="RegisterSuccessfulTitle" xml:space="preserve">
     <value>Registro casi exitoso</value>
   </data>
+  <data name="Register_EmailExistsDesc" xml:space="preserve">
+    <value>Este correo electrónico ya está asociado a una cuenta. Intenta recuperar tu contraseña.</value>
+  </data>
+  <data name="Register_EmailExistsTitle" xml:space="preserve">
+    <value>Correo Registrado</value>
+  </data>
+  <data name="Register_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación con el servidor de registro. Verifica tu red.</value>
+  </data>
+  <data name="Register_Error_Database" xml:space="preserve">
+    <value>Ocurrió un error interno al guardar tus datos. Intenta más tarde.</value>
+  </data>
+  <data name="Register_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado durante el registro.</value>
+  </data>
+  <data name="Register_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede proceder con el registro.</value>
+  </data>
+  <data name="Register_Error_ServerDown" xml:space="preserve">
+    <value>No se pudo conectar con el servicio de registro. El servidor parece estar apagado.</value>
+  </data>
+  <data name="Register_Error_Timeout" xml:space="preserve">
+    <value>La solicitud de registro tardó demasiado. Por favor, inténtalo de nuevo.</value>
+  </data>
+  <data name="Register_PendingDesc" xml:space="preserve">
+    <value>Tu cuenta ya existe pero no ha sido verificada. Hemos reenviado el código a tu correo.</value>
+  </data>
+  <data name="Register_PendingTitle" xml:space="preserve">
+    <value>Verificación Pendiente</value>
+  </data>
+  <data name="Register_SuccessDesc" xml:space="preserve">
+    <value>Tu cuenta ha sido creada exitosamente. Hemos enviado un código de verificación a tu correo.</value>
+  </data>
+  <data name="Register_Title_Error" xml:space="preserve">
+    <value>Error de Registro</value>
+  </data>
+  <data name="Register_Title_Info" xml:space="preserve">
+    <value>Información de Cuenta</value>
+  </data>
+  <data name="Register_Title_Success" xml:space="preserve">
+    <value>Registro Exitoso</value>
+  </data>
+  <data name="Register_UserExistsDesc" xml:space="preserve">
+    <value>El nombre de usuario ingresado ya está en uso. Por favor, elige otro.</value>
+  </data>
+  <data name="Register_UserExistsTitle" xml:space="preserve">
+    <value>Usuario Ocupado</value>
+  </data>
+  <data name="Register_Val_EmptyField" xml:space="preserve">
+    <value>Este campo es obligatorio para el registro.</value>
+  </data>
+  <data name="Register_Val_InvalidEmail" xml:space="preserve">
+    <value>El formato del correo no es válido.</value>
+  </data>
+  <data name="Register_Val_PassMismatch" xml:space="preserve">
+    <value>Las contraseñas ingresadas no coinciden.</value>
+  </data>
+  <data name="Register_Val_PassStrength" xml:space="preserve">
+    <value>La contraseña debe tener entre 8-50 caracteres, al menos una mayúscula y un símbolo o número.</value>
+  </data>
   <data name="RejectButton" xml:space="preserve">
     <value>Rechazar</value>
   </data>

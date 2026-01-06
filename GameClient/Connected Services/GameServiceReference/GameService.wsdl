@@ -10,9 +10,9 @@
   </wsp:Policy>
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
-      <xsd:import schemaLocation="http://172.20.10.10:8081/?xsd=xsd0" namespace="http://tempuri.org/" />
-      <xsd:import schemaLocation="http://172.20.10.10:8081/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
-      <xsd:import schemaLocation="http://172.20.10.10:8081/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth" />
+      <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="IGameService_RegisterUser_InputMessage">
@@ -213,9 +213,9 @@
   </wsdl:binding>
   <wsdl:service name="GameService">
     <wsdl:port name="NetTcpBinding_IGameService" binding="tns:NetTcpBinding_IGameService">
-      <soap12:address location="net.tcp://172.20.10.10:8090/GameService" />
+      <soap12:address location="net.tcp://localhost:8090/GameService" />
       <wsa10:EndpointReference>
-        <wsa10:Address>net.tcp://172.20.10.10:8090/GameService</wsa10:Address>
+        <wsa10:Address>net.tcp://localhost:8090/GameService</wsa10:Address>
       </wsa10:EndpointReference>
     </wsdl:port>
   </wsdl:service>

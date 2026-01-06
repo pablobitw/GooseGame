@@ -6,11 +6,10 @@ using System.Windows.Navigation;
 using GameClient.GameServiceReference;
 using System.ServiceModel;
 using System.Net.Mail;
-using GameClient.Views;
+using System.Net.NetworkInformation;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Threading;
-using System.Data.Common;
 
 namespace GameClient.Views
 {
@@ -29,7 +28,7 @@ namespace GameClient.Views
         {
             string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
             string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
-            MessageBox.Show(message ?? messageKey, title ?? titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void OnGenericTextBoxChanged(object sender, TextChangedEventArgs e)
@@ -84,65 +83,72 @@ namespace GameClient.Views
 
         private async void CreateAccount(object sender, RoutedEventArgs e)
         {
-            if (!IsFormValid())
+            if (IsFormValid())
             {
-                return;
-            }
-
-            string email = EmailBox.Text;
-            string username = UserBox.Text;
-            string password = PasswordBox.Password;
-            string selectedLanguage = GetSelectedLanguage();
-
-            GameServiceClient serviceClient = new GameServiceClient();
-            try
-            {
-                var request = new RegisterUserRequest
+                if (NetworkInterface.GetIsNetworkAvailable())
                 {
-                    Username = username,
-                    Email = email,
-                    Password = password,
-                    PreferredLanguage = selectedLanguage
-                };
+                    string email = EmailBox.Text;
+                    string username = UserBox.Text;
+                    string password = PasswordBox.Password;
+                    string selectedLanguage = GetSelectedLanguage();
 
-                RegistrationResult result = await serviceClient.RegisterUserAsync(request);
-                HandleRegistrationResult(result, email);
-            }
-            catch (EndpointNotFoundException)
-            {
-                ShowTranslatedMessageBox("EndpointNotFoundLabel", "EndpointNotFoundTitle");
-            }
-            catch (TimeoutException)
-            {
-                ShowTranslatedMessageBox("TimeoutLabel", "ErrorTitle");
+                    var serviceClient = new GameServiceClient();
 
-            }
-            catch (FaultException)
-            {
-                ShowTranslatedMessageBox("ServerDownLabel", "ErrorTitle");
-            }
-            catch (CommunicationException)
-            {
-                ShowTranslatedMessageBox("ComunicationLabel", "ErrorTitle");
-            }
-           
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ocurrió un error inesperado: " + ex.Message, "Error");
-            }
-            finally
-            {
-                CloseServiceClient(serviceClient);
+                    try
+                    {
+                        var request = new RegisterUserRequest
+                        {
+                            Username = username,
+                            Email = email,
+                            Password = password,
+                            PreferredLanguage = selectedLanguage
+                        };
+
+                        RegistrationResult result = await serviceClient.RegisterUserAsync(request);
+                        HandleRegistrationResult(result, email);
+                    }
+                    catch (EndpointNotFoundException)
+                    {
+                        ShowTranslatedMessageBox("Register_Error_ServerDown", "Register_Title_Error");
+                    }
+                    catch (TimeoutException)
+                    {
+                        ShowTranslatedMessageBox("Register_Error_Timeout", "Register_Title_Error");
+                    }
+                    catch (FaultException)
+                    {
+                        ShowTranslatedMessageBox("Register_Error_Database", "Register_Title_Error");
+                    }
+                    catch (CommunicationException)
+                    {
+                        ShowTranslatedMessageBox("Register_Error_Communication", "Register_Title_Error");
+                    }
+                    catch (Exception ex)
+                    {
+                        string generalError = GameClient.Resources.Strings.Register_Error_General;
+                        string errorTitle = GameClient.Resources.Strings.Register_Title_Error;
+                        MessageBox.Show($"{generalError}\n{ex.Message}", errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        CloseServiceClient(serviceClient);
+                    }
+                }
+                else
+                {
+                    ShowTranslatedMessageBox("Register_Error_NoInternet", "Register_Title_Error");
+                }
             }
         }
 
         private string GetSelectedLanguage()
         {
+            string language = DefaultLanguage;
             if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag != null)
             {
-                return item.Tag.ToString();
+                language = item.Tag.ToString();
             }
-            return DefaultLanguage;
+            return language;
         }
 
         private void HandleRegistrationResult(RegistrationResult result, string email)
@@ -150,30 +156,31 @@ namespace GameClient.Views
             switch (result)
             {
                 case RegistrationResult.Success:
-                    ShowTranslatedMessageBox("RegisterSuccesfulLabel", "RegisterSuccessfulTitle");
+                    ShowTranslatedMessageBox("Register_SuccessDesc", "Register_Title_Success");
                     NavigationService.Navigate(new VerifyAccountPage(email));
-                    break;
-                case RegistrationResult.NoInternet:
-                    MessageBox.Show("No hay intenernet, registro fallido!!:");
                     break;
 
                 case RegistrationResult.EmailPendingVerification:
-                    ShowTranslatedMessageBox("AccountPendingLabel", "AccountPendingTitle");
+                    ShowTranslatedMessageBox("Register_PendingDesc", "Register_PendingTitle");
                     NavigationService.Navigate(new VerifyAccountPage(email));
                     break;
 
                 case RegistrationResult.UsernameAlreadyExists:
-                    ShowTranslatedMessageBox("UsernameUsedLabel", "UsernameUsedTitle");
-                    ShowError(UserBox, "Este nombre de usuario ya está en uso");
+                    ShowTranslatedMessageBox("Register_UserExistsDesc", "Register_UserExistsTitle");
+                    ShowError(UserBox, GameClient.Resources.Strings.Register_UserExistsDesc);
                     break;
 
                 case RegistrationResult.EmailAlreadyExists:
-                    ShowTranslatedMessageBox("EmailUsedLabel", "EmailUsedTitle");
-                    ShowError(EmailBox, "Este correo electrónico ya está registrado");
+                    ShowTranslatedMessageBox("Register_EmailExistsDesc", "Register_EmailExistsTitle");
+                    ShowError(EmailBox, GameClient.Resources.Strings.Register_EmailExistsDesc);
+                    break;
+
+                case RegistrationResult.FatalError:
+                    ShowTranslatedMessageBox("Register_Error_Database", "Register_Title_Error");
                     break;
 
                 default:
-                    ShowTranslatedMessageBox("ServerDownLabel", "ErrorTitle");
+                    ShowTranslatedMessageBox("Register_Error_General", "Register_Title_Error");
                     break;
             }
         }
@@ -195,32 +202,19 @@ namespace GameClient.Views
             ClearAllErrors();
             bool isValid = true;
 
-            if (!ValidateEmail())
-            {
-                isValid = false;
-            }
-
-            if (!ValidateUsername())
-            {
-                isValid = false;
-            }
+            if (!ValidateEmail()) isValid = false;
+            if (!ValidateUsername()) isValid = false;
 
             bool isPasswordStrong = ValidatePasswordStrength();
             bool isRepeatPopulated = ValidateRepeatPasswordNotEmpty();
 
             if (isPasswordStrong && isRepeatPopulated)
             {
-                if (!CheckPasswordsMatch())
-                {
-                    isValid = false;
-                }
+                if (!CheckPasswordsMatch()) isValid = false;
             }
             else
             {
-                if (!isPasswordStrong || !isRepeatPopulated)
-                {
-                    isValid = false;
-                }
+                if (!isPasswordStrong || !isRepeatPopulated) isValid = false;
             }
 
             return isValid;
@@ -228,94 +222,74 @@ namespace GameClient.Views
 
         private bool ValidateEmail()
         {
+            bool isValid = true;
             string email = EmailBox.Text;
             if (string.IsNullOrWhiteSpace(email))
             {
-                ShowError(EmailBox, "El correo no puede estar vacio");
-                return false;
+                ShowError(EmailBox, GameClient.Resources.Strings.Register_Val_EmptyField);
+                isValid = false;
             }
-
-            if (!IsValidEmail(email))
+            else if (!IsValidEmail(email))
             {
-                ShowError(EmailBox, "El formato del correo no es valido");
-                return false;
+                ShowError(EmailBox, GameClient.Resources.Strings.Register_Val_InvalidEmail);
+                isValid = false;
             }
-
-            return true;
+            return isValid;
         }
 
         private bool ValidateUsername()
         {
+            bool isValid = true;
             if (string.IsNullOrWhiteSpace(UserBox.Text))
             {
-                ShowError(UserBox, "El nombre de usuario no puede estar vacio");
-                return false;
+                ShowError(UserBox, GameClient.Resources.Strings.Register_Val_EmptyField);
+                isValid = false;
             }
-
-            return true;
+            return isValid;
         }
 
         private bool ValidatePasswordStrength()
         {
+            bool isValid = true;
             string password = PasswordBox.Password;
             if (string.IsNullOrWhiteSpace(password))
             {
-                ShowError(PasswordBox, "La contraseña no puede estar vacia");
-                return false;
+                ShowError(PasswordBox, GameClient.Resources.Strings.Register_Val_EmptyField);
+                isValid = false;
             }
-
-            var errorMessages = new List<string>();
-            if (password.Length < MinPasswordLength)
+            else if (password.Length < MinPasswordLength ||
+                password.Length > MaxPasswordLength ||
+                !password.Any(char.IsUpper) ||
+                !password.Any(c => !char.IsLetterOrDigit(c)))
             {
-                errorMessages.Add($"mínimo {MinPasswordLength} caracteres");
+                ShowError(PasswordBox, GameClient.Resources.Strings.Register_Val_PassStrength);
+                isValid = false;
             }
-
-            if (password.Length > MaxPasswordLength)
-            {
-                errorMessages.Add($"máximo {MaxPasswordLength} caracteres");
-            }
-
-            if (!password.Any(char.IsUpper))
-            {
-                errorMessages.Add("una mayúscula");
-            }
-
-            if (!password.Any(c => !char.IsLetterOrDigit(c)))
-            {
-                errorMessages.Add("un símbolo (ejemplo: !#$)");
-            }
-
-            if (errorMessages.Count > 0)
-            {
-                string fullErrorMessage = "La contraseña debe tener: " + string.Join(", ", errorMessages) + ".";
-                ShowError(PasswordBox, fullErrorMessage);
-                return false;
-            }
-
-            return true;
+            return isValid;
         }
 
         private bool ValidateRepeatPasswordNotEmpty()
         {
+            bool isValid = true;
             if (string.IsNullOrWhiteSpace(RepeatBox.Password))
             {
-                ShowError(RepeatBox, "Debes repetir la contraseña");
-                return false;
+                ShowError(RepeatBox, GameClient.Resources.Strings.Register_Val_EmptyField);
+                isValid = false;
             }
-
-            return true;
+            return isValid;
         }
 
         private bool CheckPasswordsMatch()
         {
+            bool isValid = true;
             if (PasswordBox.Password != RepeatBox.Password)
             {
-                ShowError(PasswordBox, "Las contraseñas no coinciden");
-                ShowError(RepeatBox, "Las contraseñas no coinciden");
-                return false;
+                string msg = GameClient.Resources.Strings.Register_Val_PassMismatch;
+                ShowError(PasswordBox, msg);
+                ShowError(RepeatBox, msg);
+                isValid = false;
             }
-
-            return true;
+            return isValid;
         }
 
         private void ShowError(Control field, string errorMessage)
@@ -328,13 +302,10 @@ namespace GameClient.Views
         {
             EmailBox.ClearValue(Border.BorderBrushProperty);
             EmailBox.ToolTip = null;
-
             UserBox.ClearValue(Border.BorderBrushProperty);
             UserBox.ToolTip = null;
-
             PasswordBox.ClearValue(Border.BorderBrushProperty);
             PasswordBox.ToolTip = null;
-
             RepeatBox.ClearValue(Border.BorderBrushProperty);
             RepeatBox.ToolTip = null;
         }
@@ -342,33 +313,21 @@ namespace GameClient.Views
         private static bool IsValidEmail(string email)
         {
             bool isValid = false;
-
-            if (!string.IsNullOrWhiteSpace(email))
+            try
             {
-                try
-                {
-                    var addr = new MailAddress(email);
-                    isValid = (addr.Address == email);
-                }
-                catch (ArgumentException)
-                {
-                    isValid = false;
-                }
-                catch (FormatException)
-                {
-                    isValid = false;
-                }
+                var addr = new MailAddress(email);
+                isValid = addr.Address == email;
             }
-
+            catch
+            {
+                isValid = false;
+            }
             return isValid;
         }
 
         private void GoToLogin(object sender, RoutedEventArgs e)
         {
-            if (NavigationService != null)
-            {
-                NavigationService.Navigate(new LoginPage());
-            }
+            NavigationService?.Navigate(new LoginPage());
         }
 
         private void OnBackButton(object sender, RoutedEventArgs e)
@@ -383,20 +342,7 @@ namespace GameClient.Views
         {
             if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
             {
-                var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
                 e.CancelCommand();
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
-                    var tb = (TextBox)sender;
-                    if (tb.MaxLength > 0 && sanitized.Length > tb.MaxLength)
-                    {
-                        sanitized = sanitized.Substring(0, tb.MaxLength);
-                    }
-
-                    tb.Text = sanitized;
-                    tb.CaretIndex = tb.Text.Length;
-                }), DispatcherPriority.Background);
             }
             else
             {
@@ -407,13 +353,6 @@ namespace GameClient.Views
         private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                MessageBox.Show("Por seguridad, el pegado está deshabilitado en campos de contraseña.",
-                                "Acción bloqueada",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-            }), DispatcherPriority.Background);
         }
     }
 }

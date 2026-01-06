@@ -945,6 +945,66 @@
   <data name="RegisterSuccessfulTitle" xml:space="preserve">
     <value>Register almost succesful</value>
   </data>
+  <data name="Register_EmailExistsDesc" xml:space="preserve">
+    <value>This email is already associated with an account. Try recovering your password.</value>
+  </data>
+  <data name="Register_EmailExistsTitle" xml:space="preserve">
+    <value>Email Registered</value>
+  </data>
+  <data name="Register_Error_Communication" xml:space="preserve">
+    <value>Communication error with the registration service. Check your network.</value>
+  </data>
+  <data name="Register_Error_Database" xml:space="preserve">
+    <value>An internal error occurred while saving your data. Try again later.</value>
+  </data>
+  <data name="Register_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred during registration.</value>
+  </data>
+  <data name="Register_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot proceed with registration.</value>
+  </data>
+  <data name="Register_Error_ServerDown" xml:space="preserve">
+    <value>Could not connect to the registration service. The server seems to be down.</value>
+  </data>
+  <data name="Register_Error_Timeout" xml:space="preserve">
+    <value>The registration request timed out. Please try again.</value>
+  </data>
+  <data name="Register_PendingDesc" xml:space="preserve">
+    <value>Your account exists but is not verified. We have resent the code to your email.</value>
+  </data>
+  <data name="Register_PendingTitle" xml:space="preserve">
+    <value>Verification Pending</value>
+  </data>
+  <data name="Register_SuccessDesc" xml:space="preserve">
+    <value>Your account has been created successfully. We sent a verification code to your email.</value>
+  </data>
+  <data name="Register_Title_Error" xml:space="preserve">
+    <value>Registration Error</value>
+  </data>
+  <data name="Register_Title_Info" xml:space="preserve">
+    <value>Account Information</value>
+  </data>
+  <data name="Register_Title_Success" xml:space="preserve">
+    <value>Registration Successful</value>
+  </data>
+  <data name="Register_UserExistsDesc" xml:space="preserve">
+    <value>The username entered is already taken. Please choose another one.</value>
+  </data>
+  <data name="Register_UserExistsTitle" xml:space="preserve">
+    <value>Username Taken</value>
+  </data>
+  <data name="Register_Val_EmptyField" xml:space="preserve">
+    <value>This field is required for registration.</value>
+  </data>
+  <data name="Register_Val_InvalidEmail" xml:space="preserve">
+    <value>Invalid email format.</value>
+  </data>
+  <data name="Register_Val_PassMismatch" xml:space="preserve">
+    <value>The entered passwords do not match.</value>
+  </data>
+  <data name="Register_Val_PassStrength" xml:space="preserve">
+    <value>Password must be 8-50 chars, include at least one uppercase and a symbol or number.</value>
+  </data>
   <data name="RejectButton" xml:space="preserve">
     <value>Reject</value>
   </data>

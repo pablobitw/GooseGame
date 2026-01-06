@@ -7,7 +7,7 @@ using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
-using System.Net.NetworkInformation; 
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -27,32 +27,27 @@ namespace GameServer.Services.Logic
 
         private bool CheckInternetConnection()
         {
+            bool isConnected = false;
             try
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    return false;
-                }
-
-                using (var ping = new Ping())
-                {
-                    var buffer = new byte[32];
-                    var timeout = 2000; 
-                    var options = new PingOptions();
-
-                    var reply = ping.Send("8.8.8.8", timeout, buffer, options);
-                    return reply != null && reply.Status == IPStatus.Success;
-                }
+                isConnected = NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch (NetworkInformationException ex)
+            {
+                Log.Warn("NetworkInformationException checking internet: " + ex.Message);
+                isConnected = true;
             }
             catch (Exception ex)
             {
-                Log.Warn("Falló la verificación de internet (Ping): " + ex.Message);
-                return false;
+                Log.Warn("General error checking internet: " + ex.Message);
+                isConnected = true;
             }
+            return isConnected;
         }
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
         {
+            var result = new GuestLoginResult { Success = false, Message = "DbError" };
             try
             {
                 string guestName;
@@ -87,176 +82,152 @@ namespace GameServer.Services.Logic
                 await _repository.SaveChangesAsync();
 
                 ConnectionManager.AddUser(guestName);
-                Log.InfoFormat("Invitado creado: {0}", guestName);
+                Log.InfoFormat("Guest created: {0}", guestName);
 
-                return new GuestLoginResult
-                {
-                    Success = true,
-                    Username = guestName,
-                    Message = "Bienvenido Invitado"
-                };
+                result.Success = true;
+                result.Username = guestName;
+                result.Message = "GuestLoginSuccess";
             }
             catch (DbUpdateException ex)
             {
-                Log.Error("Error actualizando BD al crear invitado.", ex);
-                return new GuestLoginResult { Success = false, Message = "Error de base de datos." };
+                Log.Error("DbUpdateException creating guest", ex);
+                result.Message = "DbError";
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL crítico al crear invitado.", ex);
-                return new GuestLoginResult { Success = false, Message = "Error de conexión." };
+                Log.Fatal("SqlException creating guest", ex);
+                result.Message = "DbError";
             }
             catch (EntityException ex)
             {
-                Log.Error("Error de Entity Framework al crear invitado.", ex);
-                return new GuestLoginResult { Success = false, Message = "Error interno." };
+                Log.Error("EntityException creating guest", ex);
+                result.Message = "DbError";
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout al crear invitado.", ex);
-                return new GuestLoginResult { Success = false, Message = "Tiempo de espera agotado." };
+                Log.Fatal("General Exception creating guest", ex);
+                result.Message = "DbError";
             }
+            return result;
         }
 
         public async Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request)
         {
-            if (request == null) return RegistrationResult.FatalError;
+            RegistrationResult result = RegistrationResult.FatalError;
 
-            if (!CheckInternetConnection())
+            if (request != null &&
+                !string.IsNullOrWhiteSpace(request.Username) &&
+                !string.IsNullOrWhiteSpace(request.Email) &&
+                !string.IsNullOrWhiteSpace(request.Password))
             {
-                Log.WarnFormat("Intento de registro fallido para usuario '{0}': No hay conexión a internet en el servidor.", request.Username);
-                return RegistrationResult.FatalError;
-            }
-
-            if (string.IsNullOrWhiteSpace(request.Username) ||
-                string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password))
-            {
-                return RegistrationResult.FatalError;
-            }
-
-            if (!IsValidEmail(request.Email))
-            {
-                return RegistrationResult.FatalError;
-            }
-
-            try
-            {
-                var usernameCheck = await CheckUsernameAvailability(request.Username);
-                if (usernameCheck != RegistrationResult.Success)
+                try
                 {
-                    return usernameCheck;
-                }
+                    result = await CheckUsernameAvailability(request.Username);
 
-                var emailCheck = await CheckEmailAvailability(request.Email);
-                if (emailCheck != RegistrationResult.Success)
+                    if (result == RegistrationResult.Success)
+                    {
+                        result = await CheckEmailAvailability(request.Email);
+
+                        if (result == RegistrationResult.Success)
+                        {
+                            result = await CreateNewUser(request);
+                        }
+                    }
+                }
+                catch (SqlException ex)
                 {
-                    return emailCheck;
+                    Log.Fatal("SqlException in RegisterUserAsync", ex);
+                    result = RegistrationResult.FatalError;
                 }
-
-                return await CreateNewUser(request);
-            }
-            catch (DbEntityValidationException ex)
-            {
-                foreach (var err in ex.EntityValidationErrors)
+                catch (EntityException ex)
                 {
-                    Log.WarnFormat("Error validación entidad: {0}", err.Entry.Entity.GetType().Name);
+                    Log.Error("EntityException in RegisterUserAsync", ex);
+                    result = RegistrationResult.FatalError;
                 }
-                return RegistrationResult.FatalError;
+                catch (TimeoutException ex)
+                {
+                    Log.Error("TimeoutException in RegisterUserAsync", ex);
+                    result = RegistrationResult.FatalError;
+                }
+                catch (Exception ex)
+                {
+                    Log.Fatal("General Exception in RegisterUserAsync", ex);
+                    result = RegistrationResult.FatalError;
+                }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.ErrorFormat("Error actualizando base de datos para {0}. Excepcion: {1}", request.Username, ex);
-                return RegistrationResult.FatalError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL crítico en registro.", ex);
-                return RegistrationResult.FatalError;
-            }
-            catch (EntityCommandExecutionException ex)
-            {
-                Log.Error("Error ejecutando comando de entidad en registro.", ex);
-                return RegistrationResult.FatalError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Tiempo de espera agotado en registro.", ex);
-                return RegistrationResult.FatalError;
-            }
-        }
 
-        private static bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
+            return result;
         }
 
         private async Task<RegistrationResult> CheckUsernameAvailability(string username)
         {
+            RegistrationResult result = RegistrationResult.Success;
             var existingPlayer = await _repository.GetPlayerByUsernameAsync(username);
-            if (existingPlayer == null) return RegistrationResult.Success;
 
-            if (existingPlayer.Account != null && existingPlayer.Account.AccountStatus == (int)AccountStatus.Pending)
+            if (existingPlayer != null)
             {
-                return await ResendVerificationForPlayer(existingPlayer);
+                if (existingPlayer.Account != null && existingPlayer.Account.AccountStatus == (int)AccountStatus.Pending)
+                {
+                    result = await ResendVerificationForPlayer(existingPlayer);
+                }
+                else
+                {
+                    result = RegistrationResult.UsernameAlreadyExists;
+                }
             }
-
-            Log.WarnFormat("Registro fallido: Usuario '{0}' ya existe.", username);
-            return RegistrationResult.UsernameAlreadyExists;
+            return result;
         }
 
         private async Task<RegistrationResult> CheckEmailAvailability(string email)
         {
+            RegistrationResult result = RegistrationResult.Success;
             var existingAccount = await _repository.GetAccountByEmailAsync(email);
-            if (existingAccount == null) return RegistrationResult.Success;
 
-            if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
+            if (existingAccount != null)
             {
-                return await ResendVerificationForAccount(existingAccount);
+                if (existingAccount.AccountStatus == (int)AccountStatus.Pending)
+                {
+                    result = await ResendVerificationForAccount(existingAccount);
+                }
+                else
+                {
+                    result = RegistrationResult.EmailAlreadyExists;
+                }
             }
-
-            Log.WarnFormat("Registro fallido: Email '{0}' en uso.", email);
-            return RegistrationResult.EmailAlreadyExists;
+            return result;
         }
 
         private async Task<RegistrationResult> ResendVerificationForPlayer(Player player)
         {
-            if (!CheckInternetConnection()) return RegistrationResult.FatalError;
-
             string newCode = GenerateSecureCode();
             player.Account.VerificationCode = newCode;
             player.Account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
             await _repository.SaveChangesAsync();
-            await EmailHelper.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
+
+            bool emailSent = await EmailHelper.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
+            if (!emailSent) Log.Warn($"Failed to resend verification email to {player.Username}");
 
             return RegistrationResult.EmailPendingVerification;
         }
 
         private async Task<RegistrationResult> ResendVerificationForAccount(Account account)
         {
-            if (!CheckInternetConnection()) return RegistrationResult.FatalError;
-
             string newCode = GenerateSecureCode();
             account.VerificationCode = newCode;
             account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
             await _repository.SaveChangesAsync();
-            await EmailHelper.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
+
+            bool emailSent = await EmailHelper.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
+            if (!emailSent) Log.Warn($"Failed to resend verification email to {account.Email}");
 
             return RegistrationResult.EmailPendingVerification;
         }
 
         private async Task<RegistrationResult> CreateNewUser(RegisterUserRequest request)
         {
+            RegistrationResult result = RegistrationResult.FatalError;
             string verifyCode = GenerateSecureCode();
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -290,28 +261,36 @@ namespace GameServer.Services.Logic
                 _repository.AddPlayer(newPlayer);
                 await _repository.SaveChangesAsync();
 
-                await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
+                bool emailSent = await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
+                if (!emailSent)
+                {
+                    Log.Warn($"User {request.Username} registered, but email failed to send.");
+                }
 
-                return RegistrationResult.Success;
+                result = RegistrationResult.Success;
             }
             catch (DbUpdateException ex)
             {
-                if (ex.InnerException?.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
-                {
-                    if (_repository.IsUsernameTaken(request.Username))
-                    {
-                        return RegistrationResult.UsernameAlreadyExists;
-                    }
-                    return RegistrationResult.EmailAlreadyExists;
-                }
-                Log.Error("Error al guardar usuario en base de datos.", ex);
-                return RegistrationResult.FatalError;
+                Log.Error("DbUpdateException in CreateNewUser", ex);
+                result = RegistrationResult.FatalError;
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("SqlException in CreateNewUser", ex);
+                result = RegistrationResult.FatalError;
+            }
+            catch (DbEntityValidationException ex)
+            {
+                Log.Error("DbEntityValidationException in CreateNewUser", ex);
+                result = RegistrationResult.FatalError;
             }
             catch (Exception ex)
             {
-                Log.Error("Error general al crear usuario o enviar correo.", ex);
-                return RegistrationResult.Success;
+                Log.Fatal("General Exception in CreateNewUser", ex);
+                result = RegistrationResult.FatalError;
             }
+
+            return result;
         }
 
         public async Task<LoginResponseDto> LogInAsync(string usernameOrEmail, string password)
@@ -319,7 +298,7 @@ namespace GameServer.Services.Logic
             var response = new LoginResponseDto
             {
                 IsSuccess = false,
-                Message = "Credenciales inválidas o error de servidor.",
+                Message = "InvalidCredentials",
                 PreferredLanguage = "es-MX"
             };
 
@@ -327,58 +306,53 @@ namespace GameServer.Services.Logic
             {
                 var player = await _repository.GetPlayerForLoginAsync(usernameOrEmail);
 
-                if (player == null)
+                if (player != null)
                 {
-                    return response;
-                }
+                    bool shouldContinue = true;
 
-                if (player.IsBanned)
-                {
-                    response.Message = "Tu cuenta ha sido baneada permanentemente por acumulación de faltas.";
-                    return response;
-                }
+                    if (player.IsBanned)
+                    {
+                        response.Message = "UserBanned";
+                        shouldContinue = false;
+                    }
 
-                if (await _repository.IsAccountSanctionedAsync(player.Account.IdAccount))
-                {
-                    response.Message = "Tu cuenta tiene una sanción temporal activa.";
-                    return response;
-                }
+                    if (shouldContinue && !IsAccountActive(player))
+                    {
+                        response.Message = "AccountInactive";
+                        shouldContinue = false;
+                    }
 
-                if (!IsAccountActive(player))
-                {
-                    Log.WarnFormat("Intento de login en cuenta no activa (Estado: {0}): {1}", player.Account.AccountStatus, player.Username);
-                    response.Message = "Cuenta inactiva o suspendida administrativamente.";
-                    return response;
-                }
+                    if (shouldContinue && ConnectionManager.IsUserOnline(player.Username))
+                    {
+                        response.Message = "UserAlreadyOnline";
+                        shouldContinue = false;
+                    }
 
-                if (ConnectionManager.IsUserOnline(player.Username))
-                {
-                    Log.WarnFormat("Intento de doble login rechazado para: {0}", player.Username);
-                    response.Message = "El usuario ya está conectado.";
-                    return response;
+                    if (shouldContinue)
+                    {
+                        response = await ProcessSuccessfulLogin(player, password, response);
+                    }
                 }
-
-                return await ProcessSuccessfulLogin(player, password, response);
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Login.", ex);
-                response.Message = "Error de base de datos.";
+                Log.Fatal("SqlException in Login", ex);
+                response.Message = "DbError";
             }
             catch (EntityException ex)
             {
-                Log.Error("Error de Entity Framework en Login.", ex);
-                response.Message = "El servidor esta apagado, intentalo mas tarde.";
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error al actualizar datos en Login.", ex);
-                response.Message = "Error al procesar la solicitud.";
+                Log.Error("EntityException in Login", ex);
+                response.Message = "DbError";
             }
             catch (TimeoutException ex)
             {
-                Log.Error("Timeout en Login.", ex);
-                response.Message = "El servidor tardó demasiado en responder.";
+                Log.Error("TimeoutException in Login", ex);
+                response.Message = "DbError";
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("General Exception in Login", ex);
+                response.Message = "DbError";
             }
 
             return response;
@@ -386,50 +360,55 @@ namespace GameServer.Services.Logic
 
         private static bool IsAccountActive(Player player)
         {
-            return player.Account.AccountStatus != (int)AccountStatus.Inactive &&
-                   player.Account.AccountStatus != (int)AccountStatus.Banned;
+            bool isActive = false;
+            if (player.Account != null)
+            {
+                isActive = player.Account.AccountStatus != (int)AccountStatus.Inactive &&
+                           player.Account.AccountStatus != (int)AccountStatus.Banned;
+            }
+            return isActive;
         }
 
         private async Task<LoginResponseDto> ProcessSuccessfulLogin(Player player, string password, LoginResponseDto response)
         {
-            if (!ValidateLoginCredentials(player, password))
+            if (ValidateLoginCredentials(player, password))
             {
-                return response;
+                if (player.GameIdGame != null)
+                {
+                    player.GameIdGame = null;
+                    await _repository.SaveChangesAsync();
+                }
+
+                ConnectionManager.AddUser(player.Username);
+
+                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+
+                response.IsSuccess = true;
+                response.Message = "Success";
+                response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
             }
-
-            if (player.GameIdGame != null)
-            {
-                player.GameIdGame = null;
-                await _repository.SaveChangesAsync();
-            }
-
-            ConnectionManager.AddUser(player.Username);
-
-            _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
-
-            response.IsSuccess = true;
-            response.Message = "Login exitoso.";
-            response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
-
             return response;
         }
 
         private static bool ValidateLoginCredentials(Player player, string password)
         {
-            if (player.Account == null || player.IsGuest) return false;
-
-            return BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash) &&
-                   player.Account.AccountStatus == (int)AccountStatus.Active;
+            bool isValid = false;
+            if (player.Account != null && !player.IsGuest)
+            {
+                isValid = BCrypt.Net.BCrypt.Verify(password, player.Account.PasswordHash) &&
+                          player.Account.AccountStatus == (int)AccountStatus.Active;
+            }
+            return isValid;
         }
 
         public static void Logout(string username)
         {
             ConnectionManager.RemoveUser(username);
-            Log.InfoFormat("Usuario {0} cerró sesión.", username);
         }
 
         public bool VerifyAccount(string email, string code)
         {
+            bool isVerified = false;
             try
             {
                 var account = _repository.GetAccountByEmail(email);
@@ -440,147 +419,121 @@ namespace GameServer.Services.Logic
                     account.CodeExpiration = null;
 
                     _repository.SaveChanges();
-                    Log.InfoFormat("Cuenta verificada: {0}", email);
-                    return true;
+                    isVerified = true;
                 }
-
-                Log.WarnFormat("Fallo verificación para: {0}", email);
-                return false;
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Verificación.", ex);
-                return false;
+                Log.Fatal("SqlException in VerifyAccount", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error Entity Framework en Verificación.", ex);
-                return false;
+                Log.Error("EntityException in VerifyAccount", ex);
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout en Verificación.", ex);
-                return false;
+                Log.Fatal("General Exception in VerifyAccount", ex);
             }
+            return isVerified;
         }
 
         public async Task<bool> RequestPasswordResetAsync(string email)
         {
-            if (!CheckInternetConnection()) return false; 
-
+            bool result = false;
             try
             {
                 var account = await _repository.GetAccountByEmailAsync(email);
-                if (account == null) return true;
+                if (account == null)
+                {
+                    result = true;
+                }
+                else
+                {
+                    string verifyCode = GenerateSecureCode();
+                    account.VerificationCode = verifyCode;
+                    account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
-                string verifyCode = GenerateSecureCode();
-                account.VerificationCode = verifyCode;
-                account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
-
-                await _repository.SaveChangesAsync();
-                return await EmailHelper.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
+                    await _repository.SaveChangesAsync();
+                    result = await EmailHelper.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
+                }
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Reset Password.", ex);
-                return false;
+                Log.Fatal("SqlException in RequestPasswordReset", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error Entity Framework en Reset Password.", ex);
-                return false;
+                Log.Error("EntityException in RequestPasswordReset", ex);
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout en Reset Password.", ex);
-                return false;
+                Log.Fatal("General Exception in RequestPasswordReset", ex);
             }
+            return result;
         }
 
         public bool VerifyRecoveryCode(string email, string code)
         {
+            bool isValid = false;
             try
             {
-                bool isValid = _repository.VerifyRecoveryCode(email, code);
-                if (isValid) Log.InfoFormat("Recovery code verified for: {0}", email);
-                else Log.WarnFormat("Failed recovery code attempt for: {0}", email);
-                return isValid;
+                isValid = _repository.VerifyRecoveryCode(email, code);
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Verificar Código Recuperación.", ex);
-                return false;
+                Log.Fatal("SqlException in VerifyRecoveryCode", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error EF en Verificar Código Recuperación.", ex);
-                return false;
+                Log.Error("EntityException in VerifyRecoveryCode", ex);
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout en Verificar Código Recuperación.", ex);
-                return false;
+                Log.Fatal("General Exception in VerifyRecoveryCode", ex);
             }
+            return isValid;
         }
 
         public bool UpdatePassword(string email, string newPassword)
         {
+            bool isUpdated = false;
             try
             {
                 var player = _repository.GetPlayerForLoginAsync(email).Result;
-
-                if (player == null || player.Account == null)
+                if (player != null && player.Account != null)
                 {
-                    Log.ErrorFormat("Attempt to update password for non-existent user/account: {0}", email);
-                    return false;
+                    var account = player.Account;
+                    if (!BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
+                    {
+                        string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                        account.PasswordHash = newHashedPassword;
+                        account.VerificationCode = null;
+                        account.CodeExpiration = null;
+
+                        _repository.SaveChanges();
+                        _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(email, player.Username, account.PreferredLanguage));
+                        isUpdated = true;
+                    }
                 }
-
-                var account = player.Account;
-
-                if (BCrypt.Net.BCrypt.Verify(newPassword, account.PasswordHash))
-                {
-                    Log.WarnFormat("Intento de reusar contraseña para: {0}", email);
-                    return false;
-                }
-
-                string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                account.PasswordHash = newHashedPassword;
-                account.VerificationCode = null;
-                account.CodeExpiration = null;
-
-                _repository.SaveChanges();
-                Log.InfoFormat("Contraseña actualizada para: {0}", email);
-
-                _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(email, player.Username, account.PreferredLanguage));
-
-                return true;
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Actualizar Password.", ex);
-                return false;
+                Log.Fatal("SqlException in UpdatePassword", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error EF en Actualizar Password.", ex);
-                return false;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en Actualizar Password.", ex);
-                return false;
+                Log.Error("EntityException in UpdatePassword", ex);
             }
             catch (Exception ex)
             {
-                Log.Error("Error general en Actualizar Password.", ex);
-                return false;
+                Log.Fatal("General Exception in UpdatePassword", ex);
             }
+            return isUpdated;
         }
 
         public async Task<bool> ResendVerificationCodeAsync(string email)
         {
-            if (!CheckInternetConnection()) return false; 
-
+            bool result = false;
             try
             {
                 var account = await _repository.GetAccountByEmailAsync(email);
@@ -591,34 +544,22 @@ namespace GameServer.Services.Logic
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
-                    bool emailSent = await EmailHelper.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
-                    if (emailSent)
-                    {
-                        Log.InfoFormat("Verification code resent to {0}.", email);
-                        return true;
-                    }
+                    result = await EmailHelper.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
                 }
-                else
-                {
-                    Log.WarnFormat("Resend code requested for invalid account: {0}", email);
-                }
-                return false;
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL en Reenvío Código.", ex);
-                return false;
+                Log.Fatal("SqlException in ResendVerificationCode", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error EF en Reenvío Código.", ex);
-                return false;
+                Log.Error("EntityException in ResendVerificationCode", ex);
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                Log.Error("Timeout en Reenvío Código.", ex);
-                return false;
+                Log.Fatal("General Exception in ResendVerificationCode", ex);
             }
+            return result;
         }
 
         public async Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword)
@@ -627,78 +568,33 @@ namespace GameServer.Services.Logic
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-
-                if (player == null || player.Account == null)
+                if (player != null && player.Account != null)
                 {
-                    Log.WarnFormat("Intento de cambio de pass para usuario inexistente: {0}", username);
-                    return false;
-                }
+                    if (BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash) &&
+                        currentPassword != newPassword)
+                    {
+                        string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                        player.Account.PasswordHash = newHashedPassword;
 
-                if (!BCrypt.Net.BCrypt.Verify(currentPassword, player.Account.PasswordHash))
-                {
-                    Log.WarnFormat("Usuario {0} intentó cambiar contraseña pero falló la actual.", username);
-                    return false;
+                        await _repository.SaveChangesAsync();
+                        _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+                        result = true;
+                    }
                 }
-
-                if (currentPassword == newPassword)
-                {
-                    Log.WarnFormat("Usuario {0} intentó usar la misma contraseña nueva que la actual.", username);
-                    return false;
-                }
-
-                result = await UpdatePlayerPassword(player, newPassword, username);
             }
             catch (SqlException ex)
             {
-                Log.Fatal("Error SQL crítico al cambiar contraseña.", ex);
+                Log.Fatal("SqlException in ChangeUserPassword", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("Error de infraestructura de Entity Framework al cambiar contraseña.", ex);
+                Log.Error("EntityException in ChangeUserPassword", ex);
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                Log.Error("Error al guardar los cambios de contraseña en la base de datos.", ex);
+                Log.Fatal("General Exception in ChangeUserPassword", ex);
             }
-            catch (DbEntityValidationException ex)
-            {
-                LogValidationErrors(ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Tiempo de espera agotado al cambiar contraseña.", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                Log.Error("Error de argumento inválido durante el proceso de hashing.", ex);
-            }
-
             return result;
-        }
-
-        private async Task<bool> UpdatePlayerPassword(Player player, string newPassword, string username)
-        {
-            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
-            player.Account.PasswordHash = newHashedPassword;
-
-            await _repository.SaveChangesAsync();
-
-            Log.InfoFormat("Usuario {0} cambió su contraseña exitosamente desde el cliente.", username);
-
-            _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
-
-            return true;
-        }
-
-        private static void LogValidationErrors(DbEntityValidationException ex)
-        {
-            foreach (var validationErrors in ex.EntityValidationErrors)
-            {
-                foreach (var validationError in validationErrors.ValidationErrors)
-                {
-                    Log.WarnFormat("Error de validación en entidad: Propiedad: {0} Error: {1}", validationError.PropertyName, validationError.ErrorMessage);
-                }
-            }
         }
 
         private static string GenerateSecureCode()

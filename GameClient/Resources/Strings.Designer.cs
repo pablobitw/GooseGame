@@ -2536,6 +2536,186 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Este correo electrónico ya está asociado a una cuenta. Intenta recuperar tu contraseña..
+        /// </summary>
+        public static string Register_EmailExistsDesc {
+            get {
+                return ResourceManager.GetString("Register_EmailExistsDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Correo Registrado.
+        /// </summary>
+        public static string Register_EmailExistsTitle {
+            get {
+                return ResourceManager.GetString("Register_EmailExistsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación con el servidor de registro. Verifica tu red..
+        /// </summary>
+        public static string Register_Error_Communication {
+            get {
+                return ResourceManager.GetString("Register_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error interno al guardar tus datos. Intenta más tarde..
+        /// </summary>
+        public static string Register_Error_Database {
+            get {
+                return ResourceManager.GetString("Register_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado durante el registro..
+        /// </summary>
+        public static string Register_Error_General {
+            get {
+                return ResourceManager.GetString("Register_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede proceder con el registro..
+        /// </summary>
+        public static string Register_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Register_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar con el servicio de registro. El servidor parece estar apagado..
+        /// </summary>
+        public static string Register_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Register_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La solicitud de registro tardó demasiado. Por favor, inténtalo de nuevo..
+        /// </summary>
+        public static string Register_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Register_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tu cuenta ya existe pero no ha sido verificada. Hemos reenviado el código a tu correo..
+        /// </summary>
+        public static string Register_PendingDesc {
+            get {
+                return ResourceManager.GetString("Register_PendingDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verificación Pendiente.
+        /// </summary>
+        public static string Register_PendingTitle {
+            get {
+                return ResourceManager.GetString("Register_PendingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tu cuenta ha sido creada exitosamente. Hemos enviado un código de verificación a tu correo..
+        /// </summary>
+        public static string Register_SuccessDesc {
+            get {
+                return ResourceManager.GetString("Register_SuccessDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Registro.
+        /// </summary>
+        public static string Register_Title_Error {
+            get {
+                return ResourceManager.GetString("Register_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Información de Cuenta.
+        /// </summary>
+        public static string Register_Title_Info {
+            get {
+                return ResourceManager.GetString("Register_Title_Info", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Registro Exitoso.
+        /// </summary>
+        public static string Register_Title_Success {
+            get {
+                return ResourceManager.GetString("Register_Title_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El nombre de usuario ingresado ya está en uso. Por favor, elige otro..
+        /// </summary>
+        public static string Register_UserExistsDesc {
+            get {
+                return ResourceManager.GetString("Register_UserExistsDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Usuario Ocupado.
+        /// </summary>
+        public static string Register_UserExistsTitle {
+            get {
+                return ResourceManager.GetString("Register_UserExistsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Este campo es obligatorio para el registro..
+        /// </summary>
+        public static string Register_Val_EmptyField {
+            get {
+                return ResourceManager.GetString("Register_Val_EmptyField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El formato del correo no es válido..
+        /// </summary>
+        public static string Register_Val_InvalidEmail {
+            get {
+                return ResourceManager.GetString("Register_Val_InvalidEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Las contraseñas ingresadas no coinciden..
+        /// </summary>
+        public static string Register_Val_PassMismatch {
+            get {
+                return ResourceManager.GetString("Register_Val_PassMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La contraseña debe tener entre 8-50 caracteres, al menos una mayúscula y un símbolo o número..
+        /// </summary>
+        public static string Register_Val_PassStrength {
+            get {
+                return ResourceManager.GetString("Register_Val_PassStrength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Registrarse.
         /// </summary>
         public static string RegisterButtonText {
