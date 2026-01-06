@@ -47,7 +47,7 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    MessageBox.Show(result.ErrorMessage, GameClient.Resources.Strings.ErrorTitle);
+                    HandleLobbyError(result.ErrorType, result.ErrorMessage);
                 }
             }
             catch (TimeoutException)
@@ -70,6 +70,36 @@ namespace GameClient.Views
             {
                 JoinButton.IsEnabled = true;
             }
+        }
+
+        private void HandleLobbyError(LobbyErrorType errorType, string fallbackMessage)
+        {
+            string message = fallbackMessage;
+            string title = GameClient.Resources.Strings.ErrorTitle;
+
+            switch (errorType)
+            {
+                case LobbyErrorType.DatabaseError:
+                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                    break;
+                case LobbyErrorType.ServerTimeout:
+                    message = GameClient.Resources.Strings.SafeZone_ServerTimeout;
+                    break;
+                case LobbyErrorType.GameFull:
+                    message = "La sala está llena.";
+                    break;
+                case LobbyErrorType.GameStarted:
+                    message = "La partida ya ha comenzado.";
+                    break;
+                case LobbyErrorType.GameNotFound:
+                    message = "No se encontró una partida con ese código.";
+                    break;
+                case LobbyErrorType.PlayerAlreadyInGame:
+                    message = "El sistema indica que ya estás en una partida activa.";
+                    break;
+            }
+
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

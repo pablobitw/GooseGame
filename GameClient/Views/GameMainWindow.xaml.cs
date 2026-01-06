@@ -1,4 +1,5 @@
-﻿using GameClient.GameplayServiceReference;
+﻿using FontAwesome.WPF;
+using GameClient.GameplayServiceReference;
 using GameClient.GameServiceReference;
 using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
@@ -39,7 +40,7 @@ namespace GameClient
             AudioManager.PlayRandomMusic(AudioManager.MenuTracks);
         }
 
-        private void ShowOverlayDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        private void ShowOverlayDialog(string title, string message, FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
         {
             DialogTitle.Text = title;
             DialogMessage.Text = message;
@@ -50,6 +51,47 @@ namespace GameClient
             DialogCancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
             _onDialogConfirmAction = onConfirm;
             CustomDialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void HandleLobbyErrorWithOverlay(LobbyErrorType errorType, string fallbackMessage)
+        {
+            string message = fallbackMessage;
+            string title = GameClient.Resources.Strings.DialogErrorTitle;
+            FontAwesomeIcon icon = FontAwesomeIcon.TimesCircle;
+
+            switch (errorType)
+            {
+                case LobbyErrorType.DatabaseError:
+                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                    icon = FontAwesomeIcon.Database;
+                    break;
+                case LobbyErrorType.ServerTimeout:
+                    message = GameClient.Resources.Strings.SafeZone_ServerTimeout;
+                    icon = FontAwesomeIcon.ClockOutline;
+                    break;
+                case LobbyErrorType.GameFull:
+                    message = "La sala está llena.";
+                    icon = FontAwesomeIcon.Users;
+                    break;
+                case LobbyErrorType.GameStarted:
+                    message = "La partida ya ha comenzado.";
+                    icon = FontAwesomeIcon.PlayCircle;
+                    break;
+                case LobbyErrorType.GameNotFound:
+                    message = "La partida de la invitación ya no existe.";
+                    icon = FontAwesomeIcon.Search;
+                    break;
+                case LobbyErrorType.PlayerAlreadyInGame:
+                    message = "Ya te encuentras en una partida activa.";
+                    icon = FontAwesomeIcon.ExclamationTriangle;
+                    break;
+                case LobbyErrorType.GuestNotAllowed:
+                    message = "Acción no permitida para invitados.";
+                    icon = FontAwesomeIcon.UserSecret;
+                    break;
+            }
+
+            ShowOverlayDialog(title, message, icon);
         }
 
         private void DialogButton_Click(object sender, RoutedEventArgs e)
@@ -76,7 +118,7 @@ namespace GameClient
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.KickedTitle,
                     string.Format(GameClient.Resources.Strings.KickedGlobalMsg, reason),
-                    FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle,
+                    FontAwesomeIcon.ExclamationTriangle,
                     false,
                     () => _ = ShowMainMenu()
                 );
@@ -122,7 +164,7 @@ namespace GameClient
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.GuestRestrictedTitle,
                     message,
-                    FontAwesome.WPF.FontAwesomeIcon.UserSecret,
+                    FontAwesomeIcon.UserSecret,
                     true,
                     () => ReturnToRegister()
                 );
@@ -220,7 +262,7 @@ namespace GameClient
             ShowOverlayDialog(
                 GameClient.Resources.Strings.DialogConfirmTitle,
                 GameClient.Resources.Strings.ConfirmExitLabel,
-                FontAwesome.WPF.FontAwesomeIcon.SignOut,
+                FontAwesomeIcon.SignOut,
                 true,
                 () => this.Close()
             );
@@ -231,7 +273,7 @@ namespace GameClient
             ShowOverlayDialog(
                 GameClient.Resources.Strings.ShopPendingTitle,
                 GameClient.Resources.Strings.ShopPendingMsg,
-                FontAwesome.WPF.FontAwesomeIcon.ShoppingBag
+                FontAwesomeIcon.ShoppingBag
             );
         }
 
@@ -275,7 +317,7 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-           
+
             finally
             {
                 if (Application.Current.Windows.Count == 0)
@@ -313,7 +355,7 @@ namespace GameClient
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.InvitationTitle,
                     string.Format(GameClient.Resources.Strings.InvitationMessage, host),
-                    FontAwesome.WPF.FontAwesomeIcon.Gamepad,
+                    FontAwesomeIcon.Gamepad,
                     true,
                     async () => await AttemptJoinLobbyAsync(code)
                 );
@@ -340,11 +382,7 @@ namespace GameClient
                 }
                 else
                 {
-                    ShowOverlayDialog(
-                        GameClient.Resources.Strings.DialogErrorTitle,
-                        string.Format(GameClient.Resources.Strings.ErrorJoinLobby, joinResult.ErrorMessage),
-                        FontAwesome.WPF.FontAwesomeIcon.TimesCircle
-                    );
+                    HandleLobbyErrorWithOverlay(joinResult.ErrorType, joinResult.ErrorMessage);
                 }
             }
             catch (CommunicationException)
@@ -352,14 +390,14 @@ namespace GameClient
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
                     GameClient.Resources.Strings.ErrorInviteComm,
-                    FontAwesome.WPF.FontAwesomeIcon.Wifi);
+                    FontAwesomeIcon.Wifi);
             }
             catch (TimeoutException)
             {
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
                     GameClient.Resources.Strings.ErrorInviteTimeout,
-                    FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
+                    FontAwesomeIcon.ClockOutline);
             }
         }
 

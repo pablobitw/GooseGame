@@ -492,6 +492,9 @@
     <None Include="Connected Services\LobbyServiceReference\GameServer.DTOs.Lobby.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\LobbyServiceReference\GameServer.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\LobbyServiceReference\service.wsdl" />
     <None Include="Connected Services\LobbyServiceReference\service.xsd">
       <SubType>Designer</SubType>

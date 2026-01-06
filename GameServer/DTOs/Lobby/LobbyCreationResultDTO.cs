@@ -7,9 +7,14 @@ namespace GameServer.DTOs.Lobby
     {
         [DataMember]
         public bool Success { get; set; }
+
         [DataMember]
         public string LobbyCode { get; set; }
+
         [DataMember]
         public string ErrorMessage { get; set; }
+
+        [DataMember]
+        public LobbyErrorType ErrorType { get; set; } 
     }
 }

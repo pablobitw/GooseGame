@@ -114,7 +114,7 @@ namespace GameClient.Views
                     }
                     else
                     {
-                        MessageBox.Show(result.ErrorMessage, GameClient.Resources.Strings.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                        HandleLobbyError(result.ErrorType, result.ErrorMessage);
                         await LoadMatchesAsync();
                     }
                 }
@@ -141,6 +141,36 @@ namespace GameClient.Views
             }
         }
 
+        private void HandleLobbyError(LobbyErrorType errorType, string fallbackMessage)
+        {
+            string message = fallbackMessage;
+            string title = GameClient.Resources.Strings.ErrorTitle;
+
+            switch (errorType)
+            {
+                case LobbyErrorType.DatabaseError:
+                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                    break;
+                case LobbyErrorType.ServerTimeout:
+                    message = GameClient.Resources.Strings.SafeZone_ServerTimeout;
+                    break;
+                case LobbyErrorType.GameFull:
+                    message = "La sala está llena.";
+                    break;
+                case LobbyErrorType.GameStarted:
+                    message = "La partida ya ha comenzado.";
+                    break;
+                case LobbyErrorType.GameNotFound:
+                    message = "La partida ya no existe.";
+                    break;
+                case LobbyErrorType.PlayerAlreadyInGame:
+                    message = "El sistema indica que ya estás en partida.";
+                    break;
+            }
+
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (NavigationService.CanGoBack)
@@ -149,5 +179,4 @@ namespace GameClient.Views
             }
         }
     }
-  
 }

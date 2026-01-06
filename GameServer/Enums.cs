@@ -58,5 +58,19 @@ namespace GameServer
         TikTok = 4,
         Instagram = 5
     }
+    public enum LobbyErrorType
+    {
+        None,               
+        Unknown,           
+        DatabaseError,      
+        ServerTimeout,      
+        InvalidData,       
+        UserNotFound,      
+        GuestNotAllowed,   
+        PlayerAlreadyInGame,
+        GameNotFound,       
+        GameStarted,       
+        GameFull            
+    }
 
 }

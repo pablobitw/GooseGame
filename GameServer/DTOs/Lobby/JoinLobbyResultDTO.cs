@@ -8,6 +8,10 @@ namespace GameServer.DTOs.Lobby
     {
         [DataMember] public bool Success { get; set; }
         [DataMember] public string ErrorMessage { get; set; }
+
+        [DataMember]
+        public LobbyErrorType ErrorType { get; set; } 
+
         [DataMember] public int BoardId { get; set; }
         [DataMember] public int MaxPlayers { get; set; }
         [DataMember] public bool IsHost { get; set; }

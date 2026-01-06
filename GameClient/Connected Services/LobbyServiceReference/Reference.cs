@@ -164,6 +164,9 @@ namespace GameClient.LobbyServiceReference {
         private string ErrorMessageField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.LobbyServiceReference.LobbyErrorType ErrorTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string LobbyCodeField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -188,6 +191,19 @@ namespace GameClient.LobbyServiceReference {
                 if ((object.ReferenceEquals(this.ErrorMessageField, value) != true)) {
                     this.ErrorMessageField = value;
                     this.RaisePropertyChanged("ErrorMessage");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.LobbyServiceReference.LobbyErrorType ErrorType {
+            get {
+                return this.ErrorTypeField;
+            }
+            set {
+                if ((this.ErrorTypeField.Equals(value) != true)) {
+                    this.ErrorTypeField = value;
+                    this.RaisePropertyChanged("ErrorType");
                 }
             }
         }
@@ -226,6 +242,44 @@ namespace GameClient.LobbyServiceReference {
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LobbyErrorType", Namespace="http://schemas.datacontract.org/2004/07/GameServer")]
+    public enum LobbyErrorType : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        None = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Unknown = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        DatabaseError = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        ServerTimeout = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        InvalidData = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        UserNotFound = 5,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GuestNotAllowed = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        PlayerAlreadyInGame = 7,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GameNotFound = 8,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GameStarted = 9,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        GameFull = 10,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -305,6 +359,9 @@ namespace GameClient.LobbyServiceReference {
         private string ErrorMessageField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private GameClient.LobbyServiceReference.LobbyErrorType ErrorTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool IsHostField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -351,6 +408,19 @@ namespace GameClient.LobbyServiceReference {
                 if ((object.ReferenceEquals(this.ErrorMessageField, value) != true)) {
                     this.ErrorMessageField = value;
                     this.RaisePropertyChanged("ErrorMessage");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public GameClient.LobbyServiceReference.LobbyErrorType ErrorType {
+            get {
+                return this.ErrorTypeField;
+            }
+            set {
+                if ((this.ErrorTypeField.Equals(value) != true)) {
+                    this.ErrorTypeField = value;
+                    this.RaisePropertyChanged("ErrorType");
                 }
             }
         }

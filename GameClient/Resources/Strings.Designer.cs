@@ -1249,6 +1249,96 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación. Se ha perdido la conexión con el Lobby..
+        /// </summary>
+        public static string Error_Communication {
+            get {
+                return ResourceManager.GetString("Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Lo sentimos, la base de datos esta apagada o en mantenimiento.
+        /// </summary>
+        public static string Error_Database {
+            get {
+                return ResourceManager.GetString("Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has sido expulsado de la sala..
+        /// </summary>
+        public static string Error_Kicked {
+            get {
+                return ResourceManager.GetString("Error_Kicked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La sala está llena..
+        /// </summary>
+        public static string Error_LobbyFull {
+            get {
+                return ResourceManager.GetString("Error_LobbyFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La sala no existe o ha expirado..
+        /// </summary>
+        public static string Error_LobbyNotFound {
+            get {
+                return ResourceManager.GetString("Error_LobbyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a Internet..
+        /// </summary>
+        public static string Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar con el servidor. Verifique si está encendido..
+        /// </summary>
+        public static string Error_ServerNotFound {
+            get {
+                return ResourceManager.GetString("Error_ServerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La operación tardó demasiado. Intente nuevamente..
+        /// </summary>
+        public static string Error_ServerTimeout {
+            get {
+                return ResourceManager.GetString("Error_ServerTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
+        /// </summary>
+        public static string Error_Unknown {
+            get {
+                return ResourceManager.GetString("Error_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El usuario ya está en una partida..
+        /// </summary>
+        public static string Error_UserInGame {
+            get {
+                return ResourceManager.GetString("Error_UserInGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se pudo conectar con el servidor de autenticación. Verifica tu conexión a internet..
         /// </summary>
         public static string ErrorAuthConnection {

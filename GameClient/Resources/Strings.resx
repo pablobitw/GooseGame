@@ -696,6 +696,36 @@
   <data name="ErrorUsernameTooLong" xml:space="preserve">
     <value>El nombre de usuario es demasiado largo.</value>
   </data>
+  <data name="Error_Communication" xml:space="preserve">
+    <value>Error de comunicación. Se ha perdido la conexión con el Lobby.</value>
+  </data>
+  <data name="Error_Database" xml:space="preserve">
+    <value>Lo sentimos, la base de datos esta apagada o en mantenimiento</value>
+  </data>
+  <data name="Error_Kicked" xml:space="preserve">
+    <value>Has sido expulsado de la sala.</value>
+  </data>
+  <data name="Error_LobbyFull" xml:space="preserve">
+    <value>La sala está llena.</value>
+  </data>
+  <data name="Error_LobbyNotFound" xml:space="preserve">
+    <value>La sala no existe o ha expirado.</value>
+  </data>
+  <data name="Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a Internet.</value>
+  </data>
+  <data name="Error_ServerNotFound" xml:space="preserve">
+    <value>No se pudo conectar con el servidor. Verifique si está encendido.</value>
+  </data>
+  <data name="Error_ServerTimeout" xml:space="preserve">
+    <value>La operación tardó demasiado. Intente nuevamente.</value>
+  </data>
+  <data name="Error_Unknown" xml:space="preserve">
+    <value>Ocurrió un error inesperado.</value>
+  </data>
+  <data name="Error_UserInGame" xml:space="preserve">
+    <value>El usuario ya está en una partida.</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
   </data>

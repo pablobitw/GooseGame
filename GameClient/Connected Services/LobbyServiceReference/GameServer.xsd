@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/GameServer" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/GameServer" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="LobbyErrorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None" />
+      <xs:enumeration value="Unknown" />
+      <xs:enumeration value="DatabaseError" />
+      <xs:enumeration value="ServerTimeout" />
+      <xs:enumeration value="InvalidData" />
+      <xs:enumeration value="UserNotFound" />
+      <xs:enumeration value="GuestNotAllowed" />
+      <xs:enumeration value="PlayerAlreadyInGame" />
+      <xs:enumeration value="GameNotFound" />
+      <xs:enumeration value="GameStarted" />
+      <xs:enumeration value="GameFull" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="LobbyErrorType" nillable="true" type="tns:LobbyErrorType" />
+</xs:schema>

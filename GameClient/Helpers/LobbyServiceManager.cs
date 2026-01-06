@@ -2,7 +2,6 @@
 using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace GameClient.Helpers
 {
@@ -48,6 +47,14 @@ namespace GameClient.Helpers
         public void Initialize(string username)
         {
             _currentUsername = username;
+            InitializeProxy();
+        }
+
+        private void InitializeProxy()
+        {
+            if (_client != null && _client.State == CommunicationState.Opened)
+                return;
+
             CloseClient();
 
             try
@@ -57,58 +64,29 @@ namespace GameClient.Helpers
             }
             catch (Exception)
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.SafeZone_DatabaseError,
-                    GameClient.Resources.Strings.DialogErrorTitle,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                _client = null;
             }
         }
 
-        public LobbyServiceClient GetClient()
+        private LobbyServiceClient GetClient()
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(LobbyServiceManager));
+            if (_disposed) throw new ObjectDisposedException(nameof(LobbyServiceManager));
 
-            if (_client == null ||
-                _client.State == CommunicationState.Closed ||
-                _client.State == CommunicationState.Faulted)
-            {
-                Initialize(_currentUsername);
-            }
+            InitializeProxy();
+
+            if (_client == null)
+                throw new CommunicationException("No se pudo inicializar el cliente WCF.");
 
             return _client;
         }
 
-        public void OnPlayerKicked(string reason)
-        {
-            PlayerKicked?.Invoke(reason);
-        }
+        public void OnPlayerKicked(string reason) => PlayerKicked?.Invoke(reason);
+        public void OnPlayerJoined(PlayerLobbyDto player) => PlayerJoined?.Invoke(player);
+        public void OnPlayerLeft(string username) => PlayerLeft?.Invoke(username);
+        public void OnGameStarted() => GameStarted?.Invoke();
+        public void OnLobbyDisbanded() => LobbyDisbanded?.Invoke();
+        public void OnLobbyMessageReceived(string username, string message) => MessageReceived?.Invoke(username, message);
 
-        public void OnPlayerJoined(PlayerLobbyDto player)
-        {
-            PlayerJoined?.Invoke(player);
-        }
-
-        public void OnPlayerLeft(string username)
-        {
-            PlayerLeft?.Invoke(username);
-        }
-
-        public void OnGameStarted()
-        {
-            GameStarted?.Invoke();
-        }
-
-        public void OnLobbyDisbanded()
-        {
-            LobbyDisbanded?.Invoke();
-        }
-
-        public void OnLobbyMessageReceived(string username, string message)
-        {
-            MessageReceived?.Invoke(username, message);
-        }
 
         public Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
@@ -160,22 +138,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw; 
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout);
+                throw;
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw new CommunicationException(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                throw;
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw;
             }
         }
 
@@ -189,22 +167,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw;
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout);
+                throw;
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw new CommunicationException(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                throw;
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw new InvalidOperationException(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw;
             }
         }
 
@@ -217,7 +195,6 @@ namespace GameClient.Helpers
         private void CloseClient()
         {
             if (_client == null) return;
-
             try
             {
                 if (_client.State == CommunicationState.Opened)
@@ -234,7 +211,6 @@ namespace GameClient.Helpers
         public void Dispose()
         {
             if (_disposed) return;
-
             CloseClient();
             _disposed = true;
             GC.SuppressFinalize(this);
