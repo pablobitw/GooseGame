@@ -47,12 +47,10 @@ namespace GameServer.Services.Logic
                         Log.InfoFormat("[SanctionHub] Jugador {0} BANEADO por acumulación de faltas.", username);
                     }
 
-                    // CORRECCIÓN: Usamos .HasValue y .Value para manejar el tipo int?
                     if (player.Account_IdAccount.HasValue && player.Account_IdAccount.Value != 0)
                     {
                         var game = await _repository.GetGameByLobbyCodeAsync(lobbyCode);
 
-                        // CORRECCIÓN: Casting explícito o valor por defecto para gameId
                         int gameId = 0;
                         if (game != null)
                         {

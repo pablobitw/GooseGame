@@ -82,21 +82,46 @@ namespace GameClient.Views
                 var profile = await client.GetUserProfileAsync(userEmail);
                 if (profile == null)
                 {
-                    ShowErrorMessage(GameClient.Resources.Strings.ProfileLoadError);
+                    ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Database);
                     return;
                 }
                 UpdateProfileUI(profile);
                 LoadAvatar(profile.AvatarPath);
             }
+            catch (EndpointNotFoundException)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
+            }
+            catch (TimeoutException)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout);
+            }
+            catch (FaultException)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Database);
+            }
+            catch (CommunicationException)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Login_Error_Communication);
+            }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error loading profile: " + ex.Message);
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_General + "\n" + ex.Message);
             }
             finally
+            {
+                CloseClient(client);
+            }
+        }
+
+        private static void CloseClient(UserProfileServiceClient client)
+        {
+            try
             {
                 if (client.State == CommunicationState.Opened) client.Close();
                 else client.Abort();
             }
+            catch (Exception) { client.Abort(); }
         }
 
         private void UpdateProfileUI(UserProfileDto profile)
@@ -124,7 +149,7 @@ namespace GameClient.Views
             UsernameInfoLabel.Visibility = Visibility.Visible;
             if (changeCount >= MaxUsernameChanges)
             {
-                UsernameInfoLabel.Text = GameClient.Resources.Strings.LimitReachedMessage;
+                UsernameInfoLabel.Text = GameClient.Resources.Strings.Profile_User_Limit;
                 UsernameInfoLabel.Foreground = Brushes.Red;
                 ChangeUsernameButton.IsEnabled = false;
             }
@@ -175,7 +200,7 @@ namespace GameClient.Views
         {
             if (_socialLinks.Count >= 3)
             {
-                ShowCustomDialog(GameClient.Resources.Strings.SocialLimitTitle, GameClient.Resources.Strings.SocialLimitMessage, FontAwesome.WPF.FontAwesomeIcon.InfoCircle);
+                ShowCustomDialog(GameClient.Resources.Strings.SocialLimitTitle, GameClient.Resources.Strings.Profile_Social_Limit, FontAwesome.WPF.FontAwesomeIcon.InfoCircle);
                 return;
             }
             AddLinkPopup.Reset();
@@ -193,7 +218,7 @@ namespace GameClient.Views
                 string error = await client.AddSocialLinkAsync(userEmail, url);
                 if (error == null)
                 {
-                    ShowSuccessMessage(GameClient.Resources.Strings.LinkAddedSuccess);
+                    ShowSuccessMessage(GameClient.Resources.Strings.Profile_Social_Added);
                     await LoadUserProfile();
                 }
                 else
@@ -201,14 +226,15 @@ namespace GameClient.Views
                     ShowCustomDialog(GameClient.Resources.Strings.DialogWarningTitle, error, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
                 }
             }
+            catch (EndpointNotFoundException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown); }
+            catch (TimeoutException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); }
             catch (Exception ex)
             {
                 ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle + ": " + ex.Message);
             }
             finally
             {
-                if (client.State == CommunicationState.Opened) client.Close();
-                else client.Abort();
+                CloseClient(client);
             }
         }
 
@@ -216,7 +242,7 @@ namespace GameClient.Views
         {
             if (sender is Button btn && btn.Tag is string urlToRemove)
             {
-                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.DeleteLinkConfirm, FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, true, async () =>
+                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.Profile_Social_Delete, FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, true, async () =>
                 {
                     var client = new UserProfileServiceClient();
                     try
@@ -225,11 +251,11 @@ namespace GameClient.Views
                         if (success) await LoadUserProfile();
                         else ShowErrorMessage(GameClient.Resources.Strings.LinkDeleteError);
                     }
+                    catch (EndpointNotFoundException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown); }
                     catch (Exception ex) { ShowErrorMessage("Error: " + ex.Message); }
                     finally
                     {
-                        if (client.State == CommunicationState.Opened) client.Close();
-                        else client.Abort();
+                        CloseClient(client);
                     }
                 });
             }
@@ -257,7 +283,7 @@ namespace GameClient.Views
         private void DeactivateDialog_AccountDeactivated(object sender, EventArgs e)
         {
             DeactivateDialog.Visibility = Visibility.Collapsed;
-            ShowCustomDialog(GameClient.Resources.Strings.DeactivatedSuccessTitle, GameClient.Resources.Strings.DeactivatedSuccessMsg, FontAwesome.WPF.FontAwesomeIcon.SignOut, false, () =>
+            ShowCustomDialog(GameClient.Resources.Strings.DeactivatedSuccessTitle, GameClient.Resources.Strings.Profile_Deactivate_Success, FontAwesome.WPF.FontAwesomeIcon.SignOut, false, () =>
             {
                 var authWindow = new AuthWindow();
                 authWindow.Show();

@@ -115,6 +115,168 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al crear sesión de invitado..
+        /// </summary>
+        public static string Auth_Error_Communication {
+            get {
+                return ResourceManager.GetString("Auth_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde..
+        /// </summary>
+        public static string Auth_Error_Database {
+            get {
+                return ResourceManager.GetString("Auth_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al entrar como invitado..
+        /// </summary>
+        public static string Auth_Error_General {
+            get {
+                return ResourceManager.GetString("Auth_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No puedes entrar como invitado..
+        /// </summary>
+        public static string Auth_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Auth_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor no responde. No es posible crear una sesión de invitado..
+        /// </summary>
+        public static string Auth_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Auth_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La solicitud de invitado tardó demasiado. Inténtalo de nuevo..
+        /// </summary>
+        public static string Auth_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Auth_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Autenticación.
+        /// </summary>
+        public static string Auth_Title_Error {
+            get {
+                return ResourceManager.GetString("Auth_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡Bienvenido!.
+        /// </summary>
+        public static string Auth_Title_Welcome {
+            get {
+                return ResourceManager.GetString("Auth_Title_Welcome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al guardar la imagen..
+        /// </summary>
+        public static string Avatar_Error_Communication {
+            get {
+                return ResourceManager.GetString("Avatar_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento..
+        /// </summary>
+        public static string Avatar_Error_Database {
+            get {
+                return ResourceManager.GetString("Avatar_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
+        /// </summary>
+        public static string Avatar_Error_General {
+            get {
+                return ResourceManager.GetString("Avatar_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar los archivos de avatar locales..
+        /// </summary>
+        public static string Avatar_Error_LoadFiles {
+            get {
+                return ResourceManager.GetString("Avatar_Error_LoadFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede guardar el avatar..
+        /// </summary>
+        public static string Avatar_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Avatar_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor de perfiles no responde. Intenta más tarde..
+        /// </summary>
+        public static string Avatar_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Avatar_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El guardado del avatar tardó demasiado..
+        /// </summary>
+        public static string Avatar_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Avatar_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo actualizar el avatar en el servidor..
+        /// </summary>
+        public static string Avatar_Error_UpdateFailed {
+            get {
+                return ResourceManager.GetString("Avatar_Error_UpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al Guardar Avatar.
+        /// </summary>
+        public static string Avatar_Title_Error {
+            get {
+                return ResourceManager.GetString("Avatar_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Avatar Actualizado.
+        /// </summary>
+        public static string Avatar_Title_Success {
+            get {
+                return ResourceManager.GetString("Avatar_Title_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a [UI Critical] Falló la carga del avatar por defecto: {0}.
         /// </summary>
         public static string AvatarErrorFallback {
@@ -273,6 +435,123 @@ namespace GameClient.Resources {
         public static string ChangesLeftMessage {
             get {
                 return ResourceManager.GetString("ChangesLeftMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El código ingresado es incorrecto o ha expirado..
+        /// </summary>
+        public static string ChangeUser_Error_Code {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al procesar el cambio..
+        /// </summary>
+        public static string ChangeUser_Error_Communication {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento..
+        /// </summary>
+        public static string ChangeUser_Error_Database {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Este nombre de usuario ya está ocupado..
+        /// </summary>
+        public static string ChangeUser_Error_Exists {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Exists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
+        /// </summary>
+        public static string ChangeUser_Error_General {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has alcanzado el límite de cambios de nombre..
+        /// </summary>
+        public static string ChangeUser_Error_Limit {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Limit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede enviar el código..
+        /// </summary>
+        public static string ChangeUser_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor de perfiles no responde. Intenta más tarde..
+        /// </summary>
+        public static string ChangeUser_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El envío del código tardó demasiado..
+        /// </summary>
+        public static string ChangeUser_Error_Timeout {
+            get {
+                return ResourceManager.GetString("ChangeUser_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Se ha enviado un nuevo código a tu correo..
+        /// </summary>
+        public static string ChangeUser_Info_CodeSent {
+            get {
+                return ResourceManager.GetString("ChangeUser_Info_CodeSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tu nombre de usuario ha sido actualizado correctamente..
+        /// </summary>
+        public static string ChangeUser_Success_Msg {
+            get {
+                return ResourceManager.GetString("ChangeUser_Success_Msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al Cambiar Usuario.
+        /// </summary>
+        public static string ChangeUser_Title_Error {
+            get {
+                return ResourceManager.GetString("ChangeUser_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Usuario Cambiado.
+        /// </summary>
+        public static string ChangeUser_Title_Success {
+            get {
+                return ResourceManager.GetString("ChangeUser_Title_Success", resourceCulture);
             }
         }
         
@@ -570,6 +849,60 @@ namespace GameClient.Resources {
         public static string CreditsVersion {
             get {
                 return ResourceManager.GetString("CreditsVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al desactivar..
+        /// </summary>
+        public static string Deactivate_Error_Communication {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento..
+        /// </summary>
+        public static string Deactivate_Error_Database {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al desactivar..
+        /// </summary>
+        public static string Deactivate_Error_General {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede desactivar la cuenta..
+        /// </summary>
+        public static string Deactivate_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor no responde. Intenta más tarde..
+        /// </summary>
+        public static string Deactivate_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La solicitud tardó demasiado..
+        /// </summary>
+        public static string Deactivate_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Deactivate_Error_Timeout", resourceCulture);
             }
         }
         
@@ -2203,6 +2536,114 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El usuario ya tiene una sesión activa en otro dispositivo..
+        /// </summary>
+        public static string Login_Error_AlreadyOnline {
+            get {
+                return ResourceManager.GetString("Login_Error_AlreadyOnline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Esta cuenta ha sido suspendida permanentemente..
+        /// </summary>
+        public static string Login_Error_Banned {
+            get {
+                return ResourceManager.GetString("Login_Error_Banned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al validar credenciales..
+        /// </summary>
+        public static string Login_Error_Communication {
+            get {
+                return ResourceManager.GetString("Login_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Credenciales inválidas. Verifica tu usuario y contraseña..
+        /// </summary>
+        public static string Login_Error_Credentials {
+            get {
+                return ResourceManager.GetString("Login_Error_Credentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde..
+        /// </summary>
+        public static string Login_Error_Database {
+            get {
+                return ResourceManager.GetString("Login_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al intentar entrar..
+        /// </summary>
+        public static string Login_Error_General {
+            get {
+                return ResourceManager.GetString("Login_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cuenta inactiva. Verifica tu correo antes de iniciar sesión..
+        /// </summary>
+        public static string Login_Error_Inactive {
+            get {
+                return ResourceManager.GetString("Login_Error_Inactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede iniciar sesión..
+        /// </summary>
+        public static string Login_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Login_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor de Login no responde. Verifica que el servidor esté encendido..
+        /// </summary>
+        public static string Login_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Login_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El inicio de sesión tardó demasiado. Por favor, intenta de nuevo..
+        /// </summary>
+        public static string Login_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Login_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Inicio de Sesión.
+        /// </summary>
+        public static string Login_Title_Error {
+            get {
+                return ResourceManager.GetString("Login_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Debes llenar este campo para continuar..
+        /// </summary>
+        public static string Login_Val_EmptyField {
+            get {
+                return ResourceManager.GetString("Login_Val_EmptyField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Iniciar Sesion.
         /// </summary>
         public static string LoginButton {
@@ -2482,6 +2923,96 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Tu cuenta ha sido desactivada correctamente..
+        /// </summary>
+        public static string Profile_Deactivate_Success {
+            get {
+                return ResourceManager.GetString("Profile_Deactivate_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento..
+        /// </summary>
+        public static string Profile_Error_Database {
+            get {
+                return ResourceManager.GetString("Profile_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al cargar el perfil..
+        /// </summary>
+        public static string Profile_Error_General {
+            get {
+                return ResourceManager.GetString("Profile_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo cargar tu perfil. Revisa tu conexión..
+        /// </summary>
+        public static string Profile_Error_Load {
+            get {
+                return ResourceManager.GetString("Profile_Error_Load", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor de perfiles no responde..
+        /// </summary>
+        public static string Profile_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Profile_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La carga del perfil tardó demasiado..
+        /// </summary>
+        public static string Profile_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Profile_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Red social agregada correctamente..
+        /// </summary>
+        public static string Profile_Social_Added {
+            get {
+                return ResourceManager.GetString("Profile_Social_Added", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¿Estás seguro de eliminar este enlace?.
+        /// </summary>
+        public static string Profile_Social_Delete {
+            get {
+                return ResourceManager.GetString("Profile_Social_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has alcanzado el límite de 3 redes sociales..
+        /// </summary>
+        public static string Profile_Social_Limit {
+            get {
+                return ResourceManager.GetString("Profile_Social_Limit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has alcanzado el límite de cambios de nombre..
+        /// </summary>
+        public static string Profile_User_Limit {
+            get {
+                return ResourceManager.GetString("Profile_User_Limit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Perfil de Usuario.
         /// </summary>
         public static string ProfileFeatureName {
@@ -2563,7 +3094,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Ocurrió un error interno al guardar tus datos. Intenta más tarde..
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde..
         /// </summary>
         public static string Register_Error_Database {
             get {
@@ -2838,6 +3369,96 @@ namespace GameClient.Resources {
         public static string ResendCodeButton {
             get {
                 return ResourceManager.GetString("ResendCodeButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al procesar el cambio..
+        /// </summary>
+        public static string ResetPass_Error_Communication {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La contraseña actual ingresada es incorrecta..
+        /// </summary>
+        public static string ResetPass_Error_CurrentIncorrect {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_CurrentIncorrect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. El sistema está apagado o en mantenimiento..
+        /// </summary>
+        public static string ResetPass_Error_Database {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado al cambiar la contraseña..
+        /// </summary>
+        public static string ResetPass_Error_General {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet. No se puede cambiar la contraseña..
+        /// </summary>
+        public static string ResetPass_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor no responde. Intenta más tarde..
+        /// </summary>
+        public static string ResetPass_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El cambio de contraseña tardó demasiado..
+        /// </summary>
+        public static string ResetPass_Error_Timeout {
+            get {
+                return ResourceManager.GetString("ResetPass_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tu contraseña ha sido cambiada exitosamente..
+        /// </summary>
+        public static string ResetPass_Success_Msg {
+            get {
+                return ResourceManager.GetString("ResetPass_Success_Msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al Cambiar Contraseña.
+        /// </summary>
+        public static string ResetPass_Title_Error {
+            get {
+                return ResourceManager.GetString("ResetPass_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Contraseña Actualizada.
+        /// </summary>
+        public static string ResetPass_Title_Success {
+            get {
+                return ResourceManager.GetString("ResetPass_Title_Success", resourceCulture);
             }
         }
         
@@ -3207,6 +3828,33 @@ namespace GameClient.Resources {
         public static string SlotEmptyLabel {
             get {
                 return ResourceManager.GetString("SlotEmptyLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El nombre de usuario no puede estar vacío..
+        /// </summary>
+        public static string Social_Error_EmptyUser {
+            get {
+                return ResourceManager.GetString("Social_Error_EmptyUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Por favor selecciona una plataforma de la lista..
+        /// </summary>
+        public static string Social_Error_SelectPlatform {
+            get {
+                return ResourceManager.GetString("Social_Error_SelectPlatform", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El nombre es demasiado largo (máx. 70 caracteres)..
+        /// </summary>
+        public static string Social_Error_TooLong {
+            get {
+                return ResourceManager.GetString("Social_Error_TooLong", resourceCulture);
             }
         }
         

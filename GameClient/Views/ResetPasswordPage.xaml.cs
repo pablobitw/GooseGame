@@ -1,8 +1,8 @@
 ﻿using GameClient.GameServiceReference;
 using System;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,6 +38,14 @@ namespace GameClient.Views
             DialogOverlay.Visibility = Visibility.Visible;
         }
 
+
+        private void ShowTranslatedError(string messageKey, string titleKey, FontAwesome.WPF.FontAwesomeIcon icon)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            ShowCustomDialog(title ?? titleKey, message ?? messageKey, icon);
+        }
+
         private void DialogButton_Click(object sender, RoutedEventArgs e)
         {
             DialogOverlay.Visibility = Visibility.Collapsed;
@@ -52,85 +60,83 @@ namespace GameClient.Views
                 return;
             }
 
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedError("ResetPass_Error_NoInternet", "ResetPass_Title_Error", FontAwesome.WPF.FontAwesomeIcon.Wifi);
+                return;
+            }
+
             string currentPassword = CurrentPasswordBox.Password;
             string newPassword = NewPasswordBox.Password;
 
             var client = new GameServiceClient();
-            bool updateSuccess = false;
-            bool connectionError = false;
 
             try
             {
-                updateSuccess = await client.ChangeUserPasswordAsync(_username, currentPassword, newPassword);
+                bool updateSuccess = await client.ChangeUserPasswordAsync(_username, currentPassword, newPassword);
+
+                if (updateSuccess)
+                {
+                    string successMsg = GameClient.Resources.Strings.ResetPass_Success_Msg;
+                    string successTitle = GameClient.Resources.Strings.ResetPass_Title_Success;
+
+                    ShowCustomDialog(successTitle, successMsg, FontAwesome.WPF.FontAwesomeIcon.CheckCircle, false, () =>
+                    {
+                        if (NavigationService.CanGoBack)
+                        {
+                            NavigationService.GoBack();
+                        }
+                    });
+                }
+                else
+                {
+                    ShowError(CurrentPasswordBox, GameClient.Resources.Strings.ResetPass_Error_CurrentIncorrect);
+                }
+            }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedError("ResetPass_Error_ServerDown", "ResetPass_Title_Error", FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
+            }
+            catch (TimeoutException)
+            {
+                ShowTranslatedError("ResetPass_Error_Timeout", "ResetPass_Title_Error", FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
+            }
+            catch (FaultException)
+            {
+                ShowTranslatedError("ResetPass_Error_Database", "ResetPass_Title_Error", FontAwesome.WPF.FontAwesomeIcon.Database);
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedError("ResetPass_Error_Communication", "ResetPass_Title_Error", FontAwesome.WPF.FontAwesomeIcon.Wifi);
             }
             catch (Exception ex)
             {
-                connectionError = HandleConnectionException(ex);
+                string generalError = GameClient.Resources.Strings.ResetPass_Error_General;
+                string title = GameClient.Resources.Strings.ResetPass_Title_Error;
+                ShowCustomDialog(title, $"{generalError}\n{ex.Message}", FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
             }
             finally
             {
                 CloseClientSafely(client);
             }
-
-            if (!connectionError)
-            {
-                HandleUpdateResult(updateSuccess);
-            }
-        }
-
-        private bool HandleConnectionException(Exception ex)
-        {
-            string errorTitle = GameClient.Resources.Strings.DialogErrorTitle;
-
-            if (ex is EndpointNotFoundException)
-            {
-                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ConnectionError, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
-                return true;
-            }
-            if (ex is TimeoutException)
-            {
-                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ErrorTitle, FontAwesome.WPF.FontAwesomeIcon.ClockOutline);
-                return true;
-            }
-            if (ex is CommunicationException)
-            {
-                ShowCustomDialog(errorTitle, GameClient.Resources.Strings.ConnectionError, FontAwesome.WPF.FontAwesomeIcon.Wifi);
-                return true;
-            }
-
-            ShowCustomDialog(errorTitle, ex.Message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
-            return true;
         }
 
         private static void CloseClientSafely(GameServiceClient client)
         {
-            if (client.State == CommunicationState.Opened)
+            try
             {
-                client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
             }
-            else
+            catch (Exception)
             {
                 client.Abort();
-            }
-        }
-
-        private void HandleUpdateResult(bool updateSuccess)
-        {
-            if (updateSuccess)
-            {
-                ShowCustomDialog(GameClient.Resources.Strings.DialogSuccessTitle,
-                                 GameClient.Resources.Strings.PasswordUpdateSuccess,
-                                 FontAwesome.WPF.FontAwesomeIcon.CheckCircle, false, () =>
-                                 {
-                                     if (NavigationService.CanGoBack)
-                                     {
-                                         NavigationService.GoBack();
-                                     }
-                                 });
-            }
-            else
-            {
-                ShowError(CurrentPasswordBox, GameClient.Resources.Strings.ErrorCurrentPasswordIncorrect);
             }
         }
 

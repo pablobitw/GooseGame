@@ -1,16 +1,15 @@
-﻿using System;
+﻿using GameClient.Models;
+using GameClient.UserProfileServiceReference;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using GameClient.UserProfileServiceReference;
-using GameClient.Models;
-using GameClient.Views;
 
 namespace GameClient.Views
 {
@@ -33,6 +32,13 @@ namespace GameClient.Views
             LoadAvatars();
         }
 
+        private static void ShowTranslatedMessageBox(string messageKey, string titleKey, MessageBoxImage icon)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, icon);
+        }
+
         private void LoadAvatars()
         {
             try
@@ -43,10 +49,13 @@ namespace GameClient.Views
                 if (!Directory.Exists(avatarsDir))
                 {
                     string devPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\Assets\Avatar"));
-                    if (Directory.Exists(devPath)) avatarsDir = devPath;
+                    if (Directory.Exists(devPath))
+                    {
+                        avatarsDir = devPath;
+                    }
                     else
                     {
-                        ShowError(GameClient.Resources.Strings.AvatarLoadError);
+                        ShowTranslatedMessageBox("Avatar_Error_LoadFiles", "Avatar_Title_Error", MessageBoxImage.Error);
                         return;
                     }
                 }
@@ -69,15 +78,18 @@ namespace GameClient.Views
             }
             catch (IOException ex)
             {
-                ShowError($"{GameClient.Resources.Strings.ErrorAvatarFileLoad}: {ex.Message}");
+                string msg = GameClient.Resources.Strings.Avatar_Error_LoadFiles + "\n" + ex.Message;
+                MessageBox.Show(msg, GameClient.Resources.Strings.Avatar_Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (UnauthorizedAccessException ex)
             {
-                ShowError($"{GameClient.Resources.Strings.ErrorAvatarUnauthorized}: {ex.Message}");
+                string msg = GameClient.Resources.Strings.Avatar_Error_LoadFiles + "\n" + ex.Message;
+                MessageBox.Show(msg, GameClient.Resources.Strings.Avatar_Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                ShowError(string.Format(GameClient.Resources.Strings.UnexpectedError, ex.Message));
+                string msg = GameClient.Resources.Strings.Avatar_Error_General + "\n" + ex.Message;
+                MessageBox.Show(msg, GameClient.Resources.Strings.Avatar_Title_Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -94,10 +106,13 @@ namespace GameClient.Views
         {
             if (string.IsNullOrEmpty(_selectedAvatarFileName)) return;
 
-            SaveAvatarButton.IsEnabled = false;
-            AvatarsListBox.IsEnabled = false;
-            BackButton.IsEnabled = false;
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Avatar_Error_NoInternet", "Avatar_Title_Error", MessageBoxImage.Error);
+                return;
+            }
 
+            SetUiEnabled(false);
             var client = new UserProfileServiceClient();
 
             try
@@ -107,45 +122,70 @@ namespace GameClient.Views
                 if (success)
                 {
                     ShowSuccessOverlay();
-                    client.Close();
                 }
                 else
                 {
-                    ShowError(GameClient.Resources.Strings.ErrorAvatarUpdateFailed);
-                    client.Close();
-                    ResetUiState();
+                    ShowTranslatedMessageBox("Avatar_Error_UpdateFailed", "Avatar_Title_Error", MessageBoxImage.Warning);
+                    SetUiEnabled(true);
                 }
             }
             catch (TimeoutException)
             {
-                client.Abort();
-                ShowError(GameClient.Resources.Strings.ErrorAvatarTimeout);
-                ResetUiState();
+                ShowTranslatedMessageBox("Avatar_Error_Timeout", "Avatar_Title_Error", MessageBoxImage.Warning);
+                SetUiEnabled(true);
             }
             catch (EndpointNotFoundException)
             {
-                client.Abort();
-                ShowError(GameClient.Resources.Strings.ErrorAvatarDbConnection);
-                ResetUiState();
+                ShowTranslatedMessageBox("Avatar_Error_ServerDown", "Avatar_Title_Error", MessageBoxImage.Error);
+                SetUiEnabled(true);
+            }
+            catch (FaultException)
+            {
+                ShowTranslatedMessageBox("Avatar_Error_Database", "Avatar_Title_Error", MessageBoxImage.Error);
+                SetUiEnabled(true);
             }
             catch (CommunicationException)
             {
-                client.Abort();
-                ShowError(GameClient.Resources.Strings.ErrorAvatarNetwork);
-                ResetUiState();
+                ShowTranslatedMessageBox("Avatar_Error_Communication", "Avatar_Title_Error", MessageBoxImage.Error);
+                SetUiEnabled(true);
             }
             catch (Exception ex)
             {
-                client.Abort();
-                ShowError(string.Format(GameClient.Resources.Strings.UnexpectedError, ex.Message));
-                ResetUiState();
+                string general = GameClient.Resources.Strings.Avatar_Error_General;
+                string title = GameClient.Resources.Strings.Avatar_Title_Error;
+                MessageBox.Show($"{general}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+                SetUiEnabled(true);
+            }
+            finally
+            {
+                CloseClientSafely(client);
             }
         }
 
-        private static void ShowError(string message)
+        private static void CloseClientSafely(UserProfileServiceClient client)
         {
-            CustomMessageBox msgBox = new CustomMessageBox(message);
-            msgBox.ShowDialog();
+            try
+            {
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
+            }
+            catch (Exception)
+            {
+                client.Abort();
+            }
+        }
+
+        private void SetUiEnabled(bool isEnabled)
+        {
+            SaveAvatarButton.IsEnabled = isEnabled;
+            AvatarsListBox.IsEnabled = isEnabled;
+            BackButton.IsEnabled = isEnabled;
         }
 
         private void ShowSuccessOverlay()
@@ -159,7 +199,11 @@ namespace GameClient.Views
                 }
                 catch (UriFormatException ex)
                 {
-                    Console.WriteLine($"[AvatarSelectPage] Error al cargar avatar: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[AvatarSelectPage] Error de formato URI al cargar preview: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AvatarSelectPage] Error inesperado cargando imagen de éxito: {ex.Message}");
                 }
             }
 
@@ -171,13 +215,6 @@ namespace GameClient.Views
             GoBack();
         }
 
-        private void ResetUiState()
-        {
-            SaveAvatarButton.IsEnabled = true;
-            AvatarsListBox.IsEnabled = true;
-            BackButton.IsEnabled = true;
-        }
-
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             GoBack();
@@ -185,8 +222,14 @@ namespace GameClient.Views
 
         private void GoBack()
         {
-            if (NavigationService.CanGoBack) NavigationService.GoBack();
-            else NavigationService.Navigate(new UserProfilePage(_userEmail));
+            if (NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
+            else
+            {
+                NavigationService.Navigate(new UserProfilePage(_userEmail));
+            }
         }
     }
 }

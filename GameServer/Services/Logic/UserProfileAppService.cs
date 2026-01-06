@@ -22,10 +22,8 @@ namespace GameServer.Services.Logic
         private const int MaxUsernameChanges = 3;
         private const int CodeExpirationMinutes = 15;
 
-        // CORRECCIÓN: Se usa la Interfaz para permitir Mocks en los tests
         private readonly IUserProfileRepository _repository;
 
-        // CORRECCIÓN: Constructor flexible. Si no se pasa un repo, usa la implementación real.
         public UserProfileAppService(IUserProfileRepository repository = null)
         {
             _repository = repository ?? new UserProfileRepository();
@@ -88,6 +86,10 @@ namespace GameServer.Services.Logic
             {
                 Log.Error("Timeout al obtener perfil.", ex);
             }
+            catch (Exception ex)
+            {
+                Log.Fatal("Error general al obtener perfil.", ex);
+            }
 
             return profile;
         }
@@ -117,6 +119,18 @@ namespace GameServer.Services.Logic
                 {
                     Log.WarnFormat("Solicitud de código inválida para: {0}", identifier);
                 }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL enviando código usuario.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF enviando código usuario.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando código usuario.", ex);
             }
             catch (Exception ex)
             {
@@ -171,6 +185,21 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL cambiando username.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF cambiando username.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout cambiando username.", ex);
+                result = UsernameChangeResult.FatalError;
+            }
             catch (Exception ex)
             {
                 Log.Error($"Error inesperado al cambiar usuario para {identifier}.", ex);
@@ -197,6 +226,18 @@ namespace GameServer.Services.Logic
                 {
                     Log.WarnFormat("Cambio de avatar fallido (Usuario no encontrado): {0}", identifier);
                 }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL cambiando avatar.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF cambiando avatar.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout cambiando avatar.", ex);
             }
             catch (Exception ex)
             {
@@ -230,6 +271,18 @@ namespace GameServer.Services.Logic
                 {
                     Log.WarnFormat("Solicitud inválida (Usuario no encontrado o es Invitado): {0}", identifier);
                 }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL enviando código pass.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF enviando código pass.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando código pass.", ex);
             }
             catch (Exception ex)
             {
@@ -278,6 +331,18 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Intento de cambio de pass en cuenta inválida/invitado: {0}", request.Email);
                 }
             }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL cambiando password con código.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF cambiando password con código.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout cambiando password con código.", ex);
+            }
             catch (Exception ex)
             {
                 Log.Error("Error cambiando password con código.", ex);
@@ -288,6 +353,7 @@ namespace GameServer.Services.Logic
 
         public async Task<bool> UpdateLanguageAsync(string identifier, string languageCode)
         {
+            bool isUpdated = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -300,119 +366,173 @@ namespace GameServer.Services.Logic
                     await _repository.SaveChangesAsync();
 
                     Log.InfoFormat("Idioma actualizado para {0} a {1}", identifier, shortCode);
-                    return true;
+                    isUpdated = true;
                 }
-
-                Log.WarnFormat("Intento de cambio de idioma para usuario no encontrado: {0}", identifier);
-                return false;
+                else
+                {
+                    Log.WarnFormat("Intento de cambio de idioma para usuario no encontrado: {0}", identifier);
+                }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL actualizando idioma.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF actualizando idioma.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout actualizando idioma.", ex);
             }
             catch (Exception ex)
             {
                 Log.Error($"Error actualizando idioma para {identifier}", ex);
-                return false;
             }
+            return isUpdated;
         }
 
         public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)
         {
+            bool isDeactivated = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(request.Username);
 
-                if (player == null || player.Account == null)
+                if (player != null && player.Account != null && !player.IsGuest)
                 {
-                    Log.WarnFormat("Intento de desactivar cuenta inexistente o sin cuenta asociada: {0}", request.Username);
-                    return false;
-                }
+                    if (BCrypt.Net.BCrypt.Verify(request.Password, player.Account.PasswordHash))
+                    {
+                        player.Account.AccountStatus = 2; 
+                        await _repository.SaveChangesAsync();
 
-                if (player.IsGuest)
+                        Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);
+                        isDeactivated = true;
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Fallo de autenticación al desactivar cuenta: {0}", request.Username);
+                    }
+                }
+                else
                 {
-                    Log.WarnFormat("Intento de desactivar cuenta de invitado: {0}", request.Username);
-                    return false;
+                    Log.WarnFormat("Intento de desactivar cuenta inexistente/invitado: {0}", request.Username);
                 }
-
-                if (!BCrypt.Net.BCrypt.Verify(request.Password, player.Account.PasswordHash))
-                {
-                    Log.WarnFormat("Fallo de autenticación al desactivar cuenta: {0}", request.Username);
-                    return false;
-                }
-
-                player.Account.AccountStatus = 2; // Desactivada
-
-                await _repository.SaveChangesAsync();
-
-                Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);
-                return true;
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL desactivando cuenta.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF desactivando cuenta.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout desactivando cuenta.", ex);
             }
             catch (Exception ex)
             {
                 Log.Error($"Error al desactivar cuenta de {request.Username}", ex);
-                return false;
             }
+            return isDeactivated;
         }
 
         public async Task<string> AddSocialLinkAsync(string identifier, string url)
         {
+            string errorMessage = "Ocurrió un error interno al guardar la red social.";
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
-                if (player == null) return "Usuario no encontrado.";
-
-                var existingTypes = player.PlayerSocialLinks
-                    .Select(l => (SocialType)l.SocialType);
-
-                if (!PlayerSocialLinkHelper.CanAddSocialLink(existingTypes, url, out SocialType newType, out string errorMsg))
+                if (player == null)
                 {
-                    Log.WarnFormat("Intento inválido de agregar red social para {0}: {1}", identifier, errorMsg);
-                    return errorMsg;
+                    errorMessage = "Usuario no encontrado.";
                 }
-
-                var newLink = new PlayerSocialLink
+                else
                 {
-                    PlayerIdPlayer = player.IdPlayer,
-                    SocialType = (byte)newType,
-                    Url = url
-                };
+                    var existingTypes = player.PlayerSocialLinks.Select(l => (SocialType)l.SocialType);
 
-                player.PlayerSocialLinks.Add(newLink);
+                    if (!PlayerSocialLinkHelper.CanAddSocialLink(existingTypes, url, out SocialType newType, out string validationMsg))
+                    {
+                        Log.WarnFormat("Intento inválido de agregar red social para {0}: {1}", identifier, validationMsg);
+                        errorMessage = validationMsg;
+                    }
+                    else
+                    {
+                        var newLink = new PlayerSocialLink
+                        {
+                            PlayerIdPlayer = player.IdPlayer,
+                            SocialType = (byte)newType,
+                            Url = url
+                        };
 
-                await _repository.SaveChangesAsync();
-                Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
-
-                return null; // Éxito
+                        player.PlayerSocialLinks.Add(newLink);
+                        await _repository.SaveChangesAsync();
+                        Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
+                        errorMessage = null; 
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL agregando social link.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF agregando social link.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout agregando social link.", ex);
             }
             catch (Exception ex)
             {
                 Log.Error($"Error al agregar red social para {identifier}", ex);
-                return "Ocurrió un error interno al guardar la red social.";
             }
+
+            return errorMessage;
         }
 
         public async Task<bool> RemoveSocialLinkAsync(string identifier, string urlToRemove)
         {
+            bool isRemoved = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
-                if (player == null || player.PlayerSocialLinks == null) return false;
-
-                var link = player.PlayerSocialLinks.FirstOrDefault(l => l.Url == urlToRemove);
-
-                if (link != null)
+                if (player != null && player.PlayerSocialLinks != null)
                 {
-                    _repository.DeleteSocialLink(link);
-                    await _repository.SaveChangesAsync();
-                    Log.InfoFormat("Red social eliminada para {0}: {1}", identifier, urlToRemove);
-                    return true;
-                }
+                    var link = player.PlayerSocialLinks.FirstOrDefault(l => l.Url == urlToRemove);
 
-                Log.WarnFormat("Intento de borrar red social no encontrada: {0} -> {1}", identifier, urlToRemove);
-                return false;
+                    if (link != null)
+                    {
+                        _repository.DeleteSocialLink(link);
+                        await _repository.SaveChangesAsync();
+                        Log.InfoFormat("Red social eliminada para {0}: {1}", identifier, urlToRemove);
+                        isRemoved = true;
+                    }
+                    else
+                    {
+                        Log.WarnFormat("Intento de borrar red social no encontrada: {0} -> {1}", identifier, urlToRemove);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL eliminando social link.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF eliminando social link.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout eliminando social link.", ex);
             }
             catch (Exception ex)
             {
                 Log.Error($"Error al eliminar red social para {identifier}", ex);
-                return false;
             }
+            return isRemoved;
         }
     }
 }

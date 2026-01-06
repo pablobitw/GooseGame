@@ -6,6 +6,9 @@ namespace GameClient.Views.Components
 {
     public partial class AddSocialLinkDialog : UserControl
     {
+        private const int MaxUsernameLength = 70;
+        private const string DefaultPrefix = "https://...";
+
         public event EventHandler DialogClosed;
         public event EventHandler<string> LinkAdded;
 
@@ -18,13 +21,15 @@ namespace GameClient.Views.Components
         {
             UrlTextBox.Text = string.Empty;
             SocialTypeComboBox.SelectedIndex = -1;
-            PrefixTextBlock.Text = "https://...";
+            PrefixTextBlock.Text = DefaultPrefix;
             HintText.Text = GameClient.Resources.Strings.SocialHintDefault;
+
+            UrlTextBox.ClearValue(Border.BorderBrushProperty);
         }
 
         private void SocialTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SocialTypeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            if (SocialTypeComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag != null)
             {
                 string prefix = selectedItem.Tag.ToString();
                 PrefixTextBlock.Text = prefix;
@@ -47,7 +52,10 @@ namespace GameClient.Views.Components
             }));
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e) => DialogClosed?.Invoke(this, EventArgs.Empty);
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogClosed?.Invoke(this, EventArgs.Empty);
+        }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -55,31 +63,33 @@ namespace GameClient.Views.Components
 
             if (SocialTypeComboBox.SelectedIndex == -1)
             {
-                MessageBox.Show(GameClient.Resources.Strings.ErrorSelectPlatform,
-                                GameClient.Resources.Strings.DialogWarningTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowWarning(GameClient.Resources.Strings.Social_Error_SelectPlatform);
                 return;
             }
 
             if (string.IsNullOrEmpty(username))
             {
-                MessageBox.Show(GameClient.Resources.Strings.ErrorEmptyUsername,
-                                GameClient.Resources.Strings.DialogWarningTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowWarning(GameClient.Resources.Strings.Social_Error_EmptyUser);
                 return;
             }
 
-            if (username.Length > 70)
+            if (username.Length > MaxUsernameLength)
             {
-                MessageBox.Show(GameClient.Resources.Strings.ErrorUsernameTooLong,
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowWarning(GameClient.Resources.Strings.Social_Error_TooLong);
                 return;
             }
 
             string fullUrl = PrefixTextBlock.Text + username;
 
             LinkAdded?.Invoke(this, fullUrl);
+        }
+
+        private static void ShowWarning(string message)
+        {
+            MessageBox.Show(message,
+                            GameClient.Resources.Strings.DialogWarningTitle,
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
         }
     }
 }

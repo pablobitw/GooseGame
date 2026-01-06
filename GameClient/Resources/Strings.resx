@@ -135,6 +135,30 @@
   <data name="AsGuestButton" xml:space="preserve">
     <value>Jugar como invitado</value>
   </data>
+  <data name="Auth_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al crear sesión de invitado.</value>
+  </data>
+  <data name="Auth_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde.</value>
+  </data>
+  <data name="Auth_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado al entrar como invitado.</value>
+  </data>
+  <data name="Auth_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No puedes entrar como invitado.</value>
+  </data>
+  <data name="Auth_Error_ServerDown" xml:space="preserve">
+    <value>El servidor no responde. No es posible crear una sesión de invitado.</value>
+  </data>
+  <data name="Auth_Error_Timeout" xml:space="preserve">
+    <value>La solicitud de invitado tardó demasiado. Inténtalo de nuevo.</value>
+  </data>
+  <data name="Auth_Title_Error" xml:space="preserve">
+    <value>Error de Autenticación</value>
+  </data>
+  <data name="Auth_Title_Welcome" xml:space="preserve">
+    <value>¡Bienvenido!</value>
+  </data>
   <data name="AvatarErrorFallback" xml:space="preserve">
     <value>[UI Critical] Falló la carga del avatar por defecto: {0}</value>
   </data>
@@ -155,6 +179,36 @@
   </data>
   <data name="AvatarUpdateError" xml:space="preserve">
     <value>Error al actualizar.</value>
+  </data>
+  <data name="Avatar_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al guardar la imagen.</value>
+  </data>
+  <data name="Avatar_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento.</value>
+  </data>
+  <data name="Avatar_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado.</value>
+  </data>
+  <data name="Avatar_Error_LoadFiles" xml:space="preserve">
+    <value>Error al cargar los archivos de avatar locales.</value>
+  </data>
+  <data name="Avatar_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede guardar el avatar.</value>
+  </data>
+  <data name="Avatar_Error_ServerDown" xml:space="preserve">
+    <value>El servidor de perfiles no responde. Intenta más tarde.</value>
+  </data>
+  <data name="Avatar_Error_Timeout" xml:space="preserve">
+    <value>El guardado del avatar tardó demasiado.</value>
+  </data>
+  <data name="Avatar_Error_UpdateFailed" xml:space="preserve">
+    <value>No se pudo actualizar el avatar en el servidor.</value>
+  </data>
+  <data name="Avatar_Title_Error" xml:space="preserve">
+    <value>Error al Guardar Avatar</value>
+  </data>
+  <data name="Avatar_Title_Success" xml:space="preserve">
+    <value>Avatar Actualizado</value>
   </data>
   <data name="BackButton" xml:space="preserve">
     <value>Volver</value>
@@ -191,6 +245,45 @@
   </data>
   <data name="ChangeUsernameTitle" xml:space="preserve">
     <value>Cambiar Nombre</value>
+  </data>
+  <data name="ChangeUser_Error_Code" xml:space="preserve">
+    <value>El código ingresado es incorrecto o ha expirado.</value>
+  </data>
+  <data name="ChangeUser_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al procesar el cambio.</value>
+  </data>
+  <data name="ChangeUser_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento.</value>
+  </data>
+  <data name="ChangeUser_Error_Exists" xml:space="preserve">
+    <value>Este nombre de usuario ya está ocupado.</value>
+  </data>
+  <data name="ChangeUser_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado.</value>
+  </data>
+  <data name="ChangeUser_Error_Limit" xml:space="preserve">
+    <value>Has alcanzado el límite de cambios de nombre.</value>
+  </data>
+  <data name="ChangeUser_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede enviar el código.</value>
+  </data>
+  <data name="ChangeUser_Error_ServerDown" xml:space="preserve">
+    <value>El servidor de perfiles no responde. Intenta más tarde.</value>
+  </data>
+  <data name="ChangeUser_Error_Timeout" xml:space="preserve">
+    <value>El envío del código tardó demasiado.</value>
+  </data>
+  <data name="ChangeUser_Info_CodeSent" xml:space="preserve">
+    <value>Se ha enviado un nuevo código a tu correo.</value>
+  </data>
+  <data name="ChangeUser_Success_Msg" xml:space="preserve">
+    <value>Tu nombre de usuario ha sido actualizado correctamente.</value>
+  </data>
+  <data name="ChangeUser_Title_Error" xml:space="preserve">
+    <value>Error al Cambiar Usuario</value>
+  </data>
+  <data name="ChangeUser_Title_Success" xml:space="preserve">
+    <value>Usuario Cambiado</value>
   </data>
   <data name="ChatConnectError" xml:space="preserve">
     <value>No se pudo conectar al servidor de chat. Verifica la configuración.</value>
@@ -302,6 +395,24 @@
   </data>
   <data name="DeactivateTitle" xml:space="preserve">
     <value>⚠ Desactivar Cuenta</value>
+  </data>
+  <data name="Deactivate_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al desactivar.</value>
+  </data>
+  <data name="Deactivate_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento.</value>
+  </data>
+  <data name="Deactivate_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado al desactivar.</value>
+  </data>
+  <data name="Deactivate_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede desactivar la cuenta.</value>
+  </data>
+  <data name="Deactivate_Error_ServerDown" xml:space="preserve">
+    <value>El servidor no responde. Intenta más tarde.</value>
+  </data>
+  <data name="Deactivate_Error_Timeout" xml:space="preserve">
+    <value>La solicitud tardó demasiado.</value>
   </data>
   <data name="DeleteConfirmation" xml:space="preserve">
     <value>¿Eliminar a {0}?</value>
@@ -840,6 +951,42 @@
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Inicio Sesion</value>
   </data>
+  <data name="Login_Error_AlreadyOnline" xml:space="preserve">
+    <value>El usuario ya tiene una sesión activa en otro dispositivo.</value>
+  </data>
+  <data name="Login_Error_Banned" xml:space="preserve">
+    <value>Esta cuenta ha sido suspendida permanentemente.</value>
+  </data>
+  <data name="Login_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al validar credenciales.</value>
+  </data>
+  <data name="Login_Error_Credentials" xml:space="preserve">
+    <value>Credenciales inválidas. Verifica tu usuario y contraseña.</value>
+  </data>
+  <data name="Login_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde.</value>
+  </data>
+  <data name="Login_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado al intentar entrar.</value>
+  </data>
+  <data name="Login_Error_Inactive" xml:space="preserve">
+    <value>Cuenta inactiva. Verifica tu correo antes de iniciar sesión.</value>
+  </data>
+  <data name="Login_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede iniciar sesión.</value>
+  </data>
+  <data name="Login_Error_ServerDown" xml:space="preserve">
+    <value>El servidor de Login no responde. Verifica que el servidor esté encendido.</value>
+  </data>
+  <data name="Login_Error_Timeout" xml:space="preserve">
+    <value>El inicio de sesión tardó demasiado. Por favor, intenta de nuevo.</value>
+  </data>
+  <data name="Login_Title_Error" xml:space="preserve">
+    <value>Error de Inicio de Sesión</value>
+  </data>
+  <data name="Login_Val_EmptyField" xml:space="preserve">
+    <value>Debes llenar este campo para continuar.</value>
+  </data>
   <data name="MinPlayersRequired" xml:space="preserve">
     <value>Se necesitan al menos 2 jugadores.</value>
   </data>
@@ -930,6 +1077,36 @@
   <data name="ProfileLoadError" xml:space="preserve">
     <value>No se pudo cargar el perfil del usuario.</value>
   </data>
+  <data name="Profile_Deactivate_Success" xml:space="preserve">
+    <value>Tu cuenta ha sido desactivada correctamente.</value>
+  </data>
+  <data name="Profile_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento.</value>
+  </data>
+  <data name="Profile_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado al cargar el perfil.</value>
+  </data>
+  <data name="Profile_Error_Load" xml:space="preserve">
+    <value>No se pudo cargar tu perfil. Revisa tu conexión.</value>
+  </data>
+  <data name="Profile_Error_ServerDown" xml:space="preserve">
+    <value>El servidor de perfiles no responde.</value>
+  </data>
+  <data name="Profile_Error_Timeout" xml:space="preserve">
+    <value>La carga del perfil tardó demasiado.</value>
+  </data>
+  <data name="Profile_Social_Added" xml:space="preserve">
+    <value>Red social agregada correctamente.</value>
+  </data>
+  <data name="Profile_Social_Delete" xml:space="preserve">
+    <value>¿Estás seguro de eliminar este enlace?</value>
+  </data>
+  <data name="Profile_Social_Limit" xml:space="preserve">
+    <value>Has alcanzado el límite de 3 redes sociales.</value>
+  </data>
+  <data name="Profile_User_Limit" xml:space="preserve">
+    <value>Has alcanzado el límite de cambios de nombre.</value>
+  </data>
   <data name="PublicMatchesTitle" xml:space="preserve">
     <value>PARTIDAS PÚBLICAS</value>
   </data>
@@ -964,7 +1141,7 @@
     <value>Error de comunicación con el servidor de registro. Verifica tu red.</value>
   </data>
   <data name="Register_Error_Database" xml:space="preserve">
-    <value>Ocurrió un error interno al guardar tus datos. Intenta más tarde.</value>
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento. Por favor, inténtalo más tarde.</value>
   </data>
   <data name="Register_Error_General" xml:space="preserve">
     <value>Ocurrió un error inesperado durante el registro.</value>
@@ -1049,6 +1226,36 @@
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Restablecer contraseña</value>
+  </data>
+  <data name="ResetPass_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al procesar el cambio.</value>
+  </data>
+  <data name="ResetPass_Error_CurrentIncorrect" xml:space="preserve">
+    <value>La contraseña actual ingresada es incorrecta.</value>
+  </data>
+  <data name="ResetPass_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. El sistema está apagado o en mantenimiento.</value>
+  </data>
+  <data name="ResetPass_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado al cambiar la contraseña.</value>
+  </data>
+  <data name="ResetPass_Error_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet. No se puede cambiar la contraseña.</value>
+  </data>
+  <data name="ResetPass_Error_ServerDown" xml:space="preserve">
+    <value>El servidor no responde. Intenta más tarde.</value>
+  </data>
+  <data name="ResetPass_Error_Timeout" xml:space="preserve">
+    <value>El cambio de contraseña tardó demasiado.</value>
+  </data>
+  <data name="ResetPass_Success_Msg" xml:space="preserve">
+    <value>Tu contraseña ha sido cambiada exitosamente.</value>
+  </data>
+  <data name="ResetPass_Title_Error" xml:space="preserve">
+    <value>Error al Cambiar Contraseña</value>
+  </data>
+  <data name="ResetPass_Title_Success" xml:space="preserve">
+    <value>Contraseña Actualizada</value>
   </data>
   <data name="RestartMessage" xml:space="preserve">
     <value>El idioma ha sido cambiado</value>
@@ -1184,6 +1391,15 @@
   </data>
   <data name="SocialSaveBtn" xml:space="preserve">
     <value>Guardar</value>
+  </data>
+  <data name="Social_Error_EmptyUser" xml:space="preserve">
+    <value>El nombre de usuario no puede estar vacío.</value>
+  </data>
+  <data name="Social_Error_SelectPlatform" xml:space="preserve">
+    <value>Por favor selecciona una plataforma de la lista.</value>
+  </data>
+  <data name="Social_Error_TooLong" xml:space="preserve">
+    <value>El nombre es demasiado largo (máx. 70 caracteres).</value>
   </data>
   <data name="SoundHeader" xml:space="preserve">
     <value>Sonido</value>

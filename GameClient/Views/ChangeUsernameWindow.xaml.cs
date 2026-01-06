@@ -1,6 +1,7 @@
 ﻿using GameClient.Helpers;
 using GameClient.UserProfileServiceReference;
 using System;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,8 +31,21 @@ namespace GameClient.Views
             await SendVerificationCode();
         }
 
+        private static void ShowTranslatedMessageBox(string messageKey, string titleKey, MessageBoxImage icon)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, icon);
+        }
+
         private async Task SendVerificationCode()
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("ChangeUser_Error_NoInternet", "ChangeUser_Title_Error", MessageBoxImage.Error);
+                return;
+            }
+
             var client = new UserProfileServiceClient();
 
             try
@@ -47,20 +61,25 @@ namespace GameClient.Views
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor tardó demasiado en enviar el código.");
+                ShowTranslatedMessageBox("ChangeUser_Error_Timeout", "ChangeUser_Title_Error", MessageBoxImage.Warning);
             }
             catch (EndpointNotFoundException)
             {
-                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
+                ShowTranslatedMessageBox("ChangeUser_Error_ServerDown", "ChangeUser_Title_Error", MessageBoxImage.Error);
+            }
+            catch (FaultException)
+            {
+                ShowTranslatedMessageBox("ChangeUser_Error_Database", "ChangeUser_Title_Error", MessageBoxImage.Error);
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Error de comunicación al solicitar el código.");
+                ShowTranslatedMessageBox("ChangeUser_Error_Communication", "ChangeUser_Title_Error", MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex);
-                MessageBox.Show("Ocurrió un error inesperado al enviar el código.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string generalError = GameClient.Resources.Strings.ChangeUser_Error_General;
+                string title = GameClient.Resources.Strings.ChangeUser_Title_Error;
+                MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -85,61 +104,41 @@ namespace GameClient.Views
                 return;
             }
 
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("ChangeUser_Error_NoInternet", "ChangeUser_Title_Error", MessageBoxImage.Error);
+                return;
+            }
+
             SaveButton.IsEnabled = false;
             var client = new UserProfileServiceClient();
 
             try
             {
                 var result = await client.ChangeUsernameAsync(_userEmail, newName, code);
-
-                switch (result)
-                {
-                    case UsernameChangeResult.Success:
-                        MessageBox.Show(GameClient.Resources.Strings.UsernameSuccess,
-                                        GameClient.Resources.Strings.DialogSuccessTitle,
-                                        MessageBoxButton.OK, MessageBoxImage.Information);
-                        this.Close();
-                        break;
-
-                    case UsernameChangeResult.UsernameAlreadyExists:
-                        ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.UsernameExistsError);
-                        break;
-
-                    case UsernameChangeResult.LimitReached:
-                        ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.UsernameLimitError);
-                        break;
-
-                    case UsernameChangeResult.UserNotFound:
-                        SessionManager.ForceLogout("Usuario no encontrado. Sesión inválida.");
-                        break;
-
-                    case UsernameChangeResult.FatalError:
-                        ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeIncorrectError);
-                        Step2_ChangeName.Visibility = Visibility.Collapsed;
-                        Step1_VerifyCode.Visibility = Visibility.Visible;
-                        break;
-
-                    default:
-                        ShowError(UsernameBorder, UsernameErrorLabel, "Error al actualizar. Intenta más tarde.");
-                        break;
-                }
+                HandleChangeResult(result);
             }
             catch (TimeoutException)
             {
-                SessionManager.ForceLogout("El servidor no respondió a tiempo.");
+                ShowTranslatedMessageBox("ChangeUser_Error_Timeout", "ChangeUser_Title_Error", MessageBoxImage.Warning);
             }
             catch (EndpointNotFoundException)
             {
-                SessionManager.ForceLogout("No se pudo conectar con el servidor.");
+                ShowTranslatedMessageBox("ChangeUser_Error_ServerDown", "ChangeUser_Title_Error", MessageBoxImage.Error);
+            }
+            catch (FaultException)
+            {
+                ShowTranslatedMessageBox("ChangeUser_Error_Database", "ChangeUser_Title_Error", MessageBoxImage.Error);
             }
             catch (CommunicationException)
             {
-                SessionManager.ForceLogout("Se perdió la conexión al intentar guardar.");
+                ShowTranslatedMessageBox("ChangeUser_Error_Communication", "ChangeUser_Title_Error", MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex);
-                ShowError(UsernameBorder, UsernameErrorLabel, "Ocurrió un error inesperado.");
+                string generalError = GameClient.Resources.Strings.ChangeUser_Error_General;
+                string title = GameClient.Resources.Strings.ChangeUser_Title_Error;
+                MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -148,12 +147,43 @@ namespace GameClient.Views
             }
         }
 
+        private void HandleChangeResult(UsernameChangeResult result)
+        {
+            switch (result)
+            {
+                case UsernameChangeResult.Success:
+                    ShowTranslatedMessageBox("ChangeUser_Success_Msg", "ChangeUser_Title_Success", MessageBoxImage.Information);
+                    this.Close();
+                    break;
+
+                case UsernameChangeResult.UsernameAlreadyExists:
+                    ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_Exists);
+                    break;
+
+                case UsernameChangeResult.LimitReached:
+                    ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_Limit);
+                    break;
+
+                case UsernameChangeResult.UserNotFound:
+                    SessionManager.ForceLogout("Usuario no encontrado. Sesión inválida.");
+                    break;
+
+                case UsernameChangeResult.FatalError:
+                    ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_Code);
+                    Step2_ChangeName.Visibility = Visibility.Collapsed;
+                    Step1_VerifyCode.Visibility = Visibility.Visible;
+                    break;
+
+                default:
+                    ShowError(UsernameBorder, UsernameErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_General);
+                    break;
+            }
+        }
+
         private async void ResendCode_Click(object sender, RoutedEventArgs e)
         {
             await SendVerificationCode();
-            MessageBox.Show(GameClient.Resources.Strings.CodeSentInfo,
-                            GameClient.Resources.Strings.DialogInfoTitle,
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            ShowTranslatedMessageBox("ChangeUser_Info_CodeSent", "DialogInfoTitle", MessageBoxImage.Information);
         }
 
         private void VerifyCodeButton_Click(object sender, RoutedEventArgs e)

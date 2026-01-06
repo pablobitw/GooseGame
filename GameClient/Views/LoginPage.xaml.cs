@@ -3,12 +3,15 @@ using GameClient.Helpers;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace GameClient.Views
 {
@@ -19,111 +22,143 @@ namespace GameClient.Views
             InitializeComponent();
         }
 
+        private static void ShowTranslatedMessageBox(string messageKey, string titleKey)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         private async void Login(object sender, RoutedEventArgs e)
         {
-            if (!IsFormValid())
+            if (IsFormValid())
             {
-                return;
-            }
-
-            string usernameOrEmail = UsernameTextBox.Text;
-            string password = PasswordBox.Password;
-
-            var serviceClient = new GameServiceClient();
-
-            try
-            {
-                var response = await serviceClient.LogInAsync(usernameOrEmail, password);
-
-                if (response.IsSuccess)
+                if (NetworkInterface.GetIsNetworkAvailable())
                 {
-                    string serverLanguage = response.PreferredLanguage ?? "es-MX";
-                    string currentLocalLanguage = GameClient.Properties.Settings.Default.LanguageCode;
+                    string usernameOrEmail = UsernameTextBox.Text;
+                    string password = PasswordBox.Password;
+                    var serviceClient = new GameServiceClient();
 
-                    if (string.IsNullOrEmpty(currentLocalLanguage))
+                    try
                     {
-                        currentLocalLanguage = "es-MX";
-                    }
+                        var response = await serviceClient.LogInAsync(usernameOrEmail, password);
 
-                    if (serverLanguage != currentLocalLanguage)
+                        if (response.IsSuccess)
+                        {
+                            await HandleSuccessfulLogin(response, usernameOrEmail, serviceClient);
+                        }
+                        else
+                        {
+                            HandleLoginError(response.Message);
+                        }
+                    }
+                    catch (EndpointNotFoundException)
                     {
-                        GameClient.Properties.Settings.Default.LanguageCode = serverLanguage;
-                        GameClient.Properties.Settings.Default.Save();
-
-                        try
-                        {
-                            await serviceClient.LogoutAsync(usernameOrEmail);
-                        }
-                        catch (CommunicationException)
-                        {
-                                    MessageBox.Show(
-                           GameClient.Resources.Strings.ComunicationLabel,
-                           GameClient.Resources.Strings.ErrorTitle);
-                        }
-                        catch (TimeoutException)
-                        {
-                            MessageBox.Show(
-                    GameClient.Resources.Strings.TimeoutLabel,
-                    GameClient.Resources.Strings.ErrorTitle);
-                        }
-
-                        Process.Start(Application.ResourceAssembly.Location);
-                        Application.Current.Shutdown();
-                        return;
+                        ShowTranslatedMessageBox("Login_Error_ServerDown", "Login_Title_Error");
                     }
-
-                    ApplyLanguage(serverLanguage);
-
-                    SessionManager.StartSession(usernameOrEmail, usernameOrEmail, false);
-
-                    GameMainWindow gameMenu = new GameMainWindow(usernameOrEmail);
-                    gameMenu.Show();
-                    Window.GetWindow(this).Close();
+                    catch (TimeoutException)
+                    {
+                        ShowTranslatedMessageBox("Login_Error_Timeout", "Login_Title_Error");
+                    }
+                    catch (FaultException)
+                    {
+                        ShowTranslatedMessageBox("Login_Error_Database", "Login_Title_Error");
+                    }
+                    catch (CommunicationException)
+                    {
+                        ShowTranslatedMessageBox("Login_Error_Communication", "Login_Title_Error");
+                    }
+                    catch (Exception ex)
+                    {
+                        string generalError = GameClient.Resources.Strings.Login_Error_General;
+                        string title = GameClient.Resources.Strings.Login_Title_Error;
+                        MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        CloseClient(serviceClient);
+                    }
                 }
                 else
                 {
-                    string errorMsg = response.Message ?? "Login failed.";
-                    ShowError(UsernameBorder, errorMsg);
-                    ShowError(PasswordBorder, errorMsg);
+                    ShowTranslatedMessageBox("Login_Error_NoInternet", "Login_Title_Error");
                 }
             }
-            catch (EndpointNotFoundException)
+        }
+
+        private void HandleLoginError(string messageCode)
+        {
+            switch (messageCode)
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.EndpointNotFoundLabel,
-                    GameClient.Resources.Strings.ErrorTitle);
+                case "DbError":
+                    ShowTranslatedMessageBox("Login_Error_Database", "Login_Title_Error");
+                    break;
+                case "UserBanned":
+                    ShowTranslatedMessageBox("Login_Error_Banned", "Login_Title_Error");
+                    break;
+                case "AccountInactive":
+                    ShowTranslatedMessageBox("Login_Error_Inactive", "Login_Title_Error");
+                    break;
+                case "UserAlreadyOnline":
+                    ShowTranslatedMessageBox("Login_Error_AlreadyOnline", "Login_Title_Error");
+                    break;
+                case "InvalidCredentials":
+                default:
+                    string errorMsg = GameClient.Resources.Strings.Login_Error_Credentials;
+                    ShowError(UsernameBorder, errorMsg);
+                    ShowError(PasswordBorder, errorMsg);
+                    break;
             }
-            catch (TimeoutException)
+        }
+
+        private async Task HandleSuccessfulLogin(LoginResponseDto response, string username, GameServiceClient client)
+        {
+            string serverLanguage = response.PreferredLanguage ?? "es-MX";
+            string currentLocalLanguage = GameClient.Properties.Settings.Default.LanguageCode;
+
+            if (string.IsNullOrEmpty(currentLocalLanguage))
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.TimeoutLabel,
-                    GameClient.Resources.Strings.ErrorTitle);
+                currentLocalLanguage = "es-MX";
             }
-            catch (CommunicationException)
+
+            if (serverLanguage != currentLocalLanguage)
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ComunicationLabel,
-                    GameClient.Resources.Strings.ErrorTitle);
+                GameClient.Properties.Settings.Default.LanguageCode = serverLanguage;
+                GameClient.Properties.Settings.Default.Save();
+
+                try
+                {
+                    await client.LogoutAsync(username);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error no crítico al cerrar sesión antes de reiniciar: {ex.Message}");
+                }
+
+                Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+                return;
             }
-            finally
-            {
-                CloseClient(serviceClient);
-            }
+
+            ApplyLanguage(serverLanguage);
+            SessionManager.StartSession(username, username, false);
+
+            GameMainWindow gameMenu = new GameMainWindow(username);
+            gameMenu.Show();
+            Window.GetWindow(this).Close();
         }
 
         private static void ApplyLanguage(string cultureCode)
         {
-                var culture = new CultureInfo(cultureCode);
-                Thread.CurrentThread.CurrentUICulture = culture;
-                Thread.CurrentThread.CurrentCulture = culture;
+            var culture = new CultureInfo(cultureCode);
+            Thread.CurrentThread.CurrentUICulture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
 
-                if (GameClient.Properties.Settings.Default.LanguageCode != cultureCode)
-                {
-                    GameClient.Properties.Settings.Default.LanguageCode = cultureCode;
-                    GameClient.Properties.Settings.Default.Save();
-                }
-            
-            
+            if (GameClient.Properties.Settings.Default.LanguageCode != cultureCode)
+            {
+                GameClient.Properties.Settings.Default.LanguageCode = cultureCode;
+                GameClient.Properties.Settings.Default.Save();
+            }
         }
 
         private static void CloseClient(GameServiceClient client)
@@ -147,6 +182,10 @@ namespace GameClient.Views
             {
                 client.Abort();
             }
+            catch (Exception)
+            {
+                client.Abort();
+            }
         }
 
         private bool IsFormValid()
@@ -156,13 +195,13 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
-                ShowError(UsernameBorder, GameClient.Resources.Strings.EmptyUsernameLabel);
+                ShowError(UsernameBorder, GameClient.Resources.Strings.Login_Val_EmptyField);
                 isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
-                ShowError(PasswordBorder, GameClient.Resources.Strings.EmptyPasswordLabel);
+                ShowError(PasswordBorder, GameClient.Resources.Strings.Login_Val_EmptyField);
                 isValid = false;
             }
 
@@ -229,7 +268,7 @@ namespace GameClient.Views
                     "Acción bloqueada",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            }), DispatcherPriority.Background);
         }
 
         private void OnPasswordBoxPasting(object sender, DataObjectPastingEventArgs e)
@@ -242,7 +281,7 @@ namespace GameClient.Views
                     "Acción bloqueada",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            }), DispatcherPriority.Background);
         }
     }
 }

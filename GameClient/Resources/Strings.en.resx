@@ -135,6 +135,30 @@
   <data name="AsGuestButton" xml:space="preserve">
     <value>Play As Guest</value>
   </data>
+  <data name="Auth_Error_Communication" xml:space="preserve">
+    <value>Communication error while creating guest session.</value>
+  </data>
+  <data name="Auth_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance. Please try again later.</value>
+  </data>
+  <data name="Auth_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred while entering as guest.</value>
+  </data>
+  <data name="Auth_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot enter as guest.</value>
+  </data>
+  <data name="Auth_Error_ServerDown" xml:space="preserve">
+    <value>The server is not responding. Unable to create a guest session.</value>
+  </data>
+  <data name="Auth_Error_Timeout" xml:space="preserve">
+    <value>The guest request timed out. Please try again.</value>
+  </data>
+  <data name="Auth_Title_Error" xml:space="preserve">
+    <value>Authentication Error</value>
+  </data>
+  <data name="Auth_Title_Welcome" xml:space="preserve">
+    <value>Welcome!</value>
+  </data>
   <data name="AvatarErrorFallback" xml:space="preserve">
     <value>[UI Critical] Default avatar load failed: {0}</value>
   </data>
@@ -155,6 +179,36 @@
   </data>
   <data name="AvatarUpdateError" xml:space="preserve">
     <value>Error updating.</value>
+  </data>
+  <data name="Avatar_Error_Communication" xml:space="preserve">
+    <value>Communication error while saving image.</value>
+  </data>
+  <data name="Avatar_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance.</value>
+  </data>
+  <data name="Avatar_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="Avatar_Error_LoadFiles" xml:space="preserve">
+    <value>Error loading local avatar files.</value>
+  </data>
+  <data name="Avatar_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot save avatar.</value>
+  </data>
+  <data name="Avatar_Error_ServerDown" xml:space="preserve">
+    <value>Profile server not responding. Try again later.</value>
+  </data>
+  <data name="Avatar_Error_Timeout" xml:space="preserve">
+    <value>Avatar saving timed out.</value>
+  </data>
+  <data name="Avatar_Error_UpdateFailed" xml:space="preserve">
+    <value>Could not update avatar on the server.</value>
+  </data>
+  <data name="Avatar_Title_Error" xml:space="preserve">
+    <value>Save Avatar Error</value>
+  </data>
+  <data name="Avatar_Title_Success" xml:space="preserve">
+    <value>Avatar Updated</value>
   </data>
   <data name="BackButton" xml:space="preserve">
     <value>Back</value>
@@ -191,6 +245,45 @@
   </data>
   <data name="ChangeUsernameTitle" xml:space="preserve">
     <value>Change Name</value>
+  </data>
+  <data name="ChangeUser_Error_Code" xml:space="preserve">
+    <value>The entered code is incorrect or has expired.</value>
+  </data>
+  <data name="ChangeUser_Error_Communication" xml:space="preserve">
+    <value>Communication error while processing change.</value>
+  </data>
+  <data name="ChangeUser_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance.</value>
+  </data>
+  <data name="ChangeUser_Error_Exists" xml:space="preserve">
+    <value>This username is already taken.</value>
+  </data>
+  <data name="ChangeUser_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="ChangeUser_Error_Limit" xml:space="preserve">
+    <value>You reached the username change limit.</value>
+  </data>
+  <data name="ChangeUser_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot send code.</value>
+  </data>
+  <data name="ChangeUser_Error_ServerDown" xml:space="preserve">
+    <value>Profile server not responding. Try again later.</value>
+  </data>
+  <data name="ChangeUser_Error_Timeout" xml:space="preserve">
+    <value>Sending the code timed out.</value>
+  </data>
+  <data name="ChangeUser_Info_CodeSent" xml:space="preserve">
+    <value>A new code has been sent to your email.</value>
+  </data>
+  <data name="ChangeUser_Success_Msg" xml:space="preserve">
+    <value>Your username has been successfully updated.</value>
+  </data>
+  <data name="ChangeUser_Title_Error" xml:space="preserve">
+    <value>Change Username Error</value>
+  </data>
+  <data name="ChangeUser_Title_Success" xml:space="preserve">
+    <value>Username Changed</value>
   </data>
   <data name="ChatConnectError" xml:space="preserve">
     <value>Could not connect to chat server. Check configuration.</value>
@@ -299,6 +392,24 @@
   </data>
   <data name="DeactivateTitle" xml:space="preserve">
     <value>⚠ Deactivate Account</value>
+  </data>
+  <data name="Deactivate_Error_Communication" xml:space="preserve">
+    <value>Communication error while deactivating.</value>
+  </data>
+  <data name="Deactivate_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance.</value>
+  </data>
+  <data name="Deactivate_Error_General" xml:space="preserve">
+    <value>Unexpected error deactivating account.</value>
+  </data>
+  <data name="Deactivate_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot deactivate account.</value>
+  </data>
+  <data name="Deactivate_Error_ServerDown" xml:space="preserve">
+    <value>Server not responding. Try again later.</value>
+  </data>
+  <data name="Deactivate_Error_Timeout" xml:space="preserve">
+    <value>Request timed out.</value>
   </data>
   <data name="DeleteConfirmation" xml:space="preserve">
     <value>Remove {0}?</value>
@@ -831,6 +942,39 @@
   <data name="LoginPageTitle" xml:space="preserve">
     <value>Log In</value>
   </data>
+  <data name="Login_Error_AlreadyOnline" xml:space="preserve">
+    <value>User is already logged in on another device.</value>
+  </data>
+  <data name="Login_Error_Banned" xml:space="preserve">
+    <value>This account has been permanently banned.</value>
+  </data>
+  <data name="Login_Error_Communication" xml:space="preserve">
+    <value>Communication error while validating credentials.</value>
+  </data>
+  <data name="Login_Error_Credentials" xml:space="preserve">
+    <value>Invalid credentials. Check your username and password.</value>
+  </data>
+  <data name="Login_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance. Please try again later.</value>
+  </data>
+  <data name="Login_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred while trying to log in.</value>
+  </data>
+  <data name="Login_Error_Inactive" xml:space="preserve">
+    <value>Account inactive. Please verify your email before logging in.</value>
+  </data>
+  <data name="Login_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot log in.</value>
+  </data>
+  <data name="Login_Error_ServerDown" xml:space="preserve">
+    <value>The Login server is not responding. Check if the server is online.</value>
+  </data>
+  <data name="Login_Error_Timeout" xml:space="preserve">
+    <value>The login attempt timed out. Please try again.</value>
+  </data>
+  <data name="Login_Title_Error" xml:space="preserve">
+    <value>Login Error</value>
+  </data>
   <data name="MinPlayersRequired" xml:space="preserve">
     <value>At least 2 players are required.</value>
   </data>
@@ -921,6 +1065,36 @@
   <data name="ProfileLoadError" xml:space="preserve">
     <value>Could not load user profile.</value>
   </data>
+  <data name="Profile_Deactivate_Success" xml:space="preserve">
+    <value>Your account has been successfully deactivated.</value>
+  </data>
+  <data name="Profile_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance.</value>
+  </data>
+  <data name="Profile_Error_General" xml:space="preserve">
+    <value>Unexpected error loading profile.</value>
+  </data>
+  <data name="Profile_Error_Load" xml:space="preserve">
+    <value>Could not load your profile. Check your connection.</value>
+  </data>
+  <data name="Profile_Error_ServerDown" xml:space="preserve">
+    <value>The profile server is not responding.</value>
+  </data>
+  <data name="Profile_Error_Timeout" xml:space="preserve">
+    <value>Profile loading timed out.</value>
+  </data>
+  <data name="Profile_Social_Added" xml:space="preserve">
+    <value>Social link added successfully.</value>
+  </data>
+  <data name="Profile_Social_Delete" xml:space="preserve">
+    <value>Are you sure you want to delete this link?</value>
+  </data>
+  <data name="Profile_Social_Limit" xml:space="preserve">
+    <value>You reached the limit of 3 social links.</value>
+  </data>
+  <data name="Profile_User_Limit" xml:space="preserve">
+    <value>You reached the username change limit.</value>
+  </data>
   <data name="PublicMatchesTitle" xml:space="preserve">
     <value>PUBLIC MATCHES</value>
   </data>
@@ -955,7 +1129,7 @@
     <value>Communication error with the registration service. Check your network.</value>
   </data>
   <data name="Register_Error_Database" xml:space="preserve">
-    <value>An internal error occurred while saving your data. Try again later.</value>
+    <value>No connection to the database. The system is down or under maintenance. Please try again later.</value>
   </data>
   <data name="Register_Error_General" xml:space="preserve">
     <value>An unexpected error occurred during registration.</value>
@@ -1040,6 +1214,36 @@
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset Password</value>
+  </data>
+  <data name="ResetPass_Error_Communication" xml:space="preserve">
+    <value>Communication error while processing change.</value>
+  </data>
+  <data name="ResetPass_Error_CurrentIncorrect" xml:space="preserve">
+    <value>The current password entered is incorrect.</value>
+  </data>
+  <data name="ResetPass_Error_Database" xml:space="preserve">
+    <value>No connection to the database. The system is down or under maintenance.</value>
+  </data>
+  <data name="ResetPass_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred while changing password.</value>
+  </data>
+  <data name="ResetPass_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection detected. Cannot change password.</value>
+  </data>
+  <data name="ResetPass_Error_ServerDown" xml:space="preserve">
+    <value>Server not responding. Try again later.</value>
+  </data>
+  <data name="ResetPass_Error_Timeout" xml:space="preserve">
+    <value>Password change timed out.</value>
+  </data>
+  <data name="ResetPass_Success_Msg" xml:space="preserve">
+    <value>Your password has been successfully changed.</value>
+  </data>
+  <data name="ResetPass_Title_Error" xml:space="preserve">
+    <value>Change Password Error</value>
+  </data>
+  <data name="ResetPass_Title_Success" xml:space="preserve">
+    <value>Password Updated</value>
   </data>
   <data name="ResumeButton" xml:space="preserve">
     <value>RESUME</value>
@@ -1173,6 +1377,15 @@
   <data name="SocialSaveBtn" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="Social_Error_EmptyUser" xml:space="preserve">
+    <value>The username cannot be empty.</value>
+  </data>
+  <data name="Social_Error_SelectPlatform" xml:space="preserve">
+    <value>Please select a platform from the list.</value>
+  </data>
+  <data name="Social_Error_TooLong" xml:space="preserve">
+    <value>The name is too long (max 70 chars).</value>
+  </data>
   <data name="SoundHeader" xml:space="preserve">
     <value>Sound</value>
   </data>
@@ -1268,6 +1481,9 @@
   </data>
   <data name="UnexpectedErrorMessage" xml:space="preserve">
     <value>An unexpected error occurred: {0}</value>
+  </data>
+  <data name="User is already logged in on another device." xml:space="preserve">
+    <value>You must fill this field to continue.</value>
   </data>
   <data name="UsernameChannelLabel" xml:space="preserve">
     <value>Username / Channel:</value>
