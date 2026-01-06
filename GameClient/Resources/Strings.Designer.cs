@@ -1888,6 +1888,114 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con la base de datos. Sistema en mantenimiento..
+        /// </summary>
+        public static string Friends_Error_Database {
+            get {
+                return ResourceManager.GetString("Friends_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
+        /// </summary>
+        public static string Friends_Error_General {
+            get {
+                return ResourceManager.GetString("Friends_Error_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión a internet. Funciones sociales deshabilitadas..
+        /// </summary>
+        public static string Friends_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Friends_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al eliminar amigo..
+        /// </summary>
+        public static string Friends_Error_Remove {
+            get {
+                return ResourceManager.GetString("Friends_Error_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor social no responde. Intenta más tarde..
+        /// </summary>
+        public static string Friends_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Friends_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La operación tardó demasiado..
+        /// </summary>
+        public static string Friends_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Friends_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ya son amigos o hay una solicitud pendiente..
+        /// </summary>
+        public static string Friends_Req_Already {
+            get {
+                return ResourceManager.GetString("Friends_Req_Already", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Las cuentas de invitado no pueden tener amigos..
+        /// </summary>
+        public static string Friends_Req_Guest {
+            get {
+                return ResourceManager.GetString("Friends_Req_Guest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Usuario no encontrado..
+        /// </summary>
+        public static string Friends_Req_NotFound {
+            get {
+                return ResourceManager.GetString("Friends_Req_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No puedes enviarte solicitud a ti mismo..
+        /// </summary>
+        public static string Friends_Req_Self {
+            get {
+                return ResourceManager.GetString("Friends_Req_Self", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Solicitud enviada correctamente a {0}..
+        /// </summary>
+        public static string Friends_Req_Sent {
+            get {
+                return ResourceManager.GetString("Friends_Req_Sent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Amigos.
+        /// </summary>
+        public static string Friends_Title_Error {
+            get {
+                return ResourceManager.GetString("Friends_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No puedes enviarte una solicitud a ti mismo..
         /// </summary>
         public static string FriendSelfRequestError {

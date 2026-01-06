@@ -18,7 +18,7 @@ namespace GameServer.Interfaces
         Task<FriendRequestResult> SendFriendRequest(string senderUsername, string receiverUsername);
 
         [OperationContract]
-        Task<bool> RespondToFriendRequest(RespondRequestDto request);
+        Task<FriendRequestResult> RespondToFriendRequest(RespondRequestDto request);
 
         [OperationContract]
         Task<List<FriendDto>> GetFriendList(string username);
@@ -27,7 +27,7 @@ namespace GameServer.Interfaces
         Task<List<FriendDto>> GetPendingRequests(string username);
 
         [OperationContract]
-        Task<bool> RemoveFriend(string username, string friendUsername);
+        Task<FriendRequestResult> RemoveFriend(string username, string friendUsername);
 
         [OperationContract]
         void SendGameInvitation(GameInvitationDto invitation);

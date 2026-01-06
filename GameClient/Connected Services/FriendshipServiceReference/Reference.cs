@@ -33,7 +33,10 @@ namespace GameClient.FriendshipServiceReference {
         GuestRestriction = 4,
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
-        Error = 5,
+        DatabaseError = 5,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Error = 6,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -290,10 +293,10 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> SendFriendRequestAsync(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
-        bool RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request);
+        GameClient.FriendshipServiceReference.FriendRequestResult RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
-        System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request);
+        System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetFriendList", ReplyAction="http://tempuri.org/IFriendshipService/GetFriendListResponse")]
         GameClient.FriendshipServiceReference.FriendDto[] GetFriendList(string username);
@@ -308,10 +311,10 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetPendingRequestsAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
-        bool RemoveFriend(string username, string friendUsername);
+        GameClient.FriendshipServiceReference.FriendRequestResult RemoveFriend(string username, string friendUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
-        System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername);
+        System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> RemoveFriendAsync(string username, string friendUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendGameInvitation", ReplyAction="http://tempuri.org/IFriendshipService/SendGameInvitationResponse")]
         void SendGameInvitation(GameClient.FriendshipServiceReference.GameInvitationDto invitation);
@@ -394,11 +397,11 @@ namespace GameClient.FriendshipServiceReference {
             return base.Channel.SendFriendRequestAsync(senderUsername, receiverUsername);
         }
         
-        public bool RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request) {
+        public GameClient.FriendshipServiceReference.FriendRequestResult RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request) {
             return base.Channel.RespondToFriendRequest(request);
         }
         
-        public System.Threading.Tasks.Task<bool> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request) {
+        public System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request) {
             return base.Channel.RespondToFriendRequestAsync(request);
         }
         
@@ -418,11 +421,11 @@ namespace GameClient.FriendshipServiceReference {
             return base.Channel.GetPendingRequestsAsync(username);
         }
         
-        public bool RemoveFriend(string username, string friendUsername) {
+        public GameClient.FriendshipServiceReference.FriendRequestResult RemoveFriend(string username, string friendUsername) {
             return base.Channel.RemoveFriend(username, friendUsername);
         }
         
-        public System.Threading.Tasks.Task<bool> RemoveFriendAsync(string username, string friendUsername) {
+        public System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> RemoveFriendAsync(string username, string friendUsername) {
             return base.Channel.RemoveFriendAsync(username, friendUsername);
         }
         

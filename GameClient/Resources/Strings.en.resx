@@ -726,6 +726,42 @@
   <data name="FriendshipTitle" xml:space="preserve">
     <value>Friend Management</value>
   </data>
+  <data name="Friends_Error_Database" xml:space="preserve">
+    <value>No connection to the database. System under maintenance.</value>
+  </data>
+  <data name="Friends_Error_General" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="Friends_Error_NoInternet" xml:space="preserve">
+    <value>No internet connection. Social features disabled.</value>
+  </data>
+  <data name="Friends_Error_Remove" xml:space="preserve">
+    <value>Error removing friend.</value>
+  </data>
+  <data name="Friends_Error_ServerDown" xml:space="preserve">
+    <value>Social server is not responding. Try again later.</value>
+  </data>
+  <data name="Friends_Error_Timeout" xml:space="preserve">
+    <value>Operation timed out.</value>
+  </data>
+  <data name="Friends_Req_Already" xml:space="preserve">
+    <value>Already friends or pending request.</value>
+  </data>
+  <data name="Friends_Req_Guest" xml:space="preserve">
+    <value>Guest accounts cannot have friends.</value>
+  </data>
+  <data name="Friends_Req_NotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="Friends_Req_Self" xml:space="preserve">
+    <value>You cannot send a request to yourself.</value>
+  </data>
+  <data name="Friends_Req_Sent" xml:space="preserve">
+    <value>Friend request sent successfully to {0}.</value>
+  </data>
+  <data name="Friends_Title_Error" xml:space="preserve">
+    <value>Friendship Error</value>
+  </data>
   <data name="FullScreenMode" xml:space="preserve">
     <value>Full Screen</value>
   </data>

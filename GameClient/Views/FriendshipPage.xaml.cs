@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,10 +26,7 @@ namespace GameClient.Views
 
         public int RequestCount
         {
-            get
-            {
-                return _requestCount;
-            }
+            get { return _requestCount; }
             set
             {
                 _requestCount = value;
@@ -75,6 +73,19 @@ namespace GameClient.Views
 
             Loaded += FriendshipPage_Loaded;
             Unloaded += FriendshipPage_Unloaded;
+        }
+
+        private string GetResourceString(string key)
+        {
+            var res = GameClient.Resources.Strings.ResourceManager.GetString(key);
+            return string.IsNullOrEmpty(res) ? key : res;
+        }
+
+        private void ShowTranslatedMessageBox(string messageKey, string titleKey, MessageBoxImage icon)
+        {
+            string message = GetResourceString(messageKey);
+            string title = GetResourceString(titleKey);
+            MessageBox.Show(message, title, MessageBoxButton.OK, icon);
         }
 
         private void ShowCustomDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
@@ -126,34 +137,45 @@ namespace GameClient.Views
         {
             Dispatcher.InvokeAsync(async () =>
             {
-                try
-                {
-                    await LoadDataAsync();
-                }
-                catch (CommunicationException)
-                {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                }
-                catch (TimeoutException)
-                {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                }
+                await LoadDataAsync();
             });
         }
 
         private async Task LoadDataAsync()
         {
-            await LoadFriendsAsync();
-            await LoadRequestsAsync();
-            await LoadSentRequestsAsync();
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Friends_Error_NoInternet", "Friends_Title_Error", MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                await LoadFriendsAsync();
+                await LoadRequestsAsync();
+                await LoadSentRequestsAsync();
+            }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+            catch (TimeoutException)
+            {
+                System.Diagnostics.Debug.WriteLine("Timeout loading friends data.");
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+            }
         }
 
         private async Task LoadFriendsAsync()
         {
-            if (_friendshipManager == null)
-            {
-                return;
-            }
+            if (_friendshipManager == null) return;
 
             var friends = await _friendshipManager.GetFriendListAsync();
 
@@ -188,10 +210,7 @@ namespace GameClient.Views
 
         private async Task LoadRequestsAsync()
         {
-            if (_friendshipManager == null)
-            {
-                return;
-            }
+            if (_friendshipManager == null) return;
 
             var requests = await _friendshipManager.GetPendingRequestsAsync();
 
@@ -223,10 +242,7 @@ namespace GameClient.Views
 
         private async Task LoadSentRequestsAsync()
         {
-            if (_friendshipManager == null)
-            {
-                return;
-            }
+            if (_friendshipManager == null) return;
 
             var sent = await _friendshipManager.GetSentRequestsAsync();
 
@@ -274,10 +290,7 @@ namespace GameClient.Views
 
             if (target.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
             {
-                ShowCustomDialog(
-                    GameClient.Resources.Strings.DialogErrorTitle,
-                    GameClient.Resources.Strings.FriendSelfRequestError,
-                    FontAwesome.WPF.FontAwesomeIcon.UserTimes);
+                ShowTranslatedMessageBox("Friends_Req_Self", "Friends_Title_Error", MessageBoxImage.Warning);
                 return;
             }
 
@@ -287,91 +300,91 @@ namespace GameClient.Views
                 return;
             }
 
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Friends_Error_NoInternet", "Friends_Title_Error", MessageBoxImage.Error);
+                return;
+            }
+
             try
             {
                 var result = await _friendshipManager.SendFriendRequestAsync(target);
 
                 if (result == FriendRequestResult.Success)
                 {
-                    ShowSuccessMessage(string.Format(GameClient.Resources.Strings.FriendRequestSentSuccess, target));
+                    string msgFormat = GetResourceString("Friends_Req_Sent");
+                    string title = GameClient.Resources.Strings.DialogSuccessTitle;
+                    ShowCustomDialog(title, string.Format(msgFormat, target), FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
+
                     SearchUserBox.Text = string.Empty;
                     await LoadSentRequestsAsync();
                 }
-                else if (result == FriendRequestResult.AlreadyFriends)
-                {
-                    ShowCustomDialog(
-                        GameClient.Resources.Strings.DialogInfoTitle,
-                        GameClient.Resources.Strings.FriendAlreadyFriends,
-                        FontAwesome.WPF.FontAwesomeIcon.Users);
-                }
-                else if (result == FriendRequestResult.Pending)
-                {
-                    ShowWarningMessage(GameClient.Resources.Strings.FriendAlreadyFriends);
-                }
-                else if (result == FriendRequestResult.TargetNotFound)
-                {
-                    ShowCustomDialog(
-                        GameClient.Resources.Strings.DialogWarningTitle,
-                        GameClient.Resources.Strings.FriendNotFound,
-                        FontAwesome.WPF.FontAwesomeIcon.SearchMinus);
-                }
                 else
                 {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                    HandleRequestError(result);
                 }
             }
-            catch (CommunicationException)
+            catch (EndpointNotFoundException)
             {
-                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
             }
             catch (TimeoutException)
             {
-                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                ShowTranslatedMessageBox("Friends_Error_Timeout", "Friends_Title_Error", MessageBoxImage.Warning);
             }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+            catch (Exception)
+            {
+                ShowTranslatedMessageBox("Friends_Error_General", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+        }
+
+        private void HandleRequestError(FriendRequestResult result)
+        {
+            string msgKey = "Friends_Error_General";
+            string titleKey = "Friends_Title_Error";
+            MessageBoxImage icon = MessageBoxImage.Error;
+
+            switch (result)
+            {
+                case FriendRequestResult.AlreadyFriends:
+                case FriendRequestResult.Pending:
+                    msgKey = "Friends_Req_Already";
+                    titleKey = "DialogInfoTitle";
+                    icon = MessageBoxImage.Information;
+                    break;
+                case FriendRequestResult.TargetNotFound:
+                    msgKey = "Friends_Req_NotFound";
+                    titleKey = "DialogWarningTitle";
+                    icon = MessageBoxImage.Warning;
+                    break;
+                case FriendRequestResult.GuestRestriction:
+                    msgKey = "Friends_Req_Guest";
+                    break;
+                case FriendRequestResult.DatabaseError:
+                    msgKey = "Friends_Error_Database";
+                    break;
+                case FriendRequestResult.Error:
+                    msgKey = "Friends_Error_General";
+                    break;
+            }
+            ShowTranslatedMessageBox(msgKey, titleKey, icon);
         }
 
         private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag != null)
-            {
-                string requester = btn.Tag.ToString();
-                btn.IsEnabled = false;
-
-                if (_friendshipManager == null)
-                {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                    btn.IsEnabled = true;
-                    return;
-                }
-
-                try
-                {
-                    bool success = await _friendshipManager.RespondToFriendRequestAsync(requester, true);
-
-                    if (success)
-                    {
-                        await LoadDataAsync();
-                    }
-                    else
-                    {
-                        ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        btn.IsEnabled = true;
-                    }
-                }
-                catch (CommunicationException)
-                {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                    btn.IsEnabled = true;
-                }
-                catch (TimeoutException)
-                {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                    btn.IsEnabled = true;
-                }
-            }
+            await RespondToRequest(sender, true);
         }
 
         private async void RejectRequest_Click(object sender, RoutedEventArgs e)
+        {
+            await RespondToRequest(sender, false);
+        }
+
+        private async Task RespondToRequest(object sender, bool accept)
         {
             if (sender is Button btn && btn.Tag != null)
             {
@@ -385,28 +398,45 @@ namespace GameClient.Views
                     return;
                 }
 
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    ShowTranslatedMessageBox("Friends_Error_NoInternet", "Friends_Title_Error", MessageBoxImage.Error);
+                    btn.IsEnabled = true;
+                    return;
+                }
+
                 try
                 {
-                    bool success = await _friendshipManager.RespondToFriendRequestAsync(requester, false);
+                    // CAMBIO: Ahora recibe Enum en lugar de bool
+                    var result = await _friendshipManager.RespondToFriendRequestAsync(requester, accept);
 
-                    if (success)
+                    if (result == FriendRequestResult.Success)
                     {
                         await LoadDataAsync();
                     }
                     else
                     {
-                        ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        btn.IsEnabled = true;
+                        HandleRequestError(result);
                     }
                 }
-                catch (CommunicationException)
+                catch (EndpointNotFoundException)
                 {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                    btn.IsEnabled = true;
+                    ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
                 }
                 catch (TimeoutException)
                 {
-                    ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                    ShowTranslatedMessageBox("Friends_Error_Timeout", "Friends_Title_Error", MessageBoxImage.Warning);
+                }
+                catch (CommunicationException)
+                {
+                    ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+                }
+                catch (Exception)
+                {
+                    ShowTranslatedMessageBox("Friends_Error_General", "Friends_Title_Error", MessageBoxImage.Error);
+                }
+                finally
+                {
                     btn.IsEnabled = true;
                 }
             }
@@ -417,42 +447,13 @@ namespace GameClient.Views
             if (sender is Button btn && btn.Tag != null)
             {
                 string target = btn.Tag.ToString();
+                string msgFormat = GameClient.Resources.Strings.FriendCancelRequestConfirm;
+                string msg = string.Format(msgFormat, target);
 
-                ShowCustomDialog(
-                    GameClient.Resources.Strings.DialogConfirmTitle,
-                    GameClient.Resources.Strings.FriendCancelRequestConfirm,
-                    FontAwesome.WPF.FontAwesomeIcon.Undo,
-                    true,
-                    async () =>
-                    {
-                        if (_friendshipManager == null)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                            return;
-                        }
-
-                        try
-                        {
-                            bool success = await _friendshipManager.RemoveFriendAsync(target);
-
-                            if (success)
-                            {
-                                await LoadSentRequestsAsync();
-                            }
-                            else
-                            {
-                                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                            }
-                        }
-                        catch (CommunicationException)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        }
-                        catch (TimeoutException)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        }
-                    });
+                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, msg, FontAwesome.WPF.FontAwesomeIcon.Undo, true, async () =>
+                {
+                    await RemoveFriendOrRequest(target);
+                });
             }
         }
 
@@ -461,52 +462,65 @@ namespace GameClient.Views
             if (sender is Button btn && btn.Tag != null)
             {
                 string friend = btn.Tag.ToString();
+                string msgFormat = GameClient.Resources.Strings.FriendDeleteConfirm;
+                string msg = string.Format(msgFormat, friend);
 
-                string confirmMessage = string.Format(GameClient.Resources.Strings.FriendDeleteConfirm, friend);
+                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, msg, FontAwesome.WPF.FontAwesomeIcon.UserTimes, true, async () =>
+                {
+                    await RemoveFriendOrRequest(friend);
+                });
+            }
+        }
 
-                ShowCustomDialog(
-                    GameClient.Resources.Strings.DialogConfirmTitle,
-                    confirmMessage,
-                    FontAwesome.WPF.FontAwesomeIcon.UserTimes,
-                    true,
-                    async () =>
-                    {
-                        if (_friendshipManager == null)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                            return;
-                        }
+        private async Task RemoveFriendOrRequest(string targetUsername)
+        {
+            if (_friendshipManager == null)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
+                return;
+            }
 
-                        try
-                        {
-                            bool success = await _friendshipManager.RemoveFriendAsync(friend);
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Friends_Error_NoInternet", "Friends_Title_Error", MessageBoxImage.Error);
+                return;
+            }
 
-                            if (!success)
-                            {
-                                ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                            }
-                            else
-                            {
-                                await LoadFriendsAsync();
-                            }
-                        }
-                        catch (CommunicationException)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        }
-                        catch (TimeoutException)
-                        {
-                            ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle);
-                        }
-                    });
+            try
+            {
+                // CAMBIO: Ahora recibe Enum en lugar de bool
+                var result = await _friendshipManager.RemoveFriendAsync(targetUsername);
+
+                if (result == FriendRequestResult.Success)
+                {
+                    await LoadDataAsync();
+                }
+                else
+                {
+                    HandleRequestError(result);
+                }
+            }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
+            }
+            catch (TimeoutException)
+            {
+                ShowTranslatedMessageBox("Friends_Error_Timeout", "Friends_Title_Error", MessageBoxImage.Warning);
+            }
+            catch (Exception)
+            {
+                ShowTranslatedMessageBox("Friends_Error_General", "Friends_Title_Error", MessageBoxImage.Error);
             }
         }
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = Window.GetWindow(this) as GameMainWindow;
-
-            if (mainWindow != null)
+            if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {
                 await mainWindow.ShowMainMenu();
             }
@@ -515,7 +529,6 @@ namespace GameClient.Views
         private void ShowErrorMessage(string message)
         {
             string title = GameClient.Resources.Strings.DialogErrorTitle;
-
             if (Dispatcher.CheckAccess())
             {
                 ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
@@ -529,7 +542,6 @@ namespace GameClient.Views
         private void ShowWarningMessage(string message)
         {
             string title = GameClient.Resources.Strings.DialogWarningTitle;
-
             if (Dispatcher.CheckAccess())
             {
                 ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
@@ -543,24 +555,9 @@ namespace GameClient.Views
         private void OnTextBoxPasting(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
-            ShowCustomDialog(
-                GameClient.Resources.Strings.FriendActionBlockedTitle,
-                GameClient.Resources.Strings.FriendPasteBlocked,
-                FontAwesome.WPF.FontAwesomeIcon.Lock);
-        }
-
-        private void ShowSuccessMessage(string message)
-        {
-            string title = GameClient.Resources.Strings.DialogSuccessTitle;
-
-            if (Dispatcher.CheckAccess())
-            {
-                ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
-            }
-            else
-            {
-                Dispatcher.Invoke(() => ShowCustomDialog(title, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle));
-            }
+            ShowCustomDialog(GameClient.Resources.Strings.FriendActionBlockedTitle,
+                             GameClient.Resources.Strings.FriendPasteBlocked,
+                             FontAwesome.WPF.FontAwesomeIcon.Lock);
         }
     }
 }

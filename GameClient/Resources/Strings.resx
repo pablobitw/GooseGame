@@ -735,6 +735,42 @@
   <data name="FriendshipTitle" xml:space="preserve">
     <value>Gestión de Amigos</value>
   </data>
+  <data name="Friends_Error_Database" xml:space="preserve">
+    <value>No hay conexión con la base de datos. Sistema en mantenimiento.</value>
+  </data>
+  <data name="Friends_Error_General" xml:space="preserve">
+    <value>Ocurrió un error inesperado.</value>
+  </data>
+  <data name="Friends_Error_NoInternet" xml:space="preserve">
+    <value>No hay conexión a internet. Funciones sociales deshabilitadas.</value>
+  </data>
+  <data name="Friends_Error_Remove" xml:space="preserve">
+    <value>Error al eliminar amigo.</value>
+  </data>
+  <data name="Friends_Error_ServerDown" xml:space="preserve">
+    <value>El servidor social no responde. Intenta más tarde.</value>
+  </data>
+  <data name="Friends_Error_Timeout" xml:space="preserve">
+    <value>La operación tardó demasiado.</value>
+  </data>
+  <data name="Friends_Req_Already" xml:space="preserve">
+    <value>Ya son amigos o hay una solicitud pendiente.</value>
+  </data>
+  <data name="Friends_Req_Guest" xml:space="preserve">
+    <value>Las cuentas de invitado no pueden tener amigos.</value>
+  </data>
+  <data name="Friends_Req_NotFound" xml:space="preserve">
+    <value>Usuario no encontrado.</value>
+  </data>
+  <data name="Friends_Req_Self" xml:space="preserve">
+    <value>No puedes enviarte solicitud a ti mismo.</value>
+  </data>
+  <data name="Friends_Req_Sent" xml:space="preserve">
+    <value>Solicitud enviada correctamente a {0}.</value>
+  </data>
+  <data name="Friends_Title_Error" xml:space="preserve">
+    <value>Error de Amigos</value>
+  </data>
   <data name="FullScreenMode" xml:space="preserve">
     <value>Pantalla Completa</value>
   </data>

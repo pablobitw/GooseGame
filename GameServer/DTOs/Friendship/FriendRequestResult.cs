@@ -18,7 +18,9 @@ namespace GameServer.DTOs.Friendship
         TargetNotFound,     
 
         [EnumMember]
-        GuestRestriction,   
+        GuestRestriction,
+        [EnumMember]
+        DatabaseError,
 
         [EnumMember]
         Error               

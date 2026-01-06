@@ -13,11 +13,10 @@ namespace GameServer.Services
     {
         public void Connect(string username)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IFriendshipServiceCallback>();
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                logic.ConnectUser(username, callback);
+                logic.Connect(username);
             }
         }
 
@@ -26,7 +25,7 @@ namespace GameServer.Services
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                logic.DisconnectUser(username);
+                logic.Disconnect(username);
             }
         }
 
@@ -35,25 +34,25 @@ namespace GameServer.Services
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.SendFriendRequestAsync(senderUsername, receiverUsername);
+                return await logic.SendFriendRequest(senderUsername, receiverUsername);
             }
         }
 
-        public async Task<bool> RespondToFriendRequest(RespondRequestDto request)
+        public async Task<FriendRequestResult> RespondToFriendRequest(RespondRequestDto request)
         {
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.RespondToFriendRequestAsync(request);
+                return await logic.RespondToFriendRequest(request);
             }
         }
 
-        public async Task<bool> RemoveFriend(string username, string friendUsername)
+        public async Task<FriendRequestResult> RemoveFriend(string username, string friendUsername)
         {
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.RemoveFriendAsync(username, friendUsername);
+                return await logic.RemoveFriend(username, friendUsername);
             }
         }
 
@@ -62,7 +61,7 @@ namespace GameServer.Services
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.GetFriendListAsync(username);
+                return await logic.GetFriendList(username);
             }
         }
 
@@ -71,7 +70,7 @@ namespace GameServer.Services
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.GetPendingRequestsAsync(username);
+                return await logic.GetPendingRequests(username);
             }
         }
 
@@ -80,13 +79,17 @@ namespace GameServer.Services
             using (var repository = new FriendshipRepository())
             {
                 var logic = new FriendshipAppService(repository);
-                return await logic.GetSentRequestsAsync(username);
+                return await logic.GetSentRequests(username);
             }
         }
 
         public void SendGameInvitation(GameInvitationDto invitation)
         {
-            FriendshipAppService.SendGameInvitation(invitation);
+            using (var repository = new FriendshipRepository())
+            {
+                var logic = new FriendshipAppService(repository);
+                logic.SendGameInvitation(invitation);
+            }
         }
     }
 }
