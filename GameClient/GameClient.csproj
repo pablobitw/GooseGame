@@ -118,7 +118,6 @@
     <Compile Include="Helpers\GameplayServiceManager.cs" />
     <Compile Include="Helpers\LobbyChatController.cs" />
     <Compile Include="Helpers\LobbyServiceManager.cs" />
-    <Compile Include="Helpers\SessionManager.cs" />
     <Compile Include="Helpers\UserSession.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Models\AvatarItem.cs" />
