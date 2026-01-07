@@ -36,7 +36,10 @@ namespace GameClient.FriendshipServiceReference {
         DatabaseError = 5,
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
-        Error = 6,
+        TimeOutError = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Error = 7,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]

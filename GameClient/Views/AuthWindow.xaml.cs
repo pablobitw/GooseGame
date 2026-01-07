@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference;
+﻿using GameClient.AuthServiceReference;
 using GameClient.Helpers;
 using GameClient.Views;
 using System;
@@ -49,7 +49,7 @@ namespace GameClient
 
             if (NetworkInterface.GetIsNetworkAvailable())
             {
-                var client = new GameServiceClient();
+                var client = new AuthServiceClient();
 
                 try
                 {
@@ -115,7 +115,7 @@ namespace GameClient
             }
         }
 
-        private static void CloseServiceClient(GameServiceClient client)
+        private static void CloseServiceClient(AuthServiceClient client)
         {
             try
             {

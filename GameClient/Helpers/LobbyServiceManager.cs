@@ -128,6 +128,7 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.KickPlayerAsync(request));
         }
 
+
         private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action)
         {
             try
@@ -143,17 +144,17 @@ namespace GameClient.Helpers
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw;
+                throw; 
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw;
+                throw; 
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw;
+                throw; 
             }
         }
 

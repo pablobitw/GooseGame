@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using GameClient.GameServiceReference;
+using GameClient.AuthServiceReference;
 using System.ServiceModel;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
@@ -92,7 +92,7 @@ namespace GameClient.Views
                     string password = PasswordBox.Password;
                     string selectedLanguage = GetSelectedLanguage();
 
-                    var serviceClient = new GameServiceClient();
+                    var serviceClient = new AuthServiceClient();
 
                     try
                     {
@@ -185,7 +185,7 @@ namespace GameClient.Views
             }
         }
 
-        private static void CloseServiceClient(GameServiceClient serviceClient)
+        private static void CloseServiceClient(AuthServiceClient serviceClient)
         {
             if (serviceClient.State == CommunicationState.Opened)
             {

@@ -158,6 +158,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>GameDatabase.edmx</DependentUpon>
     </Compile>
+    <Compile Include="GameEngines\GooseBoardEngine.cs" />
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
     <Compile Include="Helpers\GameManager.cs" />
@@ -169,7 +170,7 @@
     <Compile Include="Interfaces\IFriendshipService.cs" />
     <Compile Include="Interfaces\IFriendshipServiceCallback.cs" />
     <Compile Include="Interfaces\IGameplayService.cs" />
-    <Compile Include="Interfaces\IGameService.cs" />
+    <Compile Include="Interfaces\IAuthService.cs" />
     <Compile Include="Interfaces\ILeaderboardService.cs" />
     <Compile Include="Interfaces\ILobbyService.cs" />
     <Compile Include="Interfaces\ILobbyServiceCallback.cs" />
@@ -218,7 +219,7 @@
     <Compile Include="Services\ChatService.cs" />
     <Compile Include="Services\FriendshipService.cs" />
     <Compile Include="Services\GameplayService.cs" />
-    <Compile Include="Services\GameService.cs" />
+    <Compile Include="Services\AuthService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\LeaderboardService.cs" />
@@ -277,6 +278,7 @@
       <LastGenOutput>ServerStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -14,8 +14,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
 {
-    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.Single)]
-    public class FriendshipAppService : IFriendshipService
+    public class FriendshipAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(FriendshipAppService));
 
@@ -24,9 +23,9 @@ namespace GameServer.Services.Logic
 
         private readonly IFriendshipRepository _repository;
 
-        public FriendshipAppService(IFriendshipRepository repository = null)
+        public FriendshipAppService(IFriendshipRepository repository)
         {
-            _repository = repository ?? new FriendshipRepository();
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         public void Connect(string username)
@@ -123,15 +122,25 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error DB Update enviando solicitud.", ex);
+                result = FriendRequestResult.DatabaseError;
+            }
             catch (SqlException ex)
             {
-                Log.Error("Error SQL enviando solicitud.", ex);
+                Log.Fatal("Error SQL enviando solicitud.", ex);
                 result = FriendRequestResult.DatabaseError;
             }
             catch (EntityException ex)
             {
                 Log.Error("Error EF enviando solicitud.", ex);
                 result = FriendRequestResult.DatabaseError;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout enviando solicitud.", ex);
+                result = FriendRequestResult.TimeOutError; 
             }
             catch (Exception ex)
             {
@@ -183,14 +192,24 @@ namespace GameServer.Services.Logic
                     result = FriendRequestResult.TargetNotFound;
                 }
             }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error DB Update respondiendo solicitud.", ex);
+                result = FriendRequestResult.DatabaseError;
+            }
             catch (SqlException ex)
             {
-                Log.Error("Error SQL respondiendo solicitud.", ex);
+                Log.Fatal("Error SQL respondiendo solicitud.", ex);
                 result = FriendRequestResult.DatabaseError;
             }
             catch (EntityException ex)
             {
                 Log.Error("Error EF respondiendo solicitud.", ex);
+                result = FriendRequestResult.DatabaseError;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout respondiendo solicitud.", ex);
                 result = FriendRequestResult.DatabaseError;
             }
             catch (Exception ex)
@@ -235,15 +254,25 @@ namespace GameServer.Services.Logic
                     result = FriendRequestResult.TargetNotFound;
                 }
             }
+            catch (DbUpdateException ex)
+            {
+                Log.Error("Error DB Update eliminando amigo.", ex);
+                result = FriendRequestResult.DatabaseError;
+            }
             catch (SqlException ex)
             {
-                Log.Error("Error SQL eliminando amigo.", ex);
+                Log.Fatal("Error SQL eliminando amigo.", ex);
                 result = FriendRequestResult.DatabaseError;
             }
             catch (EntityException ex)
             {
                 Log.Error("Error EF eliminando amigo.", ex);
                 result = FriendRequestResult.DatabaseError;
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout eliminando amigo.", ex);
+                result = FriendRequestResult.TimeOutError;
             }
             catch (Exception ex)
             {
@@ -287,6 +316,18 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL obteniendo lista de amigos.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF obteniendo lista de amigos.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo lista de amigos.", ex);
+            }
             catch (Exception ex)
             {
                 Log.Error($"Error obteniendo lista de amigos para {username}.", ex);
@@ -317,6 +358,18 @@ namespace GameServer.Services.Logic
                         }
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL obteniendo solicitudes pendientes.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF obteniendo solicitudes pendientes.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo solicitudes pendientes.", ex);
             }
             catch (Exception ex)
             {
@@ -349,6 +402,18 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
+            catch (SqlException ex)
+            {
+                Log.Fatal("Error SQL obteniendo solicitudes enviadas.", ex);
+            }
+            catch (EntityException ex)
+            {
+                Log.Error("Error EF obteniendo solicitudes enviadas.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Error("Timeout obteniendo solicitudes enviadas.", ex);
+            }
             catch (Exception ex)
             {
                 Log.Error($"Error obteniendo solicitudes enviadas para {username}.", ex);
@@ -364,20 +429,10 @@ namespace GameServer.Services.Logic
                 client.OnGameInvitationReceived(invitation.SenderUsername, invitation.LobbyCode));
         }
 
-        private static void NotifyUserRequestReceived(string username)
-        {
-            SafeNotifyClient(username, client => client.OnFriendRequestReceived());
-        }
 
-        private static void NotifyUserListUpdated(string username)
-        {
-            SafeNotifyClient(username, client => client.OnFriendListUpdated());
-        }
-
-        private static void NotifyUserPopUp(string targetUser, string senderUser)
-        {
-            SafeNotifyClient(targetUser, client => client.OnFriendRequestPopUp(senderUser));
-        }
+        private static void NotifyUserRequestReceived(string username) => SafeNotifyClient(username, c => c.OnFriendRequestReceived());
+        private static void NotifyUserListUpdated(string username) => SafeNotifyClient(username, c => c.OnFriendListUpdated());
+        private static void NotifyUserPopUp(string target, string sender) => SafeNotifyClient(target, c => c.OnFriendRequestPopUp(sender));
 
         private static void SafeNotifyClient(string username, Action<IFriendshipServiceCallback> action)
         {

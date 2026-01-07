@@ -1,6 +1,6 @@
 ﻿using FontAwesome.WPF;
 using GameClient.GameplayServiceReference;
-using GameClient.GameServiceReference;
+using GameClient.AuthServiceReference;
 using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
 using GameClient.UserProfileServiceReference;
@@ -310,7 +310,7 @@ namespace GameClient
                 LobbyServiceManager.Instance.Dispose();
                 GameplayServiceManager.Instance.Dispose();
 
-                using (var client = new GameServiceClient())
+                using (var client = new AuthServiceClient())
                 {
                     await client.LogoutAsync(_username);
                 }

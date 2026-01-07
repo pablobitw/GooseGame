@@ -133,7 +133,7 @@ namespace GameClient.Views
 
         private void OnPlayerJoined(PlayerLobbyDto player)
         {
-            Dispatcher.Invoke(async () =>
+            Dispatcher.InvokeAsync(async () =>
             {
                 AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
                 await RefreshLobbyState();
@@ -142,7 +142,7 @@ namespace GameClient.Views
 
         private void OnPlayerLeft(string username)
         {
-            Dispatcher.Invoke(async () =>
+            Dispatcher.InvokeAsync(async () =>
             {
                 AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
                 await RefreshLobbyState();
@@ -151,7 +151,7 @@ namespace GameClient.Views
 
         private void OnPlayerKicked(string reason)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.KickedTitle, reason, FontAwesomeIcon.ExclamationTriangle, false, () => ExitLobby());
             });
@@ -159,7 +159,7 @@ namespace GameClient.Views
 
         private void OnGameStarted()
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
                 chatController?.Close();
                 NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
@@ -168,7 +168,7 @@ namespace GameClient.Views
 
         private void OnLobbyDisbanded()
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.LobbyClosedTitle, GameClient.Resources.Strings.LobbyDisbandedByHost, FontAwesomeIcon.InfoCircle, false, () => ExitLobby());
             });
@@ -256,7 +256,7 @@ namespace GameClient.Views
             {
                 if (!NetworkInterface.GetIsNetworkAvailable())
                 {
-                    ExitLobby(); 
+                    ExitLobby();
                     return;
                 }
 
@@ -279,7 +279,7 @@ namespace GameClient.Views
             }
             catch (Exception)
             {
-                
+
             }
             finally
             {
@@ -338,6 +338,11 @@ namespace GameClient.Views
             catch (CommunicationException)
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLobbyUpdateComm, FontAwesomeIcon.Wifi);
+                StartMatchButton.IsEnabled = true;
+            }
+            catch (Exception)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
                 StartMatchButton.IsEnabled = true;
             }
         }
@@ -657,7 +662,7 @@ namespace GameClient.Views
         private void HandleLobbyError(LobbyErrorType errorType, string fallbackMessage)
         {
             string title = GameClient.Resources.Strings.DialogErrorTitle;
-            string message = fallbackMessage; 
+            string message = fallbackMessage;
             FontAwesomeIcon icon = FontAwesomeIcon.TimesCircle;
 
             switch (errorType)

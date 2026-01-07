@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using GameClient.GameServiceReference;
+using GameClient.AuthServiceReference;
 using System.ServiceModel;
 using GameClient.Views;
 using System.Windows.Threading;
@@ -35,7 +35,7 @@ namespace GameClient
                 return;
             }
 
-            var client = new GameServiceClient();
+            var client = new AuthServiceClient();
             bool verificationResult = false;
             bool connectionError = false;
 
@@ -85,7 +85,7 @@ namespace GameClient
             return true;
         }
 
-        private static void CloseClientSafely(GameServiceClient client)
+        private static void CloseClientSafely(AuthServiceClient client)
         {
             if (client.State == CommunicationState.Opened)
             {
@@ -114,7 +114,7 @@ namespace GameClient
                 button.IsEnabled = false;
             }
 
-            var client = new GameServiceClient();
+            var client = new AuthServiceClient();
             bool requestSent = false;
             bool connectionError = false;
             string errorMessage = string.Empty;

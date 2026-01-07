@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 namespace GameServer.Services
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
-    public class GameService : IGameService
+    public class AuthService : IAuthService
     {
         private readonly AuthAppService _authLogic;
 
-        public GameService() : this(new AuthRepository())
+        public AuthService() : this(new AuthRepository())
         {
         }
 
-        public GameService(IAuthRepository repository)
+        public AuthService(IAuthRepository repository)
         {
             _authLogic = new AuthAppService(repository);
         }

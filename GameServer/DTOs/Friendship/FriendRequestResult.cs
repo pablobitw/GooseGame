@@ -21,6 +21,8 @@ namespace GameServer.DTOs.Friendship
         GuestRestriction,
         [EnumMember]
         DatabaseError,
+        [EnumMember]
+        TimeOutError,
 
         [EnumMember]
         Error               

@@ -1,5 +1,6 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
+using GameServer.GameEngines;
 using GameServer.Helpers;
 using GameServer.Models;
 using GameServer.Repositories;
@@ -18,34 +19,22 @@ namespace GameServer.Services.Logic
     public class GameplayAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(GameplayAppService));
-        private static readonly Random RandomGenerator = new Random();
-        private static readonly object _randomLock = new object();
+
         private static readonly ConcurrentDictionary<int, bool> _processingGames = new ConcurrentDictionary<int, bool>();
         private static readonly ConcurrentDictionary<string, int> _afkStrikes = new ConcurrentDictionary<string, int>();
-
-        private static readonly int[] GooseTiles = { 5, 9, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
-        private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
 
         private readonly IGameplayRepository _repository;
         private readonly VoteLogic _voteLogic;
         private readonly Func<SanctionAppService> _sanctionServiceFactory;
-
-        private class BoardMoveResult
-        {
-            public int FinalPosition { get; set; }
-            public string Message { get; set; }
-            public bool IsExtraTurn { get; set; }
-            public int TurnsToSkip { get; set; }
-            public string LuckyBoxTag { get; set; }
-        }
+        private readonly GooseBoardEngine _gameEngine; 
 
         public GameplayAppService(IGameplayRepository repository)
         {
             _repository = repository;
             _voteLogic = new VoteLogic(repository);
             _sanctionServiceFactory = () => new SanctionAppService();
+            _gameEngine = new GooseBoardEngine(); 
         }
-
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
@@ -96,14 +85,14 @@ namespace GameServer.Services.Logic
             }
             catch (EntityException ex)
             {
-                Log.Error("Entity Error in RollDice", ex);
+                Log.Error("Entity Error en RollDice", ex);
                 result.ErrorType = GameplayErrorType.DatabaseError;
                 result.ErrorMessage = "Error interno de datos.";
                 result.Success = false;
             }
             catch (Exception ex)
             {
-                Log.Error("Unexpected Error in RollDice", ex);
+                Log.Error("Unexpected Error en RollDice", ex);
                 result.ErrorType = GameplayErrorType.Unknown;
                 result.ErrorMessage = "Error inesperado en el servidor.";
                 result.Success = false;
@@ -118,6 +107,105 @@ namespace GameServer.Services.Logic
 
             return result;
         }
+
+        private async Task<DiceRollDto> ProcessGameTurn(Game game, string username)
+        {
+            var players = await _repository.GetPlayersInGameAsync(game.IdGame);
+            var sortedPlayers = players.OrderBy(p => p.IdPlayer).ToList();
+
+            if (!await ValidateTurnAsync(game.IdGame, sortedPlayers, username))
+            {
+                return new DiceRollDto
+                {
+                    Success = false,
+                    ErrorType = GameplayErrorType.NotYourTurn,
+                    ErrorMessage = "No es tu turno."
+                };
+            }
+
+            _afkStrikes.TryRemove(username, out _);
+            GameManager.Instance.UpdateActivity(game.IdGame);
+
+            var player = sortedPlayers.First(p => p.Username == username);
+
+            DiceRollDto result;
+            if (player.TurnsSkipped > 0)
+            {
+                result = await HandleSkippedTurnAsync(game.IdGame, player);
+            }
+            else
+            {
+                result = await ProcessNormalTurnAsync(game, player);
+            }
+
+            result.Success = true;
+            result.ErrorType = GameplayErrorType.None;
+
+            var gameCheck = await _repository.GetGameByIdAsync(game.IdGame);
+            if (gameCheck.GameStatus == (int)GameStatus.InProgress)
+            {
+                await NotifyTurnUpdate(game.IdGame);
+            }
+
+            return result;
+        }
+
+        private async Task<DiceRollDto> ProcessNormalTurnAsync(Game game, Player player)
+        {
+            var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
+            int currentPos = lastMove?.FinalPosition ?? 0;
+
+            var (d1, d2) = _gameEngine.GenerateDiceRoll(currentPos);
+            int total = d1 + d2;
+            int initialCalcPos = currentPos + total;
+
+            int pCoins = player.Coins;
+            int pCommon = player.TicketCommon;
+            int pEpic = player.TicketEpic;
+            int pLegend = player.TicketLegendary;
+
+            var ruleResult = _gameEngine.CalculateBoardRules(initialCalcPos, player.Username, ref pCoins, ref pCommon, ref pEpic, ref pLegend);
+
+            player.Coins = pCoins;
+            player.TicketCommon = pCommon;
+            player.TicketEpic = pEpic;
+            player.TicketLegendary = pLegend;
+
+            DiceRollDto resultDto;
+
+            if (ruleResult.Message == "WIN")
+            {
+                resultDto = await HandleGameVictoryAsync(game, player, d1, d2, total, currentPos);
+            }
+            else
+            {
+                string description = _gameEngine.BuildActionDescription(player.Username, d1, d2, ruleResult);
+
+                player.TurnsSkipped = ruleResult.TurnsToSkip;
+
+                int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
+
+                var move = new MoveRecord
+                {
+                    GameIdGame = game.IdGame,
+                    PlayerIdPlayer = player.IdPlayer,
+                    DiceOne = d1,
+                    DiceTwo = d2,
+                    TurnNumber = turnNum,
+                    ActionDescription = description,
+                    StartPosition = currentPos,
+                    FinalPosition = ruleResult.FinalPosition
+                };
+
+                _repository.AddMove(move);
+                await _repository.SaveChangesAsync();
+
+                resultDto = new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
+            }
+
+            return resultDto;
+        }
+
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
@@ -144,7 +232,7 @@ namespace GameServer.Services.Logic
 
                 if (player != null && player.GameIdGame != game.IdGame)
                 {
-                    gameState.Success = true; 
+                    gameState.Success = true;
                     gameState.IsKicked = true;
                     gameState.IsBanned = player.IsBanned;
                     gameState.ErrorType = GameplayErrorType.PlayerKicked;
@@ -165,25 +253,25 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Error("SQL Error obtaining state", ex);
+                Log.Error("SQL Error", ex);
                 gameState.ErrorType = GameplayErrorType.DatabaseError;
                 gameState.ErrorMessage = "Error de base de datos.";
             }
             catch (EntityException ex)
             {
-                Log.Error("Entity Error obtaining state", ex);
+                Log.Error("Entity Error", ex);
                 gameState.ErrorType = GameplayErrorType.DatabaseError;
                 gameState.ErrorMessage = "Error interno de datos.";
             }
             catch (TimeoutException ex)
             {
-                Log.Error("Timeout obtaining state", ex);
+                Log.Error("Timeout", ex);
                 gameState.ErrorType = GameplayErrorType.Timeout;
                 gameState.ErrorMessage = "Tiempo de espera agotado.";
             }
             catch (Exception ex)
             {
-                Log.Error("General Error obtaining state", ex);
+                Log.Error("General Error", ex);
                 gameState.ErrorType = GameplayErrorType.Unknown;
                 gameState.ErrorMessage = "Error desconocido.";
             }
@@ -282,49 +370,6 @@ namespace GameServer.Services.Logic
             GameManager.Instance.StopMonitoring(game.IdGame);
         }
 
-
-        private async Task<DiceRollDto> ProcessGameTurn(Game game, string username)
-        {
-            var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-            var sortedPlayers = players.OrderBy(p => p.IdPlayer).ToList();
-
-            if (!await ValidateTurnAsync(game.IdGame, sortedPlayers, username))
-            {
-                return new DiceRollDto
-                {
-                    Success = false,
-                    ErrorType = GameplayErrorType.NotYourTurn,
-                    ErrorMessage = "No es tu turno."
-                };
-            }
-
-            _afkStrikes.TryRemove(username, out _);
-            GameManager.Instance.UpdateActivity(game.IdGame);
-
-            var player = sortedPlayers.First(p => p.Username == username);
-
-            DiceRollDto result;
-            if (player.TurnsSkipped > 0)
-            {
-                result = await HandleSkippedTurnAsync(game.IdGame, player);
-            }
-            else
-            {
-                result = await ProcessNormalTurnAsync(game, player);
-            }
-
-            result.Success = true;
-            result.ErrorType = GameplayErrorType.None;
-
-            var gameCheck = await _repository.GetGameByIdAsync(game.IdGame);
-            if (gameCheck.GameStatus == (int)GameStatus.InProgress)
-            {
-                await NotifyTurnUpdate(game.IdGame);
-            }
-
-            return result;
-        }
-
         private async Task NotifyTurnUpdate(int gameId)
         {
             try
@@ -402,176 +447,6 @@ namespace GameServer.Services.Logic
             return new DiceRollDto { DiceOne = 0, DiceTwo = 0, Total = 0 };
         }
 
-        private async Task<DiceRollDto> ProcessNormalTurnAsync(Game game, Player player)
-        {
-            var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer);
-            int currentPos = lastMove?.FinalPosition ?? 0;
-
-            (int d1, int d2) = GenerateDiceRoll(currentPos);
-            int total = d1 + d2;
-            int initialCalcPos = currentPos + total;
-
-            BoardMoveResult ruleResult = CalculateBoardRules(initialCalcPos, player);
-            DiceRollDto resultDto;
-
-            if (ruleResult.Message == "WIN")
-            {
-                resultDto = await HandleGameVictoryAsync(game, player, d1, d2, total, currentPos);
-            }
-            else
-            {
-                string description = BuildActionDescription(player.Username, d1, d2, ruleResult);
-                player.TurnsSkipped = ruleResult.TurnsToSkip;
-
-                int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
-
-                var move = new MoveRecord
-                {
-                    GameIdGame = game.IdGame,
-                    PlayerIdPlayer = player.IdPlayer,
-                    DiceOne = d1,
-                    DiceTwo = d2,
-                    TurnNumber = turnNum,
-                    ActionDescription = description,
-                    StartPosition = currentPos,
-                    FinalPosition = ruleResult.FinalPosition
-                };
-
-                _repository.AddMove(move);
-                await _repository.SaveChangesAsync();
-
-                resultDto = new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
-            }
-
-            return resultDto;
-        }
-
-        private static (int, int) GenerateDiceRoll(int currentPos)
-        {
-            int d1;
-            int d2;
-            lock (_randomLock)
-            {
-                d1 = RandomGenerator.Next(1, 7);
-                d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
-            }
-            return (d1, d2);
-        }
-
-        private BoardMoveResult CalculateBoardRules(int initialPos, Player player)
-        {
-            var result = new BoardMoveResult
-            {
-                FinalPosition = initialPos,
-                IsExtraTurn = false,
-                TurnsToSkip = 0,
-                Message = string.Empty,
-                LuckyBoxTag = string.Empty
-            };
-
-            if (result.FinalPosition > 64)
-            {
-                result.FinalPosition = 64 - (result.FinalPosition - 64);
-            }
-
-            if (result.FinalPosition == 64)
-            {
-                result.Message = "WIN";
-            }
-            else
-            {
-                ApplyTileRules(result, player);
-            }
-
-            return result;
-        }
-
-        private void ApplyTileRules(BoardMoveResult result, Player player)
-        {
-            if (LuckyBoxTiles.Contains(result.FinalPosition))
-            {
-                var reward = ProcessLuckyBoxReward(player);
-                result.LuckyBoxTag = string.Format("[LUCKYBOX:{0}:{1}_{2}]", player.Username, reward.Type, reward.Amount);
-                result.Message = string.Format("¡CAJA DE LA SUERTE! {0}", reward.Description);
-            }
-            else if (GooseTiles.Contains(result.FinalPosition))
-            {
-                HandleGooseRule(result);
-            }
-            else if (result.FinalPosition == 6 || result.FinalPosition == 12)
-            {
-                HandleBridgeRule(result);
-            }
-            else
-            {
-                HandlePenaltyRules(result);
-            }
-        }
-
-        private static void HandleGooseRule(BoardMoveResult result)
-        {
-            int nextGoose = GooseTiles.FirstOrDefault(t => t > result.FinalPosition);
-            if (nextGoose != 0)
-            {
-                result.Message = string.Format("¡De Oca a Oca ({0} -> {1})! Tira de nuevo.", result.FinalPosition, nextGoose);
-                result.FinalPosition = nextGoose;
-            }
-            else
-            {
-                result.Message = "¡Oca (59)! Tira de nuevo.";
-            }
-            result.IsExtraTurn = true;
-        }
-
-        private static void HandleBridgeRule(BoardMoveResult result)
-        {
-            if (result.FinalPosition == 6)
-            {
-                result.Message = "¡De Puente a Puente! Saltas al 12 y tiras de nuevo.";
-                result.FinalPosition = 12;
-            }
-            else
-            {
-                result.Message = "¡De Puente a Puente! Regresas al 6 y tiras de nuevo.";
-                result.FinalPosition = 6;
-            }
-            result.IsExtraTurn = true;
-        }
-
-        private static void HandlePenaltyRules(BoardMoveResult result)
-        {
-            switch (result.FinalPosition)
-            {
-                case 42:
-                    result.Message = "¡Laberinto! Retrocedes a la 30.";
-                    result.FinalPosition = 30;
-                    break;
-                case 58:
-                    result.Message = "¡CALAVERA! Regresas al inicio (1).";
-                    result.FinalPosition = 1;
-                    break;
-                case 26:
-                case 53:
-                    int bonus = result.FinalPosition;
-                    result.Message = string.Format("¡Dados! Sumas {0} casillas extra.", bonus);
-                    result.FinalPosition += bonus;
-                    if (result.FinalPosition > 64) result.FinalPosition = 64 - (result.FinalPosition - 64);
-                    break;
-                case 19:
-                    result.Message = "¡Posada! Pierdes 1 turno.";
-                    result.TurnsToSkip = 1;
-                    break;
-                case 31:
-                    result.Message = "¡Pozo! Esperas rescate (2 turnos).";
-                    result.TurnsToSkip = 2;
-                    break;
-                case 56:
-                    result.Message = "¡Cárcel! Esperas 3 turnos.";
-                    result.TurnsToSkip = 3;
-                    break;
-            }
-        }
-
         private async Task<DiceRollDto> HandleGameVictoryAsync(Game game, Player player, int d1, int d2, int total, int currentPos)
         {
             int turnNum = await _repository.GetMoveCountAsync(game.IdGame) + 1;
@@ -604,19 +479,6 @@ namespace GameServer.Services.Logic
             _voteLogic.CancelVote(game.IdGame);
 
             return new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
-        }
-
-        private static string BuildActionDescription(string username, int d1, int d2, BoardMoveResult rule)
-        {
-            string baseMsg = d2 > 0 ? string.Format("{0} tiró {1} y {2}.", username, d1, d2) : string.Format("{0} tiró {1}.", username, d1);
-            string fullDescription = string.IsNullOrEmpty(rule.Message)
-                ? string.Format("{0} Avanza a {1}.", baseMsg, rule.FinalPosition)
-                : string.Format("{0} {1}", baseMsg, rule.Message);
-
-            if (rule.IsExtraTurn) fullDescription = "[EXTRA] " + fullDescription;
-            if (!string.IsNullOrEmpty(rule.LuckyBoxTag)) fullDescription = rule.LuckyBoxTag + " " + fullDescription;
-
-            return fullDescription;
         }
 
         private async Task<GameStateDto> BuildFinishedGameStateAsync(Game game)
@@ -741,36 +603,6 @@ namespace GameServer.Services.Logic
             await _voteLogic.CastVoteAsync(request);
         }
 
-        private RewardResult ProcessLuckyBoxReward(Player player)
-        {
-            int roll = RandomGenerator.Next(1, 101);
-            RewardResult reward;
-
-            if (roll <= 50)
-            {
-                int coins = 50;
-                player.Coins += coins;
-                reward = new RewardResult { Type = "COINS", Amount = coins, Description = string.Format("¡Has encontrado {0} Monedas de Oro!", coins) };
-            }
-            else if (roll <= 80)
-            {
-                player.TicketCommon++;
-                reward = new RewardResult { Type = "COMMON", Amount = 1, Description = "¡Has desbloqueado un Ticket COMÚN!" };
-            }
-            else if (roll <= 95)
-            {
-                player.TicketEpic++;
-                reward = new RewardResult { Type = "EPIC", Amount = 1, Description = "¡INCREÍBLE! ¡Ticket ÉPICO obtenido!" };
-            }
-            else
-            {
-                player.TicketLegendary++;
-                reward = new RewardResult { Type = "LEGENDARY", Amount = 1, Description = "¡JACKPOT! ¡Ticket LEGENDARIO!" };
-            }
-
-            return reward;
-        }
-
         public async Task ProcessAfkTimeout(int gameId)
         {
             if (_processingGames.TryAdd(gameId, true))
@@ -803,11 +635,11 @@ namespace GameServer.Services.Logic
                 }
                 catch (SqlException ex)
                 {
-                    Log.ErrorFormat("SQL Error processing AFK for game {0}: {1}", gameId, ex.Message);
+                    Log.ErrorFormat("SQL Error {0}: {1}", gameId, ex.Message);
                 }
                 catch (EntityException ex)
                 {
-                    Log.ErrorFormat("Entity Error processing AFK for game {0}: {1}", gameId, ex.Message);
+                    Log.ErrorFormat("Entity Error {0}: {1}", gameId, ex.Message);
                 }
                 finally
                 {
@@ -822,7 +654,7 @@ namespace GameServer.Services.Logic
             _voteLogic.CancelVote(gameId);
 
             var game = await _repository.GetGameByIdAsync(gameId);
-            string lobbyCode = game?.LobbyCode ?? "UNKNOWN";
+            string lobbyCode = game?.LobbyCode ?? "DESCONOCIDO";
 
             var sanctionService = _sanctionServiceFactory();
             await sanctionService.ProcessKickAsync(afkPlayer.Username, lobbyCode, "Inactividad prolongada (AFK)", "SYSTEM_AFK");

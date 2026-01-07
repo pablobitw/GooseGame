@@ -1,7 +1,6 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Interfaces;
 using GameServer.Repositories;
-using GameServer.Repositories.Interfaces;
 using GameServer.Services.Logic;
 using GameServer.Helpers;
 using System;
@@ -24,12 +23,15 @@ namespace GameServer.Services
 
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
             var result = await _logic.CreateLobbyAsync(request);
 
-            if (result.Success && callback != null)
+            if (result.Success)
             {
-                ConnectionManager.RegisterLobbyClient(request.HostUsername, callback);
+                var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
+                if (callback != null)
+                {
+                    ConnectionManager.RegisterLobbyClient(request.HostUsername, callback);
+                }
             }
 
             return result;
@@ -37,45 +39,49 @@ namespace GameServer.Services
 
         public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
             var result = await _logic.JoinLobbyAsync(request);
 
-            if (result.Success && callback != null)
+            if (result.Success)
             {
-                ConnectionManager.RegisterLobbyClient(request.Username, callback);
+                var callback = OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>();
+                if (callback != null)
+                {
+                    ConnectionManager.RegisterLobbyClient(request.Username, callback);
+                }
             }
 
             return result;
         }
 
-        public async Task<bool> StartGameAsync(string lobbyCode)
+
+        public Task<bool> StartGameAsync(string lobbyCode)
         {
-            return await _logic.StartGameAsync(lobbyCode);
+            return _logic.StartGameAsync(lobbyCode);
         }
 
-        public async Task DisbandLobbyAsync(string hostUsername)
+        public Task DisbandLobbyAsync(string hostUsername)
         {
-            await _logic.DisbandLobbyAsync(hostUsername);
+            return _logic.DisbandLobbyAsync(hostUsername);
         }
 
-        public async Task<bool> LeaveLobbyAsync(string username)
+        public Task<bool> LeaveLobbyAsync(string username)
         {
-            return await _logic.LeaveLobbyAsync(username);
+            return _logic.LeaveLobbyAsync(username);
         }
 
-        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
+        public Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
-            return await _logic.GetLobbyStateAsync(lobbyCode);
+            return _logic.GetLobbyStateAsync(lobbyCode);
         }
 
-        public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
+        public Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
-            return await _logic.GetPublicMatchesAsync();
+            return _logic.GetPublicMatchesAsync();
         }
 
-        public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
+        public Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            return await _logic.KickPlayerAsync(request);
+            return _logic.KickPlayerAsync(request);
         }
 
         public void Dispose()

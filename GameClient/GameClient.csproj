@@ -87,7 +87,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Connected Services\GameServiceReference\Reference.cs">
+    <Compile Include="Connected Services\AuthServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -396,6 +396,15 @@
     </EmbeddedResource>
     <Resource Include="Assets\Fonts\Dosis.ttf" />
     <Resource Include="Assets\Fonts\Fredoka-Medium.ttf" />
+    <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.GuestLoginResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.LoginResponseDto.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.RegistrationResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Connected Services\ChatServiceReference\GameClient.ChatServiceReference.ChatOperationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -447,23 +456,14 @@
     <None Include="Connected Services\GameplayServiceReference\service1.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.GuestLoginResult.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.LoginResponseDto.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\GameServiceReference\GameClient.GameServiceReference.RegistrationResult.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\GameServiceReference\GameService.wsdl" />
-    <None Include="Connected Services\GameServiceReference\item.xsd">
+    <None Include="Connected Services\AuthServiceReference\GameService.wsdl" />
+    <None Include="Connected Services\AuthServiceReference\item.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\GameServiceReference\item1.xsd">
+    <None Include="Connected Services\AuthServiceReference\item1.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\GameServiceReference\item2.xsd">
+    <None Include="Connected Services\AuthServiceReference\item2.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\LeaderboardServiceReference\GameClient.LeaderboardServiceReference.LeaderboardDto.datasource">
@@ -564,7 +564,7 @@
     <WCFMetadataStorage Include="Connected Services\ChatServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\FriendshipServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\GameplayServiceReference\" />
-    <WCFMetadataStorage Include="Connected Services\GameServiceReference\" />
+    <WCFMetadataStorage Include="Connected Services\AuthServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LeaderboardServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\LobbyServiceReference\" />
     <WCFMetadataStorage Include="Connected Services\UserProfileServiceReference\" />
@@ -582,7 +582,7 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Connected Services\GameServiceReference\item.disco" />
+    <None Include="Connected Services\AuthServiceReference\item.disco" />
     <Resource Include="Assets\fondogod.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -722,12 +722,12 @@
     </None>
     <None Include="Connected Services\UserProfileServiceReference\configuration.svcinfo" />
     <None Include="Connected Services\UserProfileServiceReference\configuration91.svcinfo" />
-    <None Include="Connected Services\GameServiceReference\Reference.svcmap">
+    <None Include="Connected Services\AuthServiceReference\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Connected Services\GameServiceReference\configuration.svcinfo" />
-    <None Include="Connected Services\GameServiceReference\configuration91.svcinfo" />
+    <None Include="Connected Services\AuthServiceReference\configuration.svcinfo" />
+    <None Include="Connected Services\AuthServiceReference\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\logo_main_menu.png" />

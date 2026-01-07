@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GameClient.GameServiceReference {
+namespace GameClient.AuthServiceReference {
     using System.Runtime.Serialization;
     using System;
     
@@ -284,118 +284,118 @@ namespace GameClient.GameServiceReference {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="GameServiceReference.IGameService")]
-    public interface IGameService {
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="AuthServiceReference.IAuthService")]
+    public interface IAuthService {
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        GameClient.GameServiceReference.RegistrationResult RegisterUser(GameClient.GameServiceReference.RegisterUserRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RegisterUser", ReplyAction="http://tempuri.org/IAuthService/RegisterUserResponse")]
+        GameClient.AuthServiceReference.RegistrationResult RegisterUser(GameClient.AuthServiceReference.RegisterUserRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RegisterUser", ReplyAction="http://tempuri.org/IGameService/RegisterUserResponse")]
-        System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(GameClient.GameServiceReference.RegisterUserRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RegisterUser", ReplyAction="http://tempuri.org/IAuthService/RegisterUserResponse")]
+        System.Threading.Tasks.Task<GameClient.AuthServiceReference.RegistrationResult> RegisterUserAsync(GameClient.AuthServiceReference.RegisterUserRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        GameClient.GameServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LogIn", ReplyAction="http://tempuri.org/IAuthService/LogInResponse")]
+        GameClient.AuthServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LogIn", ReplyAction="http://tempuri.org/IGameService/LogInResponse")]
-        System.Threading.Tasks.Task<GameClient.GameServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LogIn", ReplyAction="http://tempuri.org/IAuthService/LogInResponse")]
+        System.Threading.Tasks.Task<GameClient.AuthServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LoginAsGuest", ReplyAction="http://tempuri.org/IGameService/LoginAsGuestResponse")]
-        GameClient.GameServiceReference.GuestLoginResult LoginAsGuest();
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LoginAsGuest", ReplyAction="http://tempuri.org/IAuthService/LoginAsGuestResponse")]
+        GameClient.AuthServiceReference.GuestLoginResult LoginAsGuest();
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/LoginAsGuest", ReplyAction="http://tempuri.org/IGameService/LoginAsGuestResponse")]
-        System.Threading.Tasks.Task<GameClient.GameServiceReference.GuestLoginResult> LoginAsGuestAsync();
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LoginAsGuest", ReplyAction="http://tempuri.org/IAuthService/LoginAsGuestResponse")]
+        System.Threading.Tasks.Task<GameClient.AuthServiceReference.GuestLoginResult> LoginAsGuestAsync();
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/Logout", ReplyAction="http://tempuri.org/IGameService/LogoutResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/Logout", ReplyAction="http://tempuri.org/IAuthService/LogoutResponse")]
         void Logout(string username);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/Logout", ReplyAction="http://tempuri.org/IGameService/LogoutResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/Logout", ReplyAction="http://tempuri.org/IAuthService/LogoutResponse")]
         System.Threading.Tasks.Task LogoutAsync(string username);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyAccount", ReplyAction="http://tempuri.org/IAuthService/VerifyAccountResponse")]
         bool VerifyAccount(string email, string code);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyAccount", ReplyAction="http://tempuri.org/IGameService/VerifyAccountResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyAccount", ReplyAction="http://tempuri.org/IAuthService/VerifyAccountResponse")]
         System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RequestPasswordReset", ReplyAction="http://tempuri.org/IGameService/RequestPasswordResetResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RequestPasswordReset", ReplyAction="http://tempuri.org/IAuthService/RequestPasswordResetResponse")]
         bool RequestPasswordReset(string email);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/RequestPasswordReset", ReplyAction="http://tempuri.org/IGameService/RequestPasswordResetResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RequestPasswordReset", ReplyAction="http://tempuri.org/IAuthService/RequestPasswordResetResponse")]
         System.Threading.Tasks.Task<bool> RequestPasswordResetAsync(string email);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IGameService/VerifyRecoveryCodeResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IAuthService/VerifyRecoveryCodeResponse")]
         bool VerifyRecoveryCode(string email, string code);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IGameService/VerifyRecoveryCodeResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IAuthService/VerifyRecoveryCodeResponse")]
         System.Threading.Tasks.Task<bool> VerifyRecoveryCodeAsync(string email, string code);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/UpdatePassword", ReplyAction="http://tempuri.org/IGameService/UpdatePasswordResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/UpdatePassword", ReplyAction="http://tempuri.org/IAuthService/UpdatePasswordResponse")]
         bool UpdatePassword(string email, string newPassword);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/UpdatePassword", ReplyAction="http://tempuri.org/IGameService/UpdatePasswordResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/UpdatePassword", ReplyAction="http://tempuri.org/IAuthService/UpdatePasswordResponse")]
         System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ResendVerificationCode", ReplyAction="http://tempuri.org/IGameService/ResendVerificationCodeResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ResendVerificationCode", ReplyAction="http://tempuri.org/IAuthService/ResendVerificationCodeResponse")]
         bool ResendVerificationCode(string email);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ResendVerificationCode", ReplyAction="http://tempuri.org/IGameService/ResendVerificationCodeResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ResendVerificationCode", ReplyAction="http://tempuri.org/IAuthService/ResendVerificationCodeResponse")]
         System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ChangeUserPassword", ReplyAction="http://tempuri.org/IGameService/ChangeUserPasswordResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ChangeUserPassword", ReplyAction="http://tempuri.org/IAuthService/ChangeUserPasswordResponse")]
         bool ChangeUserPassword(string username, string currentPassword, string newPassword);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameService/ChangeUserPassword", ReplyAction="http://tempuri.org/IGameService/ChangeUserPasswordResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ChangeUserPassword", ReplyAction="http://tempuri.org/IAuthService/ChangeUserPasswordResponse")]
         System.Threading.Tasks.Task<bool> ChangeUserPasswordAsync(string username, string currentPassword, string newPassword);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface IGameServiceChannel : GameClient.GameServiceReference.IGameService, System.ServiceModel.IClientChannel {
+    public interface IAuthServiceChannel : GameClient.AuthServiceReference.IAuthService, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class GameServiceClient : System.ServiceModel.ClientBase<GameClient.GameServiceReference.IGameService>, GameClient.GameServiceReference.IGameService {
+    public partial class AuthServiceClient : System.ServiceModel.ClientBase<GameClient.AuthServiceReference.IAuthService>, GameClient.AuthServiceReference.IAuthService {
         
-        public GameServiceClient() {
+        public AuthServiceClient() {
         }
         
-        public GameServiceClient(string endpointConfigurationName) : 
+        public AuthServiceClient(string endpointConfigurationName) : 
                 base(endpointConfigurationName) {
         }
         
-        public GameServiceClient(string endpointConfigurationName, string remoteAddress) : 
+        public AuthServiceClient(string endpointConfigurationName, string remoteAddress) : 
                 base(endpointConfigurationName, remoteAddress) {
         }
         
-        public GameServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+        public AuthServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
                 base(endpointConfigurationName, remoteAddress) {
         }
         
-        public GameServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+        public AuthServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
                 base(binding, remoteAddress) {
         }
         
-        public GameClient.GameServiceReference.RegistrationResult RegisterUser(GameClient.GameServiceReference.RegisterUserRequest request) {
+        public GameClient.AuthServiceReference.RegistrationResult RegisterUser(GameClient.AuthServiceReference.RegisterUserRequest request) {
             return base.Channel.RegisterUser(request);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameServiceReference.RegistrationResult> RegisterUserAsync(GameClient.GameServiceReference.RegisterUserRequest request) {
+        public System.Threading.Tasks.Task<GameClient.AuthServiceReference.RegistrationResult> RegisterUserAsync(GameClient.AuthServiceReference.RegisterUserRequest request) {
             return base.Channel.RegisterUserAsync(request);
         }
         
-        public GameClient.GameServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password) {
+        public GameClient.AuthServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password) {
             return base.Channel.LogIn(usernameOrEmail, password);
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password) {
+        public System.Threading.Tasks.Task<GameClient.AuthServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password) {
             return base.Channel.LogInAsync(usernameOrEmail, password);
         }
         
-        public GameClient.GameServiceReference.GuestLoginResult LoginAsGuest() {
+        public GameClient.AuthServiceReference.GuestLoginResult LoginAsGuest() {
             return base.Channel.LoginAsGuest();
         }
         
-        public System.Threading.Tasks.Task<GameClient.GameServiceReference.GuestLoginResult> LoginAsGuestAsync() {
+        public System.Threading.Tasks.Task<GameClient.AuthServiceReference.GuestLoginResult> LoginAsGuestAsync() {
             return base.Channel.LoginAsGuestAsync();
         }
         

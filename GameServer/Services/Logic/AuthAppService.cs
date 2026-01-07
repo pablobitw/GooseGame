@@ -336,23 +336,23 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in Login", ex);
-                response.Message = "DbError";
+                Log.Fatal("SqlException en Login", ex);
+                response.Message = "DatabasebError";
             }
             catch (EntityException ex)
             {
                 Log.Error("EntityException in Login", ex);
-                response.Message = "DbError";
+                response.Message = "DatabasebError";
             }
             catch (TimeoutException ex)
             {
                 Log.Error("TimeoutException in Login", ex);
-                response.Message = "DbError";
+                response.Message = "DatabasebError";
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in Login", ex);
-                response.Message = "DbError";
+                Log.Fatal("General Exception en Login", ex);
+                response.Message = "DatabasebError";
             }
 
             return response;
@@ -424,15 +424,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in VerifyAccount", ex);
+                Log.Fatal("SqlException en VerifyAccount", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in VerifyAccount", ex);
+                Log.Error("EntityException en VerifyAccount", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in VerifyAccount", ex);
+                Log.Fatal("General Exception en VerifyAccount", ex);
             }
             return isVerified;
         }
@@ -459,15 +459,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in RequestPasswordReset", ex);
+                Log.Fatal("SqlException en RequestPasswordReset", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in RequestPasswordReset", ex);
+                Log.Error("EntityException en RequestPasswordReset", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in RequestPasswordReset", ex);
+                Log.Fatal("General Exception en RequestPasswordReset", ex);
             }
             return result;
         }
@@ -481,15 +481,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in VerifyRecoveryCode", ex);
+                Log.Fatal("SqlException en VerifyRecoveryCode", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in VerifyRecoveryCode", ex);
+                Log.Error("EntityException en VerifyRecoveryCode", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in VerifyRecoveryCode", ex);
+                Log.Fatal("General Exception en VerifyRecoveryCode", ex);
             }
             return isValid;
         }
@@ -518,15 +518,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in UpdatePassword", ex);
+                Log.Fatal("SqlException en UpdatePassword", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in UpdatePassword", ex);
+                Log.Error("EntityException en UpdatePassword", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in UpdatePassword", ex);
+                Log.Fatal("General Exception en UpdatePassword", ex);
             }
             return isUpdated;
         }
@@ -549,15 +549,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in ResendVerificationCode", ex);
+                Log.Fatal("SqlException en ResendVerificationCode", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in ResendVerificationCode", ex);
+                Log.Error("EntityException en ResendVerificationCode", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in ResendVerificationCode", ex);
+                Log.Fatal("General Exception en ResendVerificationCode", ex);
             }
             return result;
         }
@@ -584,15 +584,15 @@ namespace GameServer.Services.Logic
             }
             catch (SqlException ex)
             {
-                Log.Fatal("SqlException in ChangeUserPassword", ex);
+                Log.Fatal("SqlException en ChangeUserPassword", ex);
             }
             catch (EntityException ex)
             {
-                Log.Error("EntityException in ChangeUserPassword", ex);
+                Log.Error("EntityException en ChangeUserPassword", ex);
             }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in ChangeUserPassword", ex);
+                Log.Fatal("General Exception en ChangeUserPassword", ex);
             }
             return result;
         }

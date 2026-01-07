@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference;
+﻿using GameClient.AuthServiceReference;
 using GameClient.Helpers;
 using System;
 using System.Diagnostics;
@@ -37,7 +37,7 @@ namespace GameClient.Views
                 {
                     string usernameOrEmail = UsernameTextBox.Text;
                     string password = PasswordBox.Password;
-                    var serviceClient = new GameServiceClient();
+                    var serviceClient = new AuthServiceClient();
 
                     try
                     {
@@ -111,7 +111,7 @@ namespace GameClient.Views
             }
         }
 
-        private async Task HandleSuccessfulLogin(LoginResponseDto response, string username, GameServiceClient client)
+        private async Task HandleSuccessfulLogin(LoginResponseDto response, string username, AuthServiceClient client)
         {
             string serverLanguage = response.PreferredLanguage ?? "es-MX";
             string currentLocalLanguage = GameClient.Properties.Settings.Default.LanguageCode;
@@ -160,7 +160,7 @@ namespace GameClient.Views
             }
         }
 
-        private static void CloseClient(GameServiceClient client)
+        private static void CloseClient(AuthServiceClient client)
         {
             try
             {

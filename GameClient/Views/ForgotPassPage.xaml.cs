@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference;
+﻿using GameClient.AuthServiceReference;
 using GameClient.Views;
 using System;
 using System.Net.Mail;
@@ -23,7 +23,7 @@ namespace GameClient
             if (!IsFormValid()) return;
 
             string email = EmailTextBox.Text;
-            var client = new GameServiceClient();
+            var client = new AuthServiceClient();
             bool requestSent = false;
 
             try
@@ -75,7 +75,7 @@ namespace GameClient
             MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, icon);
         }
 
-        private static void CloseServiceClient(GameServiceClient client)
+        private static void CloseServiceClient(AuthServiceClient client)
         {
             try
             {

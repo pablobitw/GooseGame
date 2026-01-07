@@ -19,7 +19,7 @@ namespace GameServer
 
             try
             {
-                using (ServiceHost gameServiceHost = new ServiceHost(typeof(GameService)))
+                using (ServiceHost gameServiceHost = new ServiceHost(typeof(AuthService)))
                 using (ServiceHost chatServiceHost = new ServiceHost(typeof(ChatService)))
                 using (ServiceHost lobbyServiceHost = new ServiceHost(typeof(LobbyService)))
                 using (ServiceHost gameplayServiceHost = new ServiceHost(typeof(GameplayService)))

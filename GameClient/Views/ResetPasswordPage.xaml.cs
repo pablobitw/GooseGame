@@ -1,4 +1,4 @@
-﻿using GameClient.GameServiceReference;
+﻿using GameClient.AuthServiceReference;
 using System;
 using System.Net.NetworkInformation;
 using System.ServiceModel;
@@ -69,7 +69,7 @@ namespace GameClient.Views
             string currentPassword = CurrentPasswordBox.Password;
             string newPassword = NewPasswordBox.Password;
 
-            var client = new GameServiceClient();
+            var client = new AuthServiceClient();
 
             try
             {
@@ -121,7 +121,7 @@ namespace GameClient.Views
             }
         }
 
-        private static void CloseClientSafely(GameServiceClient client)
+        private static void CloseClientSafely(AuthServiceClient client)
         {
             try
             {

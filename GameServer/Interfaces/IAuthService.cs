@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace GameServer.Interfaces
 {
     [ServiceContract]
-    public interface IGameService
+    public interface IAuthService
     {
         [OperationContract]
         Task<RegistrationResult> RegisterUserAsync(RegisterUserRequest request);

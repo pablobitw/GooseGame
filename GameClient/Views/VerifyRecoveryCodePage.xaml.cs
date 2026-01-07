@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using GameClient.GameServiceReference;
+using GameClient.AuthServiceReference;
 using GameClient.Views;
 using System.ServiceModel;
 using System.Windows.Threading;
@@ -48,7 +48,7 @@ namespace GameClient.Views
             }
             else
             {
-                var client = new GameServiceClient();
+                var client = new AuthServiceClient();
                 bool isCodeValid = false;
                 bool connectionError = false;
 
@@ -94,7 +94,7 @@ namespace GameClient.Views
             }
             else
             {
-                var client = new GameServiceClient();
+                var client = new AuthServiceClient();
                 bool requestSent = false;
                 bool connectionError = false;
 
