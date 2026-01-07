@@ -71,7 +71,7 @@ namespace GameClient.Views
             _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource("ChatTabItemStyle"));
 
             PauseMenu.ResumeRequested += (s, e) => PauseMenu.Visibility = Visibility.Collapsed;
-            PauseMenu.QuitRequested += (s, e) => QuitGameProcessAsync();
+            PauseMenu.QuitRequested += (s, e) => _ = QuitGameProcessAsync(); // Descarte asíncrono
 
             KickReasonPrompt.KickConfirmed += KickReasonPrompt_KickConfirmed;
             KickReasonPrompt.KickCancelled += (s, e) => KickReasonPrompt.Visibility = Visibility.Collapsed;
@@ -79,8 +79,13 @@ namespace GameClient.Views
             VoteKickPrompt.VoteSubmitted += VoteKickPrompt_VoteSubmitted;
 
             SubscribeToEvents();
-            ConnectToChatService();
+
+            // Carga asíncrona de recursos pesados
             LoadBoardImage();
+
+            // Conexión segura al chat (Hilo fondo). Usamos _ = para indicar Fire-and-Forget intencional.
+            _ = Task.Run(() => ConnectToChatService());
+
             StartCountdown();
 
             _turnCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -125,7 +130,11 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished += OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked += OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted += OnVoteKickStarted;
-            FriendshipServiceManager.Instance.FriendRequestPopUpReceived += OnFriendRequestPopUpReceived;
+
+            if (FriendshipServiceManager.Instance != null)
+            {
+                FriendshipServiceManager.Instance.FriendRequestPopUpReceived += OnFriendRequestPopUpReceived;
+            }
         }
 
         private void UnsubscribeFromEvents()
@@ -134,6 +143,7 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished -= OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted -= OnVoteKickStarted;
+
             if (FriendshipServiceManager.Instance != null)
             {
                 FriendshipServiceManager.Instance.FriendRequestPopUpReceived -= OnFriendRequestPopUpReceived;
@@ -144,14 +154,20 @@ namespace GameClient.Views
         {
             try
             {
-                InstanceContext chatContext = new InstanceContext(this);
-                chatClient = new ChatServiceClient(chatContext);
+                // Dispatcher para crear el cliente en el hilo UI pero ejecutar en Task
+                Dispatcher.Invoke(() =>
+                {
+                    InstanceContext chatContext = new InstanceContext(this);
+                    chatClient = new ChatServiceClient(chatContext);
+                });
+
                 var request = new JoinChatRequest { Username = currentUsername, LobbyCode = lobbyCode };
                 chatClient.JoinLobbyChat(request);
             }
             catch (Exception)
             {
-                _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatConnectError, false, "General", currentUsername);
+                Dispatcher.InvokeAsync(() =>
+                    _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatConnectError, false, "General", currentUsername));
             }
         }
 
@@ -171,10 +187,12 @@ namespace GameClient.Views
             string target = _chatManager.GetCurrentTarget();
             var dto = new ChatMessageDto { Sender = currentUsername, LobbyCode = lobbyCode, Message = msg };
 
+            // Feedback inmediato en la UI
             ReceiveMessage(dto);
             ChatInputBox.Clear();
 
-            Task.Run(() =>
+            // Envío asíncrono para no bloquear UI
+            _ = Task.Run(() =>
             {
                 try
                 {
@@ -216,7 +234,6 @@ namespace GameClient.Views
             }
         }
 
-
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             PauseMenu.Visibility = Visibility.Visible;
@@ -237,12 +254,19 @@ namespace GameClient.Views
             UnsubscribeFromEvents();
             StopTimers();
 
-            await GameplayServiceManager.Instance.LeaveGameAsync(
-                new GameplayRequest
-                {
-                    LobbyCode = lobbyCode,
-                    Username = currentUsername
-                });
+            try
+            {
+                await GameplayServiceManager.Instance.LeaveGameAsync(
+                    new GameplayRequest
+                    {
+                        LobbyCode = lobbyCode,
+                        Username = currentUsername
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al salir: " + ex.Message);
+            }
 
             if (Window.GetWindow(this) is GameMainWindow mw)
             {
@@ -267,17 +291,30 @@ namespace GameClient.Views
             KickReasonPrompt.Visibility = Visibility.Collapsed;
             var req = new VoteRequestDto { Username = currentUsername, TargetUsername = e.TargetUsername, Reason = e.Reason };
 
-            await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
-
-            MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickStarted, e.TargetUsername),
-                            GameClient.Resources.Strings.DialogInfoTitle,
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                await GameplayServiceManager.Instance.InitiateVoteKickAsync(req);
+                MessageBox.Show(string.Format(GameClient.Resources.Strings.VoteKickStarted, e.TargetUsername),
+                                GameClient.Resources.Strings.DialogInfoTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error iniciando votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void VoteKickPrompt_VoteSubmitted(object sender, bool accept)
         {
             var resp = new VoteResponseDto { Username = currentUsername, AcceptKick = accept };
-            await GameplayServiceManager.Instance.CastVoteAsync(resp);
+            try
+            {
+                await GameplayServiceManager.Instance.CastVoteAsync(resp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error enviando voto: " + ex.Message);
+            }
         }
 
         private void HandleGameplayError(GameplayErrorType errorType, string fallbackMessage)
@@ -288,7 +325,7 @@ namespace GameClient.Views
             switch (errorType)
             {
                 case GameplayErrorType.DatabaseError:
-                    message = GameClient.Resources.Strings.Gameplay_Error_Database;
+                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
                     break;
                 case GameplayErrorType.NotYourTurn:
                     message = GameClient.Resources.Strings.Gameplay_Error_NotTurn;
@@ -330,7 +367,7 @@ namespace GameClient.Views
 
         private void OnGameFinished(string winner)
         {
-            Dispatcher.InvokeAsync(() => HandleGameOverAsync(winner));
+            Dispatcher.InvokeAsync(() => _ = HandleGameOverAsync(winner));
         }
 
         private void OnPlayerKicked(string reason)
@@ -367,22 +404,38 @@ namespace GameClient.Views
             });
         }
 
+        // Corrección del duplicado: Este es el único método que queda
+        private void OnFriendRequestPopUpReceived(string senderName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FriendRequestPopup.ShowRequest(senderName);
+            });
+        }
+
         private async Task InitialStateLoad()
         {
             var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
 
-            var state = await GameplayServiceManager.Instance.GetGameStateAsync(request);
-
-            if (state != null)
+            try
             {
-                if (state.Success)
+                var state = await GameplayServiceManager.Instance.GetGameStateAsync(request);
+
+                if (state != null)
                 {
-                    ProcessGameState(state);
+                    if (state.Success)
+                    {
+                        ProcessGameState(state);
+                    }
+                    else
+                    {
+                        HandleGameplayError(state.ErrorType, state.ErrorMessage);
+                    }
                 }
-                else
-                {
-                    HandleGameplayError(state.ErrorType, state.ErrorMessage);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error carga inicial: " + ex.Message);
             }
         }
 
@@ -414,18 +467,26 @@ namespace GameClient.Views
 
             var request = new GameplayRequest { LobbyCode = lobbyCode, Username = currentUsername };
 
-            var result = await GameplayServiceManager.Instance.RollDiceAsync(request);
-
-            if (result == null) return;
-
-            if (result.Success)
+            try
             {
-                UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
+                var result = await GameplayServiceManager.Instance.RollDiceAsync(request);
+
+                if (result == null) return;
+
+                if (result.Success)
+                {
+                    UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
+                }
+                else
+                {
+                    HandleGameplayError(result.ErrorType, result.ErrorMessage);
+                    if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                HandleGameplayError(result.ErrorType, result.ErrorMessage);
-                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                RollDiceButton.IsEnabled = true;
             }
         }
 
@@ -502,6 +563,7 @@ namespace GameClient.Views
             _startCountdownTimer.Tick += Countdown_Tick;
             _startCountdownTimer.Start();
 
+            // Usamos descarte para llamada asíncrona segura
             _ = InitialStateLoad();
         }
 
@@ -575,9 +637,9 @@ namespace GameClient.Views
             {
                 BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.GameErrorBoardImage, ex.Message));
+                Console.WriteLine("Error loading board image: " + ex.Message);
             }
         }
 
@@ -716,9 +778,8 @@ namespace GameClient.Views
                 brush.Stretch = Stretch.UniformToFill;
                 brush.ImageSource = bitmap;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.Error.WriteLine(string.Format(GameClient.Resources.Strings.AvatarErrorLoad, avatarPath, ex.Message));
                 brush.ImageSource = new BitmapImage(new Uri("/Assets/default_avatar.png", UriKind.Relative));
             }
         }
@@ -761,7 +822,6 @@ namespace GameClient.Views
 
             if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
 
-            
             try
             {
                 var result = await FriendshipServiceManager.Instance.SendFriendRequestAsync(targetUser);
@@ -781,14 +841,6 @@ namespace GameClient.Views
             {
                 MessageBox.Show(GameClient.Resources.Strings.FriendConnError, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void OnFriendRequestPopUpReceived(string senderName)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                FriendRequestPopup.ShowRequest(senderName);
-            });
         }
 
         private async Task HandleGameOverAsync(string winner)

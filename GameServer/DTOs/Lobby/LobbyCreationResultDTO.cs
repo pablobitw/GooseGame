@@ -15,6 +15,12 @@ namespace GameServer.DTOs.Lobby
         public string ErrorMessage { get; set; }
 
         [DataMember]
-        public LobbyErrorType ErrorType { get; set; } 
+        public LobbyErrorType ErrorType { get; set; }
+
+        public LobbyCreationResultDto()
+        {
+            Success = false;
+            ErrorType = LobbyErrorType.None;
+        }
     }
 }

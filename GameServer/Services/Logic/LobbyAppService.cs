@@ -24,65 +24,33 @@ namespace GameServer.Services.Logic
 
         public LobbyAppService(ILobbyRepository repository)
         {
-            if (repository == null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
+            if (repository == null) throw new ArgumentNullException(nameof(repository));
             _repository = repository;
         }
 
-        private void FireAndForgetNotification(int gameId, string excludeUsername, Action<ILobbyServiceCallback> notificationAction)
+        // CORRECCIÓN CLAVE: Recibe List<string> ya materializada
+        private void FireAndForgetNotification(List<string> usernames, Action<ILobbyServiceCallback> notificationAction)
         {
-            Task.Run(async () =>
+            if (usernames == null || !usernames.Any()) return;
+
+            var safeList = new List<string>(usernames);
+
+            Task.Run(() =>
             {
-                await NotifyAllInLobby(gameId, excludeUsername, notificationAction);
+                NotifyUsersSafe(safeList, notificationAction);
             });
         }
 
-        private async Task NotifyAllInLobby(int gameId, string excludeUsername, Action<ILobbyServiceCallback> notificationAction)
+        private void NotifyUsersSafe(List<string> usernames, Action<ILobbyServiceCallback> notificationAction)
         {
-            try
+            foreach (var username in usernames)
             {
-                var players = await _repository.GetPlayersInGameAsync(gameId);
-
-                foreach (var player in players)
+                var client = ConnectionManager.GetLobbyClient(username);
+                if (client != null)
                 {
-                    if (player.Username != excludeUsername)
-                    {
-                        var client = ConnectionManager.GetLobbyClient(player.Username);
-                        if (client != null)
-                        {
-                            try
-                            {
-                                notificationAction(client);
-                            }
-                            catch (CommunicationException)
-                            {
-                                ConnectionManager.UnregisterLobbyClient(player.Username);
-                            }
-                            catch (TimeoutException)
-                            {
-                                ConnectionManager.UnregisterLobbyClient(player.Username);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Warn($"Error notificando cliente {player.Username}: {ex.Message}");
-                            }
-                        }
-                    }
+                    try { notificationAction(client); }
+                    catch (Exception ex) { Log.Warn($"Error notificando a {username}: {ex.Message}"); }
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Error($"Error SQL al notificar lobby {gameId}: {ex.Message}");
-            }
-            catch (EntityException ex)
-            {
-                Log.Error($"Error Entity al notificar lobby {gameId}: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Log.WarnFormat("Error general en notificación masiva al lobby {0}: {1}", gameId, ex.Message);
             }
         }
 
@@ -100,119 +68,82 @@ namespace GameServer.Services.Logic
                         Log.InfoFormat("Limpieza automática: Jugador {0} liberado.", player.Username);
                     }
                 }
-                catch (SqlException ex)
+                catch (Exception ex)
                 {
-                    Log.Error($"Error SQL limpiando estado jugador {player.Username}: {ex.Message}");
-                }
-                catch (EntityException ex)
-                {
-                    Log.Error($"Error Entity limpiando estado jugador {player.Username}: {ex.Message}");
+                    Log.Error($"Error limpiando estado jugador {player.Username}: {ex.Message}");
                 }
             }
         }
 
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            LobbyCreationResultDto result = new LobbyCreationResultDto { Success = false };
-
-            if (request != null && request.Settings != null)
-            {
-                if (request.Settings.MaxPlayers >= 2 && request.Settings.MaxPlayers <= 4)
-                {
-                    try
-                    {
-                        var hostPlayer = await _repository.GetPlayerByUsernameAsync(request.HostUsername);
-                        if (hostPlayer != null)
-                        {
-                            if (!hostPlayer.IsGuest)
-                            {
-                                await CleanPlayerStateIfNeeded(hostPlayer);
-
-                                if (hostPlayer.GameIdGame == null)
-                                {
-                                    string newLobbyCode = GenerateLobbyCode();
-
-                                    var newGame = new Game
-                                    {
-                                        GameStatus = (int)GameStatus.WaitingForPlayers,
-                                        HostPlayerID = hostPlayer.IdPlayer,
-                                        Board_idBoard = request.Settings.BoardId,
-                                        IsPublic = request.Settings.IsPublic,
-                                        MaxPlayers = request.Settings.MaxPlayers,
-                                        LobbyCode = newLobbyCode,
-                                        StartTime = DateTime.UtcNow
-                                    };
-
-                                    _repository.AddGame(newGame);
-                                    await _repository.SaveChangesAsync();
-
-                                    hostPlayer.GameIdGame = newGame.IdGame;
-                                    await _repository.SaveChangesAsync();
-
-                                    Log.InfoFormat("Lobby creado por '{0}'. Código: {1}", request.HostUsername, newLobbyCode);
-                                    result.Success = true;
-                                    result.LobbyCode = newLobbyCode;
-                                    result.ErrorType = LobbyErrorType.None;
-                                }
-                                else
-                                {
-                                    result.ErrorMessage = "Ya estás en una partida activa.";
-                                    result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
-                                }
-                            }
-                            else
-                            {
-                                result.ErrorMessage = "Los invitados no pueden crear partidas.";
-                                result.ErrorType = LobbyErrorType.GuestNotAllowed;
-                            }
-                        }
-                        else
-                        {
-                            result.ErrorMessage = "Jugador anfitrión no encontrado.";
-                            result.ErrorType = LobbyErrorType.UserNotFound;
-                        }
-                    }
-                    catch (DbUpdateException ex)
-                    {
-                        Log.Error("Error DB Update en CreateLobby", ex);
-                        result.ErrorType = LobbyErrorType.DatabaseError;
-                        result.ErrorMessage = "Error de integridad de datos.";
-                    }
-                    catch (SqlException ex)
-                    {
-                        Log.Fatal("Error SQL en CreateLobby", ex);
-                        result.ErrorType = LobbyErrorType.DatabaseError;
-                        result.ErrorMessage = "Error de conexión con la base de datos.";
-                    }
-                    catch (EntityException ex)
-                    {
-                        Log.Error("Error Entity en CreateLobby", ex);
-                        result.ErrorType = LobbyErrorType.DatabaseError;
-                        result.ErrorMessage = "Error interno de datos.";
-                    }
-                    catch (TimeoutException ex)
-                    {
-                        Log.Error("Timeout en CreateLobby", ex);
-                        result.ErrorType = LobbyErrorType.ServerTimeout;
-                        result.ErrorMessage = "Tiempo de espera agotado.";
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("Error General en CreateLobby", ex);
-                        result.ErrorType = LobbyErrorType.Unknown;
-                        result.ErrorMessage = "Error desconocido.";
-                    }
-                }
-                else
-                {
-                    result.ErrorMessage = "Jugadores entre 2 y 4.";
-                    result.ErrorType = LobbyErrorType.InvalidData;
-                }
-            }
-            else
+            var result = new LobbyCreationResultDto();
+            if (request?.Settings == null)
             {
                 result.ErrorMessage = "Datos inválidos.";
                 result.ErrorType = LobbyErrorType.InvalidData;
+                return result;
+            }
+
+            if (request.Settings.MaxPlayers < 2 || request.Settings.MaxPlayers > 4)
+            {
+                result.ErrorMessage = "Jugadores entre 2 y 4.";
+                result.ErrorType = LobbyErrorType.InvalidData;
+                return result;
+            }
+
+            try
+            {
+                var hostPlayer = await _repository.GetPlayerByUsernameAsync(request.HostUsername);
+                if (hostPlayer == null)
+                {
+                    result.ErrorMessage = "Jugador anfitrión no encontrado.";
+                    result.ErrorType = LobbyErrorType.UserNotFound;
+                    return result;
+                }
+
+                if (hostPlayer.IsGuest)
+                {
+                    result.ErrorMessage = "Los invitados no pueden crear partidas.";
+                    result.ErrorType = LobbyErrorType.GuestNotAllowed;
+                    return result;
+                }
+
+                await CleanPlayerStateIfNeeded(hostPlayer);
+
+                if (hostPlayer.GameIdGame != null)
+                {
+                    result.ErrorMessage = "Ya estás en una partida activa.";
+                    result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
+                    return result;
+                }
+
+                string newLobbyCode = GenerateLobbyCode();
+                var newGame = new Game
+                {
+                    GameStatus = (int)GameStatus.WaitingForPlayers,
+                    HostPlayerID = hostPlayer.IdPlayer,
+                    Board_idBoard = request.Settings.BoardId,
+                    IsPublic = request.Settings.IsPublic,
+                    MaxPlayers = request.Settings.MaxPlayers,
+                    LobbyCode = newLobbyCode,
+                    StartTime = DateTime.UtcNow
+                };
+
+                _repository.AddGame(newGame);
+                await _repository.SaveChangesAsync();
+
+                hostPlayer.GameIdGame = newGame.IdGame;
+                await _repository.SaveChangesAsync();
+
+                Log.InfoFormat("Lobby creado por '{0}'. Código: {1}", request.HostUsername, newLobbyCode);
+                result.Success = true;
+                result.LobbyCode = newLobbyCode;
+                result.ErrorType = LobbyErrorType.None;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, result);
             }
 
             return result;
@@ -220,159 +151,93 @@ namespace GameServer.Services.Logic
 
         public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
-            JoinLobbyResultDto result = new JoinLobbyResultDto { Success = false };
+            var result = new JoinLobbyResultDto();
 
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
-                if (player != null)
-                {
-                    await CleanPlayerStateIfNeeded(player);
-
-                    if (player.GameIdGame == null)
-                    {
-                        var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
-                        if (game != null)
-                        {
-                            if (game.GameStatus == (int)GameStatus.WaitingForPlayers)
-                            {
-                                var playersInLobby = await _repository.GetPlayersInGameAsync(game.IdGame);
-                                if (playersInLobby.Count < game.MaxPlayers)
-                                {
-                                    player.GameIdGame = game.IdGame;
-                                    await _repository.SaveChangesAsync();
-
-                                    Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
-
-                                    var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-                                    var dtoList = updatedPlayers.Select(p => new PlayerLobbyDto
-                                    {
-                                        Username = p.Username,
-                                        IsHost = (p.IdPlayer == game.HostPlayerID)
-                                    }).ToList();
-
-                                    result.Success = true;
-                                    result.BoardId = game.Board_idBoard;
-                                    result.MaxPlayers = game.MaxPlayers;
-                                    result.IsHost = (player.IdPlayer == game.HostPlayerID);
-                                    result.IsPublic = game.IsPublic;
-                                    result.PlayersInLobby = dtoList;
-                                    result.ErrorType = LobbyErrorType.None;
-
-                                    var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = false };
-                                    FireAndForgetNotification(game.IdGame, request.Username, client => client.OnPlayerJoined(newPlayerDto));
-                                }
-                                else
-                                {
-                                    result.ErrorType = LobbyErrorType.GameFull;
-                                    result.ErrorMessage = "Partida llena";
-                                }
-                            }
-                            else
-                            {
-                                result.ErrorType = LobbyErrorType.GameStarted;
-                                result.ErrorMessage = "Partida ya iniciada";
-                            }
-                        }
-                        else
-                        {
-                            result.ErrorType = LobbyErrorType.GameNotFound;
-                            result.ErrorMessage = "Partida no encontrada";
-                        }
-                    }
-                    else
-                    {
-                        result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
-                        result.ErrorMessage = "Ya estás en partida";
-                    }
-                }
-                else
+                if (player == null)
                 {
                     result.ErrorType = LobbyErrorType.UserNotFound;
                     result.ErrorMessage = "Usuario no encontrado";
+                    return result;
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update en JoinLobby", ex);
-                result.ErrorType = LobbyErrorType.DatabaseError;
-                result.ErrorMessage = "Error de actualización.";
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL en JoinLobby", ex);
-                result.ErrorType = LobbyErrorType.DatabaseError;
-                result.ErrorMessage = "Error de base de datos.";
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en JoinLobby", ex);
-                result.ErrorType = LobbyErrorType.DatabaseError;
-                result.ErrorMessage = "Error interno.";
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en JoinLobby", ex);
-                result.ErrorType = LobbyErrorType.ServerTimeout;
-                result.ErrorMessage = "Tiempo de espera agotado.";
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error General en JoinLobby", ex);
-                result.ErrorType = LobbyErrorType.DatabaseError;
-                result.ErrorMessage = "Error del servidor.";
-            }
 
-            return result;
-        }
+                await CleanPlayerStateIfNeeded(player);
 
-        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
-        {
-            LobbyStateDto result = null;
-            try
-            {
-                var game = await _repository.GetGameByCodeAsync(lobbyCode);
-                if (game != null)
+                if (player.GameIdGame != null)
                 {
-                    var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-                    var playerDtos = players.Select(p => new PlayerLobbyDto
-                    {
-                        Username = p.Username,
-                        IsHost = (p.IdPlayer == game.HostPlayerID)
-                    }).ToList();
-
-                    result = new LobbyStateDto
-                    {
-                        IsGameStarted = (game.GameStatus == (int)GameStatus.InProgress),
-                        Players = playerDtos,
-                        BoardId = game.Board_idBoard,
-                        MaxPlayers = game.MaxPlayers,
-                        IsPublic = game.IsPublic
-                    };
+                    result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
+                    result.ErrorMessage = "Ya estás en partida";
+                    return result;
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Error("Error SQL en GetLobbyState", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en GetLobbyState", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en GetLobbyState", ex);
+
+                var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
+                if (game == null)
+                {
+                    result.ErrorType = LobbyErrorType.GameNotFound;
+                    result.ErrorMessage = "Partida no encontrada";
+                    return result;
+                }
+
+                if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                {
+                    result.ErrorType = LobbyErrorType.GameStarted;
+                    result.ErrorMessage = "Partida ya iniciada";
+                    return result;
+                }
+
+                var playersInLobby = await _repository.GetPlayersInGameAsync(game.IdGame);
+                if (playersInLobby.Count >= game.MaxPlayers)
+                {
+                    result.ErrorType = LobbyErrorType.GameFull;
+                    result.ErrorMessage = "Partida llena";
+                    return result;
+                }
+
+                player.GameIdGame = game.IdGame;
+                await _repository.SaveChangesAsync();
+
+                Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
+
+                var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                result.Success = true;
+                result.BoardId = game.Board_idBoard;
+                result.MaxPlayers = game.MaxPlayers;
+                result.IsHost = (player.IdPlayer == game.HostPlayerID);
+                result.IsPublic = game.IsPublic;
+                result.PlayersInLobby = updatedPlayers.Select(p => new PlayerLobbyDto
+                {
+                    Username = p.Username,
+                    IsHost = (p.IdPlayer == game.HostPlayerID)
+                }).ToList();
+                result.ErrorType = LobbyErrorType.None;
+
+                // IMPORTANTÍSIMO: Materializar lista con .ToList() ANTES de enviar al hilo de notificación
+                var usernamesToNotify = updatedPlayers
+                    .Where(p => p.Username != request.Username)
+                    .Select(p => p.Username)
+                    .ToList();
+
+                var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = false };
+                FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerJoined(newPlayerDto));
             }
             catch (Exception ex)
             {
-                Log.Error("Error General en GetLobbyState", ex);
+                Log.Error("Error en JoinLobby", ex);
+                result.Success = false;
+                if (ex is SqlException || ex is EntityException) result.ErrorType = LobbyErrorType.DatabaseError;
+                else if (ex is TimeoutException) result.ErrorType = LobbyErrorType.ServerTimeout;
+                else result.ErrorType = LobbyErrorType.Unknown;
+                result.ErrorMessage = "Error al unirse.";
             }
+
             return result;
         }
 
         public async Task<bool> StartGameAsync(string lobbyCode)
         {
-            bool success = false;
             try
             {
                 var game = await _repository.GetGameByCodeAsync(lobbyCode);
@@ -384,36 +249,29 @@ namespace GameServer.Services.Logic
                         game.GameStatus = (int)GameStatus.InProgress;
                         await _repository.SaveChangesAsync();
 
-                        GameManager.Instance.StartMonitoring(game.IdGame);
-                        Log.InfoFormat("Juego {0} iniciado.", lobbyCode);
+                        try
+                        {
+                            GameManager.Instance.StartMonitoring(game.IdGame);
+                            Log.InfoFormat("Juego {0} iniciado y monitoreado.", lobbyCode);
+                        }
+                        catch (Exception gmEx)
+                        {
+                            Log.Error($"CRITICAL: GameManager falló al iniciar monitoreo para {lobbyCode}", gmEx);
+                        }
 
-                        FireAndForgetNotification(game.IdGame, null, client => client.OnGameStarted());
+                        // Materializar lista para evitar acceso diferido en hilo cerrado
+                        var usernames = players.Select(p => p.Username).ToList();
+                        FireAndForgetNotification(usernames, client => client.OnGameStarted());
 
-                        success = true;
+                        return true;
                     }
                 }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update en StartGame", ex);
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL en StartGame", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en StartGame", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en StartGame", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error General en StartGame", ex);
+                Log.Error("Error en StartGame", ex);
             }
-            return success;
+            return false;
         }
 
         public async Task DisbandLobbyAsync(string hostUsername)
@@ -428,11 +286,20 @@ namespace GameServer.Services.Logic
 
                     if (game != null)
                     {
-                        FireAndForgetNotification(gameId, hostUsername, client => client.OnLobbyDisbanded());
+                        var players = await _repository.GetPlayersInGameAsync(gameId);
+
+                        // Materializar lista
+                        var usernamesToNotify = players
+                            .Where(p => p.Username != hostUsername)
+                            .Select(p => p.Username)
+                            .ToList();
+
+                        FireAndForgetNotification(usernamesToNotify, client => client.OnLobbyDisbanded());
 
                         await Task.Delay(100);
 
-                        GameManager.Instance.StopMonitoring(gameId);
+                        try { GameManager.Instance.StopMonitoring(gameId); } catch { }
+
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
                         Log.InfoFormat("Lobby {0} disuelto por {1}.", game.LobbyCode, hostUsername);
@@ -444,37 +311,28 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update en DisbandLobby", ex);
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL en DisbandLobby", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en DisbandLobby", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en DisbandLobby", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error General en DisbandLobby", ex);
+                Log.Error("Error en DisbandLobby", ex);
             }
         }
 
         public async Task<bool> LeaveLobbyAsync(string username)
         {
-            bool success = false;
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
                 if (player != null && player.GameIdGame != null)
                 {
                     int gameId = player.GameIdGame.Value;
+
+                    // Materializar lista antes de borrar
+                    var currentPlayers = await _repository.GetPlayersInGameAsync(gameId);
+                    var usernamesToNotify = currentPlayers
+                        .Where(p => p.Username != username)
+                        .Select(p => p.Username)
+                        .ToList();
+
                     player.GameIdGame = null;
                     await _repository.SaveChangesAsync();
 
@@ -484,85 +342,96 @@ namespace GameServer.Services.Logic
                     bool gameClosed = await HandleGameShutdownIfNeeded(gameId);
                     if (!gameClosed)
                     {
-                        FireAndForgetNotification(gameId, username, client => client.OnPlayerLeft(username));
+                        FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
                     }
-                    success = true;
+                    return true;
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update en LeaveLobby", ex);
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL en LeaveLobby", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en LeaveLobby", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en LeaveLobby", ex);
             }
             catch (Exception ex)
             {
-                Log.Error("Error General en LeaveLobby", ex);
+                Log.Error("Error en LeaveLobby", ex);
             }
-            return success;
+            return false;
         }
 
-        private async Task<bool> HandleGameShutdownIfNeeded(int gameId)
+        public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            bool shutdown = false;
+            if (request == null || request.RequestorUsername == request.TargetUsername) return false;
+
             try
             {
-                var game = await _repository.GetGameByIdAsync(gameId);
+                var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
                 if (game != null)
                 {
-                    var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                    var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
+                    if (host != null && game.HostPlayerID == host.IdPlayer)
+                    {
+                        var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
+                        if (target != null && target.GameIdGame == game.IdGame)
+                        {
+                            target.KickCount++;
+                            bool isBanned = (target.KickCount >= 3);
+                            if (isBanned) target.IsBanned = true;
 
-                    if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
-                    {
-                        game.GameStatus = (int)GameStatus.Finished;
-                        GameManager.Instance.StopMonitoring(gameId);
-                        await _repository.SaveChangesAsync();
-                        shutdown = true;
+                            target.GameIdGame = null;
+                            await _repository.SaveChangesAsync();
+
+                            var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                            var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
+
+                            string msg = isBanned ? "Has sido BANEADO." : "Has sido expulsado.";
+                            Task.Run(() => NotifyClientDirect(request.TargetUsername, c => c.OnPlayerKicked(msg)));
+
+                            FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(request.TargetUsername));
+
+                            return true;
+                        }
                     }
-                    else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
-                    {
-                        _repository.DeleteGameAndCleanDependencies(game);
-                        await _repository.SaveChangesAsync();
-                        shutdown = true;
-                    }
-                }
-                else
-                {
-                    shutdown = true;
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en HandleGameShutdownIfNeeded para {gameId}: {ex.Message}");
+                Log.Error("Error en KickPlayer", ex);
             }
-            return shutdown;
+            return false;
         }
 
-        private string GenerateLobbyCode()
+        private void NotifyClientDirect(string username, Action<ILobbyServiceCallback> action)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            string code;
-            do
+            var client = ConnectionManager.GetLobbyClient(username);
+            if (client != null)
             {
-                byte[] randomBytes = new byte[5];
-                using (var rng = RandomNumberGenerator.Create())
-                {
-                    rng.GetBytes(randomBytes);
-                }
-                code = new string(randomBytes.Select(b => chars[b % chars.Length]).ToArray());
+                try { action(client); } catch { ConnectionManager.UnregisterLobbyClient(username); }
             }
-            while (!_repository.IsLobbyCodeUnique(code));
-            return code;
+        }
+
+        public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
+        {
+            try
+            {
+                var game = await _repository.GetGameByCodeAsync(lobbyCode);
+                if (game != null)
+                {
+                    var players = await _repository.GetPlayersInGameAsync(game.IdGame);
+                    return new LobbyStateDto
+                    {
+                        IsGameStarted = (game.GameStatus == (int)GameStatus.InProgress),
+                        Players = players.Select(p => new PlayerLobbyDto
+                        {
+                            Username = p.Username,
+                            IsHost = (p.IdPlayer == game.HostPlayerID)
+                        }).ToList(),
+                        BoardId = game.Board_idBoard,
+                        MaxPlayers = game.MaxPlayers,
+                        IsPublic = game.IsPublic
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error en GetLobbyState", ex);
+            }
+            return null;
         }
 
         public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
@@ -588,96 +457,92 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Error("Error SQL en GetPublicMatches", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error Entity en GetPublicMatches", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout en GetPublicMatches", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error General en GetPublicMatches", ex);
+                Log.Error("Error en GetPublicMatches", ex);
             }
             return matchesList.ToArray();
         }
 
-        public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
+        private async Task<bool> HandleGameShutdownIfNeeded(int gameId)
         {
-            bool operationSuccess = false;
-
-            if (request != null && request.RequestorUsername != request.TargetUsername)
+            try
             {
-                try
-                {
-                    var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
-                    if (game != null)
-                    {
-                        var host = await _repository.GetPlayerByUsernameAsync(request.RequestorUsername);
-                        if (host != null && game.HostPlayerID == host.IdPlayer)
-                        {
-                            var target = await _repository.GetPlayerByUsernameAsync(request.TargetUsername);
-                            if (target != null && target.GameIdGame == game.IdGame)
-                            {
-                                target.KickCount++;
-                                bool isBanned = false;
-                                if (target.KickCount >= 3)
-                                {
-                                    target.IsBanned = true;
-                                    isBanned = true;
-                                }
+                var game = await _repository.GetGameByIdAsync(gameId);
+                if (game == null) return true;
 
-                                target.GameIdGame = null;
-                                await _repository.SaveChangesAsync();
-
-                                string msg = isBanned ? "Has sido BANEADO." : "Has sido expulsado.";
-
-                                Task.Run(() => NotifyClient(request.TargetUsername, msg));
-                                FireAndForgetNotification(game.IdGame, request.TargetUsername, client => client.OnPlayerLeft(request.TargetUsername));
-
-                                operationSuccess = true;
-                            }
-                        }
-                    }
-                }
-                catch (DbUpdateException ex)
+                var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
                 {
-                    Log.Error("Error DB Update en KickPlayer", ex);
+                    game.GameStatus = (int)GameStatus.Finished;
+                    try { GameManager.Instance.StopMonitoring(gameId); } catch { }
+                    await _repository.SaveChangesAsync();
+                    return true;
                 }
-                catch (SqlException ex)
+                else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
                 {
-                    Log.Fatal("Error SQL en KickPlayer", ex);
-                }
-                catch (EntityException ex)
-                {
-                    Log.Error("Error Entity en KickPlayer", ex);
-                }
-                catch (TimeoutException ex)
-                {
-                    Log.Error("Timeout en KickPlayer", ex);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error General en KickPlayer", ex);
+                    _repository.DeleteGameAndCleanDependencies(game);
+                    await _repository.SaveChangesAsync();
+                    return true;
                 }
             }
-
-            return operationSuccess;
+            catch (Exception ex)
+            {
+                Log.Error($"Error HandleGameShutdown {gameId}: {ex.Message}");
+            }
+            return false;
         }
 
-        private static void NotifyClient(string username, string message)
+        private string GenerateLobbyCode()
         {
-            var callback = ConnectionManager.GetLobbyClient(username);
-            if (callback != null)
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string code;
+            do
             {
-                try { callback.OnPlayerKicked(message); }
-                catch { ConnectionManager.UnregisterLobbyClient(username); }
+                byte[] randomBytes = new byte[5];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(randomBytes);
+                }
+                code = new string(randomBytes.Select(b => chars[b % chars.Length]).ToArray());
             }
+            while (!_repository.IsLobbyCodeUnique(code));
+            return code;
+        }
+        public async Task SystemKickPlayerAsync(string lobbyCode, string username, string reason)
+        {
+            try
+            {
+                var game = await _repository.GetGameByCodeAsync(lobbyCode);
+                var player = await _repository.GetPlayerByUsernameAsync(username);
+
+                if (game != null && player != null && player.GameIdGame == game.IdGame)
+                {
+                    player.GameIdGame = null;
+                    await _repository.SaveChangesAsync();
+
+                    Task.Run(() => NotifyClientDirect(username, c => c.OnPlayerKicked(reason)));
+
+                    var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                    var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
+                    FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
+
+                    Log.Info($"System Kick aplicado a {username} en lobby {lobbyCode}. Razón: {reason}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en SystemKickPlayerAsync para {username}", ex);
+            }
+        }
+        private void HandleException(Exception ex, LobbyCreationResultDto result)
+        {
+            Log.Error("Error creando lobby", ex);
+            result.Success = false;
+            if (ex is SqlException || ex is EntityException) result.ErrorType = LobbyErrorType.DatabaseError;
+            else if (ex is TimeoutException) result.ErrorType = LobbyErrorType.ServerTimeout;
+            else result.ErrorType = LobbyErrorType.Unknown;
+            result.ErrorMessage = "Error en el servidor.";
         }
     }
 }

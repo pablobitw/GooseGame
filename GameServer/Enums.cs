@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,19 +59,20 @@ namespace GameServer
         TikTok = 4,
         Instagram = 5
     }
+    [DataContract(Name = "LobbyErrorType")]
     public enum LobbyErrorType
     {
-        None,               
-        Unknown,           
-        DatabaseError,      
-        ServerTimeout,      
-        InvalidData,       
-        UserNotFound,      
-        GuestNotAllowed,   
-        PlayerAlreadyInGame,
-        GameNotFound,       
-        GameStarted,       
-        GameFull            
+        [EnumMember] None,              
+        [EnumMember] Unknown,             
+        [EnumMember] DatabaseError,       
+        [EnumMember] ServerTimeout,       
+        [EnumMember] InvalidData,         
+        [EnumMember] UserNotFound,        
+        [EnumMember] GuestNotAllowed,     
+        [EnumMember] PlayerAlreadyInGame,  
+        [EnumMember] GameNotFound,         
+        [EnumMember] GameStarted,         
+        [EnumMember] GameFull
     }
     public enum GameplayErrorType
     {

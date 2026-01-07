@@ -1,7 +1,8 @@
 ﻿using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
 using GameServer.Interfaces;
-using GameServer.Services.Logic; 
+using GameServer.Repositories;
+using GameServer.Services.Logic;
 using log4net;
 using System;
 using System.Collections.Concurrent;
@@ -48,7 +49,8 @@ namespace GameServer.Services.Logic
                 lobbyChatters[request.Username] = request.Username;
 
                 Log.Info($"Chat: {request.Username} se unió al lobby {request.LobbyCode}");
-                BroadcastSystemMessage(request.LobbyCode, $"{request.Username} se ha unido.");
+
+                Task.Run(() => BroadcastSystemMessage(request.LobbyCode, $"{request.Username} se ha unido."));
 
                 return ChatOperationResult.Success;
             }
@@ -70,42 +72,45 @@ namespace GameServer.Services.Logic
 
                 if (messageDto.Message.Length > MaxMessageLength)
                 {
-                    SendSystemMessageToUser(messageDto.Sender, "Mensaje demasiado largo.");
+                    Task.Run(() => SendSystemMessageToUser(messageDto.Sender, "Mensaje demasiado largo."));
                     return ChatOperationResult.MessageTooLong;
                 }
 
                 var spamResult = _spamTracker.Analyze(messageDto.LobbyCode, messageDto.Sender);
                 if (!spamResult.IsAllowed)
                 {
-                    SendSystemMessageToUser(messageDto.Sender, spamResult.SystemNotification);
-                    if (spamResult.RequiresKick)
-                    {
-                        KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Spam masivo", "CHAT_SPAM");
-                    }
+                    Task.Run(() => {
+                        SendSystemMessageToUser(messageDto.Sender, spamResult.SystemNotification);
+                        if (spamResult.RequiresKick)
+                        {
+                            KickUserForChatOffense(messageDto.LobbyCode, messageDto.Sender, "Spam masivo", "CHAT_SPAM");
+                        }
+                    });
                     return ChatOperationResult.SpamBlocked;
                 }
 
                 var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
                 if (profanityResult.IsBlocked)
                 {
-                    SendSystemMessageToUser(messageDto.Sender, profanityResult.SystemNotification);
+                    Task.Run(() => SendSystemMessageToUser(messageDto.Sender, profanityResult.SystemNotification));
                     return ChatOperationResult.ContentBlocked;
                 }
 
                 if (profanityResult.IsCensored)
                 {
                     var level = WarningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
-                    HandleWarning(messageDto.LobbyCode, messageDto.Sender, level);
+                    Task.Run(() => HandleWarning(messageDto.LobbyCode, messageDto.Sender, level));
                     if (level == WarningLevel.Punishment)
                     {
-                        return ChatOperationResult.ContentBlocked; 
+                        return ChatOperationResult.ContentBlocked;
                     }
                 }
 
                 messageDto.Message = profanityResult.FinalMessage;
                 messageDto.IsPrivate = false;
 
-                BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto);
+                Task.Run(() => BroadcastInternal(messageDto.Sender, messageDto.LobbyCode, messageDto));
+
                 return ChatOperationResult.Success;
             }
             catch (Exception ex)
@@ -130,12 +135,12 @@ namespace GameServer.Services.Logic
 
                 if (sent)
                 {
-                    SafeSendMessageToClient(messageDto.Sender, messageDto);
+                    Task.Run(() => SafeSendMessageToClient(messageDto.Sender, messageDto));
                     return ChatOperationResult.Success;
                 }
                 else
                 {
-                    SendSystemMessageToUser(messageDto.Sender, $"El usuario {messageDto.TargetUser} no está disponible.");
+                    Task.Run(() => SendSystemMessageToUser(messageDto.Sender, $"El usuario {messageDto.TargetUser} no está disponible."));
                     return ChatOperationResult.TargetNotFound;
                 }
             }
@@ -156,7 +161,7 @@ namespace GameServer.Services.Logic
                 }
 
                 RemoveClient(request.LobbyCode, request.Username);
-                BroadcastSystemMessage(request.LobbyCode, $"{request.Username} ha salido.");
+                Task.Run(() => BroadcastSystemMessage(request.LobbyCode, $"{request.Username} ha salido."));
                 return ChatOperationResult.Success;
             }
             catch (Exception ex)
@@ -192,6 +197,12 @@ namespace GameServer.Services.Logic
                     using (var sanctionService = _sanctionServiceFactory())
                     {
                         await sanctionService.ProcessKickAsync(username, lobbyCode, reason, source);
+                    }
+
+                    using (var lobbyRepo = new LobbyRepository())
+                    {
+                        var lobbyService = new LobbyAppService(lobbyRepo);
+                        await lobbyService.SystemKickPlayerAsync(lobbyCode, username, reason);
                     }
                 }
                 catch (Exception ex)

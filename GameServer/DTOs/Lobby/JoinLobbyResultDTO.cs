@@ -6,16 +6,26 @@ namespace GameServer.DTOs.Lobby
     [DataContract]
     public class JoinLobbyResultDto
     {
-        [DataMember] public bool Success { get; set; }
-        [DataMember] public string ErrorMessage { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
 
         [DataMember]
-        public LobbyErrorType ErrorType { get; set; } 
+        public string ErrorMessage { get; set; }
 
-        [DataMember] public int BoardId { get; set; }
-        [DataMember] public int MaxPlayers { get; set; }
-        [DataMember] public bool IsHost { get; set; }
-        [DataMember] public bool IsPublic { get; set; }
+        [DataMember]
+        public LobbyErrorType ErrorType { get; set; }
+
+        [DataMember]
+        public int BoardId { get; set; }
+
+        [DataMember]
+        public int MaxPlayers { get; set; }
+
+        [DataMember]
+        public bool IsHost { get; set; }
+
+        [DataMember]
+        public bool IsPublic { get; set; }
 
         [DataMember]
         public List<PlayerLobbyDto> PlayersInLobby { get; set; }
@@ -23,6 +33,8 @@ namespace GameServer.DTOs.Lobby
         public JoinLobbyResultDto()
         {
             PlayersInLobby = new List<PlayerLobbyDto>();
+            ErrorType = LobbyErrorType.None;
+            Success = false;
         }
     }
 }

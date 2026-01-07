@@ -18,9 +18,7 @@ namespace GameServer.Services
         private readonly IGameplayRepository _repository;
         private readonly GameplayAppService _logic;
 
-        public GameplayService() : this(new GameplayRepository())
-        {
-        }
+        public GameplayService() : this(new GameplayRepository()) { }
 
         public GameplayService(IGameplayRepository repository)
         {
@@ -30,88 +28,48 @@ namespace GameServer.Services
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
-            if (callback != null && request != null)
-            {
-                ConnectionManager.RegisterGameplayClient(request.Username, callback);
-            }
-
-            return await _logic.RollDiceAsync(request).ConfigureAwait(false);
+            RegisterClient(request?.Username);
+            try { return await _logic.RollDiceAsync(request).ConfigureAwait(false); }
+            catch (Exception ex) { Log.Error("RollDice", ex); return new DiceRollDto { Success = false }; }
         }
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
-            if (callback != null && request != null)
-            {
-                ConnectionManager.RegisterGameplayClient(request.Username, callback);
-            }
-
-            try
-            {
-                return await _logic.GetGameStateAsync(request).ConfigureAwait(false);
-            }
-            catch (EntityException ex)
-            {
-                Log.ErrorFormat("Error de base de datos al obtener estado de juego para {0}: {1}", request?.Username, ex.Message);
-                throw new FaultException("Ocurrió un error de base de datos.");
-            }
-            catch (TimeoutException ex)
-            {
-                Log.ErrorFormat("Timeout al obtener estado de juego para {0}: {1}", request?.Username, ex.Message);
-                throw new FaultException("La operación excedió el tiempo de espera.");
-            }
-            catch (Exception ex)
-            {
-                Log.FatalFormat("Error crítico en GetGameState para {0}: {1}", request?.Username, ex.Message);
-                throw new FaultException("Error interno al obtener el estado del juego.");
-            }
+            RegisterClient(request?.Username);
+            try { return await _logic.GetGameStateAsync(request).ConfigureAwait(false); }
+            catch (Exception ex) { Log.Error("GetGameState", ex); return null; }
         }
 
         public async Task<bool> LeaveGameAsync(GameplayRequest request)
         {
-            var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
-            if (result)
+            try
             {
-                ConnectionManager.UnregisterGameplayClient(request.Username);
+                var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
+                if (result) ConnectionManager.UnregisterGameplayClient(request.Username);
+                return result;
             }
-            return result;
+            catch (Exception ex) { Log.Error("LeaveGame", ex); return false; }
         }
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
-            if (callback != null && request != null)
-            {
-                ConnectionManager.RegisterGameplayClient(request.Username, callback);
-            }
-
-            try
-            {
-                await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false);
-            }
-            catch (EntityException ex)
-            {
-                Log.ErrorFormat("Error DB voto kick {0}: {1}", request?.Username, ex.Message);
-                throw new FaultException("No se pudo iniciar la votación.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.WarnFormat("Voto inválido {0}: {1}", request?.Username, ex.Message);
-                throw new FaultException(ex.Message);
-            }
+            RegisterClient(request?.Username);
+            try { await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false); }
+            catch (Exception ex) { Log.Error("InitiateVote", ex); }
         }
 
         public async Task CastVoteAsync(VoteResponseDto vote)
         {
-            try
+            try { await _logic.CastVoteAsync(vote).ConfigureAwait(false); }
+            catch (Exception ex) { Log.Error("CastVote", ex); }
+        }
+
+        private void RegisterClient(string username)
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
+            if (callback != null && !string.IsNullOrEmpty(username))
             {
-                await _logic.CastVoteAsync(vote).ConfigureAwait(false);
-            }
-            catch (EntityException ex)
-            {
-                Log.ErrorFormat("Error DB cast vote {0}: {1}", vote?.Username, ex.Message);
-                throw new FaultException("No se pudo registrar el voto.");
+                ConnectionManager.RegisterGameplayClient(username, callback);
             }
         }
 

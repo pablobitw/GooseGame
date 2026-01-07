@@ -47,7 +47,7 @@ namespace GameServer.Services.Logic
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
         {
-            var result = new GuestLoginResult { Success = false, Message = "DbError" };
+            var result = new GuestLoginResult { Success = false, Message = "DatabasebError" };
             try
             {
                 string guestName;
@@ -91,22 +91,22 @@ namespace GameServer.Services.Logic
             catch (DbUpdateException ex)
             {
                 Log.Error("DbUpdateException creating guest", ex);
-                result.Message = "DbError";
+                result.Message = "DatabasebError";
             }
             catch (SqlException ex)
             {
                 Log.Fatal("SqlException creating guest", ex);
-                result.Message = "DbError";
+                result.Message = "DatabasebError";
             }
             catch (EntityException ex)
             {
                 Log.Error("EntityException creating guest", ex);
-                result.Message = "DbError";
+                result.Message = "DatabasebError";
             }
             catch (Exception ex)
             {
                 Log.Fatal("General Exception creating guest", ex);
-                result.Message = "DbError";
+                result.Message = "DatabasebError";
             }
             return result;
         }

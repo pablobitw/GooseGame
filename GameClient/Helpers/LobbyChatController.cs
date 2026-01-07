@@ -1,6 +1,7 @@
 ﻿using GameClient.ChatServiceReference;
 using System;
 using System.ServiceModel;
+using System.Threading.Tasks; 
 using System.Windows.Threading;
 
 namespace GameClient.Helpers
@@ -39,7 +40,7 @@ namespace GameClient.Helpers
             }
             catch (Exception ex)
             {
-                SystemMessage?.Invoke("Error conectando al chat: " + ex.Message);
+                _dispatcher.Invoke(() => SystemMessage?.Invoke("Error conectando al chat: " + ex.Message));
             }
         }
 
@@ -48,26 +49,29 @@ namespace GameClient.Helpers
             if (string.IsNullOrWhiteSpace(message) || _chatClient == null)
                 return;
 
-            try
+            Task.Run(() =>
             {
-                var dto = new ChatMessageDto
+                try
                 {
-                    Sender = _username,
-                    LobbyCode = _lobbyCode,
-                    Message = message
-                };
+                    var dto = new ChatMessageDto
+                    {
+                        Sender = _username,
+                        LobbyCode = _lobbyCode,
+                        Message = message
+                    };
 
-                _chatClient.SendLobbyMessage(dto);
-            }
-            catch (Exception ex)
-            {
-                SystemMessage?.Invoke("Error enviando mensaje: " + ex.Message);
-            }
+                    _chatClient.SendLobbyMessage(dto);
+                }
+                catch (Exception ex)
+                {
+                    _dispatcher.Invoke(() => SystemMessage?.Invoke("Error enviando mensaje: " + ex.Message));
+                }
+            });
         }
 
         public void ReceiveMessage(ChatMessageDto message)
         {
-            _dispatcher.Invoke(() =>
+            _dispatcher.InvokeAsync(() =>
             {
                 MessageReceived?.Invoke(message.Sender, message.Message);
             });

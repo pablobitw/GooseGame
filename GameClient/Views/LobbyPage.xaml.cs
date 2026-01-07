@@ -29,6 +29,9 @@ namespace GameClient.Views
         private int playerCount = 4;
         private int boardId = 1;
 
+        // Bandera crítica para evitar race conditions (doble clic al iniciar)
+        private bool _isGameStarting;
+
         private LobbyChatController chatController;
         private Action _onDialogConfirmAction;
 
@@ -72,6 +75,8 @@ namespace GameClient.Views
             StartMatchButton.Visibility = Visibility.Collapsed;
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
+
+            // CONEXIÓN SEGURA AL CHAT (Evita el congelamiento)
             ConnectToChat();
 
             Loaded += Page_Loaded;
@@ -161,8 +166,16 @@ namespace GameClient.Views
         {
             Dispatcher.InvokeAsync(() =>
             {
-                chatController?.Close();
-                NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
+                try
+                {
+                    chatController?.Close();
+                    StartMatchButton.IsEnabled = false; // Bloqueo final
+                    NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
+                }
+                catch (Exception)
+                {
+                    ResetStartButton();
+                }
             });
         }
 
@@ -200,6 +213,7 @@ namespace GameClient.Views
             {
                 HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
             }
+            catch (ObjectDisposedException) { }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error crítico actualizando lobby: {ex.Message}");
@@ -265,21 +279,9 @@ namespace GameClient.Views
                 else
                     await LobbyServiceManager.Instance.LeaveLobbyAsync(username);
             }
-            catch (EndpointNotFoundException)
-            {
-                Console.WriteLine("Salida forzosa: Servidor no encontrado.");
-            }
-            catch (TimeoutException)
-            {
-                Console.WriteLine("Salida forzosa: Timeout.");
-            }
-            catch (CommunicationException)
-            {
-                Console.WriteLine("Salida forzosa: Error comunicación.");
-            }
             catch (Exception)
             {
-
+                // Ignoramos errores al salir para asegurar navegación
             }
             finally
             {
@@ -295,6 +297,8 @@ namespace GameClient.Views
 
         private async void StartMatchButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isGameStarting) return; // Protección anti-doble clic
+
             if (!isLobbyCreated)
                 await CreateLobbyAsync();
             else
@@ -303,6 +307,7 @@ namespace GameClient.Views
 
         private async Task CreateLobbyAsync()
         {
+            _isGameStarting = true;
             StartMatchButton.IsEnabled = false;
 
             var settings = new LobbySettingsDto
@@ -320,38 +325,36 @@ namespace GameClient.Views
                 if (!result.Success)
                 {
                     HandleLobbyError(result.ErrorType, result.ErrorMessage);
-
-                    StartMatchButton.IsEnabled = true;
+                    ResetStartButton();
                     return;
                 }
 
                 lobbyCode = result.LobbyCode;
                 LockLobbySettings(lobbyCode);
                 UpdatePlayerListUI(new[] { new PlayerLobbyDto { Username = username, IsHost = true } });
+
+                // --- FIX: Conexión asíncrona para evitar congelamiento de UI ---
                 ConnectToChat();
+
+                _isGameStarting = false;
             }
-            catch (TimeoutException)
+            catch (Exception ex)
             {
-                ShowOverlayDialog(GameClient.Resources.Strings.ErrorTitle, GameClient.Resources.Strings.ErrorNotifyServer, FontAwesomeIcon.ClockOutline);
-                StartMatchButton.IsEnabled = true;
-            }
-            catch (CommunicationException)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLobbyUpdateComm, FontAwesomeIcon.Wifi);
-                StartMatchButton.IsEnabled = true;
-            }
-            catch (Exception)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
-                StartMatchButton.IsEnabled = true;
+                ResetStartButton();
+                HandleGeneralException(ex);
             }
         }
 
         private async Task StartGameAsync()
         {
+            _isGameStarting = true;
+            StartMatchButton.IsEnabled = false;
+            StartMatchButton.Content = "Starting..."; // TEXTO HARDCODED PARA EVITAR ERROR DE COMPILACIÓN
+
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_NoInternet, FontAwesomeIcon.Wifi);
+                ResetStartButton();
                 return;
             }
 
@@ -362,27 +365,31 @@ namespace GameClient.Views
                 if (state == null || state.Players.Length < MinPlayersToStart)
                 {
                     ShowOverlayDialog(GameClient.Resources.Strings.ImpossibleStartTitle, GameClient.Resources.Strings.MinPlayersRequired, FontAwesomeIcon.InfoCircle);
+                    ResetStartButton();
                     return;
                 }
 
-                await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
+                bool success = await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
+
+                if (!success)
+                {
+                    ResetStartButton();
+                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game.", FontAwesomeIcon.TimesCircle);
+                }
             }
-            catch (EndpointNotFoundException)
+            catch (Exception ex)
             {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
+                ResetStartButton();
+                HandleGeneralException(ex);
             }
-            catch (TimeoutException)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
-            }
-            catch (CommunicationException)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
-            }
-            catch (Exception)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
-            }
+        }
+
+        private void ResetStartButton()
+        {
+            _isGameStarting = false;
+            StartMatchButton.IsEnabled = true;
+            StartMatchButton.Content = isLobbyCreated ? GameClient.Resources.Strings.StartGameButton : GameClient.Resources.Strings.CreateLobbyButton;
+            StartMatchButton.Opacity = 1.0;
         }
 
         private void LockLobbySettings(string code)
@@ -425,7 +432,7 @@ namespace GameClient.Views
 
         private void UpdateStartButtonState(int playersInLobby)
         {
-            if (!isHost || !isLobbyCreated)
+            if (!isHost || !isLobbyCreated || _isGameStarting)
                 return;
 
             bool canStart = playersInLobby >= MinPlayersToStart;
@@ -443,18 +450,40 @@ namespace GameClient.Views
             }
         }
 
+        // --- MÉTODO DE CONEXIÓN AL CHAT SEGURO (Anti-Freeze) ---
         private void ConnectToChat()
         {
-            chatController = new LobbyChatController(username, lobbyCode, Dispatcher);
+            // Ejecutar la conexión del chat en un hilo de fondo para liberar el hilo UI
+            // y evitar que se congele si el servicio de chat intenta hacer callback inmediato.
+            Task.Run(() =>
+            {
+                try
+                {
+                    // El constructor recibe el Dispatcher, así que los eventos internos ya son seguros
+                    chatController = new LobbyChatController(username, lobbyCode, Dispatcher);
 
-            chatController.MessageReceived += (sender, message) =>
-                AddMessageToUI(sender + ":", message);
+                    // Suscripción segura
+                    chatController.MessageReceived += (sender, msg) =>
+                        Dispatcher.InvokeAsync(() => AddMessageToUI(sender + ":", msg));
 
-            chatController.SystemMessage += (message) =>
-                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, message);
+                    chatController.SystemMessage += (msg) =>
+                        Dispatcher.InvokeAsync(() => AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, msg));
 
-            chatController.Connect();
-            ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown;
+                    // Conexión (Bloqueante, por eso está en Task.Run)
+                    chatController.Connect();
+
+                    // Evento de teclado (Debe engancharse en UI Thread)
+                    Dispatcher.InvokeAsync(() =>
+                        ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.InvokeAsync(() =>
+                        AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, "Chat connection failed: " + ex.Message)
+                    );
+                }
+            });
         }
 
         private void AddMessageToUI(string name, string message)
@@ -521,8 +550,7 @@ namespace GameClient.Views
 
         private void SendChatMessageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(ChatMessageTextBox.Text))
-                return;
+            if (string.IsNullOrWhiteSpace(ChatMessageTextBox.Text)) return;
 
             try
             {
@@ -532,7 +560,7 @@ namespace GameClient.Views
             }
             catch (Exception)
             {
-                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, "Error al enviar mensaje. Verifica tu conexión.");
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, "Error sending message.");
             }
         }
 
@@ -544,68 +572,44 @@ namespace GameClient.Views
             CopyIcon.Icon = FontAwesomeIcon.Copy;
         }
 
-        private void VisibilityPublicButton_Click(object sender, RoutedEventArgs e)
+        private void VisibilityPublicButton_Click(object sender, RoutedEventArgs e) { SetVisibility(true); }
+        private void VisibilityPrivateButton_Click(object sender, RoutedEventArgs e) { SetVisibility(false); }
+        private void SetVisibility(bool isPublic)
         {
-            VisibilityPublicButton.Style = (Style)FindResource(ToggleActiveStyle);
-            VisibilityPrivateButton.Style = (Style)FindResource(ToggleInactiveStyle);
-        }
-
-        private void VisibilityPrivateButton_Click(object sender, RoutedEventArgs e)
-        {
-            VisibilityPrivateButton.Style = (Style)FindResource(ToggleActiveStyle);
-            VisibilityPublicButton.Style = (Style)FindResource(ToggleInactiveStyle);
+            VisibilityPublicButton.Style = (Style)FindResource(isPublic ? ToggleActiveStyle : ToggleInactiveStyle);
+            VisibilityPrivateButton.Style = (Style)FindResource(isPublic ? ToggleInactiveStyle : ToggleActiveStyle);
         }
 
         private void IncreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
-            if (playerCount < 4)
-            {
-                playerCount++;
-                PlayerCountBlock.Text = playerCount.ToString();
-            }
+            if (playerCount < 4) { playerCount++; PlayerCountBlock.Text = playerCount.ToString(); }
         }
-
         private void DecreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
-            if (playerCount > 2)
-            {
-                playerCount--;
-                PlayerCountBlock.Text = playerCount.ToString();
-            }
+            if (playerCount > 2) { playerCount--; PlayerCountBlock.Text = playerCount.ToString(); }
         }
 
-        private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e)
+        private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e) { SetBoard(1); }
+        private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e) { SetBoard(2); }
+        private void SetBoard(int id)
         {
-            boardId = 1;
-            BoardTypeNormalButton.Style = (Style)FindResource(ToggleActiveStyle);
-            BoardTypeSpecialButton.Style = (Style)FindResource(ToggleInactiveStyle);
-        }
-
-        private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e)
-        {
-            boardId = 2;
-            BoardTypeSpecialButton.Style = (Style)FindResource(ToggleActiveStyle);
-            BoardTypeNormalButton.Style = (Style)FindResource(ToggleInactiveStyle);
+            boardId = id;
+            BoardTypeNormalButton.Style = (Style)FindResource(id == 1 ? ToggleActiveStyle : ToggleInactiveStyle);
+            BoardTypeSpecialButton.Style = (Style)FindResource(id == 2 ? ToggleActiveStyle : ToggleInactiveStyle);
         }
 
         private async void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
         {
             InviteFriendsOverlay.Visibility = Visibility.Visible;
-
-            if (FriendshipServiceManager.Instance == null)
-                return;
+            if (FriendshipServiceManager.Instance == null) return;
 
             try
             {
                 if (!NetworkInterface.GetIsNetworkAvailable()) throw new CommunicationException();
-
                 var friends = await FriendshipServiceManager.Instance.GetFriendListAsync();
                 var online = friends.Where(f => f.IsOnline).ToList();
-
                 InviteFriendsList.ItemsSource = online;
-                NoFriendsToInviteText.Visibility = online.Count == 0
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
+                NoFriendsToInviteText.Visibility = online.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             catch (Exception)
             {
@@ -624,21 +628,16 @@ namespace GameClient.Views
             {
                 var raw = e.DataObject.GetData(DataFormats.UnicodeText) as string ?? string.Empty;
                 e.CancelCommand();
-
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
                     if (sanitized.Length > ChatMessageTextBox.MaxLength)
                         sanitized = sanitized.Substring(0, ChatMessageTextBox.MaxLength);
-
                     ChatMessageTextBox.Text = sanitized;
                     ChatMessageTextBox.CaretIndex = ChatMessageTextBox.Text.Length;
                 }), System.Windows.Threading.DispatcherPriority.Background);
             }
-            else
-            {
-                e.CancelCommand();
-            }
+            else { e.CancelCommand(); }
         }
 
         private void InviteFriend_Click(object sender, RoutedEventArgs e)
@@ -648,7 +647,6 @@ namespace GameClient.Views
                 try
                 {
                     if (!NetworkInterface.GetIsNetworkAvailable()) throw new CommunicationException();
-
                     FriendshipServiceManager.Instance.SendGameInvitation(btn.Tag.ToString(), lobbyCode);
                     btn.IsEnabled = false;
                     btn.Content = GameClient.Resources.Strings.InviteSentStatus;
@@ -659,6 +657,7 @@ namespace GameClient.Views
                 }
             }
         }
+
         private void HandleLobbyError(LobbyErrorType errorType, string fallbackMessage)
         {
             string title = GameClient.Resources.Strings.DialogErrorTitle;
@@ -676,28 +675,42 @@ namespace GameClient.Views
                     icon = FontAwesomeIcon.ClockOutline;
                     break;
                 case LobbyErrorType.GameFull:
-                    message = "La sala está llena. Intenta con otra.";
+                    message = "Lobby is full.";
                     icon = FontAwesomeIcon.Users;
                     break;
                 case LobbyErrorType.GameStarted:
-                    message = "Esta partida ya ha comenzado.";
+                    message = "Game already started.";
                     icon = FontAwesomeIcon.PlayCircle;
                     break;
                 case LobbyErrorType.GameNotFound:
-                    message = "No se encontró una partida con ese código.";
+                    message = "Lobby not found.";
                     icon = FontAwesomeIcon.Search;
                     break;
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    message = "El sistema detecta que ya estás en una partida. Reinicia si es un error.";
+                    message = "You are already in a game.";
                     icon = FontAwesomeIcon.ExclamationTriangle;
                     break;
                 case LobbyErrorType.GuestNotAllowed:
-                    message = "Los invitados no pueden realizar esta acción. ¡Regístrate!";
+                    message = "Guests restricted.";
                     icon = FontAwesomeIcon.UserSecret;
                     break;
+                default:
+                    message = fallbackMessage;
+                    break;
             }
-
             ShowOverlayDialog(title, message, icon);
+        }
+
+        private void HandleGeneralException(Exception ex)
+        {
+            if (ex is EndpointNotFoundException)
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
+            else if (ex is TimeoutException)
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
+            else if (ex is CommunicationException)
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
+            else
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
         }
     }
 }
