@@ -100,7 +100,7 @@ namespace GameClient.Views
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
      
-            catch (Exception ex)
+            catch (Exception)
             {
           
                 MessageBox.Show(

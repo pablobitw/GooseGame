@@ -789,6 +789,9 @@
   <data name="FriendPasteBlocked" xml:space="preserve">
     <value>For security, pasting is disabled in the search bar.</value>
   </data>
+  <data name="FriendRequestAccepted" xml:space="preserve">
+    <value>Request accepted! You are now friends with {0}.</value>
+  </data>
   <data name="FriendRequestDialogTitle" xml:space="preserve">
     <value>FRIEND REQUEST!</value>
   </data>

@@ -798,6 +798,9 @@
   <data name="FriendPasteBlocked" xml:space="preserve">
     <value>Por seguridad, el pegado está deshabilitado en el buscador.</value>
   </data>
+  <data name="FriendRequestAccepted" xml:space="preserve">
+    <value>¡Solicitud aceptada! Ahora eres amigo de {0}.</value>
+  </data>
   <data name="FriendRequestDialogTitle" xml:space="preserve">
     <value>¡SOLICITUD DE AMISTAD!</value>
   </data>

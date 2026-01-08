@@ -66,7 +66,6 @@ namespace GameServer.Services.Logic
                         {
                             var sanction = new Sanction
                             {
-                                // CORRECCIÓN: Asignación segura de int? a int
                                 Account_IdAccount = player.Account_IdAccount.Value,
                                 Game_IdGame = gameId,
                                 StartDate = DateTime.UtcNow,
@@ -84,7 +83,6 @@ namespace GameServer.Services.Logic
 
                     await ProcessGameExitStats(player);
 
-                    player.GameIdGame = null;
                     player.TurnsSkipped = 0;
 
                     await _repository.SaveChangesAsync();
@@ -145,13 +143,7 @@ namespace GameServer.Services.Logic
                     using (var lobbyRepo = new LobbyRepository())
                     {
                         var lobbyLogic = new LobbyAppService(lobbyRepo);
-                        var req = new KickPlayerRequest
-                        {
-                            LobbyCode = lobbyCode,
-                            TargetUsername = username,
-                            RequestorUsername = "SYSTEM"
-                        };
-                        await lobbyLogic.KickPlayerAsync(req);
+                        await lobbyLogic.SystemKickPlayerAsync(lobbyCode, username, reason);
                     }
                 }
                 catch (Exception ex)

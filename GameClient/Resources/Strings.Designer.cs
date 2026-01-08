@@ -2104,6 +2104,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a ¡Solicitud aceptada! Ahora eres amigo de {0}..
+        /// </summary>
+        public static string FriendRequestAccepted {
+            get {
+                return ResourceManager.GetString("FriendRequestAccepted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a ¡SOLICITUD DE AMISTAD!.
         /// </summary>
         public static string FriendRequestDialogTitle {

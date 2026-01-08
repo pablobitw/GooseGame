@@ -71,7 +71,7 @@ namespace GameClient.Views
             _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource("ChatTabItemStyle"));
 
             PauseMenu.ResumeRequested += (s, e) => PauseMenu.Visibility = Visibility.Collapsed;
-            PauseMenu.QuitRequested += (s, e) => _ = QuitGameProcessAsync(); // Descarte asíncrono
+            PauseMenu.QuitRequested += (s, e) => _ = QuitGameProcessAsync();
 
             KickReasonPrompt.KickConfirmed += KickReasonPrompt_KickConfirmed;
             KickReasonPrompt.KickCancelled += (s, e) => KickReasonPrompt.Visibility = Visibility.Collapsed;
@@ -80,10 +80,8 @@ namespace GameClient.Views
 
             SubscribeToEvents();
 
-            // Carga asíncrona de recursos pesados
             LoadBoardImage();
 
-            // Conexión segura al chat (Hilo fondo). Usamos _ = para indicar Fire-and-Forget intencional.
             _ = Task.Run(() => ConnectToChatService());
 
             StartCountdown();
@@ -154,7 +152,6 @@ namespace GameClient.Views
         {
             try
             {
-                // Dispatcher para crear el cliente en el hilo UI pero ejecutar en Task
                 Dispatcher.Invoke(() =>
                 {
                     InstanceContext chatContext = new InstanceContext(this);
@@ -187,11 +184,9 @@ namespace GameClient.Views
             string target = _chatManager.GetCurrentTarget();
             var dto = new ChatMessageDto { Sender = currentUsername, LobbyCode = lobbyCode, Message = msg };
 
-            // Feedback inmediato en la UI
             ReceiveMessage(dto);
             ChatInputBox.Clear();
 
-            // Envío asíncrono para no bloquear UI
             _ = Task.Run(() =>
             {
                 try
@@ -404,7 +399,6 @@ namespace GameClient.Views
             });
         }
 
-        // Corrección del duplicado: Este es el único método que queda
         private void OnFriendRequestPopUpReceived(string senderName)
         {
             Dispatcher.Invoke(() =>
@@ -486,7 +480,7 @@ namespace GameClient.Views
             catch (Exception ex)
             {
                 MessageBox.Show("Error al tirar dados: " + ex.Message);
-                RollDiceButton.IsEnabled = true;
+                if (!_isGameOverHandled) RollDiceButton.IsEnabled = false;
             }
         }
 
@@ -563,7 +557,6 @@ namespace GameClient.Views
             _startCountdownTimer.Tick += Countdown_Tick;
             _startCountdownTimer.Start();
 
-            // Usamos descarte para llamada asíncrona segura
             _ = InitialStateLoad();
         }
 
@@ -778,19 +771,34 @@ namespace GameClient.Views
                 brush.Stretch = Stretch.UniformToFill;
                 brush.ImageSource = bitmap;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                brush.ImageSource = new BitmapImage(new Uri("/Assets/default_avatar.png", UriKind.Relative));
+                Console.WriteLine($"Error loading avatar '{avatarPath}': {ex.Message}");
+                brush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute));
             }
         }
 
         private static Uri GetAvatarUri(string path)
         {
-            if (string.IsNullOrEmpty(path)) return new Uri("/Assets/default_avatar.png", UriKind.Relative);
-            if (path.StartsWith("pack://")) return new Uri(path, UriKind.RelativeOrAbsolute);
+            if (string.IsNullOrWhiteSpace(path))
+                return new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute);
+
+            if (path.StartsWith("pack://") || path.Contains("://"))
+                return new Uri(path, UriKind.RelativeOrAbsolute);
 
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Avatar", path);
-            return File.Exists(fullPath) ? new Uri(fullPath, UriKind.Absolute) : new Uri("/Assets/default_avatar.png", UriKind.Relative);
+            if (File.Exists(fullPath))
+            {
+                return new Uri(fullPath, UriKind.Absolute);
+            }
+
+            string cleanPath = path.Replace("\\", "/").TrimStart('/');
+            if (!cleanPath.StartsWith("Assets"))
+            {
+                cleanPath = "Assets/Avatar/" + cleanPath;
+            }
+
+            return new Uri("pack://application:,,,/" + cleanPath, UriKind.Absolute);
         }
 
         public void StopTimers()
@@ -831,6 +839,28 @@ namespace GameClient.Views
                         MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestSent, targetUser),
                                         GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
+
+                    case FriendRequestResult.MutualAccepted:
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestAccepted, targetUser),
+                                        GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+
+                    case FriendRequestResult.AlreadyFriends:
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendAlreadyAdded, targetUser),
+                                        GameClient.Resources.Strings.DialogInfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                    case FriendRequestResult.Pending:
+                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestPending,
+                                        GameClient.Resources.Strings.DialogWarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    case FriendRequestResult.GuestRestriction:
+                        MessageBox.Show(GameClient.Resources.Strings.FriendGuestRestriction,
+                                        GameClient.Resources.Strings.DialogWarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    case FriendRequestResult.TargetNotFound:
+                        MessageBox.Show(GameClient.Resources.Strings.FriendNotFound,
+                                        GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
                     default:
                         MessageBox.Show(GameClient.Resources.Strings.FriendRequestError,
                                         GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
@@ -850,10 +880,10 @@ namespace GameClient.Views
             _isGameOverHandled = true;
             StopTimers();
 
-            MessageBox.Show(string.Format(GameClient.Resources.Strings.GameOverMessage, winner),
-                            GameClient.Resources.Strings.GameOverTitle,
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+            string msg = string.Format(GameClient.Resources.Strings.GameOverMessage, winner);
+            string title = GameClient.Resources.Strings.GameOverTitle;
+
+            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
 
             if (Window.GetWindow(this) is GameMainWindow mainWindow)
             {

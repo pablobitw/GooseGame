@@ -407,9 +407,14 @@ namespace GameServer.Services.Logic
             return new DiceRollDto { DiceOne = d1, DiceTwo = d2, Total = total };
         }
 
-        private async Task<GameStateDto> BuildFinishedGameStateAsync(Game game)
+        private Task<GameStateDto> BuildFinishedGameStateAsync(Game game)
         {
-            return new GameStateDto { Success = true, IsGameOver = true, WinnerUsername = "Winner" };
+            return Task.FromResult(new GameStateDto
+            {
+                Success = true,
+                IsGameOver = true,
+                WinnerUsername = "Winner"
+            });
         }
 
         private async Task<GameStateDto> BuildActiveGameStateAsync(int gameId, string requestUsername)
@@ -458,7 +463,29 @@ namespace GameServer.Services.Logic
         private async Task UpdateStatsEndGame(int gameId, int winnerId)
         {
             var players = await _repository.GetPlayersWithStatsInGameAsync(gameId);
-            foreach (var p in players) { p.GameIdGame = null; p.TurnsSkipped = 0; }
+            foreach (var p in players)
+            {
+                if (p.IdPlayer == winnerId)
+                {
+                    p.Coins += 300; 
+                    if (p.PlayerStat != null)
+                    {
+                        p.PlayerStat.MatchesWon++;
+                        p.PlayerStat.MatchesPlayed++;
+                    }
+                }
+                else
+                {
+                    if (p.PlayerStat != null)
+                    {
+                        p.PlayerStat.MatchesLost++;
+                        p.PlayerStat.MatchesPlayed++;
+                    }
+                }
+
+                p.GameIdGame = null;
+                p.TurnsSkipped = 0;
+            }
             await _repository.SaveChangesAsync();
         }
 

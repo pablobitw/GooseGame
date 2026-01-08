@@ -28,14 +28,13 @@ namespace GameServer.Services.Logic
             _repository = repository;
         }
 
-        // CORRECCIÓN CLAVE: Recibe List<string> ya materializada
         private void FireAndForgetNotification(List<string> usernames, Action<ILobbyServiceCallback> notificationAction)
         {
             if (usernames == null || !usernames.Any()) return;
 
             var safeList = new List<string>(usernames);
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 NotifyUsersSafe(safeList, notificationAction);
             });
@@ -48,8 +47,14 @@ namespace GameServer.Services.Logic
                 var client = ConnectionManager.GetLobbyClient(username);
                 if (client != null)
                 {
-                    try { notificationAction(client); }
-                    catch (Exception ex) { Log.Warn($"Error notificando a {username}: {ex.Message}"); }
+                    try
+                    {
+                        notificationAction(client);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn($"Error notificando a {username}: {ex.Message}");
+                    }
                 }
             }
         }
@@ -61,7 +66,7 @@ namespace GameServer.Services.Logic
                 try
                 {
                     var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
-                    if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
+                    if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished || oldGame.GameStatus == (int)GameStatus.WaitingForPlayers)
                     {
                         player.GameIdGame = null;
                         await _repository.SaveChangesAsync();
@@ -94,6 +99,10 @@ namespace GameServer.Services.Logic
 
             try
             {
+                var callback = OperationContext.Current != null
+                    ? OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>()
+                    : null;
+
                 var hostPlayer = await _repository.GetPlayerByUsernameAsync(request.HostUsername);
                 if (hostPlayer == null)
                 {
@@ -107,6 +116,11 @@ namespace GameServer.Services.Logic
                     result.ErrorMessage = "Los invitados no pueden crear partidas.";
                     result.ErrorType = LobbyErrorType.GuestNotAllowed;
                     return result;
+                }
+
+                if (callback != null)
+                {
+                    ConnectionManager.RegisterLobbyClient(request.HostUsername, callback);
                 }
 
                 await CleanPlayerStateIfNeeded(hostPlayer);
@@ -155,12 +169,21 @@ namespace GameServer.Services.Logic
 
             try
             {
+                var callback = OperationContext.Current != null
+                    ? OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>()
+                    : null;
+
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                 if (player == null)
                 {
                     result.ErrorType = LobbyErrorType.UserNotFound;
                     result.ErrorMessage = "Usuario no encontrado";
                     return result;
+                }
+
+                if (callback != null)
+                {
+                    ConnectionManager.RegisterLobbyClient(request.Username, callback);
                 }
 
                 await CleanPlayerStateIfNeeded(player);
@@ -214,7 +237,6 @@ namespace GameServer.Services.Logic
                 }).ToList();
                 result.ErrorType = LobbyErrorType.None;
 
-                // IMPORTANTÍSIMO: Materializar lista con .ToList() ANTES de enviar al hilo de notificación
                 var usernamesToNotify = updatedPlayers
                     .Where(p => p.Username != request.Username)
                     .Select(p => p.Username)
@@ -259,7 +281,6 @@ namespace GameServer.Services.Logic
                             Log.Error($"CRITICAL: GameManager falló al iniciar monitoreo para {lobbyCode}", gmEx);
                         }
 
-                        // Materializar lista para evitar acceso diferido en hilo cerrado
                         var usernames = players.Select(p => p.Username).ToList();
                         FireAndForgetNotification(usernames, client => client.OnGameStarted());
 
@@ -288,7 +309,6 @@ namespace GameServer.Services.Logic
                     {
                         var players = await _repository.GetPlayersInGameAsync(gameId);
 
-                        // Materializar lista
                         var usernamesToNotify = players
                             .Where(p => p.Username != hostUsername)
                             .Select(p => p.Username)
@@ -325,10 +345,16 @@ namespace GameServer.Services.Logic
                 if (player != null && player.GameIdGame != null)
                 {
                     int gameId = player.GameIdGame.Value;
+                    var game = await _repository.GetGameByIdAsync(gameId);
 
-                    // Materializar lista antes de borrar
-                    var currentPlayers = await _repository.GetPlayersInGameAsync(gameId);
-                    var usernamesToNotify = currentPlayers
+                    if (game != null && game.HostPlayerID == player.IdPlayer)
+                    {
+                        await DisbandLobbyAsync(username);
+                        return true;
+                    }
+
+                    var allPlayers = await _repository.GetPlayersInGameAsync(gameId);
+                    var usernamesToNotify = allPlayers
                         .Where(p => p.Username != username)
                         .Select(p => p.Username)
                         .ToList();
@@ -340,6 +366,7 @@ namespace GameServer.Services.Logic
                     Log.InfoFormat("Jugador {0} salió del lobby.", username);
 
                     bool gameClosed = await HandleGameShutdownIfNeeded(gameId);
+
                     if (!gameClosed)
                     {
                         FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
@@ -380,7 +407,8 @@ namespace GameServer.Services.Logic
                             var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
 
                             string msg = isBanned ? "Has sido BANEADO." : "Has sido expulsado.";
-                            Task.Run(() => NotifyClientDirect(request.TargetUsername, c => c.OnPlayerKicked(msg)));
+
+                            _ = Task.Run(() => NotifyClientDirect(request.TargetUsername, c => c.OnPlayerKicked(msg)));
 
                             FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(request.TargetUsername));
 
@@ -394,6 +422,33 @@ namespace GameServer.Services.Logic
                 Log.Error("Error en KickPlayer", ex);
             }
             return false;
+        }
+
+        public async Task SystemKickPlayerAsync(string lobbyCode, string username, string reason)
+        {
+            try
+            {
+                var game = await _repository.GetGameByCodeAsync(lobbyCode);
+                var player = await _repository.GetPlayerByUsernameAsync(username);
+
+                if (game != null && player != null && player.GameIdGame == game.IdGame)
+                {
+                    _ = Task.Run(() => NotifyClientDirect(username, c => c.OnPlayerKicked(reason)));
+
+                    player.GameIdGame = null;
+                    await _repository.SaveChangesAsync();
+
+                    var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+                    var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
+                    FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
+
+                    Log.Info($"System Kick aplicado a {username} en lobby {lobbyCode}. Razón: {reason}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en SystemKickPlayerAsync para {username}", ex);
+            }
         }
 
         private void NotifyClientDirect(string username, Action<ILobbyServiceCallback> action)
@@ -509,32 +564,7 @@ namespace GameServer.Services.Logic
             while (!_repository.IsLobbyCodeUnique(code));
             return code;
         }
-        public async Task SystemKickPlayerAsync(string lobbyCode, string username, string reason)
-        {
-            try
-            {
-                var game = await _repository.GetGameByCodeAsync(lobbyCode);
-                var player = await _repository.GetPlayerByUsernameAsync(username);
 
-                if (game != null && player != null && player.GameIdGame == game.IdGame)
-                {
-                    player.GameIdGame = null;
-                    await _repository.SaveChangesAsync();
-
-                    Task.Run(() => NotifyClientDirect(username, c => c.OnPlayerKicked(reason)));
-
-                    var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-                    var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
-                    FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
-
-                    Log.Info($"System Kick aplicado a {username} en lobby {lobbyCode}. Razón: {reason}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Error en SystemKickPlayerAsync para {username}", ex);
-            }
-        }
         private void HandleException(Exception ex, LobbyCreationResultDto result)
         {
             Log.Error("Error creando lobby", ex);

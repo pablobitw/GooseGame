@@ -9,6 +9,7 @@
       <xs:enumeration value="GuestRestriction" />
       <xs:enumeration value="DatabaseError" />
       <xs:enumeration value="TimeOutError" />
+      <xs:enumeration value="MutualAccepted" />
       <xs:enumeration value="Error" />
     </xs:restriction>
   </xs:simpleType>

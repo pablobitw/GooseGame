@@ -99,7 +99,21 @@ namespace GameServer.Services.Logic
                         }
                         else
                         {
-                            result = FriendRequestResult.Pending;
+                            if (existing.PlayerIdPlayer == receiver.IdPlayer)
+                            {
+                                existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
+                                await _repository.SaveChangesAsync();
+
+                                _ = Task.Run(() => NotifyUserListUpdated(senderUsername));
+                                _ = Task.Run(() => NotifyUserListUpdated(receiverUsername));
+
+                                result = FriendRequestResult.MutualAccepted;
+                                Log.InfoFormat("Solicitud mutua detectada: {0} y {1} ahora son amigos.", senderUsername, receiverUsername);
+                            }
+                            else
+                            {
+                                result = FriendRequestResult.Pending;
+                            }
                         }
                     }
                     else
@@ -140,7 +154,7 @@ namespace GameServer.Services.Logic
             catch (TimeoutException ex)
             {
                 Log.Error("Timeout enviando solicitud.", ex);
-                result = FriendRequestResult.TimeOutError; 
+                result = FriendRequestResult.TimeOutError;
             }
             catch (Exception ex)
             {

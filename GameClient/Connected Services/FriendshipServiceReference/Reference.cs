@@ -39,7 +39,10 @@ namespace GameClient.FriendshipServiceReference {
         TimeOutError = 6,
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
-        Error = 7,
+        MutualAccepted = 7,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        Error = 8,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]

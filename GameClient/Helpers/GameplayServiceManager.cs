@@ -1,4 +1,5 @@
 ﻿using GameClient.GameplayServiceReference;
+using GameClient.Helpers;
 using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -73,7 +74,6 @@ namespace GameClient.Helpers
             return _client;
         }
 
-
         public void OnTurnChanged(GameStateDto newState)
         {
             Application.Current.Dispatcher.InvokeAsync(() =>
@@ -97,7 +97,6 @@ namespace GameClient.Helpers
             Application.Current.Dispatcher.InvokeAsync(() =>
                 VoteKickStarted?.Invoke(targetUsername, reason));
         }
-
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
@@ -124,40 +123,39 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.CastVoteAsync(vote));
         }
 
-
         private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
             try
             {
                 return await action(GetClient());
             }
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
+            {
+                InvalidateClient();
+                await Task.Delay(500); 
+                try
+                {
+                    return await action(GetClient());
+                }
+                catch (Exception)
+                {
+                    return default(T);
+                }
+            }
+            catch (EndpointNotFoundException)
+            {
+                InvalidateClient();
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                return default(T);
+            }
             catch (FaultException ex)
             {
                 await ShowWarningAsync(ex.Message);
                 return default(T);
             }
-            catch (EndpointNotFoundException)
-            {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError); 
-                return default(T);
-            }
-            catch (TimeoutException)
-            {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ServerTimeout);
-                return default(T);
-            }
-            catch (CommunicationException)
-            {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ConnectionLost);
-                return default(T);
-            }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                await ShowErrorAsync(); 
                 return default(T);
             }
         }
@@ -168,29 +166,31 @@ namespace GameClient.Helpers
             {
                 await action(GetClient());
             }
-            catch (FaultException ex)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                await ShowWarningAsync(ex.Message);
+                InvalidateClient();
+                await Task.Delay(500);
+                try
+                {
+                    await action(GetClient());
+                }
+                catch (Exception) 
+                {
+
+                }
             }
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
                 UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
-            catch (TimeoutException)
+            catch (FaultException ex)
             {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ServerTimeout);
-            }
-            catch (CommunicationException)
-            {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_ConnectionLost);
+                await ShowWarningAsync(ex.Message);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex);
-                await ShowErrorAsync();
             }
         }
 
@@ -202,16 +202,6 @@ namespace GameClient.Helpers
                     GameClient.Resources.Strings.GameplayWarningTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning)).Task;
-        }
-
-        private static Task ShowErrorAsync()
-        {
-            return Application.Current.Dispatcher.InvokeAsync(() =>
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorGameplayUnexpected,
-                    GameClient.Resources.Strings.DialogErrorTitle,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information)).Task;
         }
 
         private void InvalidateClient()

@@ -23,6 +23,8 @@ namespace GameServer.DTOs.Friendship
         DatabaseError,
         [EnumMember]
         TimeOutError,
+        [EnumMember]
+        MutualAccepted,
 
         [EnumMember]
         Error               

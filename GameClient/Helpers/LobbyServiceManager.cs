@@ -52,10 +52,26 @@ namespace GameClient.Helpers
 
         private void InitializeProxy()
         {
-            if (_client != null && _client.State == CommunicationState.Opened)
-                return;
+            if (_client != null)
+            {
+                if (_client.State == CommunicationState.Opened)
+                    return;
 
-            CloseClient();
+                if (_client.State == CommunicationState.Faulted)
+                {
+                    try { _client.Abort(); } catch { }
+                    _client = null;
+                }
+                else if (_client.State != CommunicationState.Opening)
+                {
+                    try { _client.Close(); } catch { }
+                    _client = null;
+                }
+                else
+                {
+                    return;
+                }
+            }
 
             try
             {
@@ -86,7 +102,6 @@ namespace GameClient.Helpers
         public void OnGameStarted() => GameStarted?.Invoke();
         public void OnLobbyDisbanded() => LobbyDisbanded?.Invoke();
         public void OnLobbyMessageReceived(string username, string message) => MessageReceived?.Invoke(username, message);
-
 
         public Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
@@ -128,7 +143,6 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.KickPlayerAsync(request));
         }
 
-
         private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action)
         {
             try
@@ -139,22 +153,22 @@ namespace GameClient.Helpers
             catch (EndpointNotFoundException)
             {
                 InvalidateClient();
-                throw; 
+                throw;
             }
             catch (TimeoutException)
             {
                 InvalidateClient();
-                throw; 
+                throw;
             }
             catch (CommunicationException)
             {
                 InvalidateClient();
-                throw; 
+                throw;
             }
             catch (Exception)
             {
                 InvalidateClient();
-                throw; 
+                throw;
             }
         }
 
@@ -189,8 +203,11 @@ namespace GameClient.Helpers
 
         private void InvalidateClient()
         {
-            CloseClient();
-            _client = null;
+            if (_client != null)
+            {
+                try { _client.Abort(); } catch { }
+                _client = null;
+            }
         }
 
         private void CloseClient()
@@ -206,6 +223,10 @@ namespace GameClient.Helpers
             catch
             {
                 _client.Abort();
+            }
+            finally
+            {
+                _client = null;
             }
         }
 

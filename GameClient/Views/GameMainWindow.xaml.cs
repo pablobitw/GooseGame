@@ -115,14 +115,49 @@ namespace GameClient
                     boardPage.StopTimers();
                 }
 
+                // CORRECCIÓN CRÍTICA: Detectar si es un Baneo (Logout) o solo Kick (MainMenu)
+                bool isBan = reason.Contains("[AUTO-BAN]");
+
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.KickedTitle,
                     string.Format(GameClient.Resources.Strings.KickedGlobalMsg, reason),
                     FontAwesomeIcon.ExclamationTriangle,
                     false,
-                    () => _ = ShowMainMenu()
+                    () =>
+                    {
+                        if (isBan)
+                        {
+                            // Si es ban, cerramos sesión y vamos al Login
+                            ForceLogoutAndClose();
+                        }
+                        else
+                        {
+                            // Si es kick normal, solo vamos al menú principal
+                            _ = ShowMainMenu();
+                        }
+                    }
                 );
             });
+        }
+
+        private void ForceLogoutAndClose()
+        {
+            try
+            {
+                UserSession.GetInstance().Logout();
+
+                // Abrir ventana de Login
+                AuthWindow authWindow = new AuthWindow();
+                authWindow.Show();
+
+                // Cerrar esta ventana principal
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error during forced logout: " + ex.Message);
+                this.Close(); // Asegurar cierre
+            }
         }
 
         private async Task LoadUserCurrency()
@@ -224,14 +259,6 @@ namespace GameClient
                     Debug.WriteLine($"Video file not found: {videoPath}");
                 }
             }
-            catch (IOException ioEx)
-            {
-                Debug.WriteLine($"Error loading video file: {ioEx.Message}");
-            }
-            catch (UriFormatException uriEx)
-            {
-                Debug.WriteLine($"Invalid video path format: {uriEx.Message}");
-            }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Unexpected error loading video: {ex.Message}");
@@ -317,7 +344,6 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-
             finally
             {
                 if (Application.Current.Windows.Count == 0)

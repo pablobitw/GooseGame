@@ -29,7 +29,6 @@ namespace GameClient.Views
         private int playerCount = 4;
         private int boardId = 1;
 
-        // Bandera crítica para evitar race conditions (doble clic al iniciar)
         private bool _isGameStarting;
 
         private LobbyChatController chatController;
@@ -76,7 +75,6 @@ namespace GameClient.Views
 
             UpdatePlayerListUI(joinResult.PlayersInLobby);
 
-            // CONEXIÓN SEGURA AL CHAT (Evita el congelamiento)
             ConnectToChat();
 
             Loaded += Page_Loaded;
@@ -99,7 +97,12 @@ namespace GameClient.Views
         private void DialogButton_Click(object sender, RoutedEventArgs e)
         {
             CustomDialogOverlay.Visibility = Visibility.Collapsed;
-            _onDialogConfirmAction?.Invoke();
+
+            if (sender == DialogConfirmBtn)
+            {
+                _onDialogConfirmAction?.Invoke();
+            }
+
             _onDialogConfirmAction = null;
         }
 
@@ -140,8 +143,12 @@ namespace GameClient.Views
         {
             Dispatcher.InvokeAsync(async () =>
             {
-                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
-                await RefreshLobbyState();
+                try
+                {
+                    AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
+                    await RefreshLobbyState();
+                }
+                catch (Exception) { }
             });
         }
 
@@ -149,8 +156,12 @@ namespace GameClient.Views
         {
             Dispatcher.InvokeAsync(async () =>
             {
-                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
-                await RefreshLobbyState();
+                try
+                {
+                    AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
+                    await RefreshLobbyState();
+                }
+                catch (Exception) { }
             });
         }
 
@@ -169,7 +180,7 @@ namespace GameClient.Views
                 try
                 {
                     chatController?.Close();
-                    StartMatchButton.IsEnabled = false; // Bloqueo final
+                    StartMatchButton.IsEnabled = false;
                     NavigationService.Navigate(new BoardPage(lobbyCode, boardId, username));
                 }
                 catch (Exception)
@@ -246,22 +257,19 @@ namespace GameClient.Views
             VisibilityPrivateButton.Style = (Style)FindResource(isPublic ? ToggleInactiveStyle : ToggleActiveStyle);
         }
 
-        private async void BackButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (isHost && isLobbyCreated)
-            {
-                ShowOverlayDialog(
-                    GameClient.Resources.Strings.DialogConfirmTitle,
-                    GameClient.Resources.Strings.LobbyHostExitConfirm,
-                    FontAwesomeIcon.ExclamationTriangle,
-                    true,
-                    async () => await ProcessExitLobby()
-                );
-            }
-            else
-            {
-                await ProcessExitLobby();
-            }
+            string message = isHost && isLobbyCreated
+                ? GameClient.Resources.Strings.LobbyHostExitConfirm
+                : "Are you sure you want to leave the lobby?";
+
+            ShowOverlayDialog(
+                GameClient.Resources.Strings.DialogConfirmTitle,
+                message,
+                FontAwesomeIcon.ExclamationTriangle,
+                true,
+                async () => await ProcessExitLobby()
+            );
         }
 
         private async Task ProcessExitLobby()
@@ -279,9 +287,21 @@ namespace GameClient.Views
                 else
                     await LobbyServiceManager.Instance.LeaveLobbyAsync(username);
             }
+            catch (EndpointNotFoundException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
+            }
+            catch (TimeoutException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
+            }
+            catch (CommunicationException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
+            }
             catch (Exception)
             {
-                // Ignoramos errores al salir para asegurar navegación
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
             }
             finally
             {
@@ -297,7 +317,7 @@ namespace GameClient.Views
 
         private async void StartMatchButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_isGameStarting) return; // Protección anti-doble clic
+            if (_isGameStarting) return;
 
             if (!isLobbyCreated)
                 await CreateLobbyAsync();
@@ -333,15 +353,29 @@ namespace GameClient.Views
                 LockLobbySettings(lobbyCode);
                 UpdatePlayerListUI(new[] { new PlayerLobbyDto { Username = username, IsHost = true } });
 
-                // --- FIX: Conexión asíncrona para evitar congelamiento de UI ---
                 ConnectToChat();
 
                 _isGameStarting = false;
             }
-            catch (Exception ex)
+            catch (EndpointNotFoundException)
             {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
                 ResetStartButton();
-                HandleGeneralException(ex);
+            }
+            catch (TimeoutException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
+                ResetStartButton();
+            }
+            catch (CommunicationException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.ErrorLobbyUpdateComm, FontAwesomeIcon.Wifi);
+                ResetStartButton();
+            }
+            catch (Exception)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
+                ResetStartButton();
             }
         }
 
@@ -349,7 +383,7 @@ namespace GameClient.Views
         {
             _isGameStarting = true;
             StartMatchButton.IsEnabled = false;
-            StartMatchButton.Content = "Starting..."; // TEXTO HARDCODED PARA EVITAR ERROR DE COMPILACIÓN
+            StartMatchButton.Content = "Starting...";
 
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
@@ -377,10 +411,25 @@ namespace GameClient.Views
                     ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game.", FontAwesomeIcon.TimesCircle);
                 }
             }
-            catch (Exception ex)
+            catch (EndpointNotFoundException)
             {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
                 ResetStartButton();
-                HandleGeneralException(ex);
+            }
+            catch (TimeoutException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
+                ResetStartButton();
+            }
+            catch (CommunicationException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
+                ResetStartButton();
+            }
+            catch (Exception)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
+                ResetStartButton();
             }
         }
 
@@ -450,29 +499,22 @@ namespace GameClient.Views
             }
         }
 
-        // --- MÉTODO DE CONEXIÓN AL CHAT SEGURO (Anti-Freeze) ---
         private void ConnectToChat()
         {
-            // Ejecutar la conexión del chat en un hilo de fondo para liberar el hilo UI
-            // y evitar que se congele si el servicio de chat intenta hacer callback inmediato.
             Task.Run(() =>
             {
                 try
                 {
-                    // El constructor recibe el Dispatcher, así que los eventos internos ya son seguros
                     chatController = new LobbyChatController(username, lobbyCode, Dispatcher);
 
-                    // Suscripción segura
                     chatController.MessageReceived += (sender, msg) =>
                         Dispatcher.InvokeAsync(() => AddMessageToUI(sender + ":", msg));
 
                     chatController.SystemMessage += (msg) =>
                         Dispatcher.InvokeAsync(() => AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, msg));
 
-                    // Conexión (Bloqueante, por eso está en Task.Run)
                     chatController.Connect();
 
-                    // Evento de teclado (Debe engancharse en UI Thread)
                     Dispatcher.InvokeAsync(() =>
                         ChatMessageTextBox.KeyDown += ChatMessageTextBox_KeyDown
                     );
