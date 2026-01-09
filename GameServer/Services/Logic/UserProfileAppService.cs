@@ -1,9 +1,9 @@
-﻿using BCrypt.Net;
-using GameServer.DTOs.User;
+﻿using GameServer.DTOs.User;
 using GameServer.Helpers;
 using GameServer.Models;
 using GameServer.Repositories;
 using GameServer.Repositories.Interfaces;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -18,15 +18,24 @@ namespace GameServer.Services.Logic
     public class UserProfileAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(UserProfileAppService));
-        private static readonly Random RandomGenerator = new Random();
         private const int MaxUsernameChanges = 3;
         private const int CodeExpirationMinutes = 15;
 
         private readonly IUserProfileRepository _repository;
+        private readonly IEmailService _emailService;
+        private readonly ISecurityCodeGenerator _codeGenerator;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public UserProfileAppService(IUserProfileRepository repository = null)
+        public UserProfileAppService(
+            IUserProfileRepository repository = null,
+            IEmailService emailService = null,
+            ISecurityCodeGenerator codeGenerator = null,
+            IPasswordHasher passwordHasher = null)
         {
             _repository = repository ?? new UserProfileRepository();
+            _emailService = emailService ?? new EmailService();
+            _codeGenerator = codeGenerator ?? new SecurityCodeGenerator();
+            _passwordHasher = passwordHasher ?? new PasswordHasher();
         }
 
         public async Task<UserProfileDto> GetUserProfileAsync(string identifier)
@@ -104,14 +113,14 @@ namespace GameServer.Services.Logic
                 if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
-                    string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+                    string verifyCode = _codeGenerator.Next(100000, 999999).ToString();
 
                     account.VerificationCode = verifyCode;
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
 
-                    isSent = await EmailHelper.SendVerificationEmailAsync(account.Email, verifyCode).ConfigureAwait(false);
+                    isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
 
                     if (isSent) Log.InfoFormat("Código de cambio de usuario enviado a {0}", account.Email);
                 }
@@ -179,7 +188,7 @@ namespace GameServer.Services.Logic
                         player.Account.CodeExpiration = null;
 
                         await _repository.SaveChangesAsync();
-                        _ = EmailHelper.SendUsernameChangedNotificationAsync(player.Account.Email, oldUsername, newUsername);
+                        _ = _emailService.SendUsernameChangedNotificationAsync(player.Account.Email, oldUsername, newUsername, player.Account.PreferredLanguage);
                         Log.InfoFormat("Usuario cambiado: '{0}' -> '{1}'", oldUsername, newUsername);
                         result = UsernameChangeResult.Success;
                     }
@@ -257,14 +266,14 @@ namespace GameServer.Services.Logic
                 if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
-                    string verifyCode = RandomGenerator.Next(100000, 999999).ToString();
+                    string verifyCode = _codeGenerator.Next(100000, 999999).ToString();
 
                     account.VerificationCode = verifyCode;
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
 
-                    isSent = await EmailHelper.SendVerificationEmailAsync(account.Email, verifyCode).ConfigureAwait(false);
+                    isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
                     if (isSent) Log.InfoFormat("Código de cambio de pass enviado a {0}", account.Email);
                 }
                 else
@@ -305,14 +314,14 @@ namespace GameServer.Services.Logic
 
                     if (account.VerificationCode == request.Code && account.CodeExpiration >= DateTime.Now)
                     {
-                        if (!BCrypt.Net.BCrypt.Verify(request.NewPassword, account.PasswordHash))
+                        if (!_passwordHasher.Verify(request.NewPassword, account.PasswordHash))
                         {
-                            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                            account.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
                             account.VerificationCode = null;
                             account.CodeExpiration = null;
 
                             await _repository.SaveChangesAsync();
-                            _ = EmailHelper.SendPasswordChangedNotificationAsync(account.Email, player.Username);
+                            _ = _emailService.SendPasswordChangedNotificationAsync(account.Email, player.Username, account.PreferredLanguage);
                             Log.InfoFormat("Contraseña cambiada exitosamente para {0}", request.Email);
                             isChanged = true;
                         }
@@ -401,9 +410,9 @@ namespace GameServer.Services.Logic
 
                 if (player != null && player.Account != null && !player.IsGuest)
                 {
-                    if (BCrypt.Net.BCrypt.Verify(request.Password, player.Account.PasswordHash))
+                    if (_passwordHasher.Verify(request.Password, player.Account.PasswordHash))
                     {
-                        player.Account.AccountStatus = 2; 
+                        player.Account.AccountStatus = 2;
                         await _repository.SaveChangesAsync();
 
                         Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);
@@ -469,7 +478,7 @@ namespace GameServer.Services.Logic
                         player.PlayerSocialLinks.Add(newLink);
                         await _repository.SaveChangesAsync();
                         Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
-                        errorMessage = null; 
+                        errorMessage = null;
                     }
                 }
             }

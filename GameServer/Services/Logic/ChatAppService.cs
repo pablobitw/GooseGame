@@ -1,14 +1,10 @@
 ﻿using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
+using GameServer.Helpers;
 using GameServer.Interfaces;
-using GameServer.Repositories;
-using GameServer.Services.Logic;
 using log4net;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
@@ -17,21 +13,26 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ChatAppService));
 
-        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _lobbies
-            = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-
-        private static readonly ConcurrentDictionary<string, IChatCallback> _callbacks
-            = new ConcurrentDictionary<string, IChatCallback>();
-
-        private static readonly SpamTracker _spamTracker = new SpamTracker();
+        private readonly IChatSessionManager _sessionManager;
+        private readonly IChatServiceFactory _serviceFactory;
+        private readonly IChatSpamTracker _spamTracker;
+        private readonly IChatProfanityFilter _profanityFilter;
+        private readonly IChatWarningTracker _warningTracker;
 
         private const int MaxMessageLength = 100;
 
-        private readonly Func<SanctionAppService> _sanctionServiceFactory;
-
-        public ChatAppService()
+        public ChatAppService(
+            IChatSessionManager sessionManager = null,
+            IChatServiceFactory serviceFactory = null,
+            IChatSpamTracker spamTracker = null,
+            IChatProfanityFilter profanityFilter = null,
+            IChatWarningTracker warningTracker = null)
         {
-            _sanctionServiceFactory = () => new SanctionAppService();
+            _sessionManager = sessionManager ?? new ChatSessionManager();
+            _serviceFactory = serviceFactory ?? new ChatServiceFactory();
+            _spamTracker = spamTracker ?? new ChatSpamTrackerWrapper();
+            _profanityFilter = profanityFilter ?? new ChatProfanityFilterWrapper();
+            _warningTracker = warningTracker ?? new ChatWarningTrackerWrapper();
         }
 
         public ChatOperationResult JoinChat(JoinChatRequest request, IChatCallback callback)
@@ -43,10 +44,8 @@ namespace GameServer.Services.Logic
                     return ChatOperationResult.InternalError;
                 }
 
-                _callbacks.AddOrUpdate(request.Username, callback, (k, v) => callback);
-
-                var lobbyChatters = _lobbies.GetOrAdd(request.LobbyCode, _ => new ConcurrentDictionary<string, string>());
-                lobbyChatters[request.Username] = request.Username;
+                _sessionManager.RegisterClient(request.Username, callback);
+                _sessionManager.AddUserToLobby(request.LobbyCode, request.Username);
 
                 Log.Info($"Chat: {request.Username} se unió al lobby {request.LobbyCode}");
 
@@ -89,7 +88,7 @@ namespace GameServer.Services.Logic
                     return ChatOperationResult.SpamBlocked;
                 }
 
-                var profanityResult = ProfanityFilter.Analyze(messageDto.Message);
+                var profanityResult = _profanityFilter.Analyze(messageDto.Message);
                 if (profanityResult.IsBlocked)
                 {
                     Task.Run(() => SendSystemMessageToUser(messageDto.Sender, profanityResult.SystemNotification));
@@ -98,7 +97,7 @@ namespace GameServer.Services.Logic
 
                 if (profanityResult.IsCensored)
                 {
-                    var level = WarningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
+                    var level = _warningTracker.RegisterWarning(messageDto.LobbyCode, messageDto.Sender);
                     Task.Run(() => HandleWarning(messageDto.LobbyCode, messageDto.Sender, level));
                     if (level == WarningLevel.Punishment)
                     {
@@ -194,14 +193,13 @@ namespace GameServer.Services.Logic
             {
                 try
                 {
-                    using (var sanctionService = _sanctionServiceFactory())
+                    using (var sanctionService = _serviceFactory.CreateSanctionService())
                     {
                         await sanctionService.ProcessKickAsync(username, lobbyCode, reason, source);
                     }
 
-                    using (var lobbyRepo = new LobbyRepository())
+                    using (var lobbyService = _serviceFactory.CreateLobbyService())
                     {
-                        var lobbyService = new LobbyAppService(lobbyRepo);
                         await lobbyService.SystemKickPlayerAsync(lobbyCode, username, reason);
                     }
                 }
@@ -234,21 +232,19 @@ namespace GameServer.Services.Logic
 
         private void BroadcastInternal(string senderUsername, string lobbyCode, ChatMessageDto messageDto)
         {
-            if (_lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
+            var recipients = _sessionManager.GetLobbyParticipants(lobbyCode);
+            foreach (var userKey in recipients)
             {
-                var recipients = lobbyChatters.Keys.ToList();
-                foreach (var userKey in recipients)
-                {
-                    if (senderUsername != "SYSTEM" && userKey == senderUsername) continue;
+                if (senderUsername != "SYSTEM" && userKey == senderUsername) continue;
 
-                    SafeSendMessageToClient(userKey, messageDto);
-                }
+                SafeSendMessageToClient(userKey, messageDto);
             }
         }
 
         private bool SafeSendMessageToClient(string userKey, ChatMessageDto messageDto)
         {
-            if (_callbacks.TryGetValue(userKey, out var callback))
+            var callback = _sessionManager.GetClientCallback(userKey);
+            if (callback != null)
             {
                 try
                 {
@@ -258,21 +254,18 @@ namespace GameServer.Services.Logic
                 catch (Exception)
                 {
                     Log.Warn($"No se pudo contactar a {userKey}, eliminando sesión.");
-                    _callbacks.TryRemove(userKey, out _);
+                    _sessionManager.UnregisterClient(userKey);
                     return false;
                 }
             }
             return false;
         }
 
-        public static void RemoveClient(string lobbyCode, string username)
+        public void RemoveClient(string lobbyCode, string username)
         {
-            if (!string.IsNullOrEmpty(lobbyCode) && _lobbies.TryGetValue(lobbyCode, out var lobbyChatters))
-            {
-                lobbyChatters.TryRemove(username, out _);
-            }
-            _callbacks.TryRemove(username, out _);
-            WarningTracker.Reset(lobbyCode, username);
+            _sessionManager.RemoveUserFromLobby(lobbyCode, username);
+            _sessionManager.UnregisterClient(username);
+            _warningTracker.Reset(lobbyCode, username);
         }
     }
 }

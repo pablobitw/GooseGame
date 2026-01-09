@@ -1,7 +1,9 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Helpers;
+using GameServer.Interfaces;
+using GameServer.Models;
 using GameServer.Repositories;
-using GameServer;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Data.Entity.Core;
@@ -14,11 +16,18 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(SanctionAppService));
         private readonly IGameplayRepository _repository;
+        private readonly IGameplayConnectionManager _connectionManager;
+        private readonly ISanctionServiceFactory _serviceFactory;
         private bool _disposed = false;
 
-        public SanctionAppService(IGameplayRepository repository = null)
+        public SanctionAppService(
+            IGameplayRepository repository = null,
+            IGameplayConnectionManager connectionManager = null,
+            ISanctionServiceFactory serviceFactory = null)
         {
             _repository = repository ?? new GameplayRepository();
+            _connectionManager = connectionManager ?? new GameplayConnectionManagerWrapper();
+            _serviceFactory = serviceFactory ?? new SanctionServiceFactory();
         }
 
         public async Task ProcessKickAsync(string username, string lobbyCode, string reason, string source)
@@ -119,7 +128,7 @@ namespace GameServer.Services.Logic
 
         private void NotifyAndDisconnect(string username, string lobbyCode, string reason)
         {
-            var client = ConnectionManager.GetGameplayClient(username);
+            var client = _connectionManager.GetClient(username);
             if (client != null)
             {
                 try
@@ -132,7 +141,7 @@ namespace GameServer.Services.Logic
                 }
                 finally
                 {
-                    ConnectionManager.UnregisterGameplayClient(username);
+                    _connectionManager.UnregisterClient(username);
                 }
             }
 
@@ -140,9 +149,8 @@ namespace GameServer.Services.Logic
             {
                 try
                 {
-                    using (var lobbyRepo = new LobbyRepository())
+                    using (var lobbyLogic = _serviceFactory.CreateLobbyService())
                     {
-                        var lobbyLogic = new LobbyAppService(lobbyRepo);
                         await lobbyLogic.SystemKickPlayerAsync(lobbyCode, username, reason);
                     }
                 }

@@ -162,6 +162,19 @@
     <Compile Include="Helpers\ConnectionManager.cs" />
     <Compile Include="Helpers\EmailHelper.cs" />
     <Compile Include="Helpers\GameManager.cs" />
+    <Compile Include="Services\Common\IChatModerationServices.cs" />
+    <Compile Include="Services\Common\IChatServiceFactory.cs" />
+    <Compile Include="Helpers\IChatSessionManager.cs" />
+    <Compile Include="Services\Common\IClientCallbackProvider.cs" />
+    <Compile Include="Services\Common\IConnectionManagerWrapper.cs" />
+    <Compile Include="Services\Common\IEmailService.cs" />
+    <Compile Include="Services\Common\IFriendshipConnectionManager.cs" />
+    <Compile Include="Services\Common\IFriendshipRepositoryFactory.cs" />
+    <Compile Include="Services\Common\IGameplayConnectionManager.cs" />
+    <Compile Include="Services\Common\IProfanityFilter.cs" />
+    <Compile Include="Services\Common\ISanctionServiceFactory.cs" />
+    <Compile Include="Services\Common\IServiceFactory.cs" />
+    <Compile Include="Services\Common\ISpamTracker.cs" />
     <Compile Include="Helpers\PlayerSocialLinkHelper.cs" />
     <Compile Include="Helpers\VoteManager.cs" />
     <Compile Include="Interfaces\IChatCallback.cs" />
@@ -217,6 +230,7 @@
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="Services\ChatService.cs" />
+    <Compile Include="Services\Common\IUserProfileCommonServices.cs" />
     <Compile Include="Services\FriendshipService.cs" />
     <Compile Include="Services\GameplayService.cs" />
     <Compile Include="Services\AuthService.cs" />

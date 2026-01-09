@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs.Friendship;
+using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Models;
 using GameServer.Repositories;
@@ -11,6 +12,8 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using GameServer.Services.Common;
+
 
 namespace GameServer.Services.Logic
 {
@@ -18,49 +21,47 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(FriendshipAppService));
 
-        private static readonly Dictionary<string, IFriendshipServiceCallback> _connectedClients = new Dictionary<string, IFriendshipServiceCallback>();
-        private static readonly object _locker = new object();
-
         private readonly IFriendshipRepository _repository;
+        private readonly IFriendshipConnectionManager _connectionManager;
+        private readonly IClientCallbackProvider _callbackProvider;
+        private readonly IFriendshipRepositoryFactory _repoFactory;
 
-        public FriendshipAppService(IFriendshipRepository repository)
+        public FriendshipAppService(
+            IFriendshipRepository repository,
+            IFriendshipConnectionManager connectionManager = null,
+            IClientCallbackProvider callbackProvider = null,
+            IFriendshipRepositoryFactory repoFactory = null)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _connectionManager = connectionManager ?? new FriendshipConnectionManager();
+            _callbackProvider = callbackProvider ?? new ClientCallbackProvider();
+            _repoFactory = repoFactory ?? new FriendshipRepositoryFactory();
         }
 
         public void Connect(string username)
         {
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            string key = username.ToLower();
-            IFriendshipServiceCallback callback = OperationContext.Current.GetCallbackChannel<IFriendshipServiceCallback>();
-
-            lock (_locker)
+            try
             {
-                if (_connectedClients.ContainsKey(key))
+                var callback = _callbackProvider.GetCallback();
+                if (callback != null)
                 {
-                    _connectedClients[key] = callback;
-                }
-                else
-                {
-                    _connectedClients.Add(key, callback);
+                    _connectionManager.AddClient(username, callback);
+                    NotifyFriendsOfStatusChange(username);
                 }
             }
-            NotifyFriendsOfStatusChange(username);
+            catch (Exception ex)
+            {
+                Log.Error($"Error en Connect para {username}", ex);
+            }
         }
 
         public void Disconnect(string username)
         {
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            string key = username.ToLower();
-            lock (_locker)
-            {
-                if (_connectedClients.ContainsKey(key))
-                {
-                    _connectedClients.Remove(key);
-                }
-            }
+            _connectionManager.RemoveClient(username);
             NotifyFriendsOfStatusChange(username);
         }
 
@@ -314,11 +315,7 @@ namespace GameServer.Services.Logic
 
                         if (friend != null)
                         {
-                            bool isOnline;
-                            lock (_locker)
-                            {
-                                isOnline = _connectedClients.ContainsKey(friend.Username.ToLower());
-                            }
+                            bool isOnline = _connectionManager.IsClientConnected(friend.Username);
 
                             resultList.Add(new FriendDto
                             {
@@ -443,62 +440,54 @@ namespace GameServer.Services.Logic
                 client.OnGameInvitationReceived(invitation.SenderUsername, invitation.LobbyCode));
         }
 
+        private void NotifyUserRequestReceived(string username) => SafeNotifyClient(username, c => c.OnFriendRequestReceived());
+        private void NotifyUserListUpdated(string username) => SafeNotifyClient(username, c => c.OnFriendListUpdated());
+        private void NotifyUserPopUp(string target, string sender) => SafeNotifyClient(target, c => c.OnFriendRequestPopUp(sender));
 
-        private static void NotifyUserRequestReceived(string username) => SafeNotifyClient(username, c => c.OnFriendRequestReceived());
-        private static void NotifyUserListUpdated(string username) => SafeNotifyClient(username, c => c.OnFriendListUpdated());
-        private static void NotifyUserPopUp(string target, string sender) => SafeNotifyClient(target, c => c.OnFriendRequestPopUp(sender));
-
-        private static void SafeNotifyClient(string username, Action<IFriendshipServiceCallback> action)
+        private void SafeNotifyClient(string username, Action<IFriendshipServiceCallback> action)
         {
             if (string.IsNullOrEmpty(username)) return;
-            string key = username.ToLower();
 
-            lock (_locker)
+            var client = _connectionManager.GetClient(username);
+            if (client != null)
             {
-                if (_connectedClients.ContainsKey(key))
+                try
                 {
-                    try
-                    {
-                        action(_connectedClients[key]);
-                    }
-                    catch (CommunicationException)
-                    {
-                        _connectedClients.Remove(key);
-                    }
-                    catch (TimeoutException)
-                    {
-                        _connectedClients.Remove(key);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"Error notificando a {username}", ex);
-                    }
+                    action(client);
+                }
+                catch (CommunicationException)
+                {
+                    _connectionManager.RemoveClient(username);
+                }
+                catch (TimeoutException)
+                {
+                    _connectionManager.RemoveClient(username);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error notificando a {username}", ex);
                 }
             }
         }
 
-        private static void NotifyFriendsOfStatusChange(string username)
+        private void NotifyFriendsOfStatusChange(string username)
         {
             Task.Run(async () =>
             {
                 try
                 {
-                    using (var repo = new FriendshipRepository())
+                    var repo = _repoFactory.Create();
+
+                    if (repo is IDisposable disposableRepo)
                     {
-                        var player = await repo.GetPlayerByUsernameAsync(username);
-                        if (player != null && !player.IsGuest)
+                        using (disposableRepo)
                         {
-                            var friendships = repo.GetAcceptedFriendships(player.IdPlayer);
-                            foreach (var f in friendships)
-                            {
-                                int fid = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
-                                var friend = repo.GetPlayerById(fid);
-                                if (friend != null)
-                                {
-                                    NotifyUserListUpdated(friend.Username);
-                                }
-                            }
+                            await ProcessStatusChange(repo, username);
                         }
+                    }
+                    else
+                    {
+                        await ProcessStatusChange(repo, username);
                     }
                 }
                 catch (Exception ex)
@@ -506,6 +495,24 @@ namespace GameServer.Services.Logic
                     Log.Error($"Error notificando estado de {username}", ex);
                 }
             });
+        }
+
+        private async Task ProcessStatusChange(IFriendshipRepository repo, string username)
+        {
+            var player = await repo.GetPlayerByUsernameAsync(username);
+            if (player != null && !player.IsGuest)
+            {
+                var friendships = repo.GetAcceptedFriendships(player.IdPlayer);
+                foreach (var f in friendships)
+                {
+                    int fid = (f.PlayerIdPlayer == player.IdPlayer) ? f.Player1_IdPlayer : f.PlayerIdPlayer;
+                    var friend = repo.GetPlayerById(fid);
+                    if (friend != null)
+                    {
+                        NotifyUserListUpdated(friend.Username);
+                    }
+                }
+            }
         }
     }
 }

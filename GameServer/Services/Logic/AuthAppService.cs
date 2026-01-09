@@ -10,6 +10,8 @@ using System.Data.SqlClient;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using GameServer.Services.Common;
+
 
 namespace GameServer.Services.Logic
 {
@@ -18,31 +20,20 @@ namespace GameServer.Services.Logic
         private static readonly ILog Log = LogManager.GetLogger(typeof(AuthAppService));
         private const string DefaultAvatar = "pack://application:,,,/Assets/Avatar/default_avatar.png";
         private const int CodeExpirationMinutes = 15;
-        private readonly IAuthRepository _repository;
 
-        public AuthAppService(IAuthRepository repository)
+        private readonly IAuthRepository _repository;
+        private readonly IEmailService _emailService;
+        private readonly IConnectionManagerWrapper _connection;
+
+        public AuthAppService(
+            IAuthRepository repository,
+            IEmailService emailService = null,
+            IConnectionManagerWrapper connection = null)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        }
 
-        private bool CheckInternetConnection()
-        {
-            bool isConnected = false;
-            try
-            {
-                isConnected = NetworkInterface.GetIsNetworkAvailable();
-            }
-            catch (NetworkInformationException ex)
-            {
-                Log.Warn("NetworkInformationException checking internet: " + ex.Message);
-                isConnected = true;
-            }
-            catch (Exception ex)
-            {
-                Log.Warn("General error checking internet: " + ex.Message);
-                isConnected = true;
-            }
-            return isConnected;
+            _emailService = emailService ?? new EmailService();
+            _connection = connection ?? new ConnectionManagerWrapper();
         }
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
@@ -81,7 +72,7 @@ namespace GameServer.Services.Logic
                 _repository.AddPlayer(newGuestPlayer);
                 await _repository.SaveChangesAsync();
 
-                ConnectionManager.AddUser(guestName);
+                _connection.AddUser(guestName);
                 Log.InfoFormat("Guest created: {0}", guestName);
 
                 result.Success = true;
@@ -205,7 +196,7 @@ namespace GameServer.Services.Logic
 
             await _repository.SaveChangesAsync();
 
-            bool emailSent = await EmailHelper.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
+            bool emailSent = await _emailService.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
             if (!emailSent) Log.Warn($"Failed to resend verification email to {player.Username}");
 
             return RegistrationResult.EmailPendingVerification;
@@ -219,7 +210,7 @@ namespace GameServer.Services.Logic
 
             await _repository.SaveChangesAsync();
 
-            bool emailSent = await EmailHelper.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
+            bool emailSent = await _emailService.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
             if (!emailSent) Log.Warn($"Failed to resend verification email to {account.Email}");
 
             return RegistrationResult.EmailPendingVerification;
@@ -261,7 +252,7 @@ namespace GameServer.Services.Logic
                 _repository.AddPlayer(newPlayer);
                 await _repository.SaveChangesAsync();
 
-                bool emailSent = await EmailHelper.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
+                bool emailSent = await _emailService.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
                 if (!emailSent)
                 {
                     Log.Warn($"User {request.Username} registered, but email failed to send.");
@@ -322,7 +313,7 @@ namespace GameServer.Services.Logic
                         shouldContinue = false;
                     }
 
-                    if (shouldContinue && ConnectionManager.IsUserOnline(player.Username))
+                    if (shouldContinue && _connection.IsUserOnline(player.Username))
                     {
                         response.Message = "UserAlreadyOnline";
                         shouldContinue = false;
@@ -379,9 +370,9 @@ namespace GameServer.Services.Logic
                     await _repository.SaveChangesAsync();
                 }
 
-                ConnectionManager.AddUser(player.Username);
+                _connection.AddUser(player.Username);
 
-                _ = Task.Run(() => EmailHelper.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+                _ = Task.Run(() => _emailService.SendLoginNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
 
                 response.IsSuccess = true;
                 response.Message = "Success";
@@ -401,9 +392,9 @@ namespace GameServer.Services.Logic
             return isValid;
         }
 
-        public static void Logout(string username)
+        public void Logout(string username)
         {
-            ConnectionManager.RemoveUser(username);
+            _connection.RemoveUser(username);
         }
 
         public bool VerifyAccount(string email, string code)
@@ -454,7 +445,7 @@ namespace GameServer.Services.Logic
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
-                    result = await EmailHelper.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
+                    result = await _emailService.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
                 }
             }
             catch (SqlException ex)
@@ -511,7 +502,7 @@ namespace GameServer.Services.Logic
                         account.CodeExpiration = null;
 
                         _repository.SaveChanges();
-                        _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(email, player.Username, account.PreferredLanguage));
+                        _ = Task.Run(() => _emailService.SendPasswordChangedNotificationAsync(email, player.Username, account.PreferredLanguage));
                         isUpdated = true;
                     }
                 }
@@ -544,7 +535,7 @@ namespace GameServer.Services.Logic
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
 
                     await _repository.SaveChangesAsync();
-                    result = await EmailHelper.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
+                    result = await _emailService.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
                 }
             }
             catch (SqlException ex)
@@ -577,7 +568,7 @@ namespace GameServer.Services.Logic
                         player.Account.PasswordHash = newHashedPassword;
 
                         await _repository.SaveChangesAsync();
-                        _ = Task.Run(() => EmailHelper.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
+                        _ = Task.Run(() => _emailService.SendPasswordChangedNotificationAsync(player.Account.Email, player.Username, player.Account.PreferredLanguage));
                         result = true;
                     }
                 }

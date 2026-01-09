@@ -39,7 +39,7 @@ namespace GameServer.Services
 
         public void Logout(string username)
         {
-            AuthAppService.Logout(username);
+            _authLogic.Logout(username);
         }
 
         public bool VerifyAccount(string email, string code)
