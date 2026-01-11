@@ -132,13 +132,14 @@ namespace GameClient.Helpers
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
                 InvalidateClient();
-                await Task.Delay(500); 
+                await Task.Delay(500);
                 try
                 {
                     return await action(GetClient());
                 }
-                catch (Exception)
+                catch (Exception retryEx)
                 {
+                    Console.WriteLine(retryEx);
                     return default(T);
                 }
             }
@@ -174,9 +175,9 @@ namespace GameClient.Helpers
                 {
                     await action(GetClient());
                 }
-                catch (Exception) 
+                catch (Exception retryEx)
                 {
-
+                    Console.WriteLine(retryEx);
                 }
             }
             catch (EndpointNotFoundException)
@@ -221,8 +222,9 @@ namespace GameClient.Helpers
                 else
                     _client.Abort();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 _client.Abort();
             }
         }

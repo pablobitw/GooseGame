@@ -50,7 +50,7 @@ namespace GameClient.Helpers
             {
                 if (_proxy != null)
                 {
-                    try { _proxy.Abort(); } catch { }
+                    try { _proxy.Abort(); } catch (Exception ex) { Console.WriteLine(ex); }
                     _proxy = null;
                 }
 
@@ -80,8 +80,9 @@ namespace GameClient.Helpers
                     _proxy.Abort();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 _proxy.Abort();
             }
             finally
@@ -194,7 +195,7 @@ namespace GameClient.Helpers
         {
             if (_proxy != null)
             {
-                try { _proxy.Abort(); } catch { }
+                try { _proxy.Abort(); } catch (Exception ex) { Console.WriteLine(ex); }
                 _proxy = null;
             }
         }

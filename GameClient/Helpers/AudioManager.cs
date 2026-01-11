@@ -88,17 +88,20 @@ namespace GameClient.Helpers
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string fullPath = Path.GetFullPath(Path.Combine(baseDir, relativePath));
+
                 if (!File.Exists(fullPath)) return;
 
                 _musicPlayer.Stop();
                 _musicPlayer.Close();
                 _musicPlayer.Open(new Uri(fullPath));
                 _musicPlayer.Play();
+
                 _currentTrackPath = relativePath;
                 _musicPlayer.Position = TimeSpan.FromMilliseconds(1);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
             }
         }
 

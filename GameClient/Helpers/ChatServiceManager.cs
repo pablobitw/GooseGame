@@ -8,7 +8,7 @@ namespace GameClient.Helpers
     public class ChatServiceManager : IChatServiceCallback
     {
         private ChatServiceClient _proxy;
-        private InstanceContext _context;
+        private readonly InstanceContext _context;
 
         public event Action<ChatMessageDto> MessageReceived;
 
