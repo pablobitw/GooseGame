@@ -1,7 +1,9 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.Helpers;
+using GameServer.Interfaces;
 using GameServer.Models;
 using GameServer.Repositories;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Concurrent;
@@ -12,19 +14,23 @@ using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
 {
-    public class VoteLogic
+    public class VoteLogic : IVoteLogic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(VoteLogic));
-
         private static readonly ConcurrentDictionary<int, VoteState> _activeVotes = new ConcurrentDictionary<int, VoteState>();
 
         private readonly IGameplayRepository _repository;
-        private readonly Func<SanctionAppService> _sanctionServiceFactory;
+        private readonly ISanctionFactory _sanctionFactory;
+        private readonly IGameplayConnectionManager _connectionManager;
 
-        public VoteLogic(IGameplayRepository repository)
+        public VoteLogic(
+            IGameplayRepository repository,
+            ISanctionFactory sanctionFactory,
+            IGameplayConnectionManager connectionManager)
         {
             _repository = repository;
-            _sanctionServiceFactory = () => new SanctionAppService();
+            _sanctionFactory = sanctionFactory;
+            _connectionManager = connectionManager;
         }
 
         public async Task InitiateVoteAsync(VoteRequestDto request)
@@ -49,7 +55,7 @@ namespace GameServer.Services.Logic
 
             if (_activeVotes.TryAdd(gameId, voteState))
             {
-                Log.InfoFormat("Vote kick initiated in game {0} against {1}. Reason: {2}", gameId, request.TargetUsername, request.Reason);
+                Log.Info($"Vote kick initiated in game {gameId} against {request.TargetUsername}. Reason: {request.Reason}");
                 NotifyVoteStarted(activePlayers, request.TargetUsername, request.Reason);
             }
         }
@@ -106,15 +112,17 @@ namespace GameServer.Services.Logic
 
             if (isKicked)
             {
-                Log.InfoFormat("Vote successful: {0} kicked from game {1}.", state.TargetUsername, gameId);
+                Log.Info($"Vote successful: {state.TargetUsername} kicked from game {gameId}.");
 
-                var sanctionService = _sanctionServiceFactory();
-                string kickReason = $"Voted out: {state.Reason}";
-                await sanctionService.ProcessKickAsync(state.TargetUsername, lobbyCode, kickReason, "VOTE");
+                using (var sanctionService = _sanctionFactory.Create())
+                {
+                    string kickReason = $"Voted out: {state.Reason}";
+                    await sanctionService.ProcessKickAsync(state.TargetUsername, lobbyCode, kickReason, "VOTE");
+                }
             }
             else
             {
-                Log.InfoFormat("Vote failed against {0} in game {1}.", state.TargetUsername, gameId);
+                Log.Info($"Vote failed against {state.TargetUsername} in game {gameId}.");
             }
         }
 
@@ -153,7 +161,7 @@ namespace GameServer.Services.Logic
         {
             foreach (var p in players.Where(p => p.Username != targetUsername))
             {
-                var callback = ConnectionManager.GetGameplayClient(p.Username);
+                var callback = _connectionManager.GetGameplayClient(p.Username);
                 if (callback != null)
                 {
                     try
@@ -162,11 +170,11 @@ namespace GameServer.Services.Logic
                     }
                     catch (CommunicationException ex)
                     {
-                        Log.WarnFormat("Connection error notifying vote to {0}: {1}", p.Username, ex.Message);
+                        Log.Warn($"Connection error notifying vote to {p.Username}: {ex.Message}");
                     }
                     catch (TimeoutException)
                     {
-                        Log.WarnFormat("Timeout notifying vote to {0}", p.Username);
+                        Log.Warn($"Timeout notifying vote to {p.Username}");
                     }
                 }
             }

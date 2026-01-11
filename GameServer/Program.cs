@@ -28,7 +28,7 @@ namespace GameServer
                 using (ServiceHost leaderboardServiceHost = new ServiceHost(typeof(LeaderboardService)))
                 {
                     gameServiceHost.Open();
-                    LogServices(gameServiceHost, "GameService");
+                    LogServices(gameServiceHost, "AuthService");
 
                     chatServiceHost.Open();
                     LogServices(chatServiceHost, "ChatService");

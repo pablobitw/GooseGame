@@ -12,13 +12,18 @@ using System.Threading.Tasks;
 
 namespace GameServer.Services.Logic
 {
-    public class SanctionAppService : IDisposable
+    public class SanctionAppService : ISanctionAppService, IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(SanctionAppService));
         private readonly IGameplayRepository _repository;
         private readonly IGameplayConnectionManager _connectionManager;
-        private readonly ISanctionServiceFactory _serviceFactory;
+        private readonly ISanctionServiceFactory _serviceFactory; 
         private bool _disposed = false;
+
+        private const int MaxKicksAllowed = 3;
+        private const int BanDurationYears = 1;
+        private const int SanctionTypeKick = 1;
+        private const int SanctionTypeBan = 2;
 
         public SanctionAppService(
             IGameplayRepository repository = null,
@@ -27,137 +32,112 @@ namespace GameServer.Services.Logic
         {
             _repository = repository ?? new GameplayRepository();
             _connectionManager = connectionManager ?? new GameplayConnectionManagerWrapper();
+
             _serviceFactory = serviceFactory ?? new SanctionServiceFactory();
         }
 
         public async Task ProcessKickAsync(string username, string lobbyCode, string reason, string source)
         {
-            Log.InfoFormat("[SanctionHub] Procesando kick para {0}. Origen: {1}. Razón: {2}", username, source, reason);
+            Log.Info($"[SanctionHub] Processing kick for {username}. Source: {source}. Reason: {reason}");
 
             try
             {
                 var player = await _repository.GetPlayerByUsernameAsync(username);
-                if (player != null)
+                if (player == null)
                 {
-                    player.KickCount++;
-
-                    var stats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
-                    if (stats?.PlayerStat != null)
-                    {
-                        stats.PlayerStat.KicksReceived++;
-                    }
-
-                    bool isBanApplied = false;
-                    if (player.KickCount >= 3)
-                    {
-                        player.IsBanned = true;
-                        isBanApplied = true;
-                        reason = $"[AUTO-BAN] Acumulación de 3 faltas. Última: {reason}";
-                        Log.InfoFormat("[SanctionHub] Jugador {0} BANEADO por acumulación de faltas.", username);
-                    }
-
-                    if (player.Account_IdAccount.HasValue && player.Account_IdAccount.Value != 0)
-                    {
-                        var game = await _repository.GetGameByLobbyCodeAsync(lobbyCode);
-
-                        int gameId = 0;
-                        if (game != null)
-                        {
-                            gameId = game.IdGame;
-                        }
-
-                        if (gameId == 0 && player.GameIdGame.HasValue)
-                        {
-                            gameId = player.GameIdGame.Value;
-                        }
-
-                        if (gameId != 0)
-                        {
-                            var sanction = new Sanction
-                            {
-                                Account_IdAccount = player.Account_IdAccount.Value,
-                                Game_IdGame = gameId,
-                                StartDate = DateTime.UtcNow,
-                                Reason = $"{source}: {reason}",
-                                SanctionType = isBanApplied ? 2 : 1,
-                                EndDate = isBanApplied ? DateTime.UtcNow.AddYears(1) : DateTime.UtcNow
-                            };
-                            _repository.AddSanction(sanction);
-                        }
-                    }
-                    else
-                    {
-                        Log.InfoFormat("[SanctionHub] Jugador invitado {0} expulsado. Se omite historial de sanciones.", username);
-                    }
-
-                    await ProcessGameExitStats(player);
-
-                    player.TurnsSkipped = 0;
-
-                    await _repository.SaveChangesAsync();
-
-                    NotifyAndDisconnect(username, lobbyCode, reason);
+                    Log.Warn($"[SanctionHub] Player {username} not found. Kick processing aborted.");
+                    return;
                 }
+
+                int gameId = 0;
+                var game = await _repository.GetGameByLobbyCodeAsync(lobbyCode);
+                if (game != null) gameId = game.IdGame;
+                if (gameId == 0 && player.GameIdGame.HasValue) gameId = player.GameIdGame.Value;
+
+                await UpdatePlayerStatsAsync(player);
+                string finalReason = EvaluateSanction(player, reason, source, gameId, out bool isBanApplied);
+                await _repository.SaveChangesAsync();
+                NotifyAndDisconnect(username, lobbyCode, finalReason);
             }
-            catch (SqlException ex)
-            {
-                Log.Error("[SanctionHub] Error SQL crítico al procesar kick.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("[SanctionHub] Error Entity crítico al procesar kick.", ex);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("[SanctionHub] Error general al procesar kick.", ex);
-            }
+            catch (SqlException ex) { Log.Error("[SanctionHub] Critical SQL error.", ex); }
+            catch (EntityException ex) { Log.Error("[SanctionHub] Critical Entity error.", ex); }
+            catch (Exception ex) { Log.Error("[SanctionHub] General error.", ex); }
         }
 
-        private async Task ProcessGameExitStats(Player player)
+        private async Task UpdatePlayerStatsAsync(Player player)
         {
-            if (player.GameIdGame.HasValue)
+            player.KickCount++;
+            var stats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
+            if (stats?.PlayerStat != null)
             {
-                var stats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer);
-                if (stats?.PlayerStat != null)
+                stats.PlayerStat.KicksReceived++;
+                if (player.GameIdGame.HasValue)
                 {
                     stats.PlayerStat.MatchesPlayed++;
                     stats.PlayerStat.MatchesLost++;
                 }
             }
+            player.GameIdGame = null;
+            player.TurnsSkipped = 0;
+        }
+
+        private string EvaluateSanction(Player player, string originalReason, string source, int gameId, out bool isBanApplied)
+        {
+            isBanApplied = false;
+            string finalReason = originalReason;
+
+            if (player.KickCount >= MaxKicksAllowed)
+            {
+                player.IsBanned = true;
+                isBanApplied = true;
+                finalReason = $"[AUTO-BAN] Accumulated {MaxKicksAllowed} faults. Last: {originalReason}";
+                Log.Info($"[SanctionHub] Player {player.Username} BANNED.");
+            }
+
+            if (player.Account_IdAccount.HasValue && player.Account_IdAccount.Value != 0)
+                CreateSanctionRecord(player, gameId, source, finalReason, isBanApplied);
+            else
+                Log.Info($"[SanctionHub] Guest player {player.Username} kicked. No record.");
+
+            return finalReason;
+        }
+
+        private void CreateSanctionRecord(Player player, int gameId, string source, string reason, bool isBan)
+        {
+            if (gameId == 0) return;
+
+            var sanction = new Sanction
+            {
+                Account_IdAccount = player.Account_IdAccount.Value,
+                Game_IdGame = gameId,
+                StartDate = DateTime.UtcNow,
+                Reason = $"{source}: {reason}",
+                SanctionType = isBan ? SanctionTypeBan : SanctionTypeKick,
+                EndDate = isBan ? DateTime.UtcNow.AddYears(BanDurationYears) : DateTime.UtcNow
+            };
+            _repository.AddSanction(sanction);
         }
 
         private void NotifyAndDisconnect(string username, string lobbyCode, string reason)
         {
-            var client = _connectionManager.GetClient(username);
+            var client = _connectionManager.GetGameplayClient(username);
             if (client != null)
             {
-                try
-                {
-                    client.OnPlayerKicked(reason);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn($"[SanctionHub] No se pudo notificar al cliente {username}.", ex);
-                }
-                finally
-                {
-                    _connectionManager.UnregisterClient(username);
-                }
+                try { client.OnPlayerKicked(reason); }
+                catch (Exception ex) { Log.Warn($"Could not notify {username}.", ex); }
+                finally { _connectionManager.UnregisterGameplayClient(username); }
             }
 
             Task.Run(async () =>
             {
                 try
                 {
-                    using (var lobbyLogic = _serviceFactory.CreateLobbyService())
+                    using (var lobbyService = _serviceFactory.CreateLobbyService())
                     {
-                        await lobbyLogic.SystemKickPlayerAsync(lobbyCode, username, reason);
+                        await lobbyService.SystemKickPlayerAsync(lobbyCode, username, reason);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error($"[SanctionHub] Error sacando a {username} del lobby tras kick.", ex);
-                }
+                catch (Exception ex) { Log.Error($"[SanctionHub] Error removing {username} from lobby.", ex); }
             });
         }
 
@@ -171,10 +151,7 @@ namespace GameServer.Services.Logic
         {
             if (!_disposed)
             {
-                if (disposing)
-                {
-                    _repository?.Dispose();
-                }
+                if (disposing) _repository?.Dispose();
                 _disposed = true;
             }
         }

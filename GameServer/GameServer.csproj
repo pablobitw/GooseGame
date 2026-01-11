@@ -167,10 +167,13 @@
     <Compile Include="Helpers\IChatSessionManager.cs" />
     <Compile Include="Services\Common\IClientCallbackProvider.cs" />
     <Compile Include="Services\Common\IConnectionManagerWrapper.cs" />
+    <Compile Include="Services\Common\IDiceRoller.cs" />
     <Compile Include="Services\Common\IEmailService.cs" />
     <Compile Include="Services\Common\IFriendshipConnectionManager.cs" />
     <Compile Include="Services\Common\IFriendshipRepositoryFactory.cs" />
+    <Compile Include="Services\Common\IGameplayCommonServices.cs" />
     <Compile Include="Services\Common\IGameplayConnectionManager.cs" />
+    <Compile Include="Services\Common\ILobbyCommonServices.cs" />
     <Compile Include="Services\Common\IProfanityFilter.cs" />
     <Compile Include="Services\Common\ISanctionServiceFactory.cs" />
     <Compile Include="Services\Common\IServiceFactory.cs" />

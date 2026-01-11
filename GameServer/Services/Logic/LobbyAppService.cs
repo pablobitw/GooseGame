@@ -1,18 +1,17 @@
 ﻿using GameServer.DTOs.Lobby;
 using GameServer.Helpers;
-using GameServer.Repositories;
 using GameServer.Interfaces;
+using GameServer.Models;
+using GameServer.Repositories;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using GameServer;
 
 namespace GameServer.Services.Logic
 {
@@ -21,11 +20,24 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LobbyAppService));
         private readonly ILobbyRepository _repository;
+        private readonly ILobbyConnectionManager _connectionManager;
+        private readonly IWcfContext _wcfContext;
+        private readonly IGameMonitor _gameMonitor;
+        private readonly ILobbyCodeGenerator _codeGenerator;
 
-        public LobbyAppService(ILobbyRepository repository)
+        public LobbyAppService(
+            ILobbyRepository repository,
+            ILobbyConnectionManager connectionManager = null,
+            IWcfContext wcfContext = null,
+            IGameMonitor gameMonitor = null,
+            ILobbyCodeGenerator codeGenerator = null)
         {
             if (repository == null) throw new ArgumentNullException(nameof(repository));
             _repository = repository;
+            _connectionManager = connectionManager ?? new LobbyConnectionManagerWrapper();
+            _wcfContext = wcfContext ?? new WcfContextWrapper();
+            _gameMonitor = gameMonitor ?? new GameMonitorWrapper();
+            _codeGenerator = codeGenerator ?? new LobbyCodeGenerator();
         }
 
         private void FireAndForgetNotification(List<string> usernames, Action<ILobbyServiceCallback> notificationAction)
@@ -44,7 +56,7 @@ namespace GameServer.Services.Logic
         {
             foreach (var username in usernames)
             {
-                var client = ConnectionManager.GetLobbyClient(username);
+                var client = _connectionManager.GetClient(username);
                 if (client != null)
                 {
                     try
@@ -99,9 +111,7 @@ namespace GameServer.Services.Logic
 
             try
             {
-                var callback = OperationContext.Current != null
-                    ? OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>()
-                    : null;
+                var callback = _wcfContext.GetCallbackChannel<ILobbyServiceCallback>();
 
                 var hostPlayer = await _repository.GetPlayerByUsernameAsync(request.HostUsername);
                 if (hostPlayer == null)
@@ -120,7 +130,7 @@ namespace GameServer.Services.Logic
 
                 if (callback != null)
                 {
-                    ConnectionManager.RegisterLobbyClient(request.HostUsername, callback);
+                    _connectionManager.RegisterClient(request.HostUsername, callback);
                 }
 
                 await CleanPlayerStateIfNeeded(hostPlayer);
@@ -169,9 +179,7 @@ namespace GameServer.Services.Logic
 
             try
             {
-                var callback = OperationContext.Current != null
-                    ? OperationContext.Current.GetCallbackChannel<ILobbyServiceCallback>()
-                    : null;
+                var callback = _wcfContext.GetCallbackChannel<ILobbyServiceCallback>();
 
                 var player = await _repository.GetPlayerByUsernameAsync(request.Username);
                 if (player == null)
@@ -183,7 +191,7 @@ namespace GameServer.Services.Logic
 
                 if (callback != null)
                 {
-                    ConnectionManager.RegisterLobbyClient(request.Username, callback);
+                    _connectionManager.RegisterClient(request.Username, callback);
                 }
 
                 await CleanPlayerStateIfNeeded(player);
@@ -273,7 +281,7 @@ namespace GameServer.Services.Logic
 
                         try
                         {
-                            GameManager.Instance.StartMonitoring(game.IdGame);
+                            _gameMonitor.StartMonitoring(game.IdGame);
                             Log.InfoFormat("Juego {0} iniciado y monitoreado.", lobbyCode);
                         }
                         catch (Exception gmEx)
@@ -318,7 +326,7 @@ namespace GameServer.Services.Logic
 
                         await Task.Delay(100);
 
-                        try { GameManager.Instance.StopMonitoring(gameId); } catch { }
+                        try { _gameMonitor.StopMonitoring(gameId); } catch { }
 
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
@@ -362,7 +370,7 @@ namespace GameServer.Services.Logic
                     player.GameIdGame = null;
                     await _repository.SaveChangesAsync();
 
-                    ConnectionManager.UnregisterLobbyClient(username);
+                    _connectionManager.UnregisterClient(username);
                     Log.InfoFormat("Jugador {0} salió del lobby.", username);
 
                     bool gameClosed = await HandleGameShutdownIfNeeded(gameId);
@@ -453,10 +461,10 @@ namespace GameServer.Services.Logic
 
         private void NotifyClientDirect(string username, Action<ILobbyServiceCallback> action)
         {
-            var client = ConnectionManager.GetLobbyClient(username);
+            var client = _connectionManager.GetClient(username);
             if (client != null)
             {
-                try { action(client); } catch { ConnectionManager.UnregisterLobbyClient(username); }
+                try { action(client); } catch { _connectionManager.UnregisterClient(username); }
             }
         }
 
@@ -530,7 +538,7 @@ namespace GameServer.Services.Logic
                 if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
                 {
                     game.GameStatus = (int)GameStatus.Finished;
-                    try { GameManager.Instance.StopMonitoring(gameId); } catch { }
+                    try { _gameMonitor.StopMonitoring(gameId); } catch { }
                     await _repository.SaveChangesAsync();
                     return true;
                 }
@@ -550,16 +558,10 @@ namespace GameServer.Services.Logic
 
         private string GenerateLobbyCode()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string code;
             do
             {
-                byte[] randomBytes = new byte[5];
-                using (var rng = RandomNumberGenerator.Create())
-                {
-                    rng.GetBytes(randomBytes);
-                }
-                code = new string(randomBytes.Select(b => chars[b % chars.Length]).ToArray());
+                code = _codeGenerator.GenerateRandomString(5);
             }
             while (!_repository.IsLobbyCodeUnique(code));
             return code;

@@ -5,18 +5,18 @@ namespace GameServer.Services.Common
 {
     public interface IGameplayConnectionManager
     {
-        IGameplayServiceCallback GetClient(string username);
-        void UnregisterClient(string username);
+        IGameplayServiceCallback GetGameplayClient(string username);
+        void UnregisterGameplayClient(string username);
     }
 
     public class GameplayConnectionManagerWrapper : IGameplayConnectionManager
     {
-        public IGameplayServiceCallback GetClient(string username)
+        public IGameplayServiceCallback GetGameplayClient(string username)
         {
             return ConnectionManager.GetGameplayClient(username);
         }
 
-        public void UnregisterClient(string username)
+        public void UnregisterGameplayClient(string username)
         {
             ConnectionManager.UnregisterGameplayClient(username);
         }

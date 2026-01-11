@@ -1,5 +1,6 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.Models;
+using GameServer.Services.Common;
 using System;
 using System.Linq;
 
@@ -9,8 +10,13 @@ namespace GameServer.GameEngines
     {
         private static readonly int[] GooseTiles = { 5, 9, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59 };
         private static readonly int[] LuckyBoxTiles = { 7, 14, 25, 34 };
-        private static readonly Random RandomGenerator = new Random();
-        private static readonly object _randomLock = new object();
+
+        private readonly IDiceRoller _diceRoller;
+
+        public GooseBoardEngine(IDiceRoller diceRoller = null)
+        {
+            _diceRoller = diceRoller ?? new RandomDiceRoller();
+        }
 
         public class BoardMoveResult
         {
@@ -24,12 +30,8 @@ namespace GameServer.GameEngines
 
         public (int D1, int D2) GenerateDiceRoll(int currentPos)
         {
-            int d1, d2;
-            lock (_randomLock)
-            {
-                d1 = RandomGenerator.Next(1, 7);
-                d2 = (currentPos < 60) ? RandomGenerator.Next(1, 7) : 0;
-            }
+            int d1 = _diceRoller.Next(1, 7);
+            int d2 = (currentPos < 60) ? _diceRoller.Next(1, 7) : 0;
             return (d1, d2);
         }
 
@@ -150,12 +152,7 @@ namespace GameServer.GameEngines
 
         private RewardResult ProcessLuckyBoxReward(ref int coins, ref int tCommon, ref int tEpic, ref int tLegendary)
         {
-            int roll;
-            lock (_randomLock)
-            {
-                roll = RandomGenerator.Next(1, 101);
-            }
-
+            int roll = _diceRoller.Next(1, 101);
             RewardResult reward;
 
             if (roll <= 50)
