@@ -17,26 +17,33 @@ namespace GameClient.Views.Dialogs
         {
             try
             {
+                string questionFormat = GameClient.Resources.Strings.VoteKickQuestion
+                                        ?? GameClient.Resources.Strings.VoteKick_Fallback_Question;
 
-                string questionFormat = GameClient.Resources.Strings.VoteKickQuestion ?? "¿Votar para expulsar a {0}?";
-                string reasonFormat = GameClient.Resources.Strings.VoteKickReasonPrefix ?? "Motivo: {0}";
+                string reasonFormat = GameClient.Resources.Strings.VoteKickReasonPrefix
+                                      ?? GameClient.Resources.Strings.VoteKick_Fallback_Reason;
 
                 VoteKickTargetText.Text = string.Format(questionFormat, targetUsername);
                 VoteReasonText.Text = string.Format(reasonFormat, reason);
 
                 this.Visibility = Visibility.Visible;
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
-                Console.WriteLine($"[VoteKickDialog] Format Error: {ex.Message}");
-                VoteKickTargetText.Text = $"Kick {targetUsername}?";
-                VoteReasonText.Text = reason;
+                string safeQuestion = GameClient.Resources.Strings.VoteKick_Fallback_Question ?? "Kick {0}?";
+                string safeReason = GameClient.Resources.Strings.VoteKick_Fallback_Reason ?? "Reason: {0}";
+
+                VoteKickTargetText.Text = safeQuestion.Replace("{0}", targetUsername);
+                VoteReasonText.Text = safeReason.Replace("{0}", reason);
+
                 this.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[VoteKickDialog] UI Error: {ex.Message}");
                 this.Visibility = Visibility.Collapsed;
+                MessageBox.Show(GameClient.Resources.Strings.Error_UI_Generic + ": " + ex.Message,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -52,10 +59,15 @@ namespace GameClient.Views.Dialogs
 
         public void SubmitVote(bool accept)
         {
-            this.Visibility = Visibility.Collapsed;
-
-           
-            VoteSubmitted?.Invoke(this, accept);
+            try
+            {
+                this.Visibility = Visibility.Collapsed;
+                VoteSubmitted?.Invoke(this, accept);
+            }
+            catch (Exception)
+            {
+                this.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

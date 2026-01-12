@@ -4,6 +4,7 @@ using GameClient.LobbyServiceReference;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,7 +25,7 @@ namespace GameClient.Views
             Matches = new ObservableCollection<MatchItem>();
             MatchesListBox.ItemsSource = Matches;
 
-            this.Loaded += ListMatchesPage_Loaded;
+            Loaded += ListMatchesPage_Loaded;
         }
 
         private async void ListMatchesPage_Loaded(object sender, RoutedEventArgs e)
@@ -37,6 +38,15 @@ namespace GameClient.Views
             RefreshButton.IsEnabled = false;
             Matches.Clear();
             NoMatchesText.Visibility = Visibility.Collapsed;
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                MessageBox.Show(GameClient.Resources.Strings.Error_NoInternet,
+                                GameClient.Resources.Strings.ErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                RefreshButton.IsEnabled = true;
+                return;
+            }
 
             try
             {
@@ -97,6 +107,15 @@ namespace GameClient.Views
             {
                 JoinButton.IsEnabled = false;
 
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    MessageBox.Show(GameClient.Resources.Strings.Error_NoInternet,
+                                    GameClient.Resources.Strings.ErrorTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
+                    JoinButton.IsEnabled = true;
+                    return;
+                }
+
                 try
                 {
                     var request = new JoinLobbyRequest
@@ -155,16 +174,16 @@ namespace GameClient.Views
                     message = GameClient.Resources.Strings.SafeZone_ServerTimeout;
                     break;
                 case LobbyErrorType.GameFull:
-                    message = "La sala está llena.";
+                    message = GameClient.Resources.Strings.LobbyError_Full;
                     break;
                 case LobbyErrorType.GameStarted:
-                    message = "La partida ya ha comenzado.";
+                    message = GameClient.Resources.Strings.LobbyError_Started;
                     break;
                 case LobbyErrorType.GameNotFound:
-                    message = "La partida ya no existe.";
+                    message = GameClient.Resources.Strings.LobbyError_NotFound;
                     break;
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    message = "El sistema indica que ya estás en partida.";
+                    message = GameClient.Resources.Strings.LobbyError_AlreadyInGame;
                     break;
             }
 

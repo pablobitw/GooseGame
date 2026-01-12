@@ -12,6 +12,7 @@ using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Net.NetworkInformation; 
 
 namespace GameClient
 {
@@ -25,13 +26,20 @@ namespace GameClient
             InitializeComponent();
             _username = loggedInUsername;
 
-            FriendshipServiceManager.Initialize(_username);
-            LobbyServiceManager.Instance.Initialize(_username);
-            GameplayServiceManager.Instance.Initialize(_username);
+            try
+            {
+                FriendshipServiceManager.Initialize(_username);
+                LobbyServiceManager.Instance.Initialize(_username);
+                GameplayServiceManager.Instance.Initialize(_username);
 
-            FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
-            LobbyServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
-            GameplayServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
+                FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
+                LobbyServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
+                GameplayServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GameMainWindow] Error inicializando servicios: {ex.Message}");
+            }
 
             this.Closed += GameMainWindow_Closed;
 
@@ -70,23 +78,23 @@ namespace GameClient
                     icon = FontAwesomeIcon.ClockOutline;
                     break;
                 case LobbyErrorType.GameFull:
-                    message = "La sala está llena.";
+                    message = GameClient.Resources.Strings.LobbyError_Full;
                     icon = FontAwesomeIcon.Users;
                     break;
                 case LobbyErrorType.GameStarted:
-                    message = "La partida ya ha comenzado.";
+                    message = GameClient.Resources.Strings.LobbyError_Started;
                     icon = FontAwesomeIcon.PlayCircle;
                     break;
                 case LobbyErrorType.GameNotFound:
-                    message = "La partida de la invitación ya no existe.";
+                    message = GameClient.Resources.Strings.LobbyError_NotFound; 
                     icon = FontAwesomeIcon.Search;
                     break;
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    message = "Ya te encuentras en una partida activa.";
+                    message = GameClient.Resources.Strings.LobbyError_AlreadyInGame;
                     icon = FontAwesomeIcon.ExclamationTriangle;
                     break;
                 case LobbyErrorType.GuestNotAllowed:
-                    message = "Acción no permitida para invitados.";
+                    message = GameClient.Resources.Strings.FriendGuestRestriction;
                     icon = FontAwesomeIcon.UserSecret;
                     break;
             }
@@ -115,8 +123,7 @@ namespace GameClient
                     boardPage.StopTimers();
                 }
 
-                // CORRECCIÓN CRÍTICA: Detectar si es un Baneo (Logout) o solo Kick (MainMenu)
-                bool isBan = reason.Contains("[AUTO-BAN]");
+                bool isBan = reason != null && reason.Contains("[AUTO-BAN]");
 
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.KickedTitle,
@@ -127,12 +134,10 @@ namespace GameClient
                     {
                         if (isBan)
                         {
-                            // Si es ban, cerramos sesión y vamos al Login
                             ForceLogoutAndClose();
                         }
                         else
                         {
-                            // Si es kick normal, solo vamos al menú principal
                             _ = ShowMainMenu();
                         }
                     }
@@ -166,6 +171,12 @@ namespace GameClient
             {
                 CoinCountText.Text = "...";
 
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    CoinCountText.Text = "---";
+                    return;
+                }
+
                 using (var client = new UserProfileServiceClient())
                 {
                     var userProfile = await client.GetUserProfileAsync(_username);
@@ -185,6 +196,10 @@ namespace GameClient
                 CoinCountText.Text = "---";
             }
             catch (CommunicationException)
+            {
+                CoinCountText.Text = "---";
+            }
+            catch (Exception)
             {
                 CoinCountText.Text = "---";
             }
@@ -331,22 +346,29 @@ namespace GameClient
 
                 if (FriendshipServiceManager.Instance != null)
                 {
-                    FriendshipServiceManager.Instance.Disconnect();
+                    try { FriendshipServiceManager.Instance.Disconnect(); } catch { }
                 }
 
-                LobbyServiceManager.Instance.Dispose();
-                GameplayServiceManager.Instance.Dispose();
+                try { LobbyServiceManager.Instance.Dispose(); } catch { }
+                try { GameplayServiceManager.Instance.Dispose(); } catch { }
 
-                using (var client = new AuthServiceClient())
+                if (NetworkInterface.GetIsNetworkAvailable())
                 {
-                    await client.LogoutAsync(_username);
+                    try
+                    {
+                        using (var client = new AuthServiceClient())
+                        {
+                            await client.LogoutAsync(_username);
+                        }
+                    }
+                    catch (Exception) { /*  */ }
                 }
 
                 UserSession.GetInstance().Logout();
             }
             finally
             {
-                if (Application.Current.Windows.Count == 0)
+                if (Application.Current != null && Application.Current.Windows.Count == 0)
                 {
                     Application.Current.Shutdown();
                 }
@@ -390,6 +412,15 @@ namespace GameClient
 
         private async Task AttemptJoinLobbyAsync(string code)
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.Error_NoInternet,
+                    FontAwesomeIcon.Wifi);
+                return;
+            }
+
             try
             {
                 var request = new JoinLobbyRequest
@@ -424,6 +455,13 @@ namespace GameClient
                     GameClient.Resources.Strings.DialogErrorTitle,
                     GameClient.Resources.Strings.ErrorInviteTimeout,
                     FontAwesomeIcon.ClockOutline);
+            }
+            catch (Exception ex)
+            {
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    string.Format(GameClient.Resources.Strings.UnexpectedErrorMessage, ex.Message),
+                    FontAwesomeIcon.ExclamationTriangle);
             }
         }
 

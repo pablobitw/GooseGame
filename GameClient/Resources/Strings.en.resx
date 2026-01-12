@@ -729,6 +729,9 @@
   <data name="Error_ServerTimeout" xml:space="preserve">
     <value>The operation timed out. Please try again.</value>
   </data>
+  <data name="Error_UI_Generic" xml:space="preserve">
+    <value>User Interface error.</value>
+  </data>
   <data name="Error_Unknown" xml:space="preserve">
     <value>An unexpected error occurred.</value>
   </data>
@@ -837,6 +840,9 @@
   <data name="FriendRequestSentSuccess" xml:space="preserve">
     <value>Request sent to {0}.</value>
   </data>
+  <data name="FriendResponseError" xml:space="preserve">
+    <value>Error processing friend response.</value>
+  </data>
   <data name="FriendSelfRequestError" xml:space="preserve">
     <value>You cannot send a request to yourself.</value>
   </data>
@@ -914,6 +920,9 @@
   </data>
   <data name="Gameplay_Error_Database" xml:space="preserve">
     <value>Error syncing with the board. Retrying...</value>
+  </data>
+  <data name="Gameplay_Error_Dice" xml:space="preserve">
+    <value>Error rolling dice</value>
   </data>
   <data name="Gameplay_Error_Finished" xml:space="preserve">
     <value>The match has already ended.</value>
@@ -1077,6 +1086,9 @@
   <data name="LabelLoadingLeaderboard" xml:space="preserve">
     <value>Retrieving top player data...</value>
   </data>
+  <data name="LabelStartingGame" xml:space="preserve">
+    <value>Starting...</value>
+  </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
   </data>
@@ -1148,6 +1160,33 @@
   </data>
   <data name="LobbyDisbandedByHost" xml:space="preserve">
     <value>The host has disbanded the room. You will be redirected to the menu.</value>
+  </data>
+  <data name="LobbyError_AlreadyInGame" xml:space="preserve">
+    <value>System indicates you are already in a game.</value>
+  </data>
+  <data name="LobbyError_Full" xml:space="preserve">
+    <value>The lobby is full.</value>
+  </data>
+  <data name="LobbyError_GuestNotAllowed" xml:space="preserve">
+    <value>Guests are not allowed to create lobbies.</value>
+  </data>
+  <data name="LobbyError_NotFound" xml:space="preserve">
+    <value>The lobby no longer exists.</value>
+  </data>
+  <data name="LobbyError_NotFoundByCode" xml:space="preserve">
+    <value>No match found with that code.</value>
+  </data>
+  <data name="LobbyError_Started" xml:space="preserve">
+    <value>The game has already started.</value>
+  </data>
+  <data name="LobbyError_StartFailed" xml:space="preserve">
+    <value>Could not start game.</value>
+  </data>
+  <data name="LobbyError_StartFailedRetry" xml:space="preserve">
+    <value>Could not start game after reconnect.</value>
+  </data>
+  <data name="LobbyGuestExitConfirm" xml:space="preserve">
+    <value>Are you sure you want to leave the lobby?</value>
   </data>
   <data name="LobbyHostExitConfirm" xml:space="preserve">
     <value>You are the host. If you leave, the lobby will close for everyone. Are you sure?</value>
@@ -1818,6 +1857,9 @@
   <data name="VisibilityPublic" xml:space="preserve">
     <value>Public</value>
   </data>
+  <data name="VoteKickError" xml:space="preserve">
+    <value>Error initiating vote:</value>
+  </data>
   <data name="VoteKickErrorConn" xml:space="preserve">
     <value>Connection lost while trying to start vote kick.</value>
   </data>
@@ -1832,6 +1874,12 @@
   </data>
   <data name="VoteKickStarted" xml:space="preserve">
     <value>Vote kick started against {0}.</value>
+  </data>
+  <data name="VoteKick_Fallback_Question" xml:space="preserve">
+    <value>Kick {0}?</value>
+  </data>
+  <data name="VoteKick_Fallback_Reason" xml:space="preserve">
+    <value>Reason: {0}</value>
   </data>
   <data name="WaitingForPlayersLabel" xml:space="preserve">
     <value>Waiting for players...</value>

@@ -197,13 +197,13 @@ namespace GameClient.Views
                 {
                     SuccessAvatarImage.ImageSource = new BitmapImage(new Uri(selectedItem.FullPath));
                 }
-                catch (UriFormatException ex)
+                catch (UriFormatException)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[AvatarSelectPage] Error de formato URI al cargar preview: {ex.Message}");
+                   
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[AvatarSelectPage] Error inesperado cargando imagen de éxito: {ex.Message}");
+                    
                 }
             }
 

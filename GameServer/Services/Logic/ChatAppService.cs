@@ -1,5 +1,6 @@
 ﻿using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using log4net;
@@ -63,7 +64,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error en JoinChat", ex);
-                return ChatOperationResult.InternalError;
+                throw ExceptionManager.Map(ex);
             }
         }
 
@@ -122,7 +123,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error en SendMessage", ex);
-                return ChatOperationResult.InternalError;
+                throw ExceptionManager.Map(ex);
             }
         }
 
@@ -153,7 +154,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error en SendPrivateMessage", ex);
-                return ChatOperationResult.InternalError;
+                throw ExceptionManager.Map(ex);
             }
         }
 
@@ -173,7 +174,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error en LeaveChat", ex);
-                return ChatOperationResult.InternalError;
+                throw ExceptionManager.Map(ex);
             }
         }
 

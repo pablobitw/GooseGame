@@ -31,9 +31,9 @@ namespace GameClient.Views.Dialogs
             {
                 AudioManager.SetVolume(e.NewValue / 100.0);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"[PauseMenu] Audio Error: {ex.Message}");
+                // 
             }
         }
 
@@ -68,7 +68,9 @@ namespace GameClient.Views.Dialogs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PauseMenu] Screen Error: {ex.Message}");
+                MessageBox.Show(GameClient.Resources.Strings.Error_UI_Generic + ": " + ex.Message,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -78,21 +80,21 @@ namespace GameClient.Views.Dialogs
 
             if (mw == null) return;
 
-            if (index == 0) 
+            if (index == 0)
             {
                 mw.WindowStyle = WindowStyle.None;
                 mw.WindowState = WindowState.Maximized;
             }
-            else if (index == 1) 
+            else if (index == 1)
             {
                 mw.WindowStyle = WindowStyle.None;
                 mw.WindowState = WindowState.Normal;
                 mw.Width = 1280;
                 mw.Height = 720;
 
-                try { mw.CenterWindow(); } catch { /* */ }
+                try { mw.CenterWindow(); } catch { }
             }
-            else 
+            else
             {
                 mw.WindowStyle = WindowStyle.SingleBorderWindow;
                 mw.WindowState = WindowState.Normal;

@@ -1,5 +1,6 @@
 ﻿using System;
-using System.ServiceModel; 
+using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using GameClient.Helpers;
@@ -32,7 +33,7 @@ namespace GameClient.Views.Dialogs
             await ProcessResponseAsync(false);
         }
 
-        private async System.Threading.Tasks.Task ProcessResponseAsync(bool accept)
+        private async Task ProcessResponseAsync(bool accept)
         {
             this.Visibility = Visibility.Collapsed;
 
@@ -43,21 +44,23 @@ namespace GameClient.Views.Dialogs
                     await FriendshipServiceManager.Instance.RespondToFriendRequestAsync(_requesterName, accept);
                 }
             }
-            catch (CommunicationException)
-            {
-                MessageBox.Show(GameClient.Resources.Strings.FriendConnError,
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
             catch (TimeoutException)
             {
                 MessageBox.Show(GameClient.Resources.Strings.SafeZone_ServerTimeout,
                                 GameClient.Resources.Strings.DialogErrorTitle,
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            catch (Exception ex)
+            catch (CommunicationException)
             {
-                Console.WriteLine($"Error respondiendo solicitud: {ex.Message}");
+                MessageBox.Show(GameClient.Resources.Strings.FriendConnError,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.FriendResponseError,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

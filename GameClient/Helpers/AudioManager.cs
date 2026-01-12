@@ -11,11 +11,13 @@ namespace GameClient.Helpers
         private static readonly Dictionary<string, MediaPlayer> _preloadedSfx = new Dictionary<string, MediaPlayer>();
         private static readonly Random _random = new Random();
 
-        private static readonly MediaPlayer _musicPlayer = CreateMusicPlayer();
+        private static readonly MediaPlayer _musicPlayer = InitializeMusicPlayer();
 
         private static string _currentTrackPath;
-        private static bool _isMusicEnabled = true;
-        private static double _sfxVolume = 0.8;
+        private static string[] _currentPlaylist; 
+
+        private static double _masterVolume = GameClient.Properties.Settings.Default.MusicVolume;
+        private static double _sfxVolume = GameClient.Properties.Settings.Default.SfxVolume; 
 
         public static readonly string[] MenuTracks =
         {
@@ -37,14 +39,11 @@ namespace GameClient.Helpers
 
         public const string SfxDice = "Assets/Audio/Sfx/dice_roll.mp3";
 
-        private static MediaPlayer CreateMusicPlayer()
+        private static MediaPlayer InitializeMusicPlayer()
         {
-            var player = new MediaPlayer
-            {
-                Volume = 0.5
-            };
+            var player = new MediaPlayer();
+            player.Volume = _masterVolume;
             player.MediaEnded += Player_MediaEnded;
-
             PreloadSfx(SfxDice);
             return player;
         }
@@ -60,26 +59,34 @@ namespace GameClient.Helpers
                     MediaPlayer player = new MediaPlayer();
                     player.Open(new Uri(fullPath));
                     player.Volume = _sfxVolume;
-
-                    player.Play();
-                    player.Stop();
-
-                    _preloadedSfx[relativePath] = player; 
+                    _preloadedSfx[relativePath] = player;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-             
-                Console.WriteLine($"Error cargando audio: {relativePath}");
+                Console.WriteLine($"Error cargando audio: {relativePath} - {ex.Message}");
             }
         }
 
         public static void PlayRandomMusic(string[] playlist)
         {
-            if (!_isMusicEnabled || playlist == null || playlist.Length == 0) return;
-            if (_currentTrackPath != null && playlist.Contains(_currentTrackPath) && _musicPlayer.Position > TimeSpan.Zero) return;
-            int index = _random.Next(playlist.Length);
-            PlayFile(playlist[index]);
+            if (playlist == null || playlist.Length == 0) return;
+
+            if (_currentPlaylist == playlist && _musicPlayer.Source != null)
+            {
+                return;
+            }
+
+            _currentPlaylist = playlist;
+            PlayNextRandomTrack();
+        }
+
+        private static void PlayNextRandomTrack()
+        {
+            if (_currentPlaylist == null || _currentPlaylist.Length == 0) return;
+
+            int index = _random.Next(_currentPlaylist.Length);
+            PlayFile(_currentPlaylist[index]);
         }
 
         private static void PlayFile(string relativePath)
@@ -91,17 +98,15 @@ namespace GameClient.Helpers
 
                 if (!File.Exists(fullPath)) return;
 
-                _musicPlayer.Stop();
-                _musicPlayer.Close();
                 _musicPlayer.Open(new Uri(fullPath));
+                _musicPlayer.Volume = _masterVolume; 
                 _musicPlayer.Play();
 
                 _currentTrackPath = relativePath;
-                _musicPlayer.Position = TimeSpan.FromMilliseconds(1);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"Error reproduciendo música: {ex.Message}");
             }
         }
 
@@ -111,6 +116,7 @@ namespace GameClient.Helpers
             {
                 var player = _preloadedSfx[relativePath];
                 player.Stop();
+                player.Volume = _sfxVolume; 
                 player.Position = TimeSpan.Zero;
                 player.Play();
             }
@@ -120,7 +126,6 @@ namespace GameClient.Helpers
                 if (_preloadedSfx.ContainsKey(relativePath))
                 {
                     var player = _preloadedSfx[relativePath];
-                    player.Position = TimeSpan.Zero;
                     player.Play();
                 }
             }
@@ -128,17 +133,31 @@ namespace GameClient.Helpers
 
         public static void SetVolume(double volume)
         {
-            if (volume >= 0 && volume <= 1) _musicPlayer.Volume = volume;
+            if (volume >= 0 && volume <= 1)
+            {
+                _masterVolume = volume;
+                _musicPlayer.Volume = _masterVolume;
+
+                GameClient.Properties.Settings.Default.MusicVolume = volume;
+                GameClient.Properties.Settings.Default.Save();
+            }
         }
 
-        public static double GetVolume() => _musicPlayer.Volume;
+        public static double GetVolume() => _masterVolume;
 
         public static void SetSfxVolume(double volume)
         {
             if (volume >= 0 && volume <= 1)
             {
                 _sfxVolume = volume;
-                foreach (var p in _preloadedSfx.Values) p.Volume = _sfxVolume;
+                foreach (var p in _preloadedSfx.Values)
+                {
+                    p.Volume = _sfxVolume;
+                }
+
+                // Guardar en configuración persistente
+                GameClient.Properties.Settings.Default.SfxVolume = volume;
+                GameClient.Properties.Settings.Default.Save();
             }
         }
 
@@ -149,12 +168,12 @@ namespace GameClient.Helpers
             _musicPlayer.Stop();
             _musicPlayer.Close();
             _currentTrackPath = null;
+            _currentPlaylist = null; 
         }
 
         private static void Player_MediaEnded(object sender, EventArgs e)
         {
-            _musicPlayer.Position = TimeSpan.Zero;
-            _musicPlayer.Play();
+            PlayNextRandomTrack();
         }
     }
 }

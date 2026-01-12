@@ -5,7 +5,6 @@ using GameServer.Repositories;
 using GameServer.Services.Logic;
 using log4net;
 using System;
-using System.Data.Entity.Core;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
@@ -28,48 +27,58 @@ namespace GameServer.Services
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            RegisterClient(request?.Username);
-            try { return await _logic.RollDiceAsync(request).ConfigureAwait(false); }
-            catch (Exception ex) { Log.Error("RollDice", ex); return new DiceRollDto { Success = false }; }
+            RegisterClientSafe(request?.Username);
+            return await _logic.RollDiceAsync(request).ConfigureAwait(false);
         }
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            RegisterClient(request?.Username);
-            try { return await _logic.GetGameStateAsync(request).ConfigureAwait(false); }
-            catch (Exception ex) { Log.Error("GetGameState", ex); return null; }
+            RegisterClientSafe(request?.Username);
+            return await _logic.GetGameStateAsync(request).ConfigureAwait(false);
         }
 
         public async Task<bool> LeaveGameAsync(GameplayRequest request)
         {
-            try
+            var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
+
+            if (result)
             {
-                var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
-                if (result) ConnectionManager.UnregisterGameplayClient(request.Username);
-                return result;
+                try
+                {
+                    ConnectionManager.UnregisterGameplayClient(request.Username);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn($"Error unregistering client {request.Username}", ex);
+                }
             }
-            catch (Exception ex) { Log.Error("LeaveGame", ex); return false; }
+            return result;
         }
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
-            RegisterClient(request?.Username);
-            try { await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false); }
-            catch (Exception ex) { Log.Error("InitiateVote", ex); }
+            RegisterClientSafe(request?.Username);
+            await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false);
         }
 
         public async Task CastVoteAsync(VoteResponseDto vote)
         {
-            try { await _logic.CastVoteAsync(vote).ConfigureAwait(false); }
-            catch (Exception ex) { Log.Error("CastVote", ex); }
+            await _logic.CastVoteAsync(vote).ConfigureAwait(false);
         }
 
-        private void RegisterClient(string username)
+        private void RegisterClientSafe(string username)
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
-            if (callback != null && !string.IsNullOrEmpty(username))
+            try
             {
-                ConnectionManager.RegisterGameplayClient(username, callback);
+                var callback = OperationContext.Current.GetCallbackChannel<IGameplayServiceCallback>();
+                if (callback != null && !string.IsNullOrEmpty(username))
+                {
+                    ConnectionManager.RegisterGameplayClient(username, callback);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Failed to register gameplay callback for {username}", ex);
             }
         }
 

@@ -295,7 +295,9 @@ namespace GameClient.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error iniciando votación: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.VoteKickError + ex.Message,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -439,7 +441,7 @@ namespace GameClient.Views
 
             if (state.IsKicked)
             {
-                OnPlayerKicked("Has sido expulsado de la partida.");
+                OnPlayerKicked(GameClient.Resources.Strings.Gameplay_Error_Kicked);
                 return;
             }
 
@@ -465,21 +467,22 @@ namespace GameClient.Views
             {
                 var result = await GameplayServiceManager.Instance.RollDiceAsync(request);
 
-                if (result == null) return;
+                if (result == null || !result.Success)
+                {
+                    if (result != null)
+                    {
+                        HandleGameplayError(result.ErrorType, result.ErrorMessage);
+                    }
 
-                if (result.Success)
-                {
-                    UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
-                }
-                else
-                {
-                    HandleGameplayError(result.ErrorType, result.ErrorMessage);
                     if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+                    return;
                 }
+
+                UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al tirar dados: " + ex.Message);
+                MessageBox.Show(GameClient.Resources.Strings.Gameplay_Error_Dice + ": " + ex.Message);
                 if (!_isGameOverHandled) RollDiceButton.IsEnabled = false;
             }
         }

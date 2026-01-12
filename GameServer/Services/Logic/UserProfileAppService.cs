@@ -142,7 +142,7 @@ namespace GameServer.Services.Logic
                 else if (player.Account.VerificationCode != verificationCode || player.Account.CodeExpiration < DateTime.Now)
                 {
                     Log.WarnFormat("Código incorrecto o expirado para cambio de usuario: {0}", identifier);
-                    result = UsernameChangeResult.FatalError;
+                    result = UsernameChangeResult.CodeInvalid;
                 }
                 else if (player.UsernameChangeCount >= MaxUsernameChanges)
                 {
@@ -392,6 +392,29 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error($"Error crítico al agregar red social para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> VerifyUsernameChangeCodeAsync(string email, string code)
+        {
+            bool result = false;
+            try
+            {
+                var player = await _repository.GetPlayerWithDetailsAsync(email);
+
+                if (player != null && player.Account != null)
+                {
+                    if (player.Account.VerificationCode == code && player.Account.CodeExpiration >= DateTime.Now)
+                    {
+                        result = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error crítico verificando código para {email}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;

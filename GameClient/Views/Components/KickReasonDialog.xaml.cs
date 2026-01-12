@@ -24,30 +24,65 @@ namespace GameClient.Views.Dialogs
 
         public void Show(string targetUsername)
         {
-            _targetUsername = targetUsername;
-            TargetLabel.Text = string.Format(GameClient.Resources.Strings.KickDialogTargetPrefix, targetUsername);
-            KickReasonCombo.SelectedIndex = 0;
-            this.Visibility = Visibility.Visible;
+            try
+            {
+                _targetUsername = targetUsername;
+                TargetLabel.Text = string.Format(GameClient.Resources.Strings.KickDialogTargetPrefix, targetUsername);
+                if (KickReasonCombo.Items.Count > 0)
+                {
+                    KickReasonCombo.SelectedIndex = 0;
+                }
+                this.Visibility = Visibility.Visible;
+            }
+            catch (Exception)
+            {
+                this.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void ConfirmKickButton_Click(object sender, RoutedEventArgs e)
         {
-            string reason = (KickReasonCombo.SelectedItem as ComboBoxItem)?.Content.ToString()
-                            ?? GameClient.Resources.Strings.KickReasonNone;
-
-            this.Visibility = Visibility.Collapsed;
-
-            KickConfirmed?.Invoke(this, new KickEventArgs
+            try
             {
-                TargetUsername = _targetUsername,
-                Reason = reason
-            });
+                string reason = GameClient.Resources.Strings.KickReasonNone;
+
+                if (KickReasonCombo.SelectedItem is ComboBoxItem item && item.Content != null)
+                {
+                    reason = item.Content.ToString();
+                }
+                else if (KickReasonCombo.SelectedItem != null)
+                {
+                    reason = KickReasonCombo.SelectedItem.ToString();
+                }
+
+                this.Visibility = Visibility.Collapsed;
+
+                KickConfirmed?.Invoke(this, new KickEventArgs
+                {
+                    TargetUsername = _targetUsername,
+                    Reason = reason
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.Error_UI_Generic + ": " + ex.Message,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CancelKickButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Collapsed;
-            KickCancelled?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                this.Visibility = Visibility.Collapsed;
+                KickCancelled?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+                this.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

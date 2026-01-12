@@ -738,6 +738,9 @@
   <data name="Error_ServerTimeout" xml:space="preserve">
     <value>La operación tardó demasiado. Intente nuevamente.</value>
   </data>
+  <data name="Error_UI_Generic" xml:space="preserve">
+    <value>Error al cargar la interfaz correctamente</value>
+  </data>
   <data name="Error_Unknown" xml:space="preserve">
     <value>Ocurrió un error inesperado.</value>
   </data>
@@ -846,6 +849,9 @@
   <data name="FriendRequestSentSuccess" xml:space="preserve">
     <value>Solicitud enviada a {0}.</value>
   </data>
+  <data name="FriendResponseError" xml:space="preserve">
+    <value>Error al procesar la respuesta de amistad.</value>
+  </data>
   <data name="FriendSelfRequestError" xml:space="preserve">
     <value>No puedes enviarte una solicitud a ti mismo.</value>
   </data>
@@ -923,6 +929,9 @@
   </data>
   <data name="Gameplay_Error_Database" xml:space="preserve">
     <value>"Error al sincronizar con el tablero. Reintentando..."</value>
+  </data>
+  <data name="Gameplay_Error_Dice" xml:space="preserve">
+    <value>Error al tirar los dados</value>
   </data>
   <data name="Gameplay_Error_Finished" xml:space="preserve">
     <value>"La partida ya ha finalizado."</value>
@@ -1086,6 +1095,9 @@
   <data name="LabelLoadingLeaderboard" xml:space="preserve">
     <value>Obteniendo datos de los mejores jugadores...</value>
   </data>
+  <data name="LabelStartingGame" xml:space="preserve">
+    <value>Iniciando...</value>
+  </data>
   <data name="LanguageEn" xml:space="preserve">
     <value>English (US)</value>
   </data>
@@ -1157,6 +1169,33 @@
   </data>
   <data name="LobbyDisbandedByHost" xml:space="preserve">
     <value>El anfitrión ha disuelto la sala. Serás redirigido al menú.</value>
+  </data>
+  <data name="LobbyError_AlreadyInGame" xml:space="preserve">
+    <value>El sistema indica que ya estás en partida.</value>
+  </data>
+  <data name="LobbyError_Full" xml:space="preserve">
+    <value>La sala está llena.</value>
+  </data>
+  <data name="LobbyError_GuestNotAllowed" xml:space="preserve">
+    <value>Los invitados no pueden crear partidas.</value>
+  </data>
+  <data name="LobbyError_NotFound" xml:space="preserve">
+    <value>La partida ya no existe.</value>
+  </data>
+  <data name="LobbyError_NotFoundByCode" xml:space="preserve">
+    <value>No se encontró una partida con ese código.</value>
+  </data>
+  <data name="LobbyError_Started" xml:space="preserve">
+    <value>La partida ya ha comenzado.</value>
+  </data>
+  <data name="LobbyError_StartFailed" xml:space="preserve">
+    <value>No se pudo iniciar la partida.</value>
+  </data>
+  <data name="LobbyError_StartFailedRetry" xml:space="preserve">
+    <value>No se pudo iniciar tras reconectar.</value>
+  </data>
+  <data name="LobbyGuestExitConfirm" xml:space="preserve">
+    <value>¿Seguro que quieres salir del lobby?</value>
   </data>
   <data name="LobbyHostExitConfirm" xml:space="preserve">
     <value>Eres el anfitrión. Si sales, la sala se cerrará para todos. ¿Estás seguro?</value>
@@ -1839,6 +1878,9 @@
   <data name="VisibilityPublic" xml:space="preserve">
     <value>Publica</value>
   </data>
+  <data name="VoteKickError" xml:space="preserve">
+    <value>Error al iniciar votación:</value>
+  </data>
   <data name="VoteKickErrorConn" xml:space="preserve">
     <value>Conexión perdida al intentar iniciar la votación.</value>
   </data>
@@ -1862,6 +1904,12 @@
   </data>
   <data name="VoteKickTitle" xml:space="preserve">
     <value>¡VOTACIÓN DE EXPULSIÓN!</value>
+  </data>
+  <data name="VoteKick_Fallback_Question" xml:space="preserve">
+    <value>¿Expulsar a {0}?</value>
+  </data>
+  <data name="VoteKick_Fallback_Reason" xml:space="preserve">
+    <value>Motivo: {0}</value>
   </data>
   <data name="VoteNoBtn" xml:space="preserve">
     <value>NO (F2)</value>

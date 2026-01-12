@@ -1,15 +1,17 @@
 ﻿#nullable disable
 using GameServer.Chat.Moderation;
 using GameServer.DTOs.Chat;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Services.Logic;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.ServiceModel;
 using System.Threading.Tasks;
-using GameServer.Services.Common;
 using Xunit;
+
 using IChatSessionManager = GameServer.Helpers.IChatSessionManager;
 
 namespace GameServer.Tests.Unit
@@ -83,7 +85,7 @@ namespace GameServer.Tests.Unit
         public async Task JoinChat_Success_RegistersAndBroadcasts()
         {
             var req = new JoinChatRequest { Username = USER, LobbyCode = LOBBY };
-            _sessionMock.Setup(s => s.GetLobbyParticipants(LOBBY)).Returns(new List<string> { USER, USER2 });
+            _sessionMock.Setup(s => s.GetLobbyParticipants(LOBBY)).Returns(new List<string> { USER2 });
             _sessionMock.Setup(s => s.GetClientCallback(USER2)).Returns(_callbackMock.Object);
 
             var res = _service.JoinChat(req, _callbackMock.Object);
@@ -97,14 +99,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public void JoinChat_Exception_ReturnsInternalError()
+        public void JoinChat_Exception_ThrowsFault()
         {
             var req = new JoinChatRequest { Username = USER, LobbyCode = LOBBY };
             _sessionMock.Setup(s => s.RegisterClient(It.IsAny<string>(), It.IsAny<IChatCallback>())).Throws(new Exception());
 
-            var res = _service.JoinChat(req, _callbackMock.Object);
-
-            Assert.Equal(ChatOperationResult.InternalError, res);
+            Assert.Throws<FaultException<ServiceFault>>(() => _service.JoinChat(req, _callbackMock.Object));
         }
 
         [Fact]
@@ -264,14 +264,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public void SendMessage_Exception_ReturnsInternalError()
+        public void SendMessage_Exception_ThrowsFault()
         {
             var dto = new ChatMessageDto { LobbyCode = LOBBY, Message = "Hi", Sender = USER };
             _spamMock.Setup(s => s.Analyze(It.IsAny<string>(), It.IsAny<string>())).Throws(new Exception());
 
-            var res = _service.SendMessage(dto);
-
-            Assert.Equal(ChatOperationResult.InternalError, res);
+            Assert.Throws<FaultException<ServiceFault>>(() => _service.SendMessage(dto));
         }
 
         [Fact]
@@ -323,14 +321,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public void SendPrivate_Exception_ReturnsInternalError()
+        public void SendPrivate_Exception_ThrowsFault()
         {
             var dto = new ChatMessageDto { Sender = USER, TargetUser = USER2, Message = "Hi" };
             _sessionMock.Setup(s => s.GetClientCallback(It.IsAny<string>())).Throws(new Exception());
 
-            var res = _service.SendPrivateMessage(dto);
-
-            Assert.Equal(ChatOperationResult.InternalError, res);
+            Assert.Throws<FaultException<ServiceFault>>(() => _service.SendPrivateMessage(dto));
         }
 
         [Fact]
@@ -368,14 +364,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public void LeaveChat_Exception_ReturnsInternalError()
+        public void LeaveChat_Exception_ThrowsFault()
         {
             var req = new JoinChatRequest { Username = USER, LobbyCode = LOBBY };
             _sessionMock.Setup(s => s.RemoveUserFromLobby(It.IsAny<string>(), It.IsAny<string>())).Throws(new Exception());
 
-            var res = _service.LeaveChat(req);
-
-            Assert.Equal(ChatOperationResult.InternalError, res);
+            Assert.Throws<FaultException<ServiceFault>>(() => _service.LeaveChat(req));
         }
 
         [Fact]

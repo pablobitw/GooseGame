@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using GameServer.DTOs.Lobby;
+using GameServer.Faults;
 using GameServer.Interfaces;
 using GameServer.Models;
 using GameServer.Repositories;
@@ -61,10 +62,21 @@ namespace GameServer.Tests.Unit
 
         private SqlException CreateSqlException()
         {
-            var collection = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
             var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-            FieldInfo errorsField = typeof(SqlException).GetField("_errors", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (errorsField != null) errorsField.SetValue(exception, collection);
+            var errors = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
+
+            // Inyectamos un error dummy para evitar NullReferenceException al leer .Number o .Errors
+            var error = FormatterServices.GetUninitializedObject(typeof(SqlError)) as SqlError;
+            var errorsListField = typeof(SqlErrorCollection).GetField("errors", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (errorsListField != null)
+            {
+                var list = new System.Collections.ArrayList { error };
+                errorsListField.SetValue(errors, list);
+            }
+
+            var errorsField = typeof(SqlException).GetField("_errors", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (errorsField != null) errorsField.SetValue(exception, errors);
+
             return exception;
         }
 
@@ -162,7 +174,7 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task CreateLobby_SqlException_ReturnsDatabaseError()
+        public async Task CreateLobby_SqlException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ThrowsAsync(CreateSqlException());
             var req = new CreateLobbyRequest
@@ -171,9 +183,7 @@ namespace GameServer.Tests.Unit
                 Settings = new LobbySettingsDto { MaxPlayers = 4 }
             };
 
-            var res = await _service.CreateLobbyAsync(req);
-
-            Assert.Equal(LobbyErrorType.DatabaseError, res.ErrorType);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.CreateLobbyAsync(req));
         }
 
         [Fact]
@@ -190,13 +200,13 @@ namespace GameServer.Tests.Unit
         [Fact]
         public async Task JoinLobby_PlayerInGame_ReturnsPlayerAlreadyInGame()
         {
-            var player = new Player { GameIdGame = 500 };
-            var activeGame = new Game { IdGame = 500, GameStatus = (int)GameStatus.InProgress };
+            var player = new Player { GameIdGame = 500, IdPlayer = USER_ID };
+            var activeGame = new Game { IdGame = 500, GameStatus = (int)GameStatus.InProgress, HostPlayerID = HOST_ID, LobbyCode = "OTHER" }; // LobbyCode diferente para forzar error
 
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(player);
             _repoMock.Setup(r => r.GetGameByIdAsync(500)).ReturnsAsync(activeGame);
 
-            var req = new JoinLobbyRequest { Username = USER };
+            var req = new JoinLobbyRequest { Username = USER, LobbyCode = LOBBY_CODE };
 
             var res = await _service.JoinLobbyAsync(req);
 
@@ -554,11 +564,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task StartGame_Exception_ReturnsFalse()
+        public async Task StartGame_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetGameByCodeAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
-            var res = await _service.StartGameAsync(LOBBY_CODE);
-            Assert.False(res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.StartGameAsync(LOBBY_CODE));
         }
 
         [Fact]
@@ -587,39 +596,31 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task LeaveLobby_Exception_ReturnsFalse()
+        public async Task LeaveLobby_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
-            var res = await _service.LeaveLobbyAsync(USER);
-            Assert.False(res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.LeaveLobbyAsync(USER));
         }
 
         [Fact]
-        public async Task GetLobbyState_Exception_ReturnsNull()
+        public async Task GetLobbyState_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetGameByCodeAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
-            var res = await _service.GetLobbyStateAsync(LOBBY_CODE);
-            Assert.Null(res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetLobbyStateAsync(LOBBY_CODE));
         }
 
         [Fact]
-        public async Task GetPublicMatches_Exception_ReturnsEmptyArray()
+        public async Task GetPublicMatches_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetActivePublicGamesAsync()).ThrowsAsync(new Exception());
-            var res = await _service.GetPublicMatchesAsync();
-            Assert.NotNull(res);
-            Assert.Empty(res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetPublicMatchesAsync());
         }
 
         [Fact]
-        public async Task SystemKickPlayer_Exception_DoesNotCrash()
+        public async Task SystemKickPlayer_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetGameByCodeAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
-
-            var exception = await Record.ExceptionAsync(() =>
-                _service.SystemKickPlayerAsync(LOBBY_CODE, USER, "Reason"));
-
-            Assert.Null(exception);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.SystemKickPlayerAsync(LOBBY_CODE, USER, "Reason"));
         }
     }
 }

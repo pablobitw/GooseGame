@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs.Gameplay;
+using GameServer.Faults;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
@@ -8,18 +9,23 @@ namespace GameServer.Interfaces
     public interface IGameplayService
     {
         [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
         Task<DiceRollDto> RollDiceAsync(GameplayRequest request);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
         Task<GameStateDto> GetGameStateAsync(GameplayRequest request);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
         Task<bool> LeaveGameAsync(GameplayRequest request);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
         Task InitiateVoteKickAsync(VoteRequestDto request);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
         Task CastVoteAsync(VoteResponseDto vote);
     }
 

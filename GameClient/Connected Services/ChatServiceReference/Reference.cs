@@ -105,6 +105,83 @@ namespace GameClient.ChatServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="ChatMessageDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Chat")]
     [System.SerializableAttribute()]
     public partial class ChatMessageDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
@@ -233,24 +310,28 @@ namespace GameClient.ChatServiceReference {
     public interface IChatService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinLobbyChat", ReplyAction="http://tempuri.org/IChatService/JoinLobbyChatResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.ChatServiceReference.ServiceFault), Action="http://tempuri.org/IChatService/JoinLobbyChatServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.ChatServiceReference.ChatOperationResult JoinLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/JoinLobbyChat", ReplyAction="http://tempuri.org/IChatService/JoinLobbyChatResponse")]
         System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> JoinLobbyChatAsync(GameClient.ChatServiceReference.JoinChatRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendLobbyMessage", ReplyAction="http://tempuri.org/IChatService/SendLobbyMessageResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.ChatServiceReference.ServiceFault), Action="http://tempuri.org/IChatService/SendLobbyMessageServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.ChatServiceReference.ChatOperationResult SendLobbyMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendLobbyMessage", ReplyAction="http://tempuri.org/IChatService/SendLobbyMessageResponse")]
         System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendLobbyMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendPrivateMessage", ReplyAction="http://tempuri.org/IChatService/SendPrivateMessageResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.ChatServiceReference.ServiceFault), Action="http://tempuri.org/IChatService/SendPrivateMessageServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.ChatServiceReference.ChatOperationResult SendPrivateMessage(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/SendPrivateMessage", ReplyAction="http://tempuri.org/IChatService/SendPrivateMessageResponse")]
         System.Threading.Tasks.Task<GameClient.ChatServiceReference.ChatOperationResult> SendPrivateMessageAsync(GameClient.ChatServiceReference.ChatMessageDto messageDto);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/LeaveLobbyChat", ReplyAction="http://tempuri.org/IChatService/LeaveLobbyChatResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.ChatServiceReference.ServiceFault), Action="http://tempuri.org/IChatService/LeaveLobbyChatServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.ChatServiceReference.ChatOperationResult LeaveLobbyChat(GameClient.ChatServiceReference.JoinChatRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IChatService/LeaveLobbyChat", ReplyAction="http://tempuri.org/IChatService/LeaveLobbyChatResponse")]

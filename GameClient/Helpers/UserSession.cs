@@ -45,12 +45,11 @@ namespace GameClient.Helpers
             IsGuest = false;
         }
 
-   
         public void HandleCatastrophicError(string customMessage = null)
         {
             if (Application.Current == null) return;
 
-            string finalMessage = customMessage ?? GameClient.Resources.Strings.ErrorConnectionLost;
+            string finalMessage = customMessage ?? GameClient.Resources.Strings.SafeZone_ConnectionLost;
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -59,21 +58,26 @@ namespace GameClient.Helpers
                 try
                 {
                     AudioManager.StopMusic();
-                    if (LobbyServiceManager.Instance != null) LobbyServiceManager.Instance.Dispose();
-                    if (GameplayServiceManager.Instance != null) GameplayServiceManager.Instance.Dispose();
-                    if (FriendshipServiceManager.Instance != null) FriendshipServiceManager.Instance.Disconnect();
+
+                    try { LobbyServiceManager.Instance.Dispose(); } catch { }
+                    try { GameplayServiceManager.Instance.Dispose(); } catch { }
+
+                    if (FriendshipServiceManager.Instance != null)
+                    {
+                        try { FriendshipServiceManager.Instance.Disconnect(); } catch { }
+                    }
                 }
                 catch
                 {
-                    //
+                    // 
                 }
 
                 AuthWindow loginWindow = new AuthWindow();
                 loginWindow.Show();
 
                 var openWindows = Application.Current.Windows.Cast<Window>()
-                                     .Where(w => w != loginWindow)
-                                     .ToList();
+                                             .Where(w => w != loginWindow)
+                                             .ToList();
 
                 foreach (Window window in openWindows)
                 {

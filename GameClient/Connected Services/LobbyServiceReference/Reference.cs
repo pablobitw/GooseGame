@@ -284,6 +284,83 @@ namespace GameClient.LobbyServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="JoinLobbyRequest", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Lobby")]
     [System.SerializableAttribute()]
     public partial class JoinLobbyRequest : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
@@ -861,48 +938,56 @@ namespace GameClient.LobbyServiceReference {
     public interface ILobbyService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/CreateLobby", ReplyAction="http://tempuri.org/ILobbyService/CreateLobbyResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/CreateLobbyServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.LobbyServiceReference.LobbyCreationResultDto CreateLobby(GameClient.LobbyServiceReference.CreateLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/CreateLobby", ReplyAction="http://tempuri.org/ILobbyService/CreateLobbyResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyCreationResultDto> CreateLobbyAsync(GameClient.LobbyServiceReference.CreateLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/StartGame", ReplyAction="http://tempuri.org/ILobbyService/StartGameResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/StartGameServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool StartGame(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/StartGame", ReplyAction="http://tempuri.org/ILobbyService/StartGameResponse")]
         System.Threading.Tasks.Task<bool> StartGameAsync(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/DisbandLobby", ReplyAction="http://tempuri.org/ILobbyService/DisbandLobbyResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/DisbandLobbyServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         void DisbandLobby(string hostUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/DisbandLobby", ReplyAction="http://tempuri.org/ILobbyService/DisbandLobbyResponse")]
         System.Threading.Tasks.Task DisbandLobbyAsync(string hostUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/LeaveLobby", ReplyAction="http://tempuri.org/ILobbyService/LeaveLobbyResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/LeaveLobbyServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool LeaveLobby(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/LeaveLobby", ReplyAction="http://tempuri.org/ILobbyService/LeaveLobbyResponse")]
         System.Threading.Tasks.Task<bool> LeaveLobbyAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/JoinLobbyServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.LobbyServiceReference.JoinLobbyResultDto JoinLobby(GameClient.LobbyServiceReference.JoinLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/JoinLobby", ReplyAction="http://tempuri.org/ILobbyService/JoinLobbyResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.JoinLobbyResultDto> JoinLobbyAsync(GameClient.LobbyServiceReference.JoinLobbyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/GetLobbyStateServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.LobbyServiceReference.LobbyStateDto GetLobbyState(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetLobbyState", ReplyAction="http://tempuri.org/ILobbyService/GetLobbyStateResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.LobbyStateDto> GetLobbyStateAsync(string lobbyCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/GetPublicMatchesServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.LobbyServiceReference.ActiveMatchDto[] GetPublicMatches();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/GetPublicMatches", ReplyAction="http://tempuri.org/ILobbyService/GetPublicMatchesResponse")]
         System.Threading.Tasks.Task<GameClient.LobbyServiceReference.ActiveMatchDto[]> GetPublicMatchesAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.LobbyServiceReference.ServiceFault), Action="http://tempuri.org/ILobbyService/KickPlayerServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool KickPlayer(GameClient.LobbyServiceReference.KickPlayerRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/ILobbyService/KickPlayer", ReplyAction="http://tempuri.org/ILobbyService/KickPlayerResponse")]

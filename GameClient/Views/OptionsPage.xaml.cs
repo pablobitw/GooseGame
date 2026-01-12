@@ -14,25 +14,30 @@ namespace GameClient.Views
     {
         private string _initialLanguage;
         private bool _restartPending = false;
+        private bool _isLoading = true;
 
         public OptionsPage()
         {
             InitializeComponent();
             this.Loaded += OptionsPage_Loaded;
             GameAlert.AlertClosed += GameAlert_AlertClosed;
-
-            MusicSlider.Value = AudioManager.GetVolume() * 100;
-            MusicSlider.ValueChanged += MusicSlider_ValueChanged;
         }
 
         private void OptionsPage_Loaded(object sender, RoutedEventArgs e)
         {
+            _isLoading = true;
             LoadCurrentSettings();
             LoadCurrentLanguage();
+
+            MusicSlider.Value = AudioManager.GetVolume() * 100;
+
+            _isLoading = false;
         }
 
         private void MusicSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (_isLoading) return;
+
             AudioManager.SetVolume(e.NewValue / 100.0);
         }
 
@@ -161,8 +166,6 @@ namespace GameClient.Views
                 case 1:
                     return "en-US";
 
-                case 2:
-                    return "fr-FR";
 
                 default:
                     return "es-MX";

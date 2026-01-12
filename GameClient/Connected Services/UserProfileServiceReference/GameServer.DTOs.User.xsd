@@ -36,6 +36,7 @@
       <xs:enumeration value="UserNotFound" />
       <xs:enumeration value="FatalError" />
       <xs:enumeration value="IncorrectPassword" />
+      <xs:enumeration value="CodeInvalid" />
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="UsernameChangeResult" nillable="true" type="tns:UsernameChangeResult" />

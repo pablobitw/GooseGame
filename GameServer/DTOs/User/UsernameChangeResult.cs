@@ -18,6 +18,8 @@ namespace GameServer.DTOs.User
         [EnumMember]
         FatalError,
         [EnumMember]
-        IncorrectPassword
+        IncorrectPassword,
+            [EnumMember]
+        CodeInvalid
     }
 }

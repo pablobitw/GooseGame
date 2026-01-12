@@ -13,6 +13,7 @@
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import namespace="http://tempuri.org/" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults" />
       <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer" />
@@ -25,11 +26,17 @@
   <wsdl:message name="IGameplayService_RollDice_OutputMessage">
     <wsdl:part name="parameters" element="tns:RollDiceResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameplayService_RollDice_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q1:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IGameplayService_GetGameState_InputMessage">
     <wsdl:part name="parameters" element="tns:GetGameState" />
   </wsdl:message>
   <wsdl:message name="IGameplayService_GetGameState_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetGameStateResponse" />
+  </wsdl:message>
+  <wsdl:message name="IGameplayService_GetGameState_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q2:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IGameplayService_LeaveGame_InputMessage">
     <wsdl:part name="parameters" element="tns:LeaveGame" />
@@ -37,17 +44,26 @@
   <wsdl:message name="IGameplayService_LeaveGame_OutputMessage">
     <wsdl:part name="parameters" element="tns:LeaveGameResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameplayService_LeaveGame_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q3:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IGameplayService_InitiateVoteKick_InputMessage">
     <wsdl:part name="parameters" element="tns:InitiateVoteKick" />
   </wsdl:message>
   <wsdl:message name="IGameplayService_InitiateVoteKick_OutputMessage">
     <wsdl:part name="parameters" element="tns:InitiateVoteKickResponse" />
   </wsdl:message>
+  <wsdl:message name="IGameplayService_InitiateVoteKick_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q4:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IGameplayService_CastVote_InputMessage">
     <wsdl:part name="parameters" element="tns:CastVote" />
   </wsdl:message>
   <wsdl:message name="IGameplayService_CastVote_OutputMessage">
     <wsdl:part name="parameters" element="tns:CastVoteResponse" />
+  </wsdl:message>
+  <wsdl:message name="IGameplayService_CastVote_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q5:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IGameplayService_OnVoteKickStarted_OutputCallbackMessage">
     <wsdl:part name="parameters" element="tns:OnVoteKickStarted" />
@@ -65,22 +81,27 @@
     <wsdl:operation name="RollDice">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/RollDice" message="tns:IGameplayService_RollDice_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/RollDiceResponse" message="tns:IGameplayService_RollDice_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IGameplayService/RollDiceServiceFaultFault" name="ServiceFaultFault" message="tns:IGameplayService_RollDice_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="GetGameState">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/GetGameState" message="tns:IGameplayService_GetGameState_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/GetGameStateResponse" message="tns:IGameplayService_GetGameState_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IGameplayService/GetGameStateServiceFaultFault" name="ServiceFaultFault" message="tns:IGameplayService_GetGameState_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="LeaveGame">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/LeaveGame" message="tns:IGameplayService_LeaveGame_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/LeaveGameResponse" message="tns:IGameplayService_LeaveGame_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IGameplayService/LeaveGameServiceFaultFault" name="ServiceFaultFault" message="tns:IGameplayService_LeaveGame_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="InitiateVoteKick">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/InitiateVoteKick" message="tns:IGameplayService_InitiateVoteKick_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/InitiateVoteKickResponse" message="tns:IGameplayService_InitiateVoteKick_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IGameplayService/InitiateVoteKickServiceFaultFault" name="ServiceFaultFault" message="tns:IGameplayService_InitiateVoteKick_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="CastVote">
       <wsdl:input wsaw:Action="http://tempuri.org/IGameplayService/CastVote" message="tns:IGameplayService_CastVote_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/CastVoteResponse" message="tns:IGameplayService_CastVote_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IGameplayService/CastVoteServiceFaultFault" name="ServiceFaultFault" message="tns:IGameplayService_CastVote_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="OnVoteKickStarted">
       <wsdl:output wsaw:Action="http://tempuri.org/IGameplayService/OnVoteKickStarted" message="tns:IGameplayService_OnVoteKickStarted_OutputCallbackMessage" />
@@ -107,6 +128,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="GetGameState">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/GetGameState" style="document" />
@@ -116,6 +140,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="LeaveGame">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/LeaveGame" style="document" />
@@ -125,6 +152,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="InitiateVoteKick">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/InitiateVoteKick" style="document" />
@@ -134,6 +164,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="CastVote">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/CastVote" style="document" />
@@ -143,6 +176,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="OnVoteKickStarted">
       <soap12:operation soapAction="http://tempuri.org/IGameplayService/OnVoteKickStarted" style="document" />

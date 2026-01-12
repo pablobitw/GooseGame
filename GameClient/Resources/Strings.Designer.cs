@@ -1330,6 +1330,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar la interfaz correctamente.
+        /// </summary>
+        public static string Error_UI_Generic {
+            get {
+                return ResourceManager.GetString("Error_UI_Generic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
         /// </summary>
         public static string Error_Unknown {
@@ -2248,6 +2257,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error al procesar la respuesta de amistad..
+        /// </summary>
+        public static string FriendResponseError {
+            get {
+                return ResourceManager.GetString("FriendResponseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No hay conexión con la base de datos. Sistema en mantenimiento..
         /// </summary>
         public static string Friends_Error_Database {
@@ -2469,6 +2487,15 @@ namespace GameClient.Resources {
         public static string Gameplay_Error_Database {
             get {
                 return ResourceManager.GetString("Gameplay_Error_Database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al tirar los dados.
+        /// </summary>
+        public static string Gameplay_Error_Dice {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Dice", resourceCulture);
             }
         }
         
@@ -2968,6 +2995,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Iniciando....
+        /// </summary>
+        public static string LabelStartingGame {
+            get {
+                return ResourceManager.GetString("LabelStartingGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a English (US).
         /// </summary>
         public static string LanguageEn {
@@ -3180,6 +3216,87 @@ namespace GameClient.Resources {
         public static string LobbyDisbandedByHost {
             get {
                 return ResourceManager.GetString("LobbyDisbandedByHost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El sistema indica que ya estás en partida..
+        /// </summary>
+        public static string LobbyError_AlreadyInGame {
+            get {
+                return ResourceManager.GetString("LobbyError_AlreadyInGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La sala está llena..
+        /// </summary>
+        public static string LobbyError_Full {
+            get {
+                return ResourceManager.GetString("LobbyError_Full", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Los invitados no pueden crear partidas..
+        /// </summary>
+        public static string LobbyError_GuestNotAllowed {
+            get {
+                return ResourceManager.GetString("LobbyError_GuestNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La partida ya no existe..
+        /// </summary>
+        public static string LobbyError_NotFound {
+            get {
+                return ResourceManager.GetString("LobbyError_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se encontró una partida con ese código..
+        /// </summary>
+        public static string LobbyError_NotFoundByCode {
+            get {
+                return ResourceManager.GetString("LobbyError_NotFoundByCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La partida ya ha comenzado..
+        /// </summary>
+        public static string LobbyError_Started {
+            get {
+                return ResourceManager.GetString("LobbyError_Started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo iniciar la partida..
+        /// </summary>
+        public static string LobbyError_StartFailed {
+            get {
+                return ResourceManager.GetString("LobbyError_StartFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo iniciar tras reconectar..
+        /// </summary>
+        public static string LobbyError_StartFailedRetry {
+            get {
+                return ResourceManager.GetString("LobbyError_StartFailedRetry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¿Seguro que quieres salir del lobby?.
+        /// </summary>
+        public static string LobbyGuestExitConfirm {
+            get {
+                return ResourceManager.GetString("LobbyGuestExitConfirm", resourceCulture);
             }
         }
         
@@ -5223,6 +5340,33 @@ namespace GameClient.Resources {
         public static string VisibilityPublic {
             get {
                 return ResourceManager.GetString("VisibilityPublic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¿Expulsar a {0}?.
+        /// </summary>
+        public static string VoteKick_Fallback_Question {
+            get {
+                return ResourceManager.GetString("VoteKick_Fallback_Question", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Motivo: {0}.
+        /// </summary>
+        public static string VoteKick_Fallback_Reason {
+            get {
+                return ResourceManager.GetString("VoteKick_Fallback_Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al iniciar votación:.
+        /// </summary>
+        public static string VoteKickError {
+            get {
+                return ResourceManager.GetString("VoteKickError", resourceCulture);
             }
         }
         

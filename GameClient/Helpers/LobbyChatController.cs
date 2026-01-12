@@ -44,9 +44,24 @@ namespace GameClient.Helpers
 
                 _chatClient.JoinLobbyChat(request);
             }
+          
+            catch (FaultException<ServiceFault> fault)
+            {
+                string msg = fault.Detail.Message ?? "Error de conexión al chat.";
+                _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {msg}"));
+            }
+    
+            catch (EndpointNotFoundException)
+            {
+                _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] No se puede conectar al servicio de chat."));
+            }
+            catch (CommunicationException)
+            {
+                _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] Error de comunicación con el chat."));
+            }
             catch (Exception ex)
             {
-                _dispatcher.Invoke(() => SystemMessage?.Invoke("Error conectando al chat: " + ex.Message));
+                _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] Error interno: {ex.Message}"));
             }
         }
 
@@ -70,32 +85,37 @@ namespace GameClient.Helpers
 
                     _chatClient.SendLobbyMessage(dto);
                 }
-                catch (Exception ex)
+                catch (FaultException<ServiceFault> fault)
                 {
-                    if (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
+                    _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {fault.Detail.Message}"));
+                }
+                catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
+                {
+                    try
                     {
-                        try
-                        {
-                            Connect();
+                        Connect();
 
-                            var dto = new ChatMessageDto
-                            {
-                                Sender = _username,
-                                LobbyCode = _lobbyCode,
-                                Message = message
-                            };
-
-                            _chatClient.SendLobbyMessage(dto);
-                        }
-                        catch (Exception retryEx)
+                        var dto = new ChatMessageDto
                         {
-                            _dispatcher.Invoke(() => SystemMessage?.Invoke("Error enviando mensaje tras reconexión: " + retryEx.Message));
-                        }
+                            Sender = _username,
+                            LobbyCode = _lobbyCode,
+                            Message = message
+                        };
+
+                        _chatClient.SendLobbyMessage(dto);
                     }
-                    else
+                    catch (FaultException<ServiceFault> retryFault)
                     {
-                        _dispatcher.Invoke(() => SystemMessage?.Invoke("Error enviando mensaje: " + ex.Message));
+                        _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {retryFault.Detail.Message}"));
                     }
+                    catch (Exception)
+                    {
+                        _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] No se pudo enviar el mensaje (Red inestable)."));
+                    }
+                }
+                catch (Exception)
+                {
+                    _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] Error desconocido al enviar mensaje."));
                 }
             });
         }
@@ -131,6 +151,10 @@ namespace GameClient.Helpers
             catch
             {
                 _chatClient.Abort();
+            }
+            finally
+            {
+                _chatClient = null;
             }
         }
     }

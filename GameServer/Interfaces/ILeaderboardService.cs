@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs;
+using GameServer.Faults;
 using System.Collections.Generic;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace GameServer.Interfaces
     public interface ILeaderboardService
     {
         [OperationContract]
-        [FaultContract(typeof(GameServiceFault))]
+        [FaultContract(typeof(ServiceFault))]
         Task<List<LeaderboardDto>> GetGlobalLeaderboardAsync(string requestingUsername);
     }
 }

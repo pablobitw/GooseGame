@@ -108,6 +108,15 @@
   <wsdl:message name="IUserProfileService_RemoveSocialLink_ServiceFaultFault_FaultMessage">
     <wsdl:part xmlns:q10="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q10:ServiceFault" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_VerifyUsernameChangeCode_InputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyUsernameChangeCode" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_VerifyUsernameChangeCode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:VerifyUsernameChangeCodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_VerifyUsernameChangeCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q11="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q11:ServiceFault" />
+  </wsdl:message>
   <wsdl:portType name="IUserProfileService">
     <wsdl:operation name="GetUserProfile">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfile" message="tns:IUserProfileService_GetUserProfile_InputMessage" />
@@ -158,6 +167,11 @@
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLink" message="tns:IUserProfileService_RemoveSocialLink_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse" message="tns:IUserProfileService_RemoveSocialLink_OutputMessage" />
       <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_RemoveSocialLink_ServiceFaultFault_FaultMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="VerifyUsernameChangeCode">
+      <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCode" message="tns:IUserProfileService_VerifyUsernameChangeCode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCodeResponse" message="tns:IUserProfileService_VerifyUsernameChangeCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_VerifyUsernameChangeCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IUserProfileService" type="tns:IUserProfileService">
@@ -274,6 +288,18 @@
     </wsdl:operation>
     <wsdl:operation name="RemoveSocialLink">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/RemoveSocialLink" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="VerifyUsernameChangeCode">
+      <soap12:operation soapAction="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCode" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

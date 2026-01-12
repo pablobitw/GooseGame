@@ -214,7 +214,6 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
             {
-                // Intentar reconexión silenciosa
                 bool rejoined = await TryRejoinLobbyAsync();
                 if (rejoined)
                 {
@@ -271,7 +270,9 @@ namespace GameClient.Views
         {
             string message = isHost && isLobbyCreated
                 ? GameClient.Resources.Strings.LobbyHostExitConfirm
-                : "Are you sure you want to leave the lobby?";
+                : GameClient.Resources.Strings.LobbyGuestExitConfirm; 
+
+            if (string.IsNullOrEmpty(message)) message = "Are you sure you want to leave the lobby?";
 
             ShowOverlayDialog(
                 GameClient.Resources.Strings.DialogConfirmTitle,
@@ -393,7 +394,7 @@ namespace GameClient.Views
         {
             _isGameStarting = true;
             StartMatchButton.IsEnabled = false;
-            StartMatchButton.Content = "Starting...";
+            StartMatchButton.Content = GameClient.Resources.Strings.LabelStartingGame;
 
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
@@ -418,7 +419,7 @@ namespace GameClient.Views
                 if (!success)
                 {
                     ResetStartButton();
-                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game.", FontAwesomeIcon.TimesCircle);
+                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.LobbyError_StartFailed, FontAwesomeIcon.TimesCircle);
                 }
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
@@ -432,7 +433,7 @@ namespace GameClient.Views
                         if (!successRetry)
                         {
                             ResetStartButton();
-                            ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game after reconnect.", FontAwesomeIcon.TimesCircle);
+                            ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.LobbyError_StartFailedRetry, FontAwesomeIcon.TimesCircle);
                         }
                     }
                     catch (Exception)
@@ -752,23 +753,23 @@ namespace GameClient.Views
                     icon = FontAwesomeIcon.ClockOutline;
                     break;
                 case LobbyErrorType.GameFull:
-                    message = "Lobby is full.";
+                    message = GameClient.Resources.Strings.LobbyError_Full;
                     icon = FontAwesomeIcon.Users;
                     break;
                 case LobbyErrorType.GameStarted:
-                    message = "Game already started.";
+                    message = GameClient.Resources.Strings.LobbyError_Started;
                     icon = FontAwesomeIcon.PlayCircle;
                     break;
                 case LobbyErrorType.GameNotFound:
-                    message = "Lobby not found.";
+                    message = GameClient.Resources.Strings.LobbyError_NotFound;
                     icon = FontAwesomeIcon.Search;
                     break;
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    message = "You are already in a game.";
+                    message = GameClient.Resources.Strings.LobbyError_AlreadyInGame;
                     icon = FontAwesomeIcon.ExclamationTriangle;
                     break;
                 case LobbyErrorType.GuestNotAllowed:
-                    message = "Guests restricted.";
+                    message = GameClient.Resources.Strings.LobbyError_GuestNotAllowed;
                     icon = FontAwesomeIcon.UserSecret;
                     break;
                 default:

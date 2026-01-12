@@ -34,5 +34,29 @@ namespace GameClient.Properties {
                 this["LanguageCode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public double MusicVolume {
+            get {
+                return ((double)(this["MusicVolume"]));
+            }
+            set {
+                this["MusicVolume"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.8")]
+        public double SfxVolume {
+            get {
+                return ((double)(this["SfxVolume"]));
+            }
+            set {
+                this["SfxVolume"] = value;
+            }
+        }
     }
 }

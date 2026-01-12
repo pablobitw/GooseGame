@@ -87,6 +87,60 @@ namespace GameClient.Views
             }
         }
 
+
+        private async void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
+        {
+            string code = CodeTextBox.Text.Trim();
+
+            // 1. Validación local básica
+            if (string.IsNullOrEmpty(code) || code.Length != 6)
+            {
+                ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeLengthError);
+                return;
+            }
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("ChangeUser_Error_NoInternet", "ChangeUser_Title_Error", MessageBoxImage.Error);
+                return;
+            }
+
+            VerifyCodeButton.IsEnabled = false;
+            var client = new UserProfileServiceClient();
+
+            try
+            {
+                bool isValid = await client.VerifyUsernameChangeCodeAsync(_userEmail, code);
+
+                if (isValid)
+                {
+                    CodeBorder.BorderBrush = Brushes.Green;
+                    CodeBorder.BorderThickness = new Thickness(2);
+
+                    await Task.Delay(500); 
+
+                    ClearError(CodeBorder, CodeErrorLabel);
+                    Step1_VerifyCode.Visibility = Visibility.Collapsed;
+                    Step2_ChangeName.Visibility = Visibility.Visible;
+                    NewUsernameTextBox.Focus();
+                }
+                else
+                {
+                    ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_Code);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                ShowTranslatedMessageBox("ChangeUser_Error_Communication", "ChangeUser_Title_Error", MessageBoxImage.Error);
+            }
+            finally
+            {
+                CloseClient(client);
+                VerifyCodeButton.IsEnabled = true;
+            }
+        }
+
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string code = CodeTextBox.Text.Trim();
@@ -95,6 +149,8 @@ namespace GameClient.Views
             if (string.IsNullOrEmpty(code) || code.Length != 6)
             {
                 ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeLengthError);
+                Step2_ChangeName.Visibility = Visibility.Collapsed;
+                Step1_VerifyCode.Visibility = Visibility.Visible;
                 return;
             }
 
@@ -168,10 +224,12 @@ namespace GameClient.Views
                     GameClient.Helpers.UserSession.GetInstance().HandleCatastrophicError("Usuario no encontrado. Sesión inválida.");
                     break;
 
+                case UsernameChangeResult.CodeInvalid:
                 case UsernameChangeResult.FatalError:
                     ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.ChangeUser_Error_Code);
                     Step2_ChangeName.Visibility = Visibility.Collapsed;
                     Step1_VerifyCode.Visibility = Visibility.Visible;
+                    CodeTextBox.Focus();
                     break;
 
                 default:
@@ -186,18 +244,6 @@ namespace GameClient.Views
             ShowTranslatedMessageBox("ChangeUser_Info_CodeSent", "DialogInfoTitle", MessageBoxImage.Information);
         }
 
-        private void VerifyCodeButton_Click(object sender, RoutedEventArgs e)
-        {
-            string code = CodeTextBox.Text.Trim();
-            if (string.IsNullOrEmpty(code) || code.Length != 6)
-            {
-                ShowError(CodeBorder, CodeErrorLabel, GameClient.Resources.Strings.CodeLengthError);
-                return;
-            }
-
-            Step1_VerifyCode.Visibility = Visibility.Collapsed;
-            Step2_ChangeName.Visibility = Visibility.Visible;
-        }
 
         private static void CloseClient(UserProfileServiceClient client)
         {
@@ -208,7 +254,7 @@ namespace GameClient.Views
                 else
                     client.Abort();
             }
-            catch (Exception)
+            catch
             {
                 client.Abort();
             }

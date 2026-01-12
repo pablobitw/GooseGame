@@ -105,27 +105,27 @@ namespace GameClient.Helpers
 
         public Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            return ExecuteAsync(c => c.CreateLobbyAsync(request));
+            return ExecuteAsync(c => c.CreateLobbyAsync(request), new LobbyCreationResultDto { Success = false, ErrorMessage = "Error de conexión." });
         }
 
         public Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
-            return ExecuteAsync(c => c.JoinLobbyAsync(request));
+            return ExecuteAsync(c => c.JoinLobbyAsync(request), new JoinLobbyResultDto { Success = false, ErrorMessage = "Error de conexión." });
         }
 
         public Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
-            return ExecuteAsync(c => c.GetLobbyStateAsync(lobbyCode));
+            return ExecuteAsync(c => c.GetLobbyStateAsync(lobbyCode), null);
         }
 
         public Task<bool> StartGameAsync(string lobbyCode)
         {
-            return ExecuteAsync(c => c.StartGameAsync(lobbyCode));
+            return ExecuteAsync(c => c.StartGameAsync(lobbyCode), false);
         }
 
         public Task<bool> LeaveLobbyAsync(string username)
         {
-            return ExecuteAsync(c => c.LeaveLobbyAsync(username));
+            return ExecuteAsync(c => c.LeaveLobbyAsync(username), false);
         }
 
         public Task DisbandLobbyAsync(string username)
@@ -135,40 +135,45 @@ namespace GameClient.Helpers
 
         public Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
-            return ExecuteAsync(c => c.GetPublicMatchesAsync());
+            return ExecuteAsync(c => c.GetPublicMatchesAsync(), new ActiveMatchDto[0]);
         }
 
-        public Task KickPlayerAsync(KickPlayerRequest request)
+        public Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            return ExecuteAsync(c => c.KickPlayerAsync(request));
+            return ExecuteAsync(c => c.KickPlayerAsync(request), false);
         }
 
-        private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action)
+        private async Task<T> ExecuteAsync<T>(Func<LobbyServiceClient, Task<T>> action, T defaultValue)
         {
             try
             {
                 var client = GetClient();
                 return await action(client);
             }
-            catch (EndpointNotFoundException)
+      
+            catch (FaultException<ServiceFault>)
             {
-                InvalidateClient();
-                throw;
+            
+                return defaultValue;
             }
-            catch (TimeoutException)
+ 
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
                 InvalidateClient();
-                throw;
-            }
-            catch (CommunicationException)
-            {
-                InvalidateClient();
-                throw;
+                try
+                {
+                    // Reintento único
+                    var client = GetClient();
+                    return await action(client);
+                }
+                catch
+                {
+                    return defaultValue;
+                }
             }
             catch (Exception)
             {
-                InvalidateClient();
-                throw;
+                return defaultValue;
             }
         }
 
@@ -179,26 +184,21 @@ namespace GameClient.Helpers
                 var client = GetClient();
                 await action(client);
             }
-            catch (EndpointNotFoundException)
+            catch (FaultException<ServiceFault>)
+            {
+                // 
+            }
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
                 InvalidateClient();
-                throw;
+                try
+                {
+                    var client = GetClient();
+                    await action(client);
+                }
+                catch { }
             }
-            catch (TimeoutException)
-            {
-                InvalidateClient();
-                throw;
-            }
-            catch (CommunicationException)
-            {
-                InvalidateClient();
-                throw;
-            }
-            catch (Exception)
-            {
-                InvalidateClient();
-                throw;
-            }
+            catch (Exception) { }
         }
 
         private void InvalidateClient()

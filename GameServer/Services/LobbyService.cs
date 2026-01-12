@@ -26,7 +26,6 @@ namespace GameServer.Services
         public async Task<LobbyCreationResultDto> CreateLobbyAsync(CreateLobbyRequest request)
         {
             ILobbyServiceCallback callback = null;
-            LobbyCreationResultDto result = new LobbyCreationResultDto();
 
             try
             {
@@ -35,19 +34,12 @@ namespace GameServer.Services
             catch (Exception ex)
             {
                 Log.Warn("CreateLobbyAsync: No se pudo obtener el canal de Callback.", ex);
+                // No lanzamos error aquí, permitimos intentar crear el lobby sin callback si es necesario,
+                // aunque la lógica interna podría requerirlo.
             }
 
-            try
-            {
-                result = await _logic.CreateLobbyAsync(request);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("CreateLobbyAsync: Error crítico no controlado en lógica.", ex);
-                result.Success = false;
-                result.ErrorMessage = "Error interno del servidor.";
-                result.ErrorType = LobbyErrorType.Unknown;
-            }
+            // Llamamos a la lógica. Si falla, la FaultException sube al cliente automáticamente.
+            var result = await _logic.CreateLobbyAsync(request);
 
             if (result != null && result.Success && callback != null)
             {
@@ -61,13 +53,12 @@ namespace GameServer.Services
                 }
             }
 
-            return result ?? new LobbyCreationResultDto { Success = false, ErrorType = LobbyErrorType.Unknown };
+            return result;
         }
 
         public async Task<JoinLobbyResultDto> JoinLobbyAsync(JoinLobbyRequest request)
         {
             ILobbyServiceCallback callback = null;
-            JoinLobbyResultDto result = new JoinLobbyResultDto();
 
             try
             {
@@ -78,17 +69,7 @@ namespace GameServer.Services
                 Log.Warn("JoinLobbyAsync: No se pudo obtener el canal de Callback.", ex);
             }
 
-            try
-            {
-                result = await _logic.JoinLobbyAsync(request);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("JoinLobbyAsync: Error crítico no controlado en lógica.", ex);
-                result.Success = false;
-                result.ErrorMessage = "Error interno del servidor.";
-                result.ErrorType = LobbyErrorType.Unknown;
-            }
+            var result = await _logic.JoinLobbyAsync(request);
 
             if (result != null && result.Success && callback != null)
             {
@@ -102,84 +83,37 @@ namespace GameServer.Services
                 }
             }
 
-            return result ?? new JoinLobbyResultDto { Success = false, ErrorType = LobbyErrorType.Unknown };
+            return result;
         }
 
         public async Task<bool> StartGameAsync(string lobbyCode)
         {
-            try
-            {
-                return await _logic.StartGameAsync(lobbyCode);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"StartGameAsync: Error inesperado para lobby {lobbyCode}", ex);
-                return false;
-            }
+            return await _logic.StartGameAsync(lobbyCode);
         }
 
         public async Task DisbandLobbyAsync(string hostUsername)
         {
-            try
-            {
-                await _logic.DisbandLobbyAsync(hostUsername);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"DisbandLobbyAsync: Error inesperado para host {hostUsername}", ex);
-            }
+            await _logic.DisbandLobbyAsync(hostUsername);
         }
 
         public async Task<bool> LeaveLobbyAsync(string username)
         {
-            try
-            {
-                return await _logic.LeaveLobbyAsync(username);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"LeaveLobbyAsync: Error inesperado para usuario {username}", ex);
-                return false;
-            }
+            return await _logic.LeaveLobbyAsync(username);
         }
 
         public async Task<LobbyStateDto> GetLobbyStateAsync(string lobbyCode)
         {
-            try
-            {
-                return await _logic.GetLobbyStateAsync(lobbyCode);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"GetLobbyStateAsync: Error inesperado para lobby {lobbyCode}", ex);
-                return null;
-            }
+            return await _logic.GetLobbyStateAsync(lobbyCode);
         }
 
         public async Task<ActiveMatchDto[]> GetPublicMatchesAsync()
         {
-            try
-            {
-                return await _logic.GetPublicMatchesAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("GetPublicMatchesAsync: Error inesperado.", ex);
-                return new ActiveMatchDto[0];
-            }
+            return await _logic.GetPublicMatchesAsync();
         }
 
         public async Task<bool> KickPlayerAsync(KickPlayerRequest request)
         {
-            try
-            {
-                return await _logic.KickPlayerAsync(request);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("KickPlayerAsync: Error inesperado.", ex);
-                return false;
-            }
+            return await _logic.KickPlayerAsync(request);
         }
 
         public void Dispose()

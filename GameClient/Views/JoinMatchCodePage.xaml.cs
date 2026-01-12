@@ -1,6 +1,7 @@
 ﻿using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
 using System;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,8 +30,16 @@ namespace GameClient.Views
             {
                 ShowMessage(
                     GameClient.Resources.Strings.InvalidCodeMessage,
-                    GameClient.Resources.Strings.InvalidCodeTitle
+                    GameClient.Resources.Strings.InvalidCodeTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
                 );
+                return;
+            }
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Error_NoInternet);
                 return;
             }
 
@@ -74,7 +83,9 @@ namespace GameClient.Views
             {
                 ShowMessage(
                     GameClient.Resources.Strings.EndpointNotFoundLabel,
-                    GameClient.Resources.Strings.EndpointNotFoundTitle
+                    GameClient.Resources.Strings.EndpointNotFoundTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
                 );
             }
             catch (CommunicationException)
@@ -108,13 +119,13 @@ namespace GameClient.Views
                 case LobbyErrorType.ServerTimeout:
                     return GameClient.Resources.Strings.SafeZone_ServerTimeout;
                 case LobbyErrorType.GameFull:
-                    return "La sala está llena.";
+                    return GameClient.Resources.Strings.LobbyError_Full;
                 case LobbyErrorType.GameStarted:
-                    return "La partida ya ha comenzado.";
+                    return GameClient.Resources.Strings.LobbyError_Started;
                 case LobbyErrorType.GameNotFound:
-                    return "No se encontró una partida con ese código.";
+                    return GameClient.Resources.Strings.LobbyError_NotFoundByCode;
                 case LobbyErrorType.PlayerAlreadyInGame:
-                    return "El sistema indica que ya estás en una partida activa.";
+                    return GameClient.Resources.Strings.LobbyError_AlreadyInGame;
                 default:
                     return fallbackMessage;
             }
@@ -127,12 +138,12 @@ namespace GameClient.Views
 
         private void ShowErrorMessage(string message)
         {
-            ShowMessage(message, GameClient.Resources.Strings.ErrorTitle);
+            ShowMessage(message, GameClient.Resources.Strings.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void ShowWarningMessage(string message)
         {
-            ShowMessage(message, GameClient.Resources.Strings.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+            ShowMessage(message, GameClient.Resources.Strings.DialogWarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using GameClient.LeaderboardServiceReference;
+using System;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using GameClient.LeaderboardServiceReference; 
 
 namespace GameClient.Views
 {
@@ -15,7 +16,7 @@ namespace GameClient.Views
         {
             InitializeComponent();
             _username = username;
-            this.Loaded += ScoreboardPage_Loaded;
+            Loaded += ScoreboardPage_Loaded;
         }
 
         private async void ScoreboardPage_Loaded(object sender, RoutedEventArgs e)
@@ -27,86 +28,98 @@ namespace GameClient.Views
         {
             LeaderboardList.ItemsSource = null;
 
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                MessageBox.Show(GameClient.Resources.Strings.ErrorNetworkInterruption,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var client = new LeaderboardServiceClient();
+
             try
             {
-                using (var client = new LeaderboardServiceClient())
-                {
-                    var leaderboardData = await client.GetGlobalLeaderboardAsync(_username);
+                var leaderboardData = await client.GetGlobalLeaderboardAsync(_username);
 
-                    if (leaderboardData == null || leaderboardData.Length == 0)
-                    {
-                        MessageBox.Show(
-                            GameClient.Resources.Strings.LabelEmptyLeaderboard,
-                            GameClient.Resources.Strings.InformationTitle,
-                            MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        LeaderboardList.ItemsSource = leaderboardData;
-                    }
+                if (leaderboardData == null || leaderboardData.Length == 0)
+                {
+                    MessageBox.Show(GameClient.Resources.Strings.LabelEmptyLeaderboard,
+                                    GameClient.Resources.Strings.InformationTitle,
+                                    MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    LeaderboardList.ItemsSource = leaderboardData;
                 }
             }
-
-            catch (FaultException<GameServiceFault> fault)
+            catch (FaultException<ServiceFault> fault)
             {
-                string errorMessage;
+                string errorMessage = GameClient.Resources.Strings.ErrorLeaderboardGeneral;
 
-                switch (fault.Detail.ErrorType)
+                if (fault.Detail.Code == "Error_DatabaseDown" || fault.Detail.Code == "DbError")
                 {
-                    case GameServiceErrorType.DatabaseError:
-                        errorMessage = GameClient.Resources.Strings.ErrorLeaderboardDatabase;
-                        break;
-
-                    case GameServiceErrorType.OperationTimeout:
-                        errorMessage = GameClient.Resources.Strings.ErrorLeaderboardTimeout;
-                        break;
-
-                    case GameServiceErrorType.EmptyData:
-                        errorMessage = GameClient.Resources.Strings.LabelEmptyLeaderboard;
-                        break;
-
-                    default:
-                        errorMessage = !string.IsNullOrEmpty(fault.Detail.Message)
-                            ? fault.Detail.Message
-                            : GameClient.Resources.Strings.ErrorLeaderboardGeneral;
-                        break;
+                    errorMessage = GameClient.Resources.Strings.ErrorLeaderboardDatabase;
+                }
+                else if (fault.Detail.Code == "Error_Timeout")
+                {
+                    errorMessage = GameClient.Resources.Strings.ErrorLeaderboardTimeout;
+                }
+                else if (!string.IsNullOrEmpty(fault.Detail.Message))
+                {
+                    errorMessage = fault.Detail.Message;
                 }
 
-                MessageBox.Show(errorMessage, GameClient.Resources.Strings.LeaderboardLoadErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(errorMessage,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-
             catch (EndpointNotFoundException)
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorServerUnreachable,
-                    GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorServerUnreachable,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
             catch (TimeoutException)
             {
-     
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorLeaderboardTimeout,
-                    GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorLeaderboardTimeout,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-
             catch (CommunicationException)
             {
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorNetworkInterruption,
-                    GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorNetworkInterruption,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
-     
             catch (Exception)
             {
-          
-                MessageBox.Show(
-                    GameClient.Resources.Strings.ErrorLeaderboardGeneral,
-                    GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(GameClient.Resources.Strings.ErrorLeaderboardGeneral,
+                                GameClient.Resources.Strings.LeaderboardLoadErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                CloseClient(client);
+            }
+        }
+
+        private static void CloseClient(LeaderboardServiceClient client)
+        {
+            try
+            {
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
+            }
+            catch
+            {
+                client.Abort();
             }
         }
 

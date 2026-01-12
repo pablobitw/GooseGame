@@ -52,6 +52,10 @@ namespace GameServer.Services
         {
             return await _logic.DeactivateAccountAsync(request);
         }
+        public async Task<bool> VerifyUsernameChangeCodeAsync(string email, string code)
+        {
+            return await _logic.VerifyUsernameChangeCodeAsync(email, code);
+        }
 
         public async Task<bool> UpdateLanguageAsync(string email, string languageCode)
         {

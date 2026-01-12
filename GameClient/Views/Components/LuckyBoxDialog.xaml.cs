@@ -38,9 +38,9 @@ namespace GameClient.Views.Dialogs
             {
                 LuckyBoxImage.Source = new BitmapImage(new Uri("/Assets/Images/luckybox_closed.png", UriKind.Relative));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"[LuckyBoxDialog] Error al cargar imagen cerrada: {ex.Message}");
+                // 
             }
 
             if (LuckyBoxImage.RenderTransform is RotateTransform rt)
@@ -77,16 +77,19 @@ namespace GameClient.Views.Dialogs
 
                     await Task.Delay(3000);
 
-                    this.Visibility = Visibility.Collapsed;
-                    DialogClosed?.Invoke(this, EventArgs.Empty);
+                    CloseDialog();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"[LuckyBoxDialog] Animation Error: {ex.Message}");
-                this.Visibility = Visibility.Collapsed;
-                DialogClosed?.Invoke(this, EventArgs.Empty);
+                CloseDialog();
             }
+        }
+
+        private void CloseDialog()
+        {
+            this.Visibility = Visibility.Collapsed;
+            DialogClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void SetRewardVisuals()
@@ -117,7 +120,7 @@ namespace GameClient.Views.Dialogs
                     color = Brushes.OrangeRed;
                     break;
                 default:
-                    text = "Premio Sorpresa";
+                    text = GetResourceString("RewardSurprise"); 
                     break;
             }
 
@@ -130,9 +133,9 @@ namespace GameClient.Views.Dialogs
                 {
                     RewardImage.Source = new BitmapImage(new Uri($"/Assets/Images/{imagePath}", UriKind.Relative));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine($"[LuckyBoxDialog] Error al cargar imagen de recompensa: {ex.Message}");
+                    // 
                 }
             }
         }
@@ -144,7 +147,7 @@ namespace GameClient.Views.Dialogs
 
         private void Overlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
         }
     }
 }

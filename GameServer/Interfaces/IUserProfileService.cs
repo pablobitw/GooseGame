@@ -47,5 +47,9 @@ namespace GameServer.Interfaces
         [OperationContract]
         [FaultContract(typeof(ServiceFault))]
         Task<bool> RemoveSocialLinkAsync(string identifier, string url);
+
+        [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
+        Task<bool> VerifyUsernameChangeCodeAsync(string email, string code);
     }
 }

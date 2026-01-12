@@ -26,6 +26,7 @@
     <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="dfad2d1e-5aa4-4125-8d2a-fd8c44c44aff" SourceId="1" SourceUrl="net.tcp://localhost:8096/mex" />
     <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="99a2d4a7-e1f1-4d02-b79b-7723a5807b19" SourceId="1" SourceUrl="net.tcp://localhost:8096/mex" />
     <MetadataFile FileName="GameServer.DTOs.xsd" MetadataType="Schema" ID="74990cff-7c63-451a-9acf-7fc19160f671" SourceId="1" SourceUrl="net.tcp://localhost:8096/mex" />
+    <MetadataFile FileName="GameServer.Faults.xsd" MetadataType="Schema" ID="57a7875d-61bd-4046-87bb-9d47ebbdb39f" SourceId="1" SourceUrl="net.tcp://localhost:8096/mex" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

@@ -348,6 +348,9 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.Runtime.Serialization.EnumMemberAttribute()]
         IncorrectPassword = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        CodeInvalid = 7,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -561,6 +564,13 @@ namespace GameClient.UserProfileServiceReference {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/RemoveSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse")]
         System.Threading.Tasks.Task<bool> RemoveSocialLinkAsync(string identifier, string url);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+        bool VerifyUsernameChangeCode(string email, string code);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/VerifyUsernameChangeCodeResponse")]
+        System.Threading.Tasks.Task<bool> VerifyUsernameChangeCodeAsync(string email, string code);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -668,6 +678,14 @@ namespace GameClient.UserProfileServiceReference {
         
         public System.Threading.Tasks.Task<bool> RemoveSocialLinkAsync(string identifier, string url) {
             return base.Channel.RemoveSocialLinkAsync(identifier, url);
+        }
+        
+        public bool VerifyUsernameChangeCode(string email, string code) {
+            return base.Channel.VerifyUsernameChangeCode(email, code);
+        }
+        
+        public System.Threading.Tasks.Task<bool> VerifyUsernameChangeCodeAsync(string email, string code) {
+            return base.Channel.VerifyUsernameChangeCodeAsync(email, code);
         }
     }
 }

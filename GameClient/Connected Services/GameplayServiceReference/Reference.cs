@@ -230,6 +230,83 @@ namespace GameClient.GameplayServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="GameStateDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Gameplay")]
     [System.SerializableAttribute()]
     public partial class GameStateDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
@@ -717,30 +794,35 @@ namespace GameClient.GameplayServiceReference {
     public interface IGameplayService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.GameplayServiceReference.ServiceFault), Action="http://tempuri.org/IGameplayService/RollDiceServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.GameplayServiceReference.DiceRollDto RollDice(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/RollDice", ReplyAction="http://tempuri.org/IGameplayService/RollDiceResponse")]
         System.Threading.Tasks.Task<GameClient.GameplayServiceReference.DiceRollDto> RollDiceAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.GameplayServiceReference.ServiceFault), Action="http://tempuri.org/IGameplayService/GetGameStateServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.GameplayServiceReference.GameStateDto GetGameState(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/GetGameState", ReplyAction="http://tempuri.org/IGameplayService/GetGameStateResponse")]
         System.Threading.Tasks.Task<GameClient.GameplayServiceReference.GameStateDto> GetGameStateAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.GameplayServiceReference.ServiceFault), Action="http://tempuri.org/IGameplayService/LeaveGameServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool LeaveGame(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/LeaveGame", ReplyAction="http://tempuri.org/IGameplayService/LeaveGameResponse")]
         System.Threading.Tasks.Task<bool> LeaveGameAsync(GameClient.GameplayServiceReference.GameplayRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.GameplayServiceReference.ServiceFault), Action="http://tempuri.org/IGameplayService/InitiateVoteKickServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         void InitiateVoteKick(GameClient.GameplayServiceReference.VoteRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/InitiateVoteKick", ReplyAction="http://tempuri.org/IGameplayService/InitiateVoteKickResponse")]
         System.Threading.Tasks.Task InitiateVoteKickAsync(GameClient.GameplayServiceReference.VoteRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.GameplayServiceReference.ServiceFault), Action="http://tempuri.org/IGameplayService/CastVoteServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         void CastVote(GameClient.GameplayServiceReference.VoteResponseDto vote);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IGameplayService/CastVote", ReplyAction="http://tempuri.org/IGameplayService/CastVoteResponse")]

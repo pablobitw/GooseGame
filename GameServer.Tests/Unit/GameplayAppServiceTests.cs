@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Models;
@@ -10,6 +11,7 @@ using GameServer.Services.Logic;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -60,9 +62,7 @@ namespace GameServer.Tests.Unit
         public async Task RollDice_NullRequest_ReturnsUnknownError()
         {
             GameplayRequest request = null;
-
             var result = await _service.RollDiceAsync(request);
-
             Assert.Equal(GameplayErrorType.Unknown, result.ErrorType);
         }
 
@@ -162,14 +162,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task RollDice_RepositoryException_ReturnsUnknownError()
+        public async Task RollDice_RepositoryException_ThrowsFault()
         {
             var request = new GameplayRequest { LobbyCode = "CODE" };
             _repoMock.Setup(r => r.GetGameByLobbyCodeAsync("CODE")).ThrowsAsync(new Exception());
 
-            var result = await _service.RollDiceAsync(request);
-
-            Assert.Equal(GameplayErrorType.Unknown, result.ErrorType);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.RollDiceAsync(request));
         }
 
         [Fact]
@@ -195,9 +193,7 @@ namespace GameServer.Tests.Unit
         public async Task GetGameState_NullRequest_ReturnsFailure()
         {
             GameplayRequest request = null;
-
             var result = await _service.GetGameStateAsync(request);
-
             Assert.False(result.Success);
         }
 
@@ -262,14 +258,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task GetGameState_Exception_ReturnsUnknownError()
+        public async Task GetGameState_Exception_ThrowsFault()
         {
             var request = new GameplayRequest { LobbyCode = "CODE" };
             _repoMock.Setup(r => r.GetGameByLobbyCodeAsync("CODE")).ThrowsAsync(new Exception());
 
-            var result = await _service.GetGameStateAsync(request);
-
-            Assert.Equal(GameplayErrorType.Unknown, result.ErrorType);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetGameStateAsync(request));
         }
 
         [Fact]
@@ -337,23 +331,19 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task LeaveGame_Exception_ReturnsFalse()
+        public async Task LeaveGame_Exception_ThrowsFault()
         {
             var request = new GameplayRequest { LobbyCode = "CODE" };
             _repoMock.Setup(r => r.GetGameByLobbyCodeAsync("CODE")).ThrowsAsync(new Exception());
 
-            var result = await _service.LeaveGameAsync(request);
-
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.LeaveGameAsync(request));
         }
 
         [Fact]
         public async Task ProcessAfk_LockedGame_DoesNothing()
         {
             _stateMock.Setup(s => s.TryAddProcessingGame(1)).Returns(false);
-
             await _service.ProcessAfkTimeout(1);
-
             _repoMock.Verify(r => r.GetPlayersInGameAsync(1), Times.Never);
         }
 
@@ -415,9 +405,7 @@ namespace GameServer.Tests.Unit
         public async Task InitiateVoteKick_DelegatesToLogic()
         {
             var request = new VoteRequestDto();
-
             await _service.InitiateVoteKickAsync(request);
-
             _voteMock.Verify(v => v.InitiateVoteAsync(request), Times.Once);
         }
 
@@ -425,9 +413,7 @@ namespace GameServer.Tests.Unit
         public async Task CastVote_DelegatesToLogic()
         {
             var request = new VoteResponseDto();
-
             await _service.CastVoteAsync(request);
-
             _voteMock.Verify(v => v.CastVoteAsync(request), Times.Once);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using GameServer.DTOs.Gameplay;
 using GameServer.DTOs.Lobby;
+using GameServer.Faults;
 using GameServer.GameEngines;
 using GameServer.Helpers;
 using GameServer.Interfaces;
@@ -144,8 +145,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error in RollDice", ex);
-                result.ErrorType = GameplayErrorType.Unknown;
-                result.ErrorMessage = "Error del servidor.";
+                throw ExceptionManager.Map(ex);
             }
             finally
             {
@@ -272,7 +272,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error GetGameState", ex);
-                gameState.ErrorType = GameplayErrorType.Unknown;
+                throw ExceptionManager.Map(ex);
             }
 
             return gameState;
@@ -307,6 +307,7 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error leaving game", ex);
+                throw ExceptionManager.Map(ex);
             }
             return false;
         }
@@ -355,7 +356,8 @@ namespace GameServer.Services.Logic
 
         private void NotifyGameFinishedSafe(List<string> usernames, string winner)
         {
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 foreach (var u in usernames)
                 {
                     var c = _connectionManager.GetGameplayClient(u);
@@ -377,7 +379,6 @@ namespace GameServer.Services.Logic
         private async Task<DiceRollDto> HandleSkippedTurnAsync(int gameId, Player player)
         {
             player.TurnsSkipped--;
-            // CORRECCIÓN: Usar gameId en lugar de game.IdGame
             int turnNum = await _repository.GetMoveCountAsync(gameId) + 1;
             var prevMove = await _repository.GetLastMoveForPlayerAsync(gameId, player.IdPlayer);
             int samePos = prevMove?.FinalPosition ?? 0;
