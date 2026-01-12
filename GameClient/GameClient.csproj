@@ -397,7 +397,7 @@
     </EmbeddedResource>
     <Resource Include="Assets\Fonts\Dosis.ttf" />
     <Resource Include="Assets\Fonts\Fredoka-Medium.ttf" />
-    <None Include="Connected Services\AuthServiceReference\AuthService.wsdl" />
+    <None Include="Connected Services\AuthServiceReference\AuthService1.wsdl" />
     <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.GuestLoginResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -407,16 +407,16 @@
     <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.RegistrationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Connected Services\AuthServiceReference\item4.xsd">
+    <None Include="Connected Services\AuthServiceReference\item.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\AuthServiceReference\item41.xsd">
+    <None Include="Connected Services\AuthServiceReference\item1.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\AuthServiceReference\item42.xsd">
+    <None Include="Connected Services\AuthServiceReference\item2.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Connected Services\AuthServiceReference\item43.xsd">
+    <None Include="Connected Services\AuthServiceReference\item3.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\ChatServiceReference\GameClient.ChatServiceReference.ChatOperationResult.datasource">
@@ -604,7 +604,7 @@
     <Resource Include="Assets\fondo2.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Connected Services\AuthServiceReference\item1.disco" />
+    <None Include="Connected Services\AuthServiceReference\item.disco" />
     <Resource Include="Assets\fondogod.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
