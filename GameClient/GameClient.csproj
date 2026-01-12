@@ -431,6 +431,9 @@
     <None Include="Connected Services\FriendshipServiceReference\GameServer.DTOs.Friendship.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\FriendshipServiceReference\GameServer.Faults.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\FriendshipServiceReference\service.wsdl" />
     <None Include="Connected Services\FriendshipServiceReference\service.xsd">
       <SubType>Designer</SubType>

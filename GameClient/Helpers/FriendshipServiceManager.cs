@@ -149,6 +149,10 @@ namespace GameClient.Helpers
                     _proxy.SendGameInvitation(invitation);
                 }
             }
+            catch (FaultException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 if (ex is CommunicationException || ex is TimeoutException)
@@ -194,19 +198,23 @@ namespace GameClient.Helpers
             {
                 return await action();
             }
+            catch (FaultException)
+            {
+                throw;
+            }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
                 ForceInvalidateProxy();
 
                 try
                 {
-                    CheckConnection(); // Esto reconectará al usuario al servidor
+                    CheckConnection();
                     if (!IsProxyValid()) throw new EndpointNotFoundException("Reconnection failed");
                     return await action();
                 }
                 catch
                 {
-                    throw; 
+                    throw;
                 }
             }
             catch (ObjectDisposedException)

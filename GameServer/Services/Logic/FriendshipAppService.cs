@@ -1,9 +1,11 @@
 ﻿using GameServer.DTOs.Friendship;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Models;
 using GameServer.Repositories;
 using GameServer.Repositories.Interfaces;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -12,8 +14,6 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using GameServer.Services.Common;
-
 
 namespace GameServer.Services.Logic
 {
@@ -61,14 +61,19 @@ namespace GameServer.Services.Logic
         {
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            _connectionManager.RemoveClient(username);
-            NotifyFriendsOfStatusChange(username);
+            try
+            {
+                _connectionManager.RemoveClient(username);
+                NotifyFriendsOfStatusChange(username);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en Disconnect para {username}", ex);
+            }
         }
 
         public async Task<FriendRequestResult> SendFriendRequest(string senderUsername, string receiverUsername)
         {
-            FriendRequestResult result = FriendRequestResult.Error;
-
             try
             {
                 if (string.IsNullOrEmpty(senderUsername) || string.IsNullOrEmpty(receiverUsername) ||
@@ -82,11 +87,11 @@ namespace GameServer.Services.Logic
 
                 if (sender == null || receiver == null)
                 {
-                    result = FriendRequestResult.TargetNotFound;
+                    return FriendRequestResult.TargetNotFound;
                 }
                 else if (sender.IsGuest || receiver.IsGuest)
                 {
-                    result = FriendRequestResult.GuestRestriction;
+                    return FriendRequestResult.GuestRestriction;
                 }
                 else
                 {
@@ -96,7 +101,7 @@ namespace GameServer.Services.Logic
                     {
                         if (existing.FriendshipStatus == (int)FriendshipStatus.Accepted)
                         {
-                            result = FriendRequestResult.AlreadyFriends;
+                            return FriendRequestResult.AlreadyFriends;
                         }
                         else
                         {
@@ -108,12 +113,12 @@ namespace GameServer.Services.Logic
                                 _ = Task.Run(() => NotifyUserListUpdated(senderUsername));
                                 _ = Task.Run(() => NotifyUserListUpdated(receiverUsername));
 
-                                result = FriendRequestResult.MutualAccepted;
                                 Log.InfoFormat("Solicitud mutua detectada: {0} y {1} ahora son amigos.", senderUsername, receiverUsername);
+                                return FriendRequestResult.MutualAccepted;
                             }
                             else
                             {
-                                result = FriendRequestResult.Pending;
+                                return FriendRequestResult.Pending;
                             }
                         }
                     }
@@ -133,43 +138,19 @@ namespace GameServer.Services.Logic
                         _ = Task.Run(() => NotifyUserRequestReceived(receiverUsername));
                         _ = Task.Run(() => NotifyUserPopUp(receiverUsername, senderUsername));
 
-                        result = FriendRequestResult.Success;
+                        return FriendRequestResult.Success;
                     }
                 }
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update enviando solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL enviando solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF enviando solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout enviando solicitud.", ex);
-                result = FriendRequestResult.TimeOutError;
-            }
             catch (Exception ex)
             {
-                Log.Error("Error general enviando solicitud.", ex);
-                result = FriendRequestResult.Error;
+                Log.Error("Error crítico en SendFriendRequest", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return result;
         }
 
         public async Task<FriendRequestResult> RespondToFriendRequest(RespondRequestDto request)
         {
-            FriendRequestResult result = FriendRequestResult.Error;
-
             try
             {
                 var responder = await _repository.GetPlayerByUsernameAsync(request.RespondingUsername);
@@ -192,54 +173,33 @@ namespace GameServer.Services.Logic
 
                         await _repository.SaveChangesAsync();
 
-                        _ = Task.Run(() => NotifyUserListUpdated(request.RequesterUsername));
-                        _ = Task.Run(() => NotifyUserListUpdated(request.RespondingUsername));
+                        if (request.IsAccepted)
+                        {
+                            _ = Task.Run(() => NotifyUserListUpdated(request.RequesterUsername));
+                            _ = Task.Run(() => NotifyUserListUpdated(request.RespondingUsername));
+                        }
 
-                        result = FriendRequestResult.Success;
+                        return FriendRequestResult.Success;
                     }
                     else
                     {
-                        result = FriendRequestResult.TargetNotFound;
+                        return FriendRequestResult.TargetNotFound;
                     }
                 }
                 else
                 {
-                    result = FriendRequestResult.TargetNotFound;
+                    return FriendRequestResult.TargetNotFound;
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update respondiendo solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL respondiendo solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF respondiendo solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout respondiendo solicitud.", ex);
-                result = FriendRequestResult.DatabaseError;
             }
             catch (Exception ex)
             {
-                Log.Error("Error general respondiendo solicitud.", ex);
-                result = FriendRequestResult.Error;
+                Log.Error("Error crítico en RespondToFriendRequest", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return result;
         }
 
         public async Task<FriendRequestResult> RemoveFriend(string username, string friendUsername)
         {
-            FriendRequestResult result = FriendRequestResult.Error;
-
             try
             {
                 var user1 = await _repository.GetPlayerByUsernameAsync(username);
@@ -257,52 +217,30 @@ namespace GameServer.Services.Logic
                         _ = Task.Run(() => NotifyUserListUpdated(username));
                         _ = Task.Run(() => NotifyUserListUpdated(friendUsername));
 
-                        result = FriendRequestResult.Success;
+                        return FriendRequestResult.Success;
                     }
                     else
                     {
-                        result = FriendRequestResult.TargetNotFound;
+                        return FriendRequestResult.TargetNotFound;
                     }
                 }
                 else
                 {
-                    result = FriendRequestResult.TargetNotFound;
+                    return FriendRequestResult.TargetNotFound;
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("Error DB Update eliminando amigo.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL eliminando amigo.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF eliminando amigo.", ex);
-                result = FriendRequestResult.DatabaseError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout eliminando amigo.", ex);
-                result = FriendRequestResult.TimeOutError;
             }
             catch (Exception ex)
             {
-                Log.Error("Error general eliminando amigo.", ex);
-                result = FriendRequestResult.Error;
+                Log.Error("Error crítico en RemoveFriend", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return result;
         }
 
         public async Task<List<FriendDto>> GetFriendList(string username)
         {
-            var resultList = new List<FriendDto>();
             try
             {
+                var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
                 if (player != null && !player.IsGuest)
                 {
@@ -326,31 +264,20 @@ namespace GameServer.Services.Logic
                         }
                     }
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL obteniendo lista de amigos.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF obteniendo lista de amigos.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout obteniendo lista de amigos.", ex);
+                return resultList;
             }
             catch (Exception ex)
             {
-                Log.Error($"Error obteniendo lista de amigos para {username}.", ex);
+                Log.Error($"Error obteniendo lista de amigos para {username}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return resultList;
         }
 
         public async Task<List<FriendDto>> GetPendingRequests(string username)
         {
-            var resultList = new List<FriendDto>();
             try
             {
+                var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
                 if (player != null && !player.IsGuest)
                 {
@@ -369,31 +296,20 @@ namespace GameServer.Services.Logic
                         }
                     }
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL obteniendo solicitudes pendientes.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF obteniendo solicitudes pendientes.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout obteniendo solicitudes pendientes.", ex);
+                return resultList;
             }
             catch (Exception ex)
             {
-                Log.Error($"Error obteniendo solicitudes pendientes para {username}.", ex);
+                Log.Error($"Error obteniendo solicitudes pendientes para {username}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return resultList;
         }
 
         public async Task<List<FriendDto>> GetSentRequests(string username)
         {
-            var resultList = new List<FriendDto>();
             try
             {
+                var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
                 if (player != null && !player.IsGuest)
                 {
@@ -412,24 +328,13 @@ namespace GameServer.Services.Logic
                         }
                     }
                 }
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL obteniendo solicitudes enviadas.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF obteniendo solicitudes enviadas.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout obteniendo solicitudes enviadas.", ex);
+                return resultList;
             }
             catch (Exception ex)
             {
-                Log.Error($"Error obteniendo solicitudes enviadas para {username}.", ex);
+                Log.Error($"Error obteniendo solicitudes enviadas para {username}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return resultList;
         }
 
         public void SendGameInvitation(GameInvitationDto invitation)

@@ -155,6 +155,20 @@ namespace GameClient.Views
                 await LoadRequestsAsync();
                 await LoadSentRequestsAsync();
             }
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Friend_Ctx_List") ?? "No se pudo cargar la lista.";
+                string title = resManager.GetString("Friends_Title_Error") ?? "Error";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             catch (EndpointNotFoundException)
             {
                 ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
@@ -324,6 +338,20 @@ namespace GameClient.Views
                     HandleRequestError(result);
                 }
             }
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Friend_Ctx_SendRequest") ?? "Error al enviar solicitud.";
+                string title = resManager.GetString("Friends_Title_Error") ?? "Error";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             catch (EndpointNotFoundException)
             {
                 ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
@@ -418,6 +446,20 @@ namespace GameClient.Views
                         HandleRequestError(result);
                     }
                 }
+                catch (FaultException<ServiceFault> fault)
+                {
+                    var resManager = GameClient.Resources.Strings.ResourceManager;
+                    string contextMsg = resManager.GetString("Friend_Ctx_Accept") ?? "Error al responder solicitud.";
+                    string title = resManager.GetString("Friends_Title_Error") ?? "Error";
+                    string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                    if (string.IsNullOrEmpty(technicalReason))
+                    {
+                        technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                    }
+
+                    MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
                 catch (EndpointNotFoundException)
                 {
                     ShowTranslatedMessageBox("Friends_Error_ServerDown", "Friends_Title_Error", MessageBoxImage.Error);
@@ -497,6 +539,20 @@ namespace GameClient.Views
                 {
                     HandleRequestError(result);
                 }
+            }
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Friend_Ctx_Remove") ?? "Error al eliminar.";
+                string title = resManager.GetString("Friends_Title_Error") ?? "Error";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (EndpointNotFoundException)
             {

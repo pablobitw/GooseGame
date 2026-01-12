@@ -47,6 +47,83 @@ namespace GameClient.FriendshipServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="RespondRequestDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Friendship")]
     [System.SerializableAttribute()]
     public partial class RespondRequestDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
@@ -293,30 +370,35 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task DisconnectAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/SendFriendRequestResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/SendFriendRequestServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendRequestResult SendFriendRequest(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/SendFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/SendFriendRequestResponse")]
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> SendFriendRequestAsync(string senderUsername, string receiverUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/RespondToFriendRequestServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendRequestResult RespondToFriendRequest(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RespondToFriendRequest", ReplyAction="http://tempuri.org/IFriendshipService/RespondToFriendRequestResponse")]
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendRequestResult> RespondToFriendRequestAsync(GameClient.FriendshipServiceReference.RespondRequestDto request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetFriendList", ReplyAction="http://tempuri.org/IFriendshipService/GetFriendListResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/GetFriendListServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendDto[] GetFriendList(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetFriendList", ReplyAction="http://tempuri.org/IFriendshipService/GetFriendListResponse")]
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetFriendListAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetPendingRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetPendingRequestsResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/GetPendingRequestsServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendDto[] GetPendingRequests(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetPendingRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetPendingRequestsResponse")]
         System.Threading.Tasks.Task<GameClient.FriendshipServiceReference.FriendDto[]> GetPendingRequestsAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/RemoveFriendServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendRequestResult RemoveFriend(string username, string friendUsername);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/RemoveFriend", ReplyAction="http://tempuri.org/IFriendshipService/RemoveFriendResponse")]
@@ -329,6 +411,7 @@ namespace GameClient.FriendshipServiceReference {
         System.Threading.Tasks.Task SendGameInvitationAsync(GameClient.FriendshipServiceReference.GameInvitationDto invitation);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetSentRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetSentRequestsResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.FriendshipServiceReference.ServiceFault), Action="http://tempuri.org/IFriendshipService/GetSentRequestsServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.FriendshipServiceReference.FriendDto[] GetSentRequests(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IFriendshipService/GetSentRequests", ReplyAction="http://tempuri.org/IFriendshipService/GetSentRequestsResponse")]
