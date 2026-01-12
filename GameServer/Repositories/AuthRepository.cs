@@ -53,6 +53,17 @@ namespace GameServer.Repositories.Interfaces
                 .ConfigureAwait(false);
         }
 
+
+        public async Task UpdatePlayerAsync(Player player)
+        {
+            ThrowIfDisposed();
+
+            _context.Players.Attach(player);
+            _context.Entry(player).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+        }
+
         public bool VerifyRecoveryCode(string email, string code)
         {
             ThrowIfDisposed();
@@ -81,12 +92,6 @@ namespace GameServer.Repositories.Interfaces
             _context.SaveChanges();
         }
 
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
         public async Task<bool> IsAccountSanctionedAsync(int accountId)
         {
             ThrowIfDisposed();
@@ -97,6 +102,13 @@ namespace GameServer.Repositories.Interfaces
                 (s.SanctionType == 2 || (s.SanctionType == 1 && s.EndDate > now))
             ).ConfigureAwait(false);
         }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -107,10 +119,8 @@ namespace GameServer.Repositories.Interfaces
                 _context?.Dispose();
             }
 
-
             _disposed = true;
         }
-
 
         private void ThrowIfDisposed()
         {

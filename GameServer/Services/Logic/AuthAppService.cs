@@ -275,6 +275,12 @@ namespace GameServer.Services.Logic
                     if (shouldContinue)
                     {
                         response = await ProcessSuccessfulLogin(player, password, response);
+
+                        if (response.IsSuccess && player.GameIdGame != null)
+                        {
+                            player.GameIdGame = null;
+                            await _repository.UpdatePlayerAsync(player);
+                        }
                     }
                 }
             }

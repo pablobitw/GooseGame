@@ -9,7 +9,6 @@ using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
-using System.Data.SqlClient;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -69,13 +68,11 @@ namespace GameServer.Services.Logic
                         }
                         else
                         {
-                            Log.Warn($"Canal de {username} no está abierto. Estado: {channel.State}. Limpiando...");
                             _connectionManager.UnregisterClient(username);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        Log.Warn($"Fallo crítico al notificar a {username}. Eliminando conexión: {ex.Message}");
                         _connectionManager.UnregisterClient(username);
                     }
                 }
@@ -89,16 +86,15 @@ namespace GameServer.Services.Logic
                 try
                 {
                     var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
-                    if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished || oldGame.GameStatus == (int)GameStatus.WaitingForPlayers)
+                    if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
                     {
                         player.GameIdGame = null;
                         await _repository.SaveChangesAsync();
-                        Log.InfoFormat("Limpieza automática: Jugador {0} liberado.", player.Username);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error limpiando estado jugador {player.Username}: {ex.Message}");
+                    Log.Error($"Error cleaning player state for {player.Username}", ex);
                     throw ExceptionManager.Map(ex);
                 }
             }
@@ -168,7 +164,6 @@ namespace GameServer.Services.Logic
                             hostPlayer.GameIdGame = newGame.IdGame;
                             await _repository.SaveChangesAsync();
 
-                            Log.InfoFormat("Lobby creado por '{0}'. Código: {1}", request.HostUsername, newLobbyCode);
                             result.Success = true;
                             result.LobbyCode = newLobbyCode;
                             result.ErrorType = LobbyErrorType.None;
@@ -178,7 +173,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error creando lobby", ex);
+                Log.Error($"Error CreateLobbyAsync for {request?.HostUsername}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -215,7 +210,6 @@ namespace GameServer.Services.Logic
                 }
 
                 var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-
                 bool isAlreadyInGame = updatedPlayers.Any(p => p.Username == request.Username);
 
                 if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
@@ -237,8 +231,6 @@ namespace GameServer.Services.Logic
                         updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                     }
 
-                    Log.InfoFormat("Jugador '{0}' unido/reconectado al lobby {1}", request.Username, request.LobbyCode);
-
                     result.Success = true;
                     result.BoardId = game.Board_idBoard;
                     result.MaxPlayers = game.MaxPlayers;
@@ -257,12 +249,12 @@ namespace GameServer.Services.Logic
 
                     var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = result.IsHost };
 
-                    _ = Task.Run(() => NotifyUsersSafe(usernamesToNotify, client => client.OnPlayerJoined(newPlayerDto)));
+                    FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerJoined(newPlayerDto));
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("Error en JoinLobby", ex);
+                Log.Error($"Error JoinLobbyAsync for {request?.Username}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -285,11 +277,10 @@ namespace GameServer.Services.Logic
                         try
                         {
                             _gameMonitor.StartMonitoring(game.IdGame);
-                            Log.InfoFormat("Juego {0} iniciado y monitoreado.", lobbyCode);
                         }
                         catch (Exception gmEx)
                         {
-                            Log.Error($"CRITICAL: GameManager falló al iniciar monitoreo para {lobbyCode}", gmEx);
+                            Log.Error($"Failed to start monitoring for game {lobbyCode}", gmEx);
                         }
 
                         var usernames = players.Select(p => p.Username).ToList();
@@ -301,7 +292,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en StartGame", ex);
+                Log.Error($"Error StartGameAsync for {lobbyCode}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -320,7 +311,6 @@ namespace GameServer.Services.Logic
                     if (game != null)
                     {
                         var players = await _repository.GetPlayersInGameAsync(gameId);
-
                         var usernamesToNotify = players
                             .Where(p => p.Username != hostUsername)
                             .Select(p => p.Username)
@@ -328,13 +318,10 @@ namespace GameServer.Services.Logic
 
                         FireAndForgetNotification(usernamesToNotify, client => client.OnLobbyDisbanded());
 
-                        await Task.Delay(100);
-
                         try { _gameMonitor.StopMonitoring(gameId); } catch { }
 
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
-                        Log.InfoFormat("Lobby {0} disuelto por {1}.", game.LobbyCode, hostUsername);
                     }
                     else
                     {
@@ -345,7 +332,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en DisbandLobby", ex);
+                Log.Error($"Error DisbandLobbyAsync for {hostUsername}", ex);
                 throw ExceptionManager.Map(ex);
             }
         }
@@ -378,7 +365,6 @@ namespace GameServer.Services.Logic
                         await _repository.SaveChangesAsync();
 
                         _connectionManager.UnregisterClient(username);
-                        Log.InfoFormat("Jugador {0} salió del lobby.", username);
 
                         bool gameClosed = await HandleGameShutdownIfNeeded(gameId);
 
@@ -392,7 +378,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en LeaveLobby", ex);
+                Log.Error($"Error LeaveLobbyAsync for {username}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -426,8 +412,7 @@ namespace GameServer.Services.Logic
 
                                 string msg = isBanned ? "Has sido BANEADO." : "Has sido expulsado.";
 
-                                _ = Task.Run(() => NotifyClientDirect(request.TargetUsername, c => c.OnPlayerKicked(msg)));
-
+                                NotifyClientDirect(request.TargetUsername, c => c.OnPlayerKicked(msg));
                                 FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(request.TargetUsername));
 
                                 result = true;
@@ -438,7 +423,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en KickPlayer", ex);
+                Log.Error($"Error KickPlayerAsync for target {request?.TargetUsername}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -453,7 +438,7 @@ namespace GameServer.Services.Logic
 
                 if (game != null && player != null && player.GameIdGame == game.IdGame)
                 {
-                    _ = Task.Run(() => NotifyClientDirect(username, c => c.OnPlayerKicked(reason)));
+                    NotifyClientDirect(username, c => c.OnPlayerKicked(reason));
 
                     player.GameIdGame = null;
                     await _repository.SaveChangesAsync();
@@ -461,23 +446,12 @@ namespace GameServer.Services.Logic
                     var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                     var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
                     FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerLeft(username));
-
-                    Log.Info($"System Kick aplicado a {username} en lobby {lobbyCode}. Razón: {reason}");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Error en SystemKickPlayerAsync para {username}", ex);
+                Log.Error($"Error SystemKickPlayerAsync for {username}", ex);
                 throw ExceptionManager.Map(ex);
-            }
-        }
-
-        private void NotifyClientDirect(string username, Action<ILobbyServiceCallback> action)
-        {
-            var client = _connectionManager.GetClient(username);
-            if (client != null)
-            {
-                try { action(client); } catch { _connectionManager.UnregisterClient(username); }
             }
         }
 
@@ -506,7 +480,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en GetLobbyState", ex);
+                Log.Error($"Error GetLobbyStateAsync for {lobbyCode}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -537,7 +511,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error en GetPublicMatches", ex);
+                Log.Error("Error GetPublicMatchesAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
             return matchesList.ToArray();
@@ -573,10 +547,26 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error($"Error HandleGameShutdown {gameId}: {ex.Message}");
+                Log.Error($"Error HandleGameShutdownIfNeeded for game {gameId}", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
+        }
+
+        private void NotifyClientDirect(string username, Action<ILobbyServiceCallback> action)
+        {
+            var client = _connectionManager.GetClient(username);
+            if (client != null)
+            {
+                try
+                {
+                    action(client);
+                }
+                catch
+                {
+                    _connectionManager.UnregisterClient(username);
+                }
+            }
         }
 
         private string GenerateLobbyCode()

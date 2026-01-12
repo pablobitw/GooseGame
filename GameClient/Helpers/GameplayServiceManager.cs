@@ -1,6 +1,7 @@
 ﻿using GameClient.GameplayServiceReference;
 using GameClient.Helpers;
 using System;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -135,24 +136,30 @@ namespace GameClient.Helpers
             {
                 return await action(GetClient());
             }
-     
             catch (FaultException<ServiceFault> fault)
             {
-
                 string errorMsg = fault.Detail != null ? fault.Detail.Message : "Error crítico en el servidor.";
                 UserSession.GetInstance().HandleCatastrophicError(errorMsg);
                 return defaultValue;
             }
-
             catch (EndpointNotFoundException)
             {
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return defaultValue;
+                }
+
                 InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError); 
+                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
                 return defaultValue;
             }
-
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return defaultValue;
+                }
+
                 Console.WriteLine($"[GameplayManager] Error de red: {ex.Message}. Reintentando...");
 
                 try
@@ -162,8 +169,13 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
+                    if (!NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        return defaultValue;
+                    }
+
                     Console.WriteLine($"[GameplayManager] Falló el reintento: {retryEx.Message}");
-            
+                    UserSession.GetInstance().HandleCatastrophicError("El servidor no responde.");
                     return defaultValue;
                 }
             }
@@ -180,21 +192,28 @@ namespace GameClient.Helpers
             {
                 await action(GetClient());
             }
-
             catch (FaultException<ServiceFault> fault)
             {
                 string errorMsg = fault.Detail != null ? fault.Detail.Message : "Error crítico en el servidor.";
                 UserSession.GetInstance().HandleCatastrophicError(errorMsg);
             }
- 
             catch (EndpointNotFoundException)
             {
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return;
+                }
+
                 InvalidateClient();
                 UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
             }
-
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return;
+                }
+
                 Console.WriteLine($"[GameplayManager] Error de red (void): {ex.Message}. Reintentando...");
                 try
                 {
@@ -203,7 +222,13 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
+                    if (!NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        return;
+                    }
+
                     Console.WriteLine($"[GameplayManager] Falló el reintento (void): {retryEx.Message}");
+                    UserSession.GetInstance().HandleCatastrophicError("El servidor no responde.");
                 }
             }
             catch (Exception ex)

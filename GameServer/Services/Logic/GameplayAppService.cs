@@ -102,6 +102,42 @@ namespace GameServer.Services.Logic
             });
         }
 
+        private void BroadcastGameFailureSafe(int gameId)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    List<string> usernames;
+                    using (var repo = _repoFactory.Create())
+                    {
+                        var players = await repo.GetPlayersInGameAsync(gameId);
+                        usernames = players.Select(p => p.Username).ToList();
+                    }
+
+                    foreach (var username in usernames)
+                    {
+                        var client = _connectionManager.GetGameplayClient(username);
+                        if (client != null)
+                        {
+                            try
+                            {
+                                client.OnPlayerKicked("SafeZone_DatabaseError");
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Warn($"Error broadcasting failure to {username}: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error broadcasting game failure for game {gameId}", ex);
+                }
+            });
+        }
+
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
             var result = new DiceRollDto { Success = false };
@@ -110,7 +146,7 @@ namespace GameServer.Services.Logic
             if (request == null)
             {
                 result.ErrorType = GameplayErrorType.Unknown;
-                result.ErrorMessage = "Solicitud vacía.";
+                result.ErrorMessage = "REQUEST_EMPTY";
                 return result;
             }
 
@@ -120,14 +156,14 @@ namespace GameServer.Services.Logic
                 if (game == null)
                 {
                     result.ErrorType = GameplayErrorType.GameNotFound;
-                    result.ErrorMessage = "La partida no existe.";
+                    result.ErrorMessage = "GAME_NOT_FOUND";
                     return result;
                 }
 
                 if (game.GameStatus != (int)GameStatus.InProgress)
                 {
                     result.ErrorType = GameplayErrorType.GameFinished;
-                    result.ErrorMessage = "La partida no está en progreso.";
+                    result.ErrorMessage = "GAME_NOT_IN_PROGRESS";
                     return result;
                 }
 
@@ -136,7 +172,7 @@ namespace GameServer.Services.Logic
                 if (!_stateManager.TryAddProcessingGame(game.IdGame))
                 {
                     result.ErrorType = GameplayErrorType.Timeout;
-                    result.ErrorMessage = "Procesando turno anterior...";
+                    result.ErrorMessage = "PROCESSING_PREVIOUS_TURN";
                     return result;
                 }
 
@@ -145,6 +181,10 @@ namespace GameServer.Services.Logic
             catch (Exception ex)
             {
                 Log.Error("Error in RollDice", ex);
+                if (gameIdForLock != 0)
+                {
+                    BroadcastGameFailureSafe(gameIdForLock);
+                }
                 throw ExceptionManager.Map(ex);
             }
             finally
@@ -162,7 +202,7 @@ namespace GameServer.Services.Logic
 
             if (!await ValidateTurnAsync(game.IdGame, sortedPlayers, username))
             {
-                return new DiceRollDto { Success = false, ErrorType = GameplayErrorType.NotYourTurn, ErrorMessage = "No es tu turno." };
+                return new DiceRollDto { Success = false, ErrorType = GameplayErrorType.NotYourTurn, ErrorMessage = "NOT_YOUR_TURN" };
             }
 
             _stateManager.RemoveAfkStrike(username);

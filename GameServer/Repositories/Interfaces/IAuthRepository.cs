@@ -15,7 +15,7 @@ namespace GameServer.Repositories.Interfaces
 
         void SaveChanges();
         Task SaveChangesAsync();
-
+        Task UpdatePlayerAsync(Player player);
         bool VerifyRecoveryCode(string email, string code);
         Task<bool> IsAccountSanctionedAsync(int accountId);
     }

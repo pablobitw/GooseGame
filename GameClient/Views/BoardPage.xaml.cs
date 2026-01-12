@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -316,6 +317,11 @@ namespace GameClient.Views
 
         private void HandleGameplayError(GameplayErrorType errorType, string fallbackMessage)
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return;
+            }
+
             string message = fallbackMessage;
             string title = GameClient.Resources.Strings.DialogErrorTitle;
 
@@ -378,6 +384,11 @@ namespace GameClient.Views
 
                 UnsubscribeFromEvents();
                 CloseChatClient();
+
+                if (reason == "SafeZone_DatabaseError")
+                {
+                    reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
