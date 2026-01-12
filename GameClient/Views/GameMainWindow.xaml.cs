@@ -20,6 +20,7 @@ namespace GameClient
     {
         private readonly string _username;
         private Action _onDialogConfirmAction;
+        private bool _isExplicitLogout = false;
 
         public GameMainWindow(string loggedInUsername)
         {
@@ -41,7 +42,7 @@ namespace GameClient
                 Console.WriteLine($"[GameMainWindow] Error inicializando servicios: {ex.Message}");
             }
 
-            this.Closed += GameMainWindow_Closed;
+            this.Closing += GameMainWindow_Closing;
 
             _ = LoadUserCurrency();
 
@@ -149,6 +150,7 @@ namespace GameClient
         {
             try
             {
+                _isExplicitLogout = true;
                 UserSession.GetInstance().Logout();
                 AuthWindow authWindow = new AuthWindow();
                 authWindow.Show();
@@ -226,6 +228,7 @@ namespace GameClient
             AuthWindow authWindow = new AuthWindow();
             authWindow.Show();
             authWindow.NavigateToRegister();
+            _isExplicitLogout = true;
             this.Close();
         }
 
@@ -302,7 +305,12 @@ namespace GameClient
                 GameClient.Resources.Strings.ConfirmExitLabel,
                 FontAwesomeIcon.SignOut,
                 true,
-                () => this.Close()
+                async () =>
+                {
+                    await PerformLogoutAsync();
+                    _isExplicitLogout = true;
+                    Application.Current.Shutdown();
+                }
             );
         }
 
@@ -326,7 +334,7 @@ namespace GameClient
             MainFrame.Navigate(new ScoreboardPage(_username));
         }
 
-        private async void GameMainWindow_Closed(object sender, EventArgs e)
+        private async Task PerformLogoutAsync()
         {
             try
             {
@@ -362,12 +370,17 @@ namespace GameClient
 
                 UserSession.GetInstance().Logout();
             }
-            finally
+            catch { }
+        }
+
+        private async void GameMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (!_isExplicitLogout)
             {
-                if (Application.Current != null && Application.Current.Windows.Count == 0)
-                {
-                    Application.Current.Shutdown();
-                }
+                e.Cancel = true;
+                _isExplicitLogout = true;
+                await PerformLogoutAsync();
+                Application.Current.Shutdown();
             }
         }
 

@@ -76,7 +76,7 @@ namespace GameClient.Helpers
                 InitializeProxy();
             }
 
-            if (_client == null) throw new CommunicationException("Client could not be initialized");
+            if (_client == null) throw new CommunicationException("Cliente no pudo ser inicializado");
 
             return _client;
         }
@@ -107,12 +107,12 @@ namespace GameClient.Helpers
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            return ExecuteAsync(c => c.RollDiceAsync(request), new DiceRollDto { Success = false, ErrorMessage = "Error crítico." });
+            return ExecuteAsync(c => c.RollDiceAsync(request), new DiceRollDto { Success = false, ErrorMessage = "Error, tiempo de espera excedido." });
         }
 
         public Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            return ExecuteAsync(c => c.GetGameStateAsync(request), new GameStateDto { Success = false, ErrorMessage = "Error crítico." });
+            return ExecuteAsync(c => c.GetGameStateAsync(request), new GameStateDto { Success = false, ErrorMessage = "Error, tiempo de espera excedido." });
         }
 
         public Task<bool> LeaveGameAsync(GameplayRequest request)
