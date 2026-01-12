@@ -60,7 +60,6 @@ namespace GameClient.Helpers
                 var context = new InstanceContext(this);
                 _client = new GameplayServiceClient(context);
 
-                
                 _client.InnerChannel.Faulted += OnChannelFaulted;
             }
             catch (Exception ex)
@@ -156,7 +155,7 @@ namespace GameClient.Helpers
             catch (FaultException<ServiceFault> fault)
             {
                 HandleBusinessFault(fault);
-                throw; 
+                throw;
             }
             catch (EndpointNotFoundException ex)
             {
@@ -255,10 +254,18 @@ namespace GameClient.Helpers
             try
             {
                 _client.InnerChannel.Faulted -= OnChannelFaulted;
-                if (_client.State == CommunicationState.Opened)
-                    _client.Close();
-                else
+
+                if (!NetworkInterface.GetIsNetworkAvailable() || _client.State == CommunicationState.Faulted)
+                {
                     _client.Abort();
+                }
+                else
+                {
+                    if (_client.State == CommunicationState.Opened)
+                        _client.Close();
+                    else
+                        _client.Abort();
+                }
             }
             catch
             {

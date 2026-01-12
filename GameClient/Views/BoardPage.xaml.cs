@@ -152,30 +152,32 @@ namespace GameClient.Views
 
         private void OnConnectionLost()
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
                 if (_isGameOverHandled) return;
                 _isGameOverHandled = true;
 
                 StopTimers();
 
-                try
-                {
-                    CloseChatClient();
-                    GameplayServiceManager.Instance.Dispose();
-                }
-                catch {  }
-
                 MessageBox.Show(GameClient.Resources.Strings.Error_Communication,
                                 GameClient.Resources.Strings.DialogErrorTitle,
                                 MessageBoxButton.OK, MessageBoxImage.Error);
 
-                var authWindow = new AuthWindow();
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        GameplayServiceManager.Instance.Dispose();
+                    }
+                    catch { }
+                });
 
+                CloseChatClient();
+
+                var authWindow = new AuthWindow();
                 Window currentWindow = Window.GetWindow(this);
 
                 authWindow.Show();
-
                 currentWindow?.Close();
             });
         }
@@ -462,7 +464,6 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                // El escudo del Manager ya disparó ConnectionLost o se manejará en el siguiente tick
             }
             catch (Exception ex)
             {
@@ -513,7 +514,6 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                // El manager gestiona la desconexión
             }
             catch (Exception ex)
             {
@@ -809,12 +809,18 @@ namespace GameClient.Views
         private void CloseChatClient()
         {
             if (chatClient == null) return;
-            try
+            var client = chatClient;
+            chatClient = null;
+
+            Task.Run(() =>
             {
-                if (chatClient.State == CommunicationState.Opened) chatClient.Close();
-                else chatClient.Abort();
-            }
-            catch { chatClient.Abort(); }
+                try
+                {
+                    if (client.State == CommunicationState.Opened) client.Close();
+                    else client.Abort();
+                }
+                catch { client.Abort(); }
+            });
         }
 
         private async void AddFriendMenuItem_Click(object sender, RoutedEventArgs e)
