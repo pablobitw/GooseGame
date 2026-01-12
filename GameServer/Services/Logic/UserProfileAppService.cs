@@ -8,9 +8,6 @@ using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -379,7 +376,8 @@ namespace GameServer.Services.Logic
                         {
                             PlayerIdPlayer = player.IdPlayer,
                             SocialType = (byte)newType,
-                            Url = url
+                            Url = url,
+                            CreatedAt = DateTime.Now
                         };
 
                         player.PlayerSocialLinks.Add(newLink);
