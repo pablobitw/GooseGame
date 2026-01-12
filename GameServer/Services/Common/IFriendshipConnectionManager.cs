@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 namespace GameServer.Helpers
-
 {
     public interface IFriendshipConnectionManager
     {
@@ -23,9 +22,13 @@ namespace GameServer.Helpers
             {
                 string key = username.ToLower();
                 if (_clients.ContainsKey(key))
+                {
                     _clients[key] = callback;
+                }
                 else
+                {
                     _clients.Add(key, callback);
+                }
             }
         }
 
@@ -35,7 +38,9 @@ namespace GameServer.Helpers
             {
                 string key = username.ToLower();
                 if (_clients.ContainsKey(key))
+                {
                     _clients.Remove(key);
+                }
             }
         }
 

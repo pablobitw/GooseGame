@@ -440,9 +440,13 @@ namespace GameClient.Views
                     }
                 }
             }
+            catch (TimeoutException)
+            {
+                // Ignoramos timeout en carga inicial, el timer de turno intentará recuperar
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Error carga inicial: " + ex.Message);
+                MessageBox.Show(ex.Message, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -491,9 +495,27 @@ namespace GameClient.Views
 
                 UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
             }
+            catch (TimeoutException)
+            {
+                MessageBox.Show(GameClient.Resources.Strings.SafeZone_ServerTimeout,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+            }
+            catch (CommunicationException)
+            {
+                string msg = NetworkInterface.GetIsNetworkAvailable()
+                    ? GameClient.Resources.Strings.Error_Communication
+                    : GameClient.Resources.Strings.Error_NoInternet;
+
+                MessageBox.Show(msg,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+            }
             catch (Exception ex)
             {
-                MessageBox.Show(GameClient.Resources.Strings.Gameplay_Error_Dice + ": " + ex.Message);
+                MessageBox.Show(ex.Message, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 if (!_isGameOverHandled) RollDiceButton.IsEnabled = false;
             }
         }

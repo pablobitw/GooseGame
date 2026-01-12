@@ -1,5 +1,4 @@
 ﻿using GameClient.GameplayServiceReference;
-using GameClient.Helpers;
 using System;
 using System.Net.NetworkInformation;
 using System.ServiceModel;
@@ -76,7 +75,8 @@ namespace GameClient.Helpers
                 InitializeProxy();
             }
 
-            if (_client == null) throw new CommunicationException("Cliente no pudo ser inicializado");
+            if (_client == null)
+                throw new CommunicationException(GameClient.Resources.Strings.Error_Communication);
 
             return _client;
         }
@@ -107,17 +107,17 @@ namespace GameClient.Helpers
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            return ExecuteAsync(c => c.RollDiceAsync(request), new DiceRollDto { Success = false, ErrorMessage = "Error, tiempo de espera excedido." });
+            return ExecuteAsync(c => c.RollDiceAsync(request));
         }
 
         public Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            return ExecuteAsync(c => c.GetGameStateAsync(request), new GameStateDto { Success = false, ErrorMessage = "Error, tiempo de espera excedido." });
+            return ExecuteAsync(c => c.GetGameStateAsync(request));
         }
 
         public Task<bool> LeaveGameAsync(GameplayRequest request)
         {
-            return ExecuteAsync(c => c.LeaveGameAsync(request), false);
+            return ExecuteAsync(c => c.LeaveGameAsync(request));
         }
 
         public Task InitiateVoteKickAsync(VoteRequestDto request)
@@ -130,37 +130,39 @@ namespace GameClient.Helpers
             return ExecuteAsync(c => c.CastVoteAsync(vote));
         }
 
-        private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action, T defaultValue)
+        private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+            }
+
             try
             {
                 return await action(GetClient());
             }
             catch (FaultException<ServiceFault> fault)
             {
-                string errorMsg = fault.Detail != null ? fault.Detail.Message : "Error crítico en el servidor.";
-                UserSession.GetInstance().HandleCatastrophicError(errorMsg);
-                return defaultValue;
+                string msg = fault.Detail != null ? fault.Detail.Message : GameClient.Resources.Strings.Error_Unknown;
+                string code = fault.Detail != null ? fault.Detail.Code : string.Empty;
+
+                if (code == "Error_DatabaseDown" || code == "Error_DatabaseGeneric" || code == "Error_InternalData")
+                {
+                    UserSession.GetInstance().HandleCatastrophicError(msg);
+                    return default;
+                }
+
+                throw new Exception(msg);
             }
             catch (EndpointNotFoundException)
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    return defaultValue;
-                }
-
                 InvalidateClient();
                 UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
-                return defaultValue;
+                throw;
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    return defaultValue;
-                }
-
-                Console.WriteLine($"[GameplayManager] Error de red: {ex.Message}. Reintentando...");
+                Console.WriteLine($"[GameplayManager] Network error: {ex.Message}. Retrying...");
 
                 try
                 {
@@ -169,52 +171,61 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
-                    if (!NetworkInterface.GetIsNetworkAvailable())
+                    if (retryEx is EndpointNotFoundException)
                     {
-                        return defaultValue;
+                        UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                        throw;
                     }
 
-                    Console.WriteLine($"[GameplayManager] Falló el reintento: {retryEx.Message}");
-                    UserSession.GetInstance().HandleCatastrophicError("El servidor no responde.");
-                    return defaultValue;
+                    if (retryEx is TimeoutException)
+                    {
+                        throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout, retryEx);
+                    }
+
+                    throw new CommunicationException(GameClient.Resources.Strings.Error_Communication, retryEx);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[GameplayManager] Error inesperado: {ex}");
-                return defaultValue;
+                Console.Error.WriteLine($"[GameplayManager] Unexpected error: {ex}");
+                throw;
             }
         }
 
         private async Task ExecuteAsync(Func<GameplayServiceClient, Task> action)
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+            }
+
             try
             {
                 await action(GetClient());
             }
             catch (FaultException<ServiceFault> fault)
             {
-                string errorMsg = fault.Detail != null ? fault.Detail.Message : "Error crítico en el servidor.";
-                UserSession.GetInstance().HandleCatastrophicError(errorMsg);
+                string msg = fault.Detail != null ? fault.Detail.Message : GameClient.Resources.Strings.Error_Unknown;
+                string code = fault.Detail != null ? fault.Detail.Code : string.Empty;
+
+                if (code == "Error_DatabaseDown" || code == "Error_DatabaseGeneric" || code == "Error_InternalData")
+                {
+                    UserSession.GetInstance().HandleCatastrophicError(msg);
+                    return;
+                }
+
+                throw new Exception(msg);
             }
             catch (EndpointNotFoundException)
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    return;
-                }
-
                 InvalidateClient();
                 UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                throw;
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    return;
-                }
+                Console.WriteLine($"[GameplayManager] Network error (void): {ex.Message}. Retrying...");
 
-                Console.WriteLine($"[GameplayManager] Error de red (void): {ex.Message}. Reintentando...");
                 try
                 {
                     InitializeProxy();
@@ -222,29 +233,25 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
-                    if (!NetworkInterface.GetIsNetworkAvailable())
+                    if (retryEx is EndpointNotFoundException)
                     {
-                        return;
+                        UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                        throw;
                     }
 
-                    Console.WriteLine($"[GameplayManager] Falló el reintento (void): {retryEx.Message}");
-                    UserSession.GetInstance().HandleCatastrophicError("El servidor no responde.");
+                    if (retryEx is TimeoutException)
+                    {
+                        throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout, retryEx);
+                    }
+
+                    throw new CommunicationException(GameClient.Resources.Strings.Error_Communication, retryEx);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[GameplayManager] Error inesperado (void): {ex}");
+                Console.Error.WriteLine($"[GameplayManager] Unexpected error (void): {ex}");
+                throw;
             }
-        }
-
-        private static Task ShowWarningAsync(string message)
-        {
-            return Application.Current.Dispatcher.InvokeAsync(() =>
-                MessageBox.Show(
-                    message,
-                    GameClient.Resources.Strings.DialogWarningTitle ?? "Advertencia",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning)).Task;
         }
 
         private void InvalidateClient()

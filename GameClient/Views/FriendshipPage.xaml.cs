@@ -157,6 +157,7 @@ namespace GameClient.Views
             }
             catch (FaultException<ServiceFault> fault)
             {
+                // Captura errores específicos del servidor (incluyendo DB)
                 var resManager = GameClient.Resources.Strings.ResourceManager;
                 string contextMsg = resManager.GetString("Friend_Ctx_List") ?? "No se pudo cargar la lista.";
                 string title = resManager.GetString("Friends_Title_Error") ?? "Error";
@@ -324,14 +325,24 @@ namespace GameClient.Views
             {
                 var result = await _friendshipManager.SendFriendRequestAsync(target);
 
-                if (result == FriendRequestResult.Success)
+                // --- CORRECCIÓN CRÍTICA: Aceptamos Success Y MutualAccepted ---
+                if (result == FriendRequestResult.Success || result == FriendRequestResult.MutualAccepted)
                 {
                     string msgFormat = GetResourceString("Friends_Req_Sent");
                     string title = GameClient.Resources.Strings.DialogSuccessTitle;
+
+                    // Mensaje especial si fue aceptación mutua automática
+                    if (result == FriendRequestResult.MutualAccepted)
+                    {
+                        msgFormat = "¡Solicitud aceptada mutuamente! {0} ahora es tu amigo.";
+                    }
+
                     ShowCustomDialog(title, string.Format(msgFormat, target), FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
 
                     SearchUserBox.Text = string.Empty;
-                    await LoadSentRequestsAsync();
+
+                    // IMPORTANTE: Recargar datos completos para reflejar la nueva amistad
+                    await LoadDataAsync();
                 }
                 else
                 {
@@ -340,6 +351,7 @@ namespace GameClient.Views
             }
             catch (FaultException<ServiceFault> fault)
             {
+                // Maneja excepciones de base de datos/servidor mapeadas
                 var resManager = GameClient.Resources.Strings.ResourceManager;
                 string contextMsg = resManager.GetString("Friend_Ctx_SendRequest") ?? "Error al enviar solicitud.";
                 string title = resManager.GetString("Friends_Title_Error") ?? "Error";

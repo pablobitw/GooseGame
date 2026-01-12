@@ -44,31 +44,28 @@ namespace GameClient.Helpers
 
                 _chatClient.JoinLobbyChat(request);
             }
-          
             catch (FaultException<ServiceFault> fault)
             {
                 string msg = fault.Detail.Message ?? "Error de conexión al chat.";
-                _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {msg}"));
+                _dispatcher.InvokeAsync(() => SystemMessage?.Invoke($"[Sistema] {msg}"));
             }
-    
             catch (EndpointNotFoundException)
             {
-                _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] No se puede conectar al servicio de chat."));
+                _dispatcher.InvokeAsync(() => SystemMessage?.Invoke("[Sistema] No se puede conectar al servicio de chat."));
             }
             catch (CommunicationException)
             {
-                _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] Error de comunicación con el chat."));
+                _dispatcher.InvokeAsync(() => SystemMessage?.Invoke("[Sistema] Error de comunicación con el chat."));
             }
             catch (Exception ex)
             {
-                _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] Error interno: {ex.Message}"));
+                _dispatcher.InvokeAsync(() => SystemMessage?.Invoke($"[Sistema] Error interno: {ex.Message}"));
             }
         }
 
         public void SendMessage(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
-                return;
+            if (string.IsNullOrWhiteSpace(message)) return;
 
             Task.Run(() =>
             {
@@ -87,35 +84,29 @@ namespace GameClient.Helpers
                 }
                 catch (FaultException<ServiceFault> fault)
                 {
-                    _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {fault.Detail.Message}"));
+                    _dispatcher.InvokeAsync(() => SystemMessage?.Invoke($"[Sistema] {fault.Detail.Message}"));
                 }
                 catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
                 {
                     try
                     {
                         Connect();
-
                         var dto = new ChatMessageDto
                         {
                             Sender = _username,
                             LobbyCode = _lobbyCode,
                             Message = message
                         };
-
                         _chatClient.SendLobbyMessage(dto);
-                    }
-                    catch (FaultException<ServiceFault> retryFault)
-                    {
-                        _dispatcher.Invoke(() => SystemMessage?.Invoke($"[Sistema] {retryFault.Detail.Message}"));
                     }
                     catch (Exception)
                     {
-                        _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] No se pudo enviar el mensaje (Red inestable)."));
+                        _dispatcher.InvokeAsync(() => SystemMessage?.Invoke("[Sistema] No se pudo enviar el mensaje (Red inestable)."));
                     }
                 }
                 catch (Exception)
                 {
-                    _dispatcher.Invoke(() => SystemMessage?.Invoke("[Sistema] Error desconocido al enviar mensaje."));
+                    _dispatcher.InvokeAsync(() => SystemMessage?.Invoke("[Sistema] Error desconocido al enviar mensaje."));
                 }
             });
         }
@@ -138,8 +129,7 @@ namespace GameClient.Helpers
 
         public void Close()
         {
-            if (_chatClient == null)
-                return;
+            if (_chatClient == null) return;
 
             try
             {

@@ -10,7 +10,6 @@ using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -85,62 +84,47 @@ namespace GameServer.Services.Logic
                 var sender = await _repository.GetPlayerByUsernameAsync(senderUsername);
                 var receiver = await _repository.GetPlayerByUsernameAsync(receiverUsername);
 
-                if (sender == null || receiver == null)
-                {
-                    return FriendRequestResult.TargetNotFound;
-                }
-                else if (sender.IsGuest || receiver.IsGuest)
-                {
-                    return FriendRequestResult.GuestRestriction;
-                }
-                else
-                {
-                    var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
+                if (sender == null || receiver == null) return FriendRequestResult.TargetNotFound;
+                if (sender.IsGuest || receiver.IsGuest) return FriendRequestResult.GuestRestriction;
 
-                    if (existing != null)
+                var existing = _repository.GetFriendship(sender.IdPlayer, receiver.IdPlayer);
+
+                if (existing != null)
+                {
+                    if (existing.FriendshipStatus == (int)FriendshipStatus.Accepted)
                     {
-                        if (existing.FriendshipStatus == (int)FriendshipStatus.Accepted)
-                        {
-                            return FriendRequestResult.AlreadyFriends;
-                        }
-                        else
-                        {
-                            if (existing.PlayerIdPlayer == receiver.IdPlayer)
-                            {
-                                existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
-                                await _repository.SaveChangesAsync();
-
-                                _ = Task.Run(() => NotifyUserListUpdated(senderUsername));
-                                _ = Task.Run(() => NotifyUserListUpdated(receiverUsername));
-
-                                Log.InfoFormat("Solicitud mutua detectada: {0} y {1} ahora son amigos.", senderUsername, receiverUsername);
-                                return FriendRequestResult.MutualAccepted;
-                            }
-                            else
-                            {
-                                return FriendRequestResult.Pending;
-                            }
-                        }
+                        return FriendRequestResult.AlreadyFriends;
                     }
-                    else
-                    {
-                        var newFriendship = new Friendship
-                        {
-                            PlayerIdPlayer = sender.IdPlayer,
-                            Player1_IdPlayer = receiver.IdPlayer,
-                            FriendshipStatus = (int)FriendshipStatus.Pending,
-                            RequestDate = DateTime.Now
-                        };
 
-                        _repository.AddFriendship(newFriendship);
+                    if (existing.PlayerIdPlayer == receiver.IdPlayer)
+                    {
+                        existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
                         await _repository.SaveChangesAsync();
 
-                        _ = Task.Run(() => NotifyUserRequestReceived(receiverUsername));
-                        _ = Task.Run(() => NotifyUserPopUp(receiverUsername, senderUsername));
+                        _ = Task.Run(() => NotifyUserListUpdated(senderUsername));
+                        _ = Task.Run(() => NotifyUserListUpdated(receiverUsername));
 
-                        return FriendRequestResult.Success;
+                        return FriendRequestResult.MutualAccepted;
                     }
+
+                    return FriendRequestResult.Pending;
                 }
+
+                var newFriendship = new Friendship
+                {
+                    PlayerIdPlayer = sender.IdPlayer,
+                    Player1_IdPlayer = receiver.IdPlayer,
+                    FriendshipStatus = (int)FriendshipStatus.Pending,
+                    RequestDate = DateTime.Now
+                };
+
+                _repository.AddFriendship(newFriendship);
+                await _repository.SaveChangesAsync();
+
+                _ = Task.Run(() => NotifyUserRequestReceived(receiverUsername));
+                _ = Task.Run(() => NotifyUserPopUp(receiverUsername, senderUsername));
+
+                return FriendRequestResult.Success;
             }
             catch (Exception ex)
             {
@@ -156,40 +140,33 @@ namespace GameServer.Services.Logic
                 var responder = await _repository.GetPlayerByUsernameAsync(request.RespondingUsername);
                 var requester = await _repository.GetPlayerByUsernameAsync(request.RequesterUsername);
 
-                if (responder != null && requester != null && !responder.IsGuest)
-                {
-                    var friendship = _repository.GetPendingRequest(requester.IdPlayer, responder.IdPlayer);
-
-                    if (friendship != null)
-                    {
-                        if (request.IsAccepted)
-                        {
-                            friendship.FriendshipStatus = (int)FriendshipStatus.Accepted;
-                        }
-                        else
-                        {
-                            _repository.RemoveFriendship(friendship);
-                        }
-
-                        await _repository.SaveChangesAsync();
-
-                        if (request.IsAccepted)
-                        {
-                            _ = Task.Run(() => NotifyUserListUpdated(request.RequesterUsername));
-                            _ = Task.Run(() => NotifyUserListUpdated(request.RespondingUsername));
-                        }
-
-                        return FriendRequestResult.Success;
-                    }
-                    else
-                    {
-                        return FriendRequestResult.TargetNotFound;
-                    }
-                }
-                else
+                if (responder == null || requester == null || responder.IsGuest)
                 {
                     return FriendRequestResult.TargetNotFound;
                 }
+
+                var friendship = _repository.GetPendingRequest(requester.IdPlayer, responder.IdPlayer);
+
+                if (friendship == null) return FriendRequestResult.TargetNotFound;
+
+                if (request.IsAccepted)
+                {
+                    friendship.FriendshipStatus = (int)FriendshipStatus.Accepted;
+                }
+                else
+                {
+                    _repository.RemoveFriendship(friendship);
+                }
+
+                await _repository.SaveChangesAsync();
+
+                if (request.IsAccepted)
+                {
+                    _ = Task.Run(() => NotifyUserListUpdated(request.RequesterUsername));
+                    _ = Task.Run(() => NotifyUserListUpdated(request.RespondingUsername));
+                }
+
+                return FriendRequestResult.Success;
             }
             catch (Exception ex)
             {
@@ -205,29 +182,25 @@ namespace GameServer.Services.Logic
                 var user1 = await _repository.GetPlayerByUsernameAsync(username);
                 var user2 = await _repository.GetPlayerByUsernameAsync(friendUsername);
 
-                if (user1 != null && user2 != null && !user1.IsGuest)
-                {
-                    var friendship = _repository.GetFriendship(user1.IdPlayer, user2.IdPlayer);
-
-                    if (friendship != null)
-                    {
-                        _repository.RemoveFriendship(friendship);
-                        await _repository.SaveChangesAsync();
-
-                        _ = Task.Run(() => NotifyUserListUpdated(username));
-                        _ = Task.Run(() => NotifyUserListUpdated(friendUsername));
-
-                        return FriendRequestResult.Success;
-                    }
-                    else
-                    {
-                        return FriendRequestResult.TargetNotFound;
-                    }
-                }
-                else
+                if (user1 == null || user2 == null || user1.IsGuest)
                 {
                     return FriendRequestResult.TargetNotFound;
                 }
+
+                var friendship = _repository.GetFriendship(user1.IdPlayer, user2.IdPlayer);
+
+                if (friendship != null)
+                {
+                    _repository.RemoveFriendship(friendship);
+                    await _repository.SaveChangesAsync();
+
+                    _ = Task.Run(() => NotifyUserListUpdated(username));
+                    _ = Task.Run(() => NotifyUserListUpdated(friendUsername));
+
+                    return FriendRequestResult.Success;
+                }
+
+                return FriendRequestResult.TargetNotFound;
             }
             catch (Exception ex)
             {
@@ -242,6 +215,7 @@ namespace GameServer.Services.Logic
             {
                 var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
+
                 if (player != null && !player.IsGuest)
                 {
                     var friendships = _repository.GetAcceptedFriendships(player.IdPlayer);
@@ -254,7 +228,6 @@ namespace GameServer.Services.Logic
                         if (friend != null)
                         {
                             bool isOnline = _connectionManager.IsClientConnected(friend.Username);
-
                             resultList.Add(new FriendDto
                             {
                                 Username = friend.Username,
@@ -279,6 +252,7 @@ namespace GameServer.Services.Logic
             {
                 var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
+
                 if (player != null && !player.IsGuest)
                 {
                     var requests = _repository.GetIncomingPendingRequests(player.IdPlayer);
@@ -311,6 +285,7 @@ namespace GameServer.Services.Logic
             {
                 var resultList = new List<FriendDto>();
                 var player = await _repository.GetPlayerByUsernameAsync(username);
+
                 if (player != null && !player.IsGuest)
                 {
                     var requests = _repository.GetOutgoingPendingRequests(player.IdPlayer);
@@ -382,7 +357,6 @@ namespace GameServer.Services.Logic
                 try
                 {
                     var repo = _repoFactory.Create();
-
                     if (repo is IDisposable disposableRepo)
                     {
                         using (disposableRepo)

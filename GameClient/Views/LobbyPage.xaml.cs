@@ -3,6 +3,7 @@ using GameClient.Helpers;
 using GameClient.LobbyServiceReference;
 using GameClient.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.ServiceModel;
@@ -30,9 +31,9 @@ namespace GameClient.Views
         private int boardId = 1;
 
         private bool _isGameStarting;
-
         private LobbyChatController chatController;
         private Action _onDialogConfirmAction;
+        private List<PlayerLobbyDto> _uiPlayerList;
 
         public LobbyPage(string username)
         {
@@ -41,6 +42,7 @@ namespace GameClient.Views
 
             this.username = username;
             isHost = true;
+            _uiPlayerList = new List<PlayerLobbyDto>();
 
             SubscribeToLobbyEvents();
 
@@ -67,13 +69,17 @@ namespace GameClient.Views
             boardId = joinResult.BoardId;
             playerCount = joinResult.MaxPlayers;
 
+            _uiPlayerList = joinResult.PlayersInLobby != null
+                ? joinResult.PlayersInLobby.ToList()
+                : new List<PlayerLobbyDto>();
+
             SubscribeToLobbyEvents();
             SyncLobbyVisuals(joinResult.MaxPlayers, joinResult.BoardId, joinResult.IsPublic);
             LockLobbySettings(lobbyCode);
 
             StartMatchButton.Visibility = Visibility.Collapsed;
 
-            UpdatePlayerListUI(joinResult.PlayersInLobby);
+            UpdatePlayerListUI(_uiPlayerList);
 
             ConnectToChat();
 
@@ -123,22 +129,28 @@ namespace GameClient.Views
 
         private void SubscribeToLobbyEvents()
         {
-            LobbyServiceManager.Instance.PlayerJoined += OnPlayerJoined;
-            LobbyServiceManager.Instance.PlayerLeft += OnPlayerLeft;
-            LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
-            LobbyServiceManager.Instance.GameStarted += OnGameStarted;
-            LobbyServiceManager.Instance.LobbyDisbanded += OnLobbyDisbanded;
-            LobbyServiceManager.Instance.ConnectionLost += OnConnectionLost;
+            if (LobbyServiceManager.Instance != null)
+            {
+                LobbyServiceManager.Instance.PlayerJoined += OnPlayerJoined;
+                LobbyServiceManager.Instance.PlayerLeft += OnPlayerLeft;
+                LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
+                LobbyServiceManager.Instance.GameStarted += OnGameStarted;
+                LobbyServiceManager.Instance.LobbyDisbanded += OnLobbyDisbanded;
+                LobbyServiceManager.Instance.ConnectionLost += OnConnectionLost;
+            }
         }
 
         private void UnsubscribeFromLobbyEvents()
         {
-            LobbyServiceManager.Instance.PlayerJoined -= OnPlayerJoined;
-            LobbyServiceManager.Instance.PlayerLeft -= OnPlayerLeft;
-            LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
-            LobbyServiceManager.Instance.GameStarted -= OnGameStarted;
-            LobbyServiceManager.Instance.LobbyDisbanded -= OnLobbyDisbanded;
-            LobbyServiceManager.Instance.ConnectionLost -= OnConnectionLost;
+            if (LobbyServiceManager.Instance != null)
+            {
+                LobbyServiceManager.Instance.PlayerJoined -= OnPlayerJoined;
+                LobbyServiceManager.Instance.PlayerLeft -= OnPlayerLeft;
+                LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
+                LobbyServiceManager.Instance.GameStarted -= OnGameStarted;
+                LobbyServiceManager.Instance.LobbyDisbanded -= OnLobbyDisbanded;
+                LobbyServiceManager.Instance.ConnectionLost -= OnConnectionLost;
+            }
         }
 
         private void OnConnectionLost()
@@ -157,27 +169,31 @@ namespace GameClient.Views
 
         private void OnPlayerJoined(PlayerLobbyDto player)
         {
-            Dispatcher.InvokeAsync(async () =>
+            Dispatcher.InvokeAsync(() =>
             {
-                try
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
+
+                var exists = _uiPlayerList.Any(p => p.Username == player.Username);
+                if (!exists)
                 {
-                    AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerJoinedMsg, player.Username));
-                    await RefreshLobbyState();
+                    _uiPlayerList.Add(player);
+                    UpdatePlayerListUI(_uiPlayerList);
                 }
-                catch (Exception) { }
             });
         }
 
         private void OnPlayerLeft(string username)
         {
-            Dispatcher.InvokeAsync(async () =>
+            Dispatcher.InvokeAsync(() =>
             {
-                try
+                AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
+
+                var playerToRemove = _uiPlayerList.FirstOrDefault(p => p.Username == username);
+                if (playerToRemove != null)
                 {
-                    AddMessageToUI(GameClient.Resources.Strings.SystemPrefix, string.Format(GameClient.Resources.Strings.PlayerLeftMsg, username));
-                    await RefreshLobbyState();
+                    _uiPlayerList.Remove(playerToRemove);
+                    UpdatePlayerListUI(_uiPlayerList);
                 }
-                catch (Exception) { }
             });
         }
 
@@ -230,14 +246,21 @@ namespace GameClient.Views
                     UpdateLobbyUI(state);
                 }
             }
-            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
+            catch (EndpointNotFoundException)
+            {
+                HandleConnectionError(GameClient.Resources.Strings.Error_ServerNotFound);
+            }
+            catch (TimeoutException)
+            {
+                HandleConnectionError(GameClient.Resources.Strings.Error_ServerTimeout);
+            }
+            catch (CommunicationException)
             {
                 HandleConnectionError(GameClient.Resources.Strings.Lobby_ServerLost);
             }
-            catch (ObjectDisposedException) { }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error crítico actualizando lobby: {ex.Message}");
+                HandleConnectionError(GameClient.Resources.Strings.Error_Unknown);
             }
         }
 
@@ -248,7 +271,11 @@ namespace GameClient.Views
 
         private void UpdateLobbyUI(LobbyStateDto state)
         {
-            UpdatePlayerListUI(state.Players);
+            if (state.Players != null)
+            {
+                _uiPlayerList = state.Players.ToList();
+                UpdatePlayerListUI(_uiPlayerList);
+            }
 
             if (!isHost)
                 SyncLobbyVisuals(state.MaxPlayers, state.BoardId, state.IsPublic);
@@ -363,7 +390,9 @@ namespace GameClient.Views
 
                 lobbyCode = result.LobbyCode;
                 LockLobbySettings(lobbyCode);
-                UpdatePlayerListUI(new[] { new PlayerLobbyDto { Username = username, IsHost = true } });
+
+                _uiPlayerList = new List<PlayerLobbyDto> { new PlayerLobbyDto { Username = username, IsHost = true } };
+                UpdatePlayerListUI(_uiPlayerList);
 
                 ConnectToChat();
 
@@ -433,7 +462,17 @@ namespace GameClient.Views
                     ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.LobbyError_StartFailed, FontAwesomeIcon.TimesCircle);
                 }
             }
-            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
+            catch (EndpointNotFoundException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Lobby_Start_ServerDown, FontAwesomeIcon.Server);
+                ResetStartButton();
+            }
+            catch (TimeoutException)
+            {
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
+                ResetStartButton();
+            }
+            catch (CommunicationException)
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Lobby_Start_ServerDown, FontAwesomeIcon.Server);
                 ResetStartButton();
@@ -469,7 +508,7 @@ namespace GameClient.Views
             CopyCodeButton.Visibility = Visibility.Visible;
         }
 
-        private void UpdatePlayerListUI(PlayerLobbyDto[] players)
+        private void UpdatePlayerListUI(IEnumerable<PlayerLobbyDto> players)
         {
             PlayerList.Items.Clear();
             int slotsFilled = 0;
@@ -481,6 +520,8 @@ namespace GameClient.Views
             }
 
             int emptySlots = playerCount - slotsFilled;
+            if (emptySlots < 0) emptySlots = 0;
+
             for (int i = 0; i < emptySlots; i++)
             {
                 PlayerList.Items.Add(CreateEmptySlotItem());
@@ -753,18 +794,6 @@ namespace GameClient.Views
                     break;
             }
             ShowOverlayDialog(title, message, icon);
-        }
-
-        private void HandleGeneralException(Exception ex)
-        {
-            if (ex is EndpointNotFoundException)
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
-            else if (ex is TimeoutException)
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
-            else if (ex is CommunicationException)
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
-            else
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
         }
     }
 }

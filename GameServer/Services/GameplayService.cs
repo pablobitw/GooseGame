@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs.Gameplay;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Repositories;
@@ -27,43 +28,78 @@ namespace GameServer.Services
 
         public async Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
-            RegisterClientSafe(request?.Username);
-            return await _logic.RollDiceAsync(request).ConfigureAwait(false);
+            try
+            {
+                RegisterClientSafe(request?.Username);
+                return await _logic.RollDiceAsync(request).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ExceptionManager.Map(ex);
+            }
         }
 
         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
-            RegisterClientSafe(request?.Username);
-            return await _logic.GetGameStateAsync(request).ConfigureAwait(false);
+            try
+            {
+                RegisterClientSafe(request?.Username);
+                return await _logic.GetGameStateAsync(request).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ExceptionManager.Map(ex);
+            }
         }
 
         public async Task<bool> LeaveGameAsync(GameplayRequest request)
         {
-            var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
-
-            if (result)
+            try
             {
-                try
+                var result = await _logic.LeaveGameAsync(request).ConfigureAwait(false);
+
+                if (result)
                 {
-                    ConnectionManager.UnregisterGameplayClient(request.Username);
+                    try
+                    {
+                        ConnectionManager.UnregisterGameplayClient(request.Username);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn($"Error unregistering client {request.Username}", ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Log.Warn($"Error unregistering client {request.Username}", ex);
-                }
+                return result;
             }
-            return result;
+            catch (Exception ex)
+            {
+                throw ExceptionManager.Map(ex);
+            }
         }
 
         public async Task InitiateVoteKickAsync(VoteRequestDto request)
         {
-            RegisterClientSafe(request?.Username);
-            await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false);
+            try
+            {
+                RegisterClientSafe(request?.Username);
+                await _logic.InitiateVoteKickAsync(request).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ExceptionManager.Map(ex);
+            }
         }
 
         public async Task CastVoteAsync(VoteResponseDto vote)
         {
-            await _logic.CastVoteAsync(vote).ConfigureAwait(false);
+            try
+            {
+                await _logic.CastVoteAsync(vote).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ExceptionManager.Map(ex);
+            }
         }
 
         private void RegisterClientSafe(string username)
