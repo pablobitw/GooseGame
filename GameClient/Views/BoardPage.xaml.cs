@@ -158,17 +158,25 @@ namespace GameClient.Views
                 _isGameOverHandled = true;
 
                 StopTimers();
-                UnsubscribeFromEvents();
-                CloseChatClient();
+
+                try
+                {
+                    CloseChatClient();
+                    GameplayServiceManager.Instance.Dispose();
+                }
+                catch {  }
 
                 MessageBox.Show(GameClient.Resources.Strings.Error_Communication,
                                 GameClient.Resources.Strings.DialogErrorTitle,
                                 MessageBoxButton.OK, MessageBoxImage.Error);
 
                 var authWindow = new AuthWindow();
+
+                Window currentWindow = Window.GetWindow(this);
+
                 authWindow.Show();
 
-                Window.GetWindow(this)?.Close();
+                currentWindow?.Close();
             });
         }
 
@@ -786,8 +794,16 @@ namespace GameClient.Views
 
         public void StopTimers()
         {
-            _startCountdownTimer?.Stop();
-            _turnCountdownTimer?.Stop();
+            if (_startCountdownTimer != null)
+            {
+                _startCountdownTimer.Stop();
+                _startCountdownTimer = null;
+            }
+            if (_turnCountdownTimer != null)
+            {
+                _turnCountdownTimer.Stop();
+                _turnCountdownTimer = null;
+            }
         }
 
         private void CloseChatClient()
