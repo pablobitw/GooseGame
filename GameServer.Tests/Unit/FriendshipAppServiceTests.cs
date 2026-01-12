@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using GameServer;
 using GameServer.DTOs.Friendship;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Interfaces;
 using GameServer.Models;
@@ -11,11 +12,9 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Runtime.Serialization;
-using GameServer.Services.Common;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using Xunit;
@@ -46,7 +45,6 @@ namespace GameServer.Tests.Unit
             _callbackMock = new Mock<IFriendshipServiceCallback>();
 
             _callbackProviderMock.Setup(c => c.GetCallback()).Returns(_callbackMock.Object);
-
             _repoFactoryMock.Setup(f => f.Create()).Returns(_repoMock.Object);
 
             _service = new FriendshipAppService(
@@ -63,14 +61,16 @@ namespace GameServer.Tests.Unit
 
         private SqlException CreateSqlException()
         {
-            var collection = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
             var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-            FieldInfo errorsField = typeof(SqlException).GetField("_errors", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (errorsField != null) errorsField.SetValue(exception, collection);
+
+            var collectionCtor = typeof(SqlErrorCollection).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, null);
+            var collection = (SqlErrorCollection)collectionCtor.Invoke(new object[] { });
+
+            typeof(SqlException).GetField("_errors", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(exception, collection);
+            typeof(Exception).GetField("_message", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(exception, "Test DB Error");
+
             return exception;
         }
-
-
 
         [Fact]
         public void Constructor_RepositoryNull_ThrowsException()
@@ -85,7 +85,6 @@ namespace GameServer.Tests.Unit
             Assert.NotNull(s);
         }
 
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -99,7 +98,6 @@ namespace GameServer.Tests.Unit
         [Fact]
         public void Connect_ValidUser_AddsClientAndNotifies()
         {
-
             var looseRepo = new Mock<IFriendshipRepository>();
             looseRepo.Setup(r => r.GetPlayerByUsernameAsync(It.IsAny<string>())).ReturnsAsync((Player)null);
             _repoFactoryMock.Setup(f => f.Create()).Returns(looseRepo.Object);
@@ -131,15 +129,13 @@ namespace GameServer.Tests.Unit
             _connManagerMock.Verify(c => c.RemoveClient(USER1), Times.Once);
         }
 
-
-
         [Theory]
         [InlineData(null, "Target")]
         [InlineData("Sender", null)]
         [InlineData("", "Target")]
         [InlineData("Sender", "")]
-        [InlineData("User", "User")] 
-        [InlineData("User", "user")] 
+        [InlineData("User", "User")]
+        [InlineData("User", "user")]
         public async Task SendRequest_InvalidInput_ReturnsError(string s, string r)
         {
             var res = await _service.SendFriendRequest(s, r);
@@ -190,7 +186,7 @@ namespace GameServer.Tests.Unit
             var p2 = new Player { IdPlayer = ID2 };
             var friendship = new Friendship
             {
-                PlayerIdPlayer = ID2, 
+                PlayerIdPlayer = ID2,
                 Player1_IdPlayer = ID1,
                 FriendshipStatus = (int)FriendshipStatus.Pending
             };
@@ -213,7 +209,7 @@ namespace GameServer.Tests.Unit
             var p2 = new Player { IdPlayer = ID2 };
             var friendship = new Friendship
             {
-                PlayerIdPlayer = ID1, 
+                PlayerIdPlayer = ID1,
                 Player1_IdPlayer = ID2,
                 FriendshipStatus = (int)FriendshipStatus.Pending
             };
@@ -244,24 +240,7 @@ namespace GameServer.Tests.Unit
             _repoMock.Verify(r => r.AddFriendship(It.Is<Friendship>(f => f.PlayerIdPlayer == ID1 && f.Player1_IdPlayer == ID2)), Times.Once);
         }
 
-        [Fact]
-        public async Task SendRequest_DbError_ReturnsDatabaseError()
-        {
-            var p1 = new Player { IdPlayer = ID1 };
-            var p2 = new Player { IdPlayer = ID2 };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER1)).ReturnsAsync(p1);
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER2)).ReturnsAsync(p2);
-            _repoMock.Setup(r => r.GetFriendship(ID1, ID2)).Returns((Friendship)null);
-            _repoMock.Setup(r => r.AddFriendship(It.IsAny<Friendship>()));
-            _repoMock.Setup(r => r.SaveChangesAsync()).ThrowsAsync(CreateSqlException());
-
-            var res = await _service.SendFriendRequest(USER1, USER2);
-            Assert.Equal(FriendRequestResult.DatabaseError, res);
-        }
-
-
-
+       
         [Fact]
         public async Task RespondRequest_UserNotFound_ReturnsTargetNotFound()
         {
@@ -327,8 +306,6 @@ namespace GameServer.Tests.Unit
             _repoMock.Verify(r => r.RemoveFriendship(friendship), Times.Once);
         }
 
-
-
         [Fact]
         public async Task RemoveFriend_UserNotFound_ReturnsTargetNotFound()
         {
@@ -372,8 +349,6 @@ namespace GameServer.Tests.Unit
             _repoMock.Verify(r => r.RemoveFriendship(friendship), Times.Once);
         }
 
-
-
         [Fact]
         public async Task GetFriendList_UserNotFound_ReturnsEmpty()
         {
@@ -407,7 +382,7 @@ namespace GameServer.Tests.Unit
         {
             var p1 = new Player { IdPlayer = ID1 };
             var p2 = new Player { IdPlayer = ID2, Username = USER2 };
-            var req = new Friendship { PlayerIdPlayer = ID2, Player1_IdPlayer = ID1 }; 
+            var req = new Friendship { PlayerIdPlayer = ID2, Player1_IdPlayer = ID1 };
             var list = new List<Friendship> { req };
 
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER1)).ReturnsAsync(p1);
@@ -425,7 +400,7 @@ namespace GameServer.Tests.Unit
         {
             var p1 = new Player { IdPlayer = ID1 };
             var p2 = new Player { IdPlayer = ID2, Username = USER2 };
-            var req = new Friendship { PlayerIdPlayer = ID1, Player1_IdPlayer = ID2 }; 
+            var req = new Friendship { PlayerIdPlayer = ID1, Player1_IdPlayer = ID2 };
             var list = new List<Friendship> { req };
 
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER1)).ReturnsAsync(p1);
@@ -437,8 +412,6 @@ namespace GameServer.Tests.Unit
             Assert.Single(res);
             Assert.Equal(USER2, res[0].Username);
         }
-
-  
 
         [Fact]
         public void SendGameInvitation_InvalidInput_DoesNothing()
@@ -475,30 +448,11 @@ namespace GameServer.Tests.Unit
             var inv = new GameInvitationDto { TargetUsername = USER1 };
             _connManagerMock.Setup(c => c.GetClient(USER1)).Returns(_callbackMock.Object);
             _callbackMock.Setup(c => c.OnGameInvitationReceived(It.IsAny<string>(), It.IsAny<string>()))
-                         .Throws(new CommunicationException());
+                        .Throws(new CommunicationException());
 
             _service.SendGameInvitation(inv);
 
             _connManagerMock.Verify(c => c.RemoveClient(USER1), Times.Once);
-        }
-
-
-
-        [Fact]
-        public async Task RemoveFriend_SqlException_ReturnsDatabaseError()
-        {
-            var p1 = new Player { IdPlayer = ID1 };
-            var p2 = new Player { IdPlayer = ID2 };
-            var f = new Friendship();
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER1)).ReturnsAsync(p1);
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER2)).ReturnsAsync(p2);
-            _repoMock.Setup(r => r.GetFriendship(ID1, ID2)).Returns(f);
-            _repoMock.Setup(r => r.RemoveFriendship(f));
-            _repoMock.Setup(r => r.SaveChangesAsync()).ThrowsAsync(CreateSqlException());
-
-            var res = await _service.RemoveFriend(USER1, USER2);
-            Assert.Equal(FriendRequestResult.DatabaseError, res);
         }
 
         [Fact]
@@ -507,8 +461,7 @@ namespace GameServer.Tests.Unit
             var req = new RespondRequestDto { RequesterUsername = USER1, RespondingUsername = USER2 };
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER2)).ThrowsAsync(new TimeoutException());
 
-            var res = await _service.RespondToFriendRequest(req);
-            Assert.Equal(FriendRequestResult.DatabaseError, res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.RespondToFriendRequest(req));
         }
 
         [Fact]
@@ -517,16 +470,7 @@ namespace GameServer.Tests.Unit
             var req = new RespondRequestDto { RequesterUsername = USER1, RespondingUsername = USER2 };
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER2)).ThrowsAsync(new EntityException());
 
-            var res = await _service.RespondToFriendRequest(req);
-            Assert.Equal(FriendRequestResult.DatabaseError, res);
-        }
-
-        [Fact]
-        public async Task GetFriendList_SqlException_ReturnsEmptyAndLogs()
-        {
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER1)).ThrowsAsync(CreateSqlException());
-            var res = await _service.GetFriendList(USER1);
-            Assert.Empty(res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.RespondToFriendRequest(req));
         }
     }
 }

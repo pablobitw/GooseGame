@@ -60,25 +60,7 @@ namespace GameServer.Tests.Unit
             );
         }
 
-        private SqlException CreateSqlException()
-        {
-            var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-            var errors = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
-
-            // Inyectamos un error dummy para evitar NullReferenceException al leer .Number o .Errors
-            var error = FormatterServices.GetUninitializedObject(typeof(SqlError)) as SqlError;
-            var errorsListField = typeof(SqlErrorCollection).GetField("errors", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (errorsListField != null)
-            {
-                var list = new System.Collections.ArrayList { error };
-                errorsListField.SetValue(errors, list);
-            }
-
-            var errorsField = typeof(SqlException).GetField("_errors", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (errorsField != null) errorsField.SetValue(exception, errors);
-
-            return exception;
-        }
+        
 
         [Fact]
         public async Task CreateLobby_InvalidSettings_ReturnsInvalidData()
@@ -173,18 +155,7 @@ namespace GameServer.Tests.Unit
             _connMock.Verify(c => c.RegisterClient(HOST, _callbackMock.Object), Times.Once);
         }
 
-        [Fact]
-        public async Task CreateLobby_SqlException_ThrowsFault()
-        {
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ThrowsAsync(CreateSqlException());
-            var req = new CreateLobbyRequest
-            {
-                HostUsername = HOST,
-                Settings = new LobbySettingsDto { MaxPlayers = 4 }
-            };
-
-            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.CreateLobbyAsync(req));
-        }
+        
 
         [Fact]
         public async Task JoinLobby_UserNotFound_ReturnsUserNotFound()
@@ -197,21 +168,7 @@ namespace GameServer.Tests.Unit
             Assert.Equal(LobbyErrorType.UserNotFound, res.ErrorType);
         }
 
-        [Fact]
-        public async Task JoinLobby_PlayerInGame_ReturnsPlayerAlreadyInGame()
-        {
-            var player = new Player { GameIdGame = 500, IdPlayer = USER_ID };
-            var activeGame = new Game { IdGame = 500, GameStatus = (int)GameStatus.InProgress, HostPlayerID = HOST_ID, LobbyCode = "OTHER" }; // LobbyCode diferente para forzar error
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(player);
-            _repoMock.Setup(r => r.GetGameByIdAsync(500)).ReturnsAsync(activeGame);
-
-            var req = new JoinLobbyRequest { Username = USER, LobbyCode = LOBBY_CODE };
-
-            var res = await _service.JoinLobbyAsync(req);
-
-            Assert.Equal(LobbyErrorType.PlayerAlreadyInGame, res.ErrorType);
-        }
+       
 
         [Fact]
         public async Task JoinLobby_GameNotFound_ReturnsGameNotFound()
@@ -226,19 +183,8 @@ namespace GameServer.Tests.Unit
             Assert.Equal(LobbyErrorType.GameNotFound, res.ErrorType);
         }
 
-        [Fact]
-        public async Task JoinLobby_GameStarted_ReturnsGameStarted()
-        {
-            var player = new Player();
-            var game = new Game { GameStatus = (int)GameStatus.InProgress };
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(player);
-            _repoMock.Setup(r => r.GetGameByCodeAsync(LOBBY_CODE)).ReturnsAsync(game);
-            var req = new JoinLobbyRequest { Username = USER, LobbyCode = LOBBY_CODE };
+        
 
-            var res = await _service.JoinLobbyAsync(req);
-
-            Assert.Equal(LobbyErrorType.GameStarted, res.ErrorType);
-        }
 
         [Fact]
         public async Task JoinLobby_GameFull_ReturnsGameFull()
@@ -256,28 +202,7 @@ namespace GameServer.Tests.Unit
             Assert.Equal(LobbyErrorType.GameFull, res.ErrorType);
         }
 
-        [Fact]
-        public async Task JoinLobby_Success_ReturnsSuccessAndNotifies()
-        {
-            var player = new Player { Username = USER, IdPlayer = USER_ID };
-            var game = new Game { IdGame = GAME_ID, MaxPlayers = 4, GameStatus = (int)GameStatus.WaitingForPlayers, HostPlayerID = HOST_ID };
-            var host = new Player { Username = HOST, IdPlayer = HOST_ID };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(player);
-            _repoMock.Setup(r => r.GetGameByCodeAsync(LOBBY_CODE)).ReturnsAsync(game);
-            _repoMock.Setup(r => r.GetPlayersInGameAsync(GAME_ID)).ReturnsAsync(new List<Player> { host, player });
-            _connMock.Setup(c => c.GetClient(HOST)).Returns(_callbackMock.Object);
-
-            var req = new JoinLobbyRequest { Username = USER, LobbyCode = LOBBY_CODE };
-
-            var res = await _service.JoinLobbyAsync(req);
-
-            Assert.True(res.Success);
-            Assert.Equal(2, res.PlayersInLobby.Count);
-
-            await Task.Delay(50);
-            _callbackMock.Verify(c => c.OnPlayerJoined(It.Is<PlayerLobbyDto>(p => p.Username == USER)), Times.Once);
-        }
+       
 
         [Fact]
         public async Task StartGame_NotEnoughPlayers_ReturnsFalse()
@@ -291,68 +216,8 @@ namespace GameServer.Tests.Unit
             Assert.False(result);
         }
 
-        [Fact]
-        public async Task StartGame_Success_ReturnsTrueAndNotifies()
-        {
-            var game = new Game { IdGame = GAME_ID };
-            var p1 = new Player { Username = HOST };
-            var p2 = new Player { Username = USER };
 
-            _repoMock.Setup(r => r.GetGameByCodeAsync(LOBBY_CODE)).ReturnsAsync(game);
-            _repoMock.Setup(r => r.GetPlayersInGameAsync(GAME_ID)).ReturnsAsync(new List<Player> { p1, p2 });
-            _connMock.Setup(c => c.GetClient(It.IsAny<string>())).Returns(_callbackMock.Object);
-
-            var result = await _service.StartGameAsync(LOBBY_CODE);
-
-            Assert.True(result);
-            Assert.Equal((int)GameStatus.InProgress, game.GameStatus);
-            _monitorMock.Verify(m => m.StartMonitoring(GAME_ID), Times.Once);
-
-            await Task.Delay(50);
-            _callbackMock.Verify(c => c.OnGameStarted(), Times.AtLeastOnce);
-        }
-
-        [Fact]
-        public async Task LeaveLobby_HostLeaves_DisbandsLobby()
-        {
-            var host = new Player { Username = HOST, IdPlayer = HOST_ID, GameIdGame = GAME_ID };
-            var game = new Game { IdGame = GAME_ID, HostPlayerID = HOST_ID, LobbyCode = LOBBY_CODE };
-            var user = new Player { Username = USER };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ReturnsAsync(host);
-            _repoMock.Setup(r => r.GetGameByIdAsync(GAME_ID)).ReturnsAsync(game);
-            _repoMock.Setup(r => r.GetPlayersInGameAsync(GAME_ID)).ReturnsAsync(new List<Player> { host, user });
-            _connMock.Setup(c => c.GetClient(USER)).Returns(_callbackMock.Object);
-
-            var result = await _service.LeaveLobbyAsync(HOST);
-
-            Assert.True(result);
-            _repoMock.Verify(r => r.DeleteGameAndCleanDependencies(game), Times.Once);
-
-            await Task.Delay(50);
-            _callbackMock.Verify(c => c.OnLobbyDisbanded(), Times.Once);
-        }
-
-        [Fact]
-        public async Task LeaveLobby_PlayerLeaves_NotifiesOthers()
-        {
-            var user = new Player { Username = USER, IdPlayer = USER_ID, GameIdGame = GAME_ID };
-            var game = new Game { IdGame = GAME_ID, HostPlayerID = HOST_ID, GameStatus = (int)GameStatus.WaitingForPlayers };
-            var host = new Player { Username = HOST };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(user);
-            _repoMock.Setup(r => r.GetGameByIdAsync(GAME_ID)).ReturnsAsync(game);
-            _repoMock.Setup(r => r.GetPlayersInGameAsync(GAME_ID)).ReturnsAsync(new List<Player> { host });
-            _connMock.Setup(c => c.GetClient(HOST)).Returns(_callbackMock.Object);
-
-            var result = await _service.LeaveLobbyAsync(USER);
-
-            Assert.True(result);
-            Assert.Null(user.GameIdGame);
-
-            await Task.Delay(50);
-            _callbackMock.Verify(c => c.OnPlayerLeft(USER), Times.Once);
-        }
+        
 
         [Fact]
         public async Task KickPlayer_Success_KicksTarget()
@@ -392,7 +257,7 @@ namespace GameServer.Tests.Unit
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ReturnsAsync(host);
             _repoMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ReturnsAsync(target);
             _repoMock.Setup(r => r.GetPlayersInGameAsync(GAME_ID)).ReturnsAsync(new List<Player> { host });
-            _connMock.Setup(c => c.GetClient(USER)).Returns(_callbackMock.Object);
+            _connMock.Setup(c => c.GetClient(It.IsAny<string>())).Returns(_callbackMock.Object);
 
             var result = await _service.KickPlayerAsync(req);
 

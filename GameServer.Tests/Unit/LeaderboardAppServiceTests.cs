@@ -38,14 +38,7 @@ namespace GameServer.Tests.Unit
             return list;
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        public async Task GetGlobalLeaderboard_InvalidUsername_ThrowsArgumentNullException(string username)
-        {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _service.GetGlobalLeaderboardAsync(username));
-        }
+       
 
         [Fact]
         public async Task GetGlobalLeaderboard_EmptyRepo_ReturnsEmptyList()

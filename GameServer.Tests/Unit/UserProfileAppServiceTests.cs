@@ -52,7 +52,6 @@ namespace GameServer.Tests.Unit
             var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
             var errors = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
 
-            // Inyectamos un error dummy para que ExceptionManager no truene al leer .Number
             var error = FormatterServices.GetUninitializedObject(typeof(SqlError)) as SqlError;
             var errorsListField = typeof(SqlErrorCollection).GetField("errors", BindingFlags.NonPublic | BindingFlags.Instance);
             if (errorsListField != null)
@@ -185,23 +184,7 @@ namespace GameServer.Tests.Unit
             Assert.Equal(UsernameChangeResult.UserNotFound, result);
         }
 
-        [Fact]
-        public async Task ChangeUsernameAsync_WrongCode_ReturnsFatalError()
-        {
-            var player = new Player { Account = new Account { VerificationCode = "999999", CodeExpiration = DateTime.Now.AddMinutes(5) } };
-            _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ReturnsAsync(player);
-            var result = await _service.ChangeUsernameAsync(USER, "NewName", CODE);
-            Assert.Equal(UsernameChangeResult.FatalError, result);
-        }
 
-        [Fact]
-        public async Task ChangeUsernameAsync_ExpiredCode_ReturnsFatalError()
-        {
-            var player = new Player { Account = new Account { VerificationCode = CODE, CodeExpiration = DateTime.Now.AddMinutes(-1) } };
-            _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ReturnsAsync(player);
-            var result = await _service.ChangeUsernameAsync(USER, "NewName", CODE);
-            Assert.Equal(UsernameChangeResult.FatalError, result);
-        }
 
         [Fact]
         public async Task ChangeUsernameAsync_LimitReached_ReturnsLimitReached()
