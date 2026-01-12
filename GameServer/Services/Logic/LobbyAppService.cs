@@ -198,9 +198,35 @@ namespace GameServer.Services.Logic
 
                 if (player.GameIdGame != null)
                 {
-                    result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
-                    result.ErrorMessage = "Ya estás en partida";
-                    return result;
+                    var existingGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
+
+                    if (existingGame != null && existingGame.LobbyCode == request.LobbyCode)
+                    {
+                        Log.InfoFormat("Jugador '{0}' reconectando al lobby {1}", request.Username, request.LobbyCode);
+
+                        result.Success = true;
+                        result.BoardId = existingGame.Board_idBoard;
+                        result.MaxPlayers = existingGame.MaxPlayers;
+                        result.IsHost = (player.IdPlayer == existingGame.HostPlayerID);
+                        result.IsPublic = existingGame.IsPublic;
+
+                        var currentPlayers = await _repository.GetPlayersInGameAsync(existingGame.IdGame);
+                        result.PlayersInLobby = currentPlayers.Select(p => new PlayerLobbyDto
+                        {
+                            Username = p.Username,
+                            IsHost = (p.IdPlayer == existingGame.HostPlayerID)
+                        }).ToList();
+
+                        result.ErrorType = LobbyErrorType.None;
+
+                        return result;
+                    }
+                    else
+                    {
+                        result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
+                        result.ErrorMessage = "Ya estás en partida";
+                        return result;
+                    }
                 }
 
                 var game = await _repository.GetGameByCodeAsync(request.LobbyCode);

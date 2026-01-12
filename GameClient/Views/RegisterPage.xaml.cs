@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using GameClient.AuthServiceReference;
+using GameClient.AuthServiceReference; 
 using System.ServiceModel;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
@@ -107,6 +107,23 @@ namespace GameClient.Views
                         RegistrationResult result = await serviceClient.RegisterUserAsync(request);
                         HandleRegistrationResult(result, email);
                     }
+               
+                    catch (FaultException<ServiceFault> fault)
+                    {
+                        var resourceManager = GameClient.Resources.Strings.ResourceManager;
+
+                        string contextMessage = resourceManager.GetString("Register_Error_General") ?? "Error durante el registro.";
+                        string title = resourceManager.GetString("Register_Title_Error") ?? "Error";
+
+                        string technicalMessage = resourceManager.GetString(fault.Detail.Code);
+
+                        if (string.IsNullOrEmpty(technicalMessage))
+                        {
+                            technicalMessage = fault.Detail.Message ?? "Error del servidor.";
+                        }
+
+                        MessageBox.Show($"{contextMessage} {technicalMessage}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                     catch (EndpointNotFoundException)
                     {
                         ShowTranslatedMessageBox("Register_Error_ServerDown", "Register_Title_Error");
@@ -115,7 +132,7 @@ namespace GameClient.Views
                     {
                         ShowTranslatedMessageBox("Register_Error_Timeout", "Register_Title_Error");
                     }
-                    catch (FaultException)
+                    catch (FaultException) 
                     {
                         ShowTranslatedMessageBox("Register_Error_Database", "Register_Title_Error");
                     }

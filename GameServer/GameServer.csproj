@@ -137,6 +137,9 @@
     <Compile Include="DTOs\User\UsernameChangeResult.cs" />
     <Compile Include="DTOs\User\UserProfileDto.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Faults\ExceptionManager.cs" />
+    <Compile Include="Faults\Faults.cs" />
+    <Compile Include="Faults\ServiceFault.cs" />
     <Compile Include="Friendship.cs">
       <DependentUpon>GameDatabase.tt</DependentUpon>
     </Compile>

@@ -1267,6 +1267,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se puede conectar a la base de datos..
+        /// </summary>
+        public static string Error_DatabaseDown {
+            get {
+                return ResourceManager.GetString("Error_DatabaseDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Has sido expulsado de la sala..
         /// </summary>
         public static string Error_Kicked {
@@ -1335,6 +1344,15 @@ namespace GameClient.Resources {
         public static string Error_UserInGame {
             get {
                 return ResourceManager.GetString("Error_UserInGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El usuario no existe..
+        /// </summary>
+        public static string Error_UserNotFound {
+            get {
+                return ResourceManager.GetString("Error_UserNotFound", resourceCulture);
             }
         }
         
@@ -1933,6 +1951,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al solicitar el código..
+        /// </summary>
+        public static string Forgot_Error_Communication {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a El correo no puede estar vacío..
         /// </summary>
         public static string Forgot_Error_Empty {
@@ -1951,6 +1978,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo procesar la solicitud de recuperación..
+        /// </summary>
+        public static string Forgot_Error_GeneralContext {
+            get {
+                return ResourceManager.GetString("Forgot_Error_GeneralContext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Los correos no coinciden..
         /// </summary>
         public static string Forgot_Error_Mismatch {
@@ -1960,11 +1996,38 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Se requiere internet para recuperar la contraseña..
+        /// </summary>
+        public static string Forgot_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Forgot_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Hubo un error al procesar tu solicitud. Intenta más tarde..
         /// </summary>
         public static string Forgot_Error_Process {
             get {
                 return ResourceManager.GetString("Forgot_Error_Process", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servicio de recuperación no está disponible. Intente más tarde..
+        /// </summary>
+        public static string Forgot_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Forgot_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El envío del correo tardó demasiado. Verifique su conexión..
+        /// </summary>
+        public static string Forgot_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Forgot_Error_Timeout", resourceCulture);
             }
         }
         
@@ -2001,6 +2064,15 @@ namespace GameClient.Resources {
         public static string Forgot_Title_Blocked {
             get {
                 return ResourceManager.GetString("Forgot_Title_Blocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Recuperación.
+        /// </summary>
+        public static string Forgot_Title_Error {
+            get {
+                return ResourceManager.GetString("Forgot_Title_Error", resourceCulture);
             }
         }
         
@@ -2482,11 +2554,83 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Acción bloqueada.
+        /// </summary>
+        public static string Global_ActionBlocked {
+            get {
+                return ResourceManager.GetString("Global_ActionBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación con el servidor..
+        /// </summary>
+        public static string Global_Error_Communication {
+            get {
+                return ResourceManager.GetString("Global_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar al servidor..
+        /// </summary>
+        public static string Global_Error_ServerDown {
+            get {
+                return ResourceManager.GetString("Global_Error_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor tardó demasiado en responder..
+        /// </summary>
+        public static string Global_Error_Timeout {
+            get {
+                return ResourceManager.GetString("Global_Error_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error inesperado..
+        /// </summary>
+        public static string Global_Error_Unknown {
+            get {
+                return ResourceManager.GetString("Global_Error_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Por seguridad, el pegado está deshabilitado en este campo..
+        /// </summary>
+        public static string Global_PasteBlocked {
+            get {
+                return ResourceManager.GetString("Global_PasteBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a ¡Genial!.
         /// </summary>
         public static string GreatButton {
             get {
                 return ResourceManager.GetString("GreatButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al iniciar sesión como invitado..
+        /// </summary>
+        public static string Guest_Context_Error {
+            get {
+                return ResourceManager.GetString("Guest_Context_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Has ingresado como invitado. Tu progreso no se guardará si cierras el juego..
+        /// </summary>
+        public static string Guest_Welcome_Msg {
+            get {
+                return ResourceManager.GetString("Guest_Welcome_Msg", resourceCulture);
             }
         }
         
@@ -3886,6 +4030,42 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error al reenviar el código..
+        /// </summary>
+        public static string Resend_Context_Error {
+            get {
+                return ResourceManager.GetString("Resend_Context_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo reenviar el código. Verifica el estado de la cuenta..
+        /// </summary>
+        public static string Resend_Error_Failed {
+            get {
+                return ResourceManager.GetString("Resend_Error_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Se ha enviado un nuevo código a {0}. Tienes 15 minutos para usarlo..
+        /// </summary>
+        public static string Resend_Success_Msg {
+            get {
+                return ResourceManager.GetString("Resend_Success_Msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Código Reenviado.
+        /// </summary>
+        public static string Resend_Success_Title {
+            get {
+                return ResourceManager.GetString("Resend_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Reenviar Código.
         /// </summary>
         public static string ResendCodeBtn {
@@ -4854,6 +5034,78 @@ namespace GameClient.Resources {
         public static string VerificationCodeLabel {
             get {
                 return ResourceManager.GetString("VerificationCodeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ocurrió un error durante la verificación..
+        /// </summary>
+        public static string Verify_Context_Error {
+            get {
+                return ResourceManager.GetString("Verify_Context_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El código de verificación debe tener 6 dígitos numéricos..
+        /// </summary>
+        public static string Verify_Error_Format {
+            get {
+                return ResourceManager.GetString("Verify_Error_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El código es incorrecto, ha expirado o la cuenta ya está verificada..
+        /// </summary>
+        public static string Verify_Error_Invalid {
+            get {
+                return ResourceManager.GetString("Verify_Error_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Se requiere conexión a internet para verificar la cuenta..
+        /// </summary>
+        public static string Verify_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Verify_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡Cuenta verificada exitosamente! Ya puedes iniciar sesión..
+        /// </summary>
+        public static string Verify_Success_Msg {
+            get {
+                return ResourceManager.GetString("Verify_Success_Msg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Éxito.
+        /// </summary>
+        public static string Verify_Success_Title {
+            get {
+                return ResourceManager.GetString("Verify_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Formato.
+        /// </summary>
+        public static string Verify_Title_Error {
+            get {
+                return ResourceManager.GetString("Verify_Title_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verificación Fallida.
+        /// </summary>
+        public static string Verify_Title_Failed {
+            get {
+                return ResourceManager.GetString("Verify_Title_Failed", resourceCulture);
             }
         }
         

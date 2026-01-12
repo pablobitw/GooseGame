@@ -11,6 +11,7 @@
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults" />
       <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import schemaLocation="http://localhost:8081/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth" />
     </xsd:schema>
@@ -21,11 +22,17 @@
   <wsdl:message name="IAuthService_RegisterUser_OutputMessage">
     <wsdl:part name="parameters" element="tns:RegisterUserResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_RegisterUser_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q1:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IAuthService_LogIn_InputMessage">
     <wsdl:part name="parameters" element="tns:LogIn" />
   </wsdl:message>
   <wsdl:message name="IAuthService_LogIn_OutputMessage">
     <wsdl:part name="parameters" element="tns:LogInResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAuthService_LogIn_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q2:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IAuthService_LoginAsGuest_InputMessage">
     <wsdl:part name="parameters" element="tns:LoginAsGuest" />
@@ -33,11 +40,17 @@
   <wsdl:message name="IAuthService_LoginAsGuest_OutputMessage">
     <wsdl:part name="parameters" element="tns:LoginAsGuestResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_LoginAsGuest_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q3:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IAuthService_Logout_InputMessage">
     <wsdl:part name="parameters" element="tns:Logout" />
   </wsdl:message>
   <wsdl:message name="IAuthService_Logout_OutputMessage">
     <wsdl:part name="parameters" element="tns:LogoutResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAuthService_Logout_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q4:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IAuthService_VerifyAccount_InputMessage">
     <wsdl:part name="parameters" element="tns:VerifyAccount" />
@@ -45,11 +58,17 @@
   <wsdl:message name="IAuthService_VerifyAccount_OutputMessage">
     <wsdl:part name="parameters" element="tns:VerifyAccountResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_VerifyAccount_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q5:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IAuthService_RequestPasswordReset_InputMessage">
     <wsdl:part name="parameters" element="tns:RequestPasswordReset" />
   </wsdl:message>
   <wsdl:message name="IAuthService_RequestPasswordReset_OutputMessage">
     <wsdl:part name="parameters" element="tns:RequestPasswordResetResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAuthService_RequestPasswordReset_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q6:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IAuthService_VerifyRecoveryCode_InputMessage">
     <wsdl:part name="parameters" element="tns:VerifyRecoveryCode" />
@@ -57,11 +76,17 @@
   <wsdl:message name="IAuthService_VerifyRecoveryCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:VerifyRecoveryCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_VerifyRecoveryCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q7:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IAuthService_UpdatePassword_InputMessage">
     <wsdl:part name="parameters" element="tns:UpdatePassword" />
   </wsdl:message>
   <wsdl:message name="IAuthService_UpdatePassword_OutputMessage">
     <wsdl:part name="parameters" element="tns:UpdatePasswordResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAuthService_UpdatePassword_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q8="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q8:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IAuthService_ResendVerificationCode_InputMessage">
     <wsdl:part name="parameters" element="tns:ResendVerificationCode" />
@@ -69,52 +94,68 @@
   <wsdl:message name="IAuthService_ResendVerificationCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:ResendVerificationCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_ResendVerificationCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q9="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q9:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IAuthService_ChangeUserPassword_InputMessage">
     <wsdl:part name="parameters" element="tns:ChangeUserPassword" />
   </wsdl:message>
   <wsdl:message name="IAuthService_ChangeUserPassword_OutputMessage">
     <wsdl:part name="parameters" element="tns:ChangeUserPasswordResponse" />
   </wsdl:message>
+  <wsdl:message name="IAuthService_ChangeUserPassword_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q10="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q10:ServiceFault" />
+  </wsdl:message>
   <wsdl:portType name="IAuthService">
     <wsdl:operation name="RegisterUser">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/RegisterUser" message="tns:IAuthService_RegisterUser_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/RegisterUserResponse" message="tns:IAuthService_RegisterUser_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/RegisterUserServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_RegisterUser_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="LogIn">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/LogIn" message="tns:IAuthService_LogIn_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/LogInResponse" message="tns:IAuthService_LogIn_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/LogInServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_LogIn_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="LoginAsGuest">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/LoginAsGuest" message="tns:IAuthService_LoginAsGuest_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/LoginAsGuestResponse" message="tns:IAuthService_LoginAsGuest_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/LoginAsGuestServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_LoginAsGuest_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="Logout">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/Logout" message="tns:IAuthService_Logout_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/LogoutResponse" message="tns:IAuthService_Logout_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/LogoutServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_Logout_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="VerifyAccount">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/VerifyAccount" message="tns:IAuthService_VerifyAccount_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/VerifyAccountResponse" message="tns:IAuthService_VerifyAccount_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/VerifyAccountServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_VerifyAccount_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="RequestPasswordReset">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/RequestPasswordReset" message="tns:IAuthService_RequestPasswordReset_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/RequestPasswordResetResponse" message="tns:IAuthService_RequestPasswordReset_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/RequestPasswordResetServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_RequestPasswordReset_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="VerifyRecoveryCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/VerifyRecoveryCode" message="tns:IAuthService_VerifyRecoveryCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/VerifyRecoveryCodeResponse" message="tns:IAuthService_VerifyRecoveryCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/VerifyRecoveryCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_VerifyRecoveryCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="UpdatePassword">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/UpdatePassword" message="tns:IAuthService_UpdatePassword_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/UpdatePasswordResponse" message="tns:IAuthService_UpdatePassword_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/UpdatePasswordServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_UpdatePassword_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="ResendVerificationCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/ResendVerificationCode" message="tns:IAuthService_ResendVerificationCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/ResendVerificationCodeResponse" message="tns:IAuthService_ResendVerificationCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/ResendVerificationCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_ResendVerificationCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="ChangeUserPassword">
       <wsdl:input wsaw:Action="http://tempuri.org/IAuthService/ChangeUserPassword" message="tns:IAuthService_ChangeUserPassword_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAuthService/ChangeUserPasswordResponse" message="tns:IAuthService_ChangeUserPassword_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IAuthService/ChangeUserPasswordServiceFaultFault" name="ServiceFaultFault" message="tns:IAuthService_ChangeUserPassword_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IAuthService" type="tns:IAuthService">
@@ -128,6 +169,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="LogIn">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/LogIn" style="document" />
@@ -137,6 +181,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="LoginAsGuest">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/LoginAsGuest" style="document" />
@@ -146,6 +193,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="Logout">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/Logout" style="document" />
@@ -155,6 +205,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="VerifyAccount">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/VerifyAccount" style="document" />
@@ -164,6 +217,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="RequestPasswordReset">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/RequestPasswordReset" style="document" />
@@ -173,6 +229,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="VerifyRecoveryCode">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/VerifyRecoveryCode" style="document" />
@@ -182,6 +241,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="UpdatePassword">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/UpdatePassword" style="document" />
@@ -191,6 +253,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="ResendVerificationCode">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/ResendVerificationCode" style="document" />
@@ -200,6 +265,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="ChangeUserPassword">
       <soap12:operation soapAction="http://tempuri.org/IAuthService/ChangeUserPassword" style="document" />
@@ -209,6 +277,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="AuthService">

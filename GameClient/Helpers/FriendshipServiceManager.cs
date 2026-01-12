@@ -151,8 +151,33 @@ namespace GameClient.Helpers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[FriendshipManager] Error enviando invitación: {ex.Message}");
-                ForceInvalidateProxy();
+                if (ex is CommunicationException || ex is TimeoutException)
+                {
+                    ForceInvalidateProxy();
+                    try
+                    {
+                        CheckConnection();
+                        if (IsProxyValid())
+                        {
+                            var invitation = new GameInvitationDto
+                            {
+                                SenderUsername = _username,
+                                TargetUsername = targetUser,
+                                LobbyCode = lobbyCode
+                            };
+                            _proxy.SendGameInvitation(invitation);
+                        }
+                    }
+                    catch (Exception retryEx)
+                    {
+                        Console.WriteLine($"[FriendshipManager] Reintento fallido: {retryEx.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[FriendshipManager] Error enviando invitación: {ex.Message}");
+                    ForceInvalidateProxy();
+                }
             }
         }
 
@@ -169,15 +194,20 @@ namespace GameClient.Helpers
             {
                 return await action();
             }
-            catch (CommunicationException)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
                 ForceInvalidateProxy();
-                throw;
-            }
-            catch (TimeoutException)
-            {
-                ForceInvalidateProxy();
-                throw;
+
+                try
+                {
+                    CheckConnection(); // Esto reconectará al usuario al servidor
+                    if (!IsProxyValid()) throw new EndpointNotFoundException("Reconnection failed");
+                    return await action();
+                }
+                catch
+                {
+                    throw; 
+                }
             }
             catch (ObjectDisposedException)
             {

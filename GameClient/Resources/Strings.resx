@@ -717,6 +717,9 @@
   <data name="Error_Database" xml:space="preserve">
     <value>Lo sentimos, la base de datos esta apagada o en mantenimiento</value>
   </data>
+  <data name="Error_DatabaseDown" xml:space="preserve">
+    <value>No se puede conectar a la base de datos.</value>
+  </data>
   <data name="Error_Kicked" xml:space="preserve">
     <value>Has sido expulsado de la sala.</value>
   </data>
@@ -741,8 +744,14 @@
   <data name="Error_UserInGame" xml:space="preserve">
     <value>El usuario ya está en una partida.</value>
   </data>
+  <data name="Error_UserNotFound" xml:space="preserve">
+    <value>El usuario no existe.</value>
+  </data>
   <data name="ForgotPassLabel" xml:space="preserve">
     <value>Olvidaste tu contraseña?</value>
+  </data>
+  <data name="Forgot_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación al solicitar el código.</value>
   </data>
   <data name="Forgot_Error_Empty" xml:space="preserve">
     <value>El correo no puede estar vacío.</value>
@@ -750,11 +759,23 @@
   <data name="Forgot_Error_Format" xml:space="preserve">
     <value>El formato del correo no es válido.</value>
   </data>
+  <data name="Forgot_Error_GeneralContext" xml:space="preserve">
+    <value>No se pudo procesar la solicitud de recuperación.</value>
+  </data>
   <data name="Forgot_Error_Mismatch" xml:space="preserve">
     <value>Los correos no coinciden.</value>
   </data>
+  <data name="Forgot_Error_NoInternet" xml:space="preserve">
+    <value>Se requiere internet para recuperar la contraseña.</value>
+  </data>
   <data name="Forgot_Error_Process" xml:space="preserve">
     <value>Hubo un error al procesar tu solicitud. Intenta más tarde.</value>
+  </data>
+  <data name="Forgot_Error_ServerDown" xml:space="preserve">
+    <value>El servicio de recuperación no está disponible. Intente más tarde.</value>
+  </data>
+  <data name="Forgot_Error_Timeout" xml:space="preserve">
+    <value>El envío del correo tardó demasiado. Verifique su conexión.</value>
   </data>
   <data name="Forgot_Paste_Blocked" xml:space="preserve">
     <value>Por seguridad, el pegado está deshabilitado en este campo.</value>
@@ -767,6 +788,9 @@
   </data>
   <data name="Forgot_Title_Blocked" xml:space="preserve">
     <value>Acción bloqueada</value>
+  </data>
+  <data name="Forgot_Title_Error" xml:space="preserve">
+    <value>Error de Recuperación</value>
   </data>
   <data name="FriendActionBlockedTitle" xml:space="preserve">
     <value>Acción bloqueada</value>
@@ -924,6 +948,24 @@
   <data name="GamesWonLabel" xml:space="preserve">
     <value>Victorias:</value>
   </data>
+  <data name="Global_ActionBlocked" xml:space="preserve">
+    <value>Acción bloqueada</value>
+  </data>
+  <data name="Global_Error_Communication" xml:space="preserve">
+    <value>Error de comunicación con el servidor.</value>
+  </data>
+  <data name="Global_Error_ServerDown" xml:space="preserve">
+    <value>No se pudo conectar al servidor.</value>
+  </data>
+  <data name="Global_Error_Timeout" xml:space="preserve">
+    <value>El servidor tardó demasiado en responder.</value>
+  </data>
+  <data name="Global_Error_Unknown" xml:space="preserve">
+    <value>Ocurrió un error inesperado.</value>
+  </data>
+  <data name="Global_PasteBlocked" xml:space="preserve">
+    <value>Por seguridad, el pegado está deshabilitado en este campo.</value>
+  </data>
   <data name="GreatButton" xml:space="preserve">
     <value>¡Genial!</value>
   </data>
@@ -932,6 +974,12 @@
   </data>
   <data name="GuestRestrictedTitle" xml:space="preserve">
     <value>Modo Invitado</value>
+  </data>
+  <data name="Guest_Context_Error" xml:space="preserve">
+    <value>Error al iniciar sesión como invitado.</value>
+  </data>
+  <data name="Guest_Welcome_Msg" xml:space="preserve">
+    <value>Has ingresado como invitado. Tu progreso no se guardará si cierras el juego.</value>
   </data>
   <data name="HostHeader" xml:space="preserve">
     <value>Anfitrión</value>
@@ -1398,6 +1446,18 @@
   <data name="ResendCodeButton" xml:space="preserve">
     <value>Reenviar codigo</value>
   </data>
+  <data name="Resend_Context_Error" xml:space="preserve">
+    <value>Ocurrió un error al reenviar el código.</value>
+  </data>
+  <data name="Resend_Error_Failed" xml:space="preserve">
+    <value>No se pudo reenviar el código. Verifica el estado de la cuenta.</value>
+  </data>
+  <data name="Resend_Success_Msg" xml:space="preserve">
+    <value>Se ha enviado un nuevo código a {0}. Tienes 15 minutos para usarlo.</value>
+  </data>
+  <data name="Resend_Success_Title" xml:space="preserve">
+    <value>Código Reenviado</value>
+  </data>
   <data name="ResetPasswordInstruction" xml:space="preserve">
     <value>Restablece tu contraseña:</value>
   </data>
@@ -1733,6 +1793,30 @@
   </data>
   <data name="VerifyRecoveryCodeLabel" xml:space="preserve">
     <value>Recuperacion</value>
+  </data>
+  <data name="Verify_Context_Error" xml:space="preserve">
+    <value>Ocurrió un error durante la verificación.</value>
+  </data>
+  <data name="Verify_Error_Format" xml:space="preserve">
+    <value>El código de verificación debe tener 6 dígitos numéricos.</value>
+  </data>
+  <data name="Verify_Error_Invalid" xml:space="preserve">
+    <value>El código es incorrecto, ha expirado o la cuenta ya está verificada.</value>
+  </data>
+  <data name="Verify_Error_NoInternet" xml:space="preserve">
+    <value>Se requiere conexión a internet para verificar la cuenta.</value>
+  </data>
+  <data name="Verify_Success_Msg" xml:space="preserve">
+    <value>¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.</value>
+  </data>
+  <data name="Verify_Success_Title" xml:space="preserve">
+    <value>Éxito</value>
+  </data>
+  <data name="Verify_Title_Error" xml:space="preserve">
+    <value>Error de Formato</value>
+  </data>
+  <data name="Verify_Title_Failed" xml:space="preserve">
+    <value>Verificación Fallida</value>
   </data>
   <data name="VideoHeader" xml:space="preserve">
     <value>Video</value>

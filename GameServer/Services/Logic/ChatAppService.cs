@@ -44,6 +44,13 @@ namespace GameServer.Services.Logic
                     return ChatOperationResult.InternalError;
                 }
 
+                if (_sessionManager.GetLobbyParticipants(request.LobbyCode).Contains(request.Username))
+                {
+                    _sessionManager.RegisterClient(request.Username, callback);
+                    Log.Info($"Chat: {request.Username} se ha reconectado al lobby {request.LobbyCode}");
+                    return ChatOperationResult.Success;
+                }
+
                 _sessionManager.RegisterClient(request.Username, callback);
                 _sessionManager.AddUserToLobby(request.LobbyCode, request.Username);
 

@@ -1,15 +1,18 @@
 ﻿#nullable disable
 using GameServer;
 using GameServer.DTOs.Auth;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Repositories.Interfaces;
 using GameServer.Services.Logic;
-using GameServer.Services.Common;
 using Moq;
 using System;
+using System.Collections;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -45,17 +48,6 @@ namespace GameServer.Tests.Unit
         public void Dispose()
         {
             _repositoryMock.VerifyAll();
-        }
-
-        private SqlException CreateSqlException()
-        {
-            var collection = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
-            var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-
-            FieldInfo errorsField = typeof(SqlException).GetField("_errors", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (errorsField != null) errorsField.SetValue(exception, collection);
-
-            return exception;
         }
 
         [Fact]
@@ -154,23 +146,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task Register_DbDown_ReturnsFatalError()
-        {
-            var req = new RegisterUserRequest { Username = USER, Email = EMAIL, Password = PASS };
-            _repositoryMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ThrowsAsync(CreateSqlException());
-
-            var res = await _service.RegisterUserAsync(req);
-            Assert.Equal(RegistrationResult.FatalError, res);
-        }
-
-        [Fact]
         public async Task Register_NetworkTimeout_ReturnsFatalError()
         {
             var req = new RegisterUserRequest { Username = USER, Email = EMAIL, Password = PASS };
             _repositoryMock.Setup(r => r.GetPlayerByUsernameAsync(USER)).ThrowsAsync(new TimeoutException());
 
-            var res = await _service.RegisterUserAsync(req);
-            Assert.Equal(RegistrationResult.FatalError, res);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.RegisterUserAsync(req));
         }
 
         [Theory]
@@ -263,21 +244,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task Login_SqlException_ReturnsDatabaseError()
-        {
-            _repositoryMock.Setup(r => r.GetPlayerForLoginAsync(USER)).ThrowsAsync(CreateSqlException());
-
-            var res = await _service.LogInAsync(USER, PASS);
-            Assert.Equal("DatabasebError", res.Message);
-        }
-
-        [Fact]
         public async Task Login_TimeoutException_ReturnsDatabaseError()
         {
             _repositoryMock.Setup(r => r.GetPlayerForLoginAsync(USER)).ThrowsAsync(new TimeoutException());
-
-            var res = await _service.LogInAsync(USER, PASS);
-            Assert.Equal("DatabasebError", res.Message);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.LogInAsync(USER, PASS));
         }
 
         [Fact]
@@ -300,9 +270,7 @@ namespace GameServer.Tests.Unit
             _repositoryMock.Setup(r => r.AddPlayer(It.IsAny<Player>()));
             _repositoryMock.Setup(r => r.SaveChangesAsync()).ThrowsAsync(new Exception());
 
-            var res = await _service.LoginAsGuestAsync();
-            Assert.False(res.Success);
-            Assert.Equal("DatabasebError", res.Message);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.LoginAsGuestAsync());
         }
 
         [Theory]
@@ -474,12 +442,12 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-               public void UpdatePassword_Success_UpdatesAndNotifies()
+        public void UpdatePassword_Success_UpdatesAndNotifies()
         {
             var acc = new Account
             {
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Old"),
-                PreferredLanguage = "es-MX" 
+                PreferredLanguage = "es-MX"
             };
             var p = new Player { Username = USER, Account = acc };
 
@@ -489,9 +457,8 @@ namespace GameServer.Tests.Unit
 
             var res = _service.UpdatePassword(EMAIL, "New");
 
-           
             Assert.True(res);
-            Assert.True(BCrypt.Net.BCrypt.Verify("New", acc.PasswordHash)); 
+            Assert.True(BCrypt.Net.BCrypt.Verify("New", acc.PasswordHash));
         }
     }
 }

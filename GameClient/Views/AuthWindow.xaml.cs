@@ -1,4 +1,4 @@
-﻿using GameClient.AuthServiceReference;
+﻿using GameClient.AuthServiceReference; 
 using GameClient.Helpers;
 using GameClient.Views;
 using System;
@@ -47,70 +47,83 @@ namespace GameClient
             var btn = sender as Button;
             if (btn != null) btn.IsEnabled = false;
 
-            if (NetworkInterface.GetIsNetworkAvailable())
+            if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                var client = new AuthServiceClient();
+                ShowTranslatedMessageBox("Auth_Error_NoInternet", "Auth_Title_Error", MessageBoxImage.Warning);
+                if (btn != null) btn.IsEnabled = true;
+                return;
+            }
 
-                try
+            var client = new AuthServiceClient();
+
+            try
+            {
+                GuestLoginResult result = await client.LoginAsGuestAsync();
+
+                if (result.Success)
                 {
-                    GuestLoginResult result = await client.LoginAsGuestAsync();
+                    UserSession.GetInstance().SetSession(result.Username, "Guest", true);
 
-                    if (result.Success)
+                    ShowTranslatedMessageBox("Guest_Welcome_Msg", "Auth_Title_Welcome", MessageBoxImage.Information);
+
+                    GameMainWindow mainMenu = new GameMainWindow(result.Username);
+                    mainMenu.Show();
+                    this.Close();
+                }
+                else
+                {
+                    if (result.Message == "DbError" || result.Message == "DatabasebError")
                     {
-                        UserSession.GetInstance().SetSession(result.Username, "Guest", true);
-                        MessageBox.Show(result.Message,
-                                        GameClient.Resources.Strings.Auth_Title_Welcome,
-                                        MessageBoxButton.OK, MessageBoxImage.Information);
-
-                        GameMainWindow mainMenu = new GameMainWindow(result.Username);
-                        mainMenu.Show();
-                        this.Close();
+                        ShowTranslatedMessageBox("Auth_Error_Database", "Auth_Title_Error", MessageBoxImage.Error);
                     }
                     else
                     {
-                        if (result.Message == "DbError")
-                        {
-                            ShowTranslatedMessageBox("Auth_Error_Database", "Auth_Title_Error", MessageBoxImage.Error);
-                        }
-                        else
-                        {
-                            MessageBox.Show(result.Message,
-                                            GameClient.Resources.Strings.Auth_Title_Error,
-                                            MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
+                        MessageBox.Show(result.Message,
+                                        GameClient.Resources.Strings.Auth_Title_Error,
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-                catch (EndpointNotFoundException)
-                {
-                    ShowTranslatedMessageBox("Auth_Error_ServerDown", "Auth_Title_Error", MessageBoxImage.Error);
-                }
-                catch (TimeoutException)
-                {
-                    ShowTranslatedMessageBox("Auth_Error_Timeout", "Auth_Title_Error", MessageBoxImage.Warning);
-                }
-                catch (FaultException)
-                {
-                    ShowTranslatedMessageBox("Auth_Error_Database", "Auth_Title_Error", MessageBoxImage.Error);
-                }
-                catch (CommunicationException)
-                {
-                    ShowTranslatedMessageBox("Auth_Error_Communication", "Auth_Title_Error", MessageBoxImage.Error);
-                }
-                catch (Exception ex)
-                {
-                    string generalError = GameClient.Resources.Strings.Auth_Error_General;
-                    string title = GameClient.Resources.Strings.Auth_Title_Error;
-                    MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                finally
-                {
-                    CloseServiceClient(client);
-                    if (btn != null) btn.IsEnabled = true;
-                }
             }
-            else
+
+            catch (FaultException<ServiceFault> fault)
             {
-                ShowTranslatedMessageBox("Auth_Error_NoInternet", "Auth_Title_Error", MessageBoxImage.Error);
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Guest_Context_Error") ?? "Error al entrar como invitado.";
+                string title = resManager.GetString("Auth_Title_Error") ?? "Error";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}{technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_ServerDown", "Auth_Title_Error", MessageBoxImage.Error);
+            }
+
+            catch (TimeoutException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_Timeout", "Auth_Title_Error", MessageBoxImage.Warning);
+            }
+
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Auth_Error_Communication", "Auth_Title_Error", MessageBoxImage.Error);
+            }
+
+            catch (Exception ex)
+            {
+                string generalError = GameClient.Resources.Strings.Auth_Error_General;
+                string title = GameClient.Resources.Strings.Auth_Title_Error;
+                MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                CloseServiceClient(client);
                 if (btn != null) btn.IsEnabled = true;
             }
         }
@@ -128,7 +141,7 @@ namespace GameClient
                     client.Abort();
                 }
             }
-            catch (Exception)
+            catch
             {
                 client.Abort();
             }

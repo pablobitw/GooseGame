@@ -1,17 +1,16 @@
 ﻿using GameServer.DTOs.Auth;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Repositories.Interfaces;
+using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Data.Entity.Core;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
-using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using GameServer.Services.Common;
-
 
 namespace GameServer.Services.Logic
 {
@@ -31,14 +30,13 @@ namespace GameServer.Services.Logic
             IConnectionManagerWrapper connection = null)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-
             _emailService = emailService ?? new EmailService();
             _connection = connection ?? new ConnectionManagerWrapper();
         }
 
         public async Task<GuestLoginResult> LoginAsGuestAsync()
         {
-            var result = new GuestLoginResult { Success = false, Message = "DatabasebError" };
+            var result = new GuestLoginResult { Success = false };
             try
             {
                 string guestName;
@@ -79,25 +77,10 @@ namespace GameServer.Services.Logic
                 result.Username = guestName;
                 result.Message = "GuestLoginSuccess";
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("DbUpdateException creating guest", ex);
-                result.Message = "DatabasebError";
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException creating guest", ex);
-                result.Message = "DatabasebError";
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException creating guest", ex);
-                result.Message = "DatabasebError";
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception creating guest", ex);
-                result.Message = "DatabasebError";
+                Log.Error("Error in LoginAsGuestAsync", ex);
+                throw ExceptionManager.Map(ex);
             }
             return result;
         }
@@ -125,25 +108,10 @@ namespace GameServer.Services.Logic
                         }
                     }
                 }
-                catch (SqlException ex)
-                {
-                    Log.Fatal("SqlException in RegisterUserAsync", ex);
-                    result = RegistrationResult.FatalError;
-                }
-                catch (EntityException ex)
-                {
-                    Log.Error("EntityException in RegisterUserAsync", ex);
-                    result = RegistrationResult.FatalError;
-                }
-                catch (TimeoutException ex)
-                {
-                    Log.Error("TimeoutException in RegisterUserAsync", ex);
-                    result = RegistrationResult.FatalError;
-                }
                 catch (Exception ex)
                 {
-                    Log.Fatal("General Exception in RegisterUserAsync", ex);
-                    result = RegistrationResult.FatalError;
+                    Log.Fatal("Error in RegisterUserAsync", ex);
+                    throw ExceptionManager.Map(ex);
                 }
             }
 
@@ -260,25 +228,10 @@ namespace GameServer.Services.Logic
 
                 result = RegistrationResult.Success;
             }
-            catch (DbUpdateException ex)
-            {
-                Log.Error("DbUpdateException in CreateNewUser", ex);
-                result = RegistrationResult.FatalError;
-            }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException in CreateNewUser", ex);
-                result = RegistrationResult.FatalError;
-            }
-            catch (DbEntityValidationException ex)
-            {
-                Log.Error("DbEntityValidationException in CreateNewUser", ex);
-                result = RegistrationResult.FatalError;
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception in CreateNewUser", ex);
-                result = RegistrationResult.FatalError;
+                Log.Fatal("Error in CreateNewUser", ex);
+                throw ExceptionManager.Map(ex);
             }
 
             return result;
@@ -325,25 +278,10 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en Login", ex);
-                response.Message = "DatabasebError";
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException in Login", ex);
-                response.Message = "DatabasebError";
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("TimeoutException in Login", ex);
-                response.Message = "DatabasebError";
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en Login", ex);
-                response.Message = "DatabasebError";
+                Log.Fatal("Error in LogInAsync", ex);
+                throw ExceptionManager.Map(ex);
             }
 
             return response;
@@ -413,17 +351,10 @@ namespace GameServer.Services.Logic
                     isVerified = true;
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en VerifyAccount", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en VerifyAccount", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en VerifyAccount", ex);
+                Log.Fatal("Error in VerifyAccount", ex);
+                throw ExceptionManager.Map(ex);
             }
             return isVerified;
         }
@@ -448,17 +379,10 @@ namespace GameServer.Services.Logic
                     result = await _emailService.SendRecoveryEmailAsync(email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en RequestPasswordReset", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en RequestPasswordReset", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en RequestPasswordReset", ex);
+                Log.Fatal("Error in RequestPasswordResetAsync", ex);
+                throw ExceptionManager.Map(ex);
             }
             return result;
         }
@@ -470,17 +394,10 @@ namespace GameServer.Services.Logic
             {
                 isValid = _repository.VerifyRecoveryCode(email, code);
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en VerifyRecoveryCode", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en VerifyRecoveryCode", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en VerifyRecoveryCode", ex);
+                Log.Fatal("Error in VerifyRecoveryCode", ex);
+                throw ExceptionManager.Map(ex);
             }
             return isValid;
         }
@@ -507,17 +424,10 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en UpdatePassword", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en UpdatePassword", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en UpdatePassword", ex);
+                Log.Fatal("Error in UpdatePassword", ex);
+                throw ExceptionManager.Map(ex);
             }
             return isUpdated;
         }
@@ -538,17 +448,10 @@ namespace GameServer.Services.Logic
                     result = await _emailService.SendVerificationEmailAsync(email, newCode, account.PreferredLanguage).ConfigureAwait(false);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en ResendVerificationCode", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en ResendVerificationCode", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en ResendVerificationCode", ex);
+                Log.Fatal("Error in ResendVerificationCodeAsync", ex);
+                throw ExceptionManager.Map(ex);
             }
             return result;
         }
@@ -573,17 +476,10 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("SqlException en ChangeUserPassword", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("EntityException en ChangeUserPassword", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("General Exception en ChangeUserPassword", ex);
+                Log.Fatal("Error in ChangeUserPasswordAsync", ex);
+                throw ExceptionManager.Map(ex);
             }
             return result;
         }

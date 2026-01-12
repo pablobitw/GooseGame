@@ -7,12 +7,14 @@ using GameClient.AuthServiceReference;
 using System.ServiceModel;
 using GameClient.Views;
 using System.Windows.Threading;
+using System.Net.NetworkInformation;
 
 namespace GameClient
 {
     public partial class VerifyAccountPage : Page
     {
         private string userEmail;
+        private const int CodeLength = 6;
 
         public VerifyAccountPage(string email)
         {
@@ -31,78 +33,94 @@ namespace GameClient
 
             if (!IsCodeValid(codeTyped))
             {
-                MessageBox.Show("El código de verificación debe tener 6 dígitos numéricos.", "Error de Formato");
+                ShowTranslatedMessageBox("Verify_Error_Format", "Verify_Title_Error", MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Verify_Error_NoInternet", "Verify_Title_Error", MessageBoxImage.Warning);
                 return;
             }
 
             var client = new AuthServiceClient();
             bool verificationResult = false;
-            bool connectionError = false;
 
             try
             {
                 verificationResult = await client.VerifyAccountAsync(userEmail, codeTyped);
+
+                if (verificationResult)
+                {
+                    ShowTranslatedMessageBox("Verify_Success_Msg", "Verify_Success_Title", MessageBoxImage.Information);
+                    NavigationService.Navigate(new LoginPage());
+                }
+                else
+                {
+                    ShowTranslatedMessageBox("Verify_Error_Invalid", "Verify_Title_Failed", MessageBoxImage.Warning);
+                }
+            }
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+
+                string contextMsg = resManager.GetString("Verify_Context_Error") ?? "Error durante la verificación.";
+                string title = resManager.GetString("Verify_Title_Error") ?? "Error";
+
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (EndpointNotFoundException)
+            {
+                ShowTranslatedMessageBox("Global_Error_ServerDown", "Verify_Title_Error", MessageBoxImage.Error);
+            }
+            catch (TimeoutException)
+            {
+                ShowTranslatedMessageBox("Global_Error_Timeout", "Verify_Title_Error", MessageBoxImage.Warning);
+            }
+            catch (CommunicationException)
+            {
+                ShowTranslatedMessageBox("Global_Error_Communication", "Verify_Title_Error", MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                connectionError = HandleConnectionException(ex);
+                string generalError = GameClient.Resources.Strings.Global_Error_Unknown;
+                string title = GameClient.Resources.Strings.Verify_Title_Error;
+                MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
                 CloseClientSafely(client);
             }
-
-            if (!connectionError)
-            {
-                HandleVerificationResult(verificationResult);
-            }
         }
 
         private static bool IsCodeValid(string code)
         {
-            return !string.IsNullOrEmpty(code) && code.Length == 6 && int.TryParse(code, out _);
-        }
-
-        private static bool HandleConnectionException(Exception ex)
-        {
-            if (ex is EndpointNotFoundException)
-            {
-                MessageBox.Show("No se pudo conectar al servidor. Asegúrate de que el servidor esté en ejecución.", "Error de Conexión");
-                return true;
-            }
-            if (ex is TimeoutException)
-            {
-                MessageBox.Show("La solicitud tardó demasiado en responder. Revisa tu conexión.", "Error de Red");
-                return true;
-            }
-            if (ex is CommunicationException)
-            {
-                MessageBox.Show("Error de comunicación con el servidor. Revisa tu conexión.", "Error de Red");
-                return true;
-            }
-
-            MessageBox.Show("Error al contactar el servidor: " + ex.Message, "Error");
-            return true;
+            return !string.IsNullOrEmpty(code) && code.Length == CodeLength && int.TryParse(code, out _);
         }
 
         private static void CloseClientSafely(AuthServiceClient client)
         {
-            if (client.State == CommunicationState.Opened)
+            try
             {
-                client.Close();
+                if (client.State == CommunicationState.Opened)
+                {
+                    client.Close();
+                }
+                else
+                {
+                    client.Abort();
+                }
             }
-        }
-
-        private void HandleVerificationResult(bool verificationResult)
-        {
-            if (verificationResult)
+            catch
             {
-                MessageBox.Show("¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.", "Éxito");
-                NavigationService.Navigate(new LoginPage());
-            }
-            else
-            {
-                MessageBox.Show("El código es incorrecto, ha expirado o la cuenta ya ha sido verificada.", "Verificación Fallida");
+                client.Abort();
             }
         }
 
@@ -114,34 +132,64 @@ namespace GameClient
                 button.IsEnabled = false;
             }
 
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Verify_Error_NoInternet", "Verify_Title_Error", MessageBoxImage.Warning);
+                if (button != null) button.IsEnabled = true;
+                return;
+            }
+
             var client = new AuthServiceClient();
             bool requestSent = false;
-            bool connectionError = false;
-            string errorMessage = string.Empty;
 
             try
             {
                 requestSent = await client.ResendVerificationCodeAsync(userEmail);
+
+                if (requestSent)
+                {
+                    string msgFormat = GameClient.Resources.Strings.Resend_Success_Msg;
+                    string msg = string.Format(msgFormat ?? "Código reenviado a {0}", userEmail);
+                    string title = GameClient.Resources.Strings.Resend_Success_Title;
+
+                    MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    ShowTranslatedMessageBox("Resend_Error_Failed", "Verify_Title_Error", MessageBoxImage.Warning);
+                }
+            }
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Resend_Context_Error") ?? "Error al reenviar código.";
+                string title = resManager.GetString("Verify_Title_Error") ?? "Error";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg} {technicalReason}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (EndpointNotFoundException)
             {
-                errorMessage = "No se pudo conectar al servidor.";
-                connectionError = true;
+                ShowTranslatedMessageBox("Global_Error_ServerDown", "Verify_Title_Error", MessageBoxImage.Error);
             }
             catch (TimeoutException)
             {
-                errorMessage = "El servidor tardó demasiado en responder.";
-                connectionError = true;
+                ShowTranslatedMessageBox("Global_Error_Timeout", "Verify_Title_Error", MessageBoxImage.Warning);
             }
             catch (CommunicationException)
             {
-                errorMessage = "Error de comunicación con el servidor.";
-                connectionError = true;
+                ShowTranslatedMessageBox("Global_Error_Communication", "Verify_Title_Error", MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error inesperado: {ex.Message}";
-                connectionError = true;
+                string generalError = GameClient.Resources.Strings.Global_Error_Unknown;
+                string title = GameClient.Resources.Strings.Verify_Title_Error;
+                MessageBox.Show($"{generalError}\n{ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -150,21 +198,6 @@ namespace GameClient
                 {
                     button.IsEnabled = true;
                 }
-            }
-
-            if (connectionError)
-            {
-                MessageBox.Show(errorMessage, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (requestSent)
-            {
-                MessageBox.Show($"Se ha enviado un nuevo código a {userEmail}. Tienes 15 minutos para usarlo.", "Código Reenviado", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                MessageBox.Show("No se pudo reenviar el código. Verifica que la cuenta exista y esté pendiente.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -196,6 +229,13 @@ namespace GameClient
             {
                 e.CancelCommand();
             }
+        }
+
+        private static void ShowTranslatedMessageBox(string messageKey, string titleKey, MessageBoxImage icon)
+        {
+            string message = GameClient.Resources.Strings.ResourceManager.GetString(messageKey);
+            string title = GameClient.Resources.Strings.ResourceManager.GetString(titleKey);
+            MessageBox.Show(message ?? messageKey, title ?? titleKey, MessageBoxButton.OK, icon);
         }
     }
 }

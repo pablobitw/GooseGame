@@ -388,6 +388,7 @@
     <EmbeddedResource Include="Resources\Strings.en.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.en.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -404,6 +405,9 @@
     </None>
     <None Include="Connected Services\AuthServiceReference\GameClient.AuthServiceReference.RegistrationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\AuthServiceReference\item3.xsd">
+      <SubType>Designer</SubType>
     </None>
     <None Include="Connected Services\ChatServiceReference\GameClient.ChatServiceReference.ChatOperationResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>

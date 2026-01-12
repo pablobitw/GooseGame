@@ -1,4 +1,4 @@
-﻿using GameClient.AuthServiceReference;
+﻿using GameClient.AuthServiceReference; 
 using GameClient.Helpers;
 using System;
 using System.Diagnostics;
@@ -52,22 +52,39 @@ namespace GameClient.Views
                             HandleLoginError(response.Message);
                         }
                     }
+        
+                    catch (FaultException<ServiceFault> fault)
+                    {
+                        var resManager = GameClient.Resources.Strings.ResourceManager;
+
+                        string contextTitle = resManager.GetString("Login_Title_Error") ?? "Error";
+                        string contextMsg = resManager.GetString("Login_Error_General") ?? "Error al iniciar sesión.";
+
+                        string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                        if (string.IsNullOrEmpty(technicalReason))
+                        {
+                            technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                        }
+
+                        MessageBox.Show($"{contextMsg} {technicalReason}", contextTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+       
                     catch (EndpointNotFoundException)
                     {
                         ShowTranslatedMessageBox("Login_Error_ServerDown", "Login_Title_Error");
                     }
+       
                     catch (TimeoutException)
                     {
                         ShowTranslatedMessageBox("Login_Error_Timeout", "Login_Title_Error");
                     }
-                    catch (FaultException)
-                    {
-                        ShowTranslatedMessageBox("Login_Error_Database", "Login_Title_Error");
-                    }
+        
                     catch (CommunicationException)
                     {
                         ShowTranslatedMessageBox("Login_Error_Communication", "Login_Title_Error");
                     }
+         
                     catch (Exception ex)
                     {
                         string generalError = GameClient.Resources.Strings.Login_Error_General;
@@ -90,7 +107,7 @@ namespace GameClient.Views
         {
             switch (messageCode)
             {
-                case "DbError":
+                case "DbError": 
                     ShowTranslatedMessageBox("Login_Error_Database", "Login_Title_Error");
                     break;
                 case "UserBanned":
@@ -262,11 +279,10 @@ namespace GameClient.Views
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show(
-                    "Por seguridad, el pegado está deshabilitado en este campo.",
-                    "Acción bloqueada",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                string msg = GameClient.Resources.Strings.Global_PasteBlocked ?? "Acción no permitida.";
+                string title = GameClient.Resources.Strings.Global_ActionBlocked ?? "Acción bloqueada";
+
+                MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }), DispatcherPriority.Background);
         }
 
@@ -275,11 +291,10 @@ namespace GameClient.Views
             e.CancelCommand();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                MessageBox.Show(
-                    "Por seguridad, el pegado está deshabilitado en campos de contraseña.",
-                    "Acción bloqueada",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                string msg = GameClient.Resources.Strings.Global_PasteBlocked ?? "Acción no permitida en contraseñas.";
+                string title = GameClient.Resources.Strings.Global_ActionBlocked ?? "Acción bloqueada";
+
+                MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }), DispatcherPriority.Background);
         }
     }

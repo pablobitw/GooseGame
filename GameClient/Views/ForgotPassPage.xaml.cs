@@ -1,7 +1,8 @@
-﻿using GameClient.AuthServiceReference;
+﻿using GameClient.AuthServiceReference; // <--- Aquí vive ServiceFault
 using GameClient.Views;
 using System;
 using System.Net.Mail;
+using System.Net.NetworkInformation; 
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,6 +22,12 @@ namespace GameClient
         private async void OnSendButtonClick(object sender, RoutedEventArgs e)
         {
             if (!IsFormValid()) return;
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowTranslatedMessageBox("Forgot_Error_NoInternet", "Forgot_Title_Error", MessageBoxImage.Warning);
+                return;
+            }
 
             string email = EmailTextBox.Text;
             var client = new AuthServiceClient();
@@ -44,18 +51,39 @@ namespace GameClient
                     ShowError(EmailTextBox, GameClient.Resources.Strings.Forgot_Error_Process);
                 }
             }
+
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+
+                string contextTitle = resManager.GetString("Forgot_Title_Error") ?? "Error de Recuperación";
+                string contextMsg = resManager.GetString("Forgot_Error_GeneralContext") ?? "No se pudo enviar el correo.";
+
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}", contextTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
             catch (EndpointNotFoundException)
             {
-                ShowTranslatedMessageBox("Auth_Error_ServerDown", "Auth_Title_Error", MessageBoxImage.Error);
+                ShowTranslatedMessageBox("Forgot_Error_ServerDown", "Forgot_Title_Error", MessageBoxImage.Error);
             }
+ 
             catch (TimeoutException)
             {
-                ShowTranslatedMessageBox("Auth_Error_Timeout", "Auth_Title_Error", MessageBoxImage.Warning);
+                ShowTranslatedMessageBox("Forgot_Error_Timeout", "Forgot_Title_Error", MessageBoxImage.Warning);
             }
+ 
             catch (CommunicationException)
             {
-                ShowTranslatedMessageBox("Auth_Error_Communication", "Auth_Title_Error", MessageBoxImage.Error);
+                ShowTranslatedMessageBox("Forgot_Error_Communication", "Forgot_Title_Error", MessageBoxImage.Error);
             }
+     
             catch (Exception ex)
             {
                 string generalError = GameClient.Resources.Strings.Auth_Error_General;

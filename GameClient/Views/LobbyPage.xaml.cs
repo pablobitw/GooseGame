@@ -200,29 +200,39 @@ namespace GameClient.Views
 
         private async Task RefreshLobbyState()
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                HandleConnectionError(GameClient.Resources.Strings.Error_NoInternet);
+                return;
+            }
+
             try
             {
-                if (!NetworkInterface.GetIsNetworkAvailable())
-                {
-                    HandleConnectionError(GameClient.Resources.Strings.Error_NoInternet);
-                    return;
-                }
-
                 var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
                 if (state != null)
                     UpdateLobbyUI(state);
             }
-            catch (EndpointNotFoundException)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
             {
-                HandleConnectionError(GameClient.Resources.Strings.Error_ServerNotFound);
-            }
-            catch (TimeoutException)
-            {
-                HandleConnectionError(GameClient.Resources.Strings.Error_ServerTimeout);
-            }
-            catch (CommunicationException)
-            {
-                HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
+                // Intentar reconexión silenciosa
+                bool rejoined = await TryRejoinLobbyAsync();
+                if (rejoined)
+                {
+                    try
+                    {
+                        var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
+                        if (state != null)
+                            UpdateLobbyUI(state);
+                    }
+                    catch (Exception)
+                    {
+                        HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
+                    }
+                }
+                else
+                {
+                    HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
+                }
             }
             catch (ObjectDisposedException) { }
             catch (Exception ex)
@@ -411,25 +421,50 @@ namespace GameClient.Views
                     ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game.", FontAwesomeIcon.TimesCircle);
                 }
             }
-            catch (EndpointNotFoundException)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
             {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerNotFound, FontAwesomeIcon.Server);
-                ResetStartButton();
-            }
-            catch (TimeoutException)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_ServerTimeout, FontAwesomeIcon.ClockOutline);
-                ResetStartButton();
-            }
-            catch (CommunicationException)
-            {
-                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
-                ResetStartButton();
+                bool rejoined = await TryRejoinLobbyAsync();
+                if (rejoined)
+                {
+                    try
+                    {
+                        bool successRetry = await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
+                        if (!successRetry)
+                        {
+                            ResetStartButton();
+                            ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, "Could not start game after reconnect.", FontAwesomeIcon.TimesCircle);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
+                        ResetStartButton();
+                    }
+                }
+                else
+                {
+                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
+                    ResetStartButton();
+                }
             }
             catch (Exception)
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
                 ResetStartButton();
+            }
+        }
+
+        private async Task<bool> TryRejoinLobbyAsync()
+        {
+            try
+            {
+                var request = new JoinLobbyRequest { Username = username, LobbyCode = lobbyCode };
+                var result = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
+                return result.Success;
+            }
+            catch
+            {
+                return false;
             }
         }
 

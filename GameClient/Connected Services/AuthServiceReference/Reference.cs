@@ -131,6 +131,83 @@ namespace GameClient.AuthServiceReference {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="LoginResponseDto", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.Auth")]
     [System.SerializableAttribute()]
     public partial class LoginResponseDto : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
@@ -288,60 +365,70 @@ namespace GameClient.AuthServiceReference {
     public interface IAuthService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RegisterUser", ReplyAction="http://tempuri.org/IAuthService/RegisterUserResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/RegisterUserServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.AuthServiceReference.RegistrationResult RegisterUser(GameClient.AuthServiceReference.RegisterUserRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RegisterUser", ReplyAction="http://tempuri.org/IAuthService/RegisterUserResponse")]
         System.Threading.Tasks.Task<GameClient.AuthServiceReference.RegistrationResult> RegisterUserAsync(GameClient.AuthServiceReference.RegisterUserRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LogIn", ReplyAction="http://tempuri.org/IAuthService/LogInResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/LogInServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.AuthServiceReference.LoginResponseDto LogIn(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LogIn", ReplyAction="http://tempuri.org/IAuthService/LogInResponse")]
         System.Threading.Tasks.Task<GameClient.AuthServiceReference.LoginResponseDto> LogInAsync(string usernameOrEmail, string password);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LoginAsGuest", ReplyAction="http://tempuri.org/IAuthService/LoginAsGuestResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/LoginAsGuestServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.AuthServiceReference.GuestLoginResult LoginAsGuest();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/LoginAsGuest", ReplyAction="http://tempuri.org/IAuthService/LoginAsGuestResponse")]
         System.Threading.Tasks.Task<GameClient.AuthServiceReference.GuestLoginResult> LoginAsGuestAsync();
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/Logout", ReplyAction="http://tempuri.org/IAuthService/LogoutResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/LogoutServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         void Logout(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/Logout", ReplyAction="http://tempuri.org/IAuthService/LogoutResponse")]
         System.Threading.Tasks.Task LogoutAsync(string username);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyAccount", ReplyAction="http://tempuri.org/IAuthService/VerifyAccountResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/VerifyAccountServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool VerifyAccount(string email, string code);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyAccount", ReplyAction="http://tempuri.org/IAuthService/VerifyAccountResponse")]
         System.Threading.Tasks.Task<bool> VerifyAccountAsync(string email, string code);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RequestPasswordReset", ReplyAction="http://tempuri.org/IAuthService/RequestPasswordResetResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/RequestPasswordResetServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool RequestPasswordReset(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/RequestPasswordReset", ReplyAction="http://tempuri.org/IAuthService/RequestPasswordResetResponse")]
         System.Threading.Tasks.Task<bool> RequestPasswordResetAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IAuthService/VerifyRecoveryCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/VerifyRecoveryCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool VerifyRecoveryCode(string email, string code);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/VerifyRecoveryCode", ReplyAction="http://tempuri.org/IAuthService/VerifyRecoveryCodeResponse")]
         System.Threading.Tasks.Task<bool> VerifyRecoveryCodeAsync(string email, string code);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/UpdatePassword", ReplyAction="http://tempuri.org/IAuthService/UpdatePasswordResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/UpdatePasswordServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool UpdatePassword(string email, string newPassword);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/UpdatePassword", ReplyAction="http://tempuri.org/IAuthService/UpdatePasswordResponse")]
         System.Threading.Tasks.Task<bool> UpdatePasswordAsync(string email, string newPassword);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ResendVerificationCode", ReplyAction="http://tempuri.org/IAuthService/ResendVerificationCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/ResendVerificationCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool ResendVerificationCode(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ResendVerificationCode", ReplyAction="http://tempuri.org/IAuthService/ResendVerificationCodeResponse")]
         System.Threading.Tasks.Task<bool> ResendVerificationCodeAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ChangeUserPassword", ReplyAction="http://tempuri.org/IAuthService/ChangeUserPasswordResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.AuthServiceReference.ServiceFault), Action="http://tempuri.org/IAuthService/ChangeUserPasswordServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool ChangeUserPassword(string username, string currentPassword, string newPassword);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IAuthService/ChangeUserPassword", ReplyAction="http://tempuri.org/IAuthService/ChangeUserPasswordResponse")]
