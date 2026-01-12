@@ -34,11 +34,9 @@ namespace GameServer.Services
             catch (Exception ex)
             {
                 Log.Warn("CreateLobbyAsync: No se pudo obtener el canal de Callback.", ex);
-                // No lanzamos error aquí, permitimos intentar crear el lobby sin callback si es necesario,
-                // aunque la lógica interna podría requerirlo.
+                
             }
 
-            // Llamamos a la lógica. Si falla, la FaultException sube al cliente automáticamente.
             var result = await _logic.CreateLobbyAsync(request);
 
             if (result != null && result.Success && callback != null)
