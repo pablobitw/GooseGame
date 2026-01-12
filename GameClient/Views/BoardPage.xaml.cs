@@ -80,7 +80,6 @@ namespace GameClient.Views
             VoteKickPrompt.VoteSubmitted += VoteKickPrompt_VoteSubmitted;
 
             SubscribeToEvents();
-
             LoadBoardImage();
 
             _ = Task.Run(() => ConnectToChatService());
@@ -129,6 +128,7 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished += OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked += OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted += OnVoteKickStarted;
+            GameplayServiceManager.Instance.ConnectionLost += OnConnectionLost;
 
             if (FriendshipServiceManager.Instance != null)
             {
@@ -142,11 +142,34 @@ namespace GameClient.Views
             GameplayServiceManager.Instance.GameFinished -= OnGameFinished;
             GameplayServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
             GameplayServiceManager.Instance.VoteKickStarted -= OnVoteKickStarted;
+            GameplayServiceManager.Instance.ConnectionLost -= OnConnectionLost;
 
             if (FriendshipServiceManager.Instance != null)
             {
                 FriendshipServiceManager.Instance.FriendRequestPopUpReceived -= OnFriendRequestPopUpReceived;
             }
+        }
+
+        private void OnConnectionLost()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_isGameOverHandled) return;
+                _isGameOverHandled = true;
+
+                StopTimers();
+                UnsubscribeFromEvents();
+                CloseChatClient();
+
+                MessageBox.Show(GameClient.Resources.Strings.Error_Communication,
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+
+                var authWindow = new AuthWindow();
+                authWindow.Show();
+
+                Window.GetWindow(this)?.Close();
+            });
         }
 
         private void ConnectToChatService()
@@ -317,10 +340,7 @@ namespace GameClient.Views
 
         private void HandleGameplayError(GameplayErrorType errorType, string fallbackMessage)
         {
-            if (!NetworkInterface.GetIsNetworkAvailable())
-            {
-                return;
-            }
+            if (!NetworkInterface.GetIsNetworkAvailable()) return;
 
             string message = fallbackMessage;
             string title = GameClient.Resources.Strings.DialogErrorTitle;
@@ -386,9 +406,7 @@ namespace GameClient.Views
                 CloseChatClient();
 
                 if (reason == "SafeZone_DatabaseError")
-                {
                     reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
-                }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -430,19 +448,13 @@ namespace GameClient.Views
 
                 if (state != null)
                 {
-                    if (state.Success)
-                    {
-                        ProcessGameState(state);
-                    }
-                    else
-                    {
-                        HandleGameplayError(state.ErrorType, state.ErrorMessage);
-                    }
+                    if (state.Success) ProcessGameState(state);
+                    else HandleGameplayError(state.ErrorType, state.ErrorMessage);
                 }
             }
-            catch (TimeoutException)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                // Ignoramos timeout en carga inicial, el timer de turno intentará recuperar
+                // El escudo del Manager ya disparó ConnectionLost o se manejará en el siguiente tick
             }
             catch (Exception ex)
             {
@@ -484,34 +496,16 @@ namespace GameClient.Views
 
                 if (result == null || !result.Success)
                 {
-                    if (result != null)
-                    {
-                        HandleGameplayError(result.ErrorType, result.ErrorMessage);
-                    }
-
+                    if (result != null) HandleGameplayError(result.ErrorType, result.ErrorMessage);
                     if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
                     return;
                 }
 
                 UpdateDiceVisuals(result.DiceOne, result.DiceTwo);
             }
-            catch (TimeoutException)
+            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                MessageBox.Show(GameClient.Resources.Strings.SafeZone_ServerTimeout,
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
-            }
-            catch (CommunicationException)
-            {
-                string msg = NetworkInterface.GetIsNetworkAvailable()
-                    ? GameClient.Resources.Strings.Error_Communication
-                    : GameClient.Resources.Strings.Error_NoInternet;
-
-                MessageBox.Show(msg,
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-                if (!_isGameOverHandled) RollDiceButton.IsEnabled = true;
+                // El manager gestiona la desconexión
             }
             catch (Exception ex)
             {
@@ -561,22 +555,16 @@ namespace GameClient.Views
         private async void TurnCountdown_Tick(object sender, EventArgs e)
         {
             _turnSecondsRemaining--;
-
             if (_turnSecondsRemaining < 0) _turnSecondsRemaining = 0;
 
             TurnTimerText.Text = string.Format(GameClient.Resources.Strings.TimerLabel, _turnSecondsRemaining);
-
-            TurnTimerText.Foreground = _turnSecondsRemaining <= GameConfiguration.TurnWarningThreshold
-                ? Brushes.Red
-                : Brushes.White;
+            TurnTimerText.Foreground = _turnSecondsRemaining <= GameConfiguration.TurnWarningThreshold ? Brushes.Red : Brushes.White;
 
             if (_turnSecondsRemaining <= 0)
             {
                 _turnCountdownTimer.Stop();
                 TurnTimerText.Text = GameClient.Resources.Strings.TimerExpired;
-
                 await Task.Delay(1500);
-
                 await InitialStateLoad();
             }
         }
@@ -615,7 +603,6 @@ namespace GameClient.Views
         private void UpdateGameLog(string[] logs)
         {
             if (logs == null) return;
-
             if (GameLogListBox.Items.Count != logs.Length)
             {
                 GameLogListBox.Items.Clear();
@@ -646,7 +633,6 @@ namespace GameClient.Views
         private void CheckForLuckyBox(string logDescription)
         {
             if (string.IsNullOrEmpty(logDescription)) return;
-
             if (GameLogHelper.TryParseLuckyBox(logDescription, out string boxOwner, out string rewardType, out int rewardAmount))
             {
                 if (boxOwner.Equals(currentUsername, StringComparison.OrdinalIgnoreCase))
@@ -661,27 +647,20 @@ namespace GameClient.Views
             string imagePath = (boardId == GameConfiguration.NormalBoardId)
                 ? "/Assets/Boards/normal_board.png"
                 : "/Assets/Boards/special_board.png";
-
             try
             {
                 BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error loading board image: " + ex.Message);
-            }
+            catch (Exception ex) { Console.WriteLine("Error loading board image: " + ex.Message); }
         }
 
         private void UpdateBoardVisuals(PlayerPositionDto[] players)
         {
             if (players == null) return;
-
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
-
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
-
                 if (!_playerTokens.ContainsKey(player.Username))
                 {
                     string imagePath = BoardDataHelper.TokenImagePaths[i % BoardDataHelper.TokenImagePaths.Length];
@@ -689,7 +668,6 @@ namespace GameClient.Views
                     _playerTokens.Add(player.Username, token);
                     BoardCanvas.Children.Add(token);
                 }
-
                 var tokenUI = _playerTokens[player.Username];
                 MoveTokenToTile(tokenUI, player.CurrentTile);
                 tokenUI.Opacity = player.IsOnline ? OpacityActive : OpacityInactive;
@@ -706,31 +684,19 @@ namespace GameClient.Views
                 ToolTip = name,
                 Stretch = Stretch.Uniform
             };
-
             var startPos = BoardDataHelper.GetTileLocation(0);
             Canvas.SetLeft(image, startPos.X - TokenOffset);
             Canvas.SetTop(image, startPos.Y - TokenOffset);
-
-            image.Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                Color = Colors.Black,
-                Direction = 320,
-                ShadowDepth = 4,
-                Opacity = 0.5
-            };
-
+            image.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, Direction = 320, ShadowDepth = 4, Opacity = 0.5 };
             return image;
         }
 
         private void MoveTokenToTile(UIElement token, int tileIndex)
         {
             Point targetPoint = BoardDataHelper.GetTileLocation(tileIndex);
-
             var duration = TimeSpan.FromMilliseconds(AnimationDurationMs);
-
             var animX = new DoubleAnimation { From = Canvas.GetLeft(token), To = targetPoint.X - TokenOffset, Duration = duration };
             var animY = new DoubleAnimation { From = Canvas.GetTop(token), To = targetPoint.Y - TokenOffset, Duration = duration };
-
             token.BeginAnimation(Canvas.LeftProperty, animX);
             token.BeginAnimation(Canvas.TopProperty, animY);
         }
@@ -747,11 +713,8 @@ namespace GameClient.Views
         private void UpdatePlayerAvatars(PlayerPositionDto[] players)
         {
             if (players == null) return;
-
             HideAllPlayerPanels();
-
             var sortedPlayers = players.OrderBy(p => p.Username).ToList();
-
             for (int i = 0; i < sortedPlayers.Count; i++)
             {
                 var player = sortedPlayers[i];
@@ -785,9 +748,7 @@ namespace GameClient.Views
             controls.Panel.Visibility = Visibility.Visible;
             controls.Name.Text = player.Username;
             controls.Panel.Tag = player.Username;
-
             if (_isGuest && controls.Panel.ContextMenu != null) controls.Panel.ContextMenu = null;
-
             LoadAvatarImage(controls.Avatar, player.AvatarPath);
             controls.Panel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
             controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
@@ -803,37 +764,23 @@ namespace GameClient.Views
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.UriSource = GetAvatarUri(avatarPath);
                 bitmap.EndInit();
-
                 brush.Stretch = Stretch.UniformToFill;
                 brush.ImageSource = bitmap;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error loading avatar '{avatarPath}': {ex.Message}");
                 brush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute));
             }
         }
 
         private static Uri GetAvatarUri(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-                return new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute);
-
-            if (path.StartsWith("pack://") || path.Contains("://"))
-                return new Uri(path, UriKind.RelativeOrAbsolute);
-
+            if (string.IsNullOrWhiteSpace(path)) return new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute);
+            if (path.StartsWith("pack://") || path.Contains("://")) return new Uri(path, UriKind.RelativeOrAbsolute);
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Avatar", path);
-            if (File.Exists(fullPath))
-            {
-                return new Uri(fullPath, UriKind.Absolute);
-            }
-
+            if (File.Exists(fullPath)) return new Uri(fullPath, UriKind.Absolute);
             string cleanPath = path.Replace("\\", "/").TrimStart('/');
-            if (!cleanPath.StartsWith("Assets"))
-            {
-                cleanPath = "Assets/Avatar/" + cleanPath;
-            }
-
+            if (!cleanPath.StartsWith("Assets")) cleanPath = "Assets/Avatar/" + cleanPath;
             return new Uri("pack://application:,,,/" + cleanPath, UriKind.Absolute);
         }
 
@@ -846,16 +793,12 @@ namespace GameClient.Views
         private void CloseChatClient()
         {
             if (chatClient == null) return;
-
             try
             {
                 if (chatClient.State == CommunicationState.Opened) chatClient.Close();
                 else chatClient.Abort();
             }
-            catch (Exception)
-            {
-                chatClient.Abort();
-            }
+            catch { chatClient.Abort(); }
         }
 
         private async void AddFriendMenuItem_Click(object sender, RoutedEventArgs e)
@@ -863,7 +806,6 @@ namespace GameClient.Views
             if (_isGuest) return;
             var panel = (sender as MenuItem)?.Parent is ContextMenu cm ? cm.PlacementTarget as Border : null;
             string targetUser = panel?.Tag?.ToString();
-
             if (string.IsNullOrEmpty(targetUser) || targetUser == currentUsername) return;
 
             try
@@ -872,63 +814,32 @@ namespace GameClient.Views
                 switch (result)
                 {
                     case FriendRequestResult.Success:
-                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestSent, targetUser),
-                                        GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestSent, targetUser), GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
-
                     case FriendRequestResult.MutualAccepted:
-                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestAccepted, targetUser),
-                                        GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendRequestAccepted, targetUser), GameClient.Resources.Strings.DialogSuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
-
                     case FriendRequestResult.AlreadyFriends:
-                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendAlreadyAdded, targetUser),
-                                        GameClient.Resources.Strings.DialogInfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-                    case FriendRequestResult.Pending:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestPending,
-                                        GameClient.Resources.Strings.DialogWarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
-                    case FriendRequestResult.GuestRestriction:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendGuestRestriction,
-                                        GameClient.Resources.Strings.DialogWarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-                        break;
-                    case FriendRequestResult.TargetNotFound:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendNotFound,
-                                        GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(string.Format(GameClient.Resources.Strings.FriendAlreadyAdded, targetUser), GameClient.Resources.Strings.DialogInfoTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                     default:
-                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestError,
-                                        GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(GameClient.Resources.Strings.FriendRequestError, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                         break;
                 }
             }
-            catch (Exception)
-            {
-                MessageBox.Show(GameClient.Resources.Strings.FriendConnError, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            catch { MessageBox.Show(GameClient.Resources.Strings.FriendConnError, GameClient.Resources.Strings.DialogErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
         private async Task HandleGameOverAsync(string winner)
         {
             if (_isGameOverHandled) return;
-
             _isGameOverHandled = true;
             StopTimers();
 
-            string msg = string.Format(GameClient.Resources.Strings.GameOverMessage, winner);
-            string title = GameClient.Resources.Strings.GameOverTitle;
+            MessageBox.Show(string.Format(GameClient.Resources.Strings.GameOverMessage, winner), GameClient.Resources.Strings.GameOverTitle, MessageBoxButton.OK, MessageBoxImage.Information);
 
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
-
-            if (Window.GetWindow(this) is GameMainWindow mainWindow)
-            {
-                await mainWindow.ShowMainMenu();
-            }
-            else if (NavigationService != null && NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
+            if (Window.GetWindow(this) is GameMainWindow mainWindow) await mainWindow.ShowMainMenu();
+            else if (NavigationService != null && NavigationService.CanGoBack) NavigationService.GoBack();
         }
     }
 }

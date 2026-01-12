@@ -23,6 +23,7 @@ namespace GameClient.Helpers
         public event Action<string> GameFinished;
         public event Action<string> PlayerKicked;
         public event Action<string, string> VoteKickStarted;
+        public event Action ConnectionLost;
 
         private GameplayServiceManager() { }
 
@@ -35,7 +36,9 @@ namespace GameClient.Helpers
                     lock (_lock)
                     {
                         if (_instance == null)
+                        {
                             _instance = new GameplayServiceManager();
+                        }
                     }
                 }
                 return _instance;
@@ -56,11 +59,19 @@ namespace GameClient.Helpers
             {
                 var context = new InstanceContext(this);
                 _client = new GameplayServiceClient(context);
+
+                
+                _client.InnerChannel.Faulted += OnChannelFaulted;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex);
+                Console.Error.WriteLine($"[GameplayManager] Error inicializando proxy: {ex}");
             }
+        }
+
+        private void OnChannelFaulted(object sender, EventArgs e)
+        {
+            HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_Communication));
         }
 
         private GameplayServiceClient GetClient()
@@ -134,6 +145,7 @@ namespace GameClient.Helpers
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
+                HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_NoInternet));
                 throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
             }
 
@@ -143,27 +155,16 @@ namespace GameClient.Helpers
             }
             catch (FaultException<ServiceFault> fault)
             {
-                string msg = fault.Detail != null ? fault.Detail.Message : GameClient.Resources.Strings.Error_Unknown;
-                string code = fault.Detail != null ? fault.Detail.Code : string.Empty;
-
-                if (code == "Error_DatabaseDown" || code == "Error_DatabaseGeneric" || code == "Error_InternalData")
-                {
-                    UserSession.GetInstance().HandleCatastrophicError(msg);
-                    return default;
-                }
-
-                throw new Exception(msg);
+                HandleBusinessFault(fault);
+                throw; 
             }
-            catch (EndpointNotFoundException)
+            catch (EndpointNotFoundException ex)
             {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                HandleConnectionFailure(ex);
                 throw;
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
-                Console.WriteLine($"[GameplayManager] Network error: {ex.Message}. Retrying...");
-
                 try
                 {
                     InitializeProxy();
@@ -171,23 +172,13 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
-                    if (retryEx is EndpointNotFoundException)
-                    {
-                        UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
-                        throw;
-                    }
-
-                    if (retryEx is TimeoutException)
-                    {
-                        throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout, retryEx);
-                    }
-
-                    throw new CommunicationException(GameClient.Resources.Strings.Error_Communication, retryEx);
+                    HandleConnectionFailure(retryEx);
+                    throw;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[GameplayManager] Unexpected error: {ex}");
+                Console.Error.WriteLine($"[GameplayManager] Unexpected: {ex}");
                 throw;
             }
         }
@@ -196,6 +187,7 @@ namespace GameClient.Helpers
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
+                HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_NoInternet));
                 throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
             }
 
@@ -205,27 +197,16 @@ namespace GameClient.Helpers
             }
             catch (FaultException<ServiceFault> fault)
             {
-                string msg = fault.Detail != null ? fault.Detail.Message : GameClient.Resources.Strings.Error_Unknown;
-                string code = fault.Detail != null ? fault.Detail.Code : string.Empty;
-
-                if (code == "Error_DatabaseDown" || code == "Error_DatabaseGeneric" || code == "Error_InternalData")
-                {
-                    UserSession.GetInstance().HandleCatastrophicError(msg);
-                    return;
-                }
-
-                throw new Exception(msg);
+                HandleBusinessFault(fault);
+                throw;
             }
-            catch (EndpointNotFoundException)
+            catch (EndpointNotFoundException ex)
             {
-                InvalidateClient();
-                UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
+                HandleConnectionFailure(ex);
                 throw;
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
             {
-                Console.WriteLine($"[GameplayManager] Network error (void): {ex.Message}. Retrying...");
-
                 try
                 {
                     InitializeProxy();
@@ -233,25 +214,32 @@ namespace GameClient.Helpers
                 }
                 catch (Exception retryEx)
                 {
-                    if (retryEx is EndpointNotFoundException)
-                    {
-                        UserSession.GetInstance().HandleCatastrophicError(GameClient.Resources.Strings.SafeZone_DatabaseError);
-                        throw;
-                    }
-
-                    if (retryEx is TimeoutException)
-                    {
-                        throw new TimeoutException(GameClient.Resources.Strings.SafeZone_ServerTimeout, retryEx);
-                    }
-
-                    throw new CommunicationException(GameClient.Resources.Strings.Error_Communication, retryEx);
+                    HandleConnectionFailure(retryEx);
+                    throw;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[GameplayManager] Unexpected error (void): {ex}");
+                Console.Error.WriteLine($"[GameplayManager] Unexpected (void): {ex}");
                 throw;
             }
+        }
+
+        private void HandleBusinessFault(FaultException<ServiceFault> fault)
+        {
+            string msg = fault.Detail?.Message ?? GameClient.Resources.Strings.Error_Unknown;
+            string code = fault.Detail?.Code ?? string.Empty;
+
+            if (code == "Error_DatabaseDown" || code == "Error_DatabaseGeneric" || code == "Error_InternalData")
+            {
+                UserSession.GetInstance().HandleCatastrophicError(msg);
+            }
+        }
+
+        private void HandleConnectionFailure(Exception ex)
+        {
+            InvalidateClient();
+            Application.Current.Dispatcher.InvokeAsync(() => ConnectionLost?.Invoke());
         }
 
         private void InvalidateClient()
@@ -266,12 +254,13 @@ namespace GameClient.Helpers
 
             try
             {
+                _client.InnerChannel.Faulted -= OnChannelFaulted;
                 if (_client.State == CommunicationState.Opened)
                     _client.Close();
                 else
                     _client.Abort();
             }
-            catch (Exception)
+            catch
             {
                 _client.Abort();
             }
@@ -284,7 +273,6 @@ namespace GameClient.Helpers
         public void Dispose()
         {
             if (_disposed) return;
-
             CloseClient();
             _disposed = true;
             GC.SuppressFinalize(this);
