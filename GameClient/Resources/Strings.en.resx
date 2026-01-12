@@ -1017,6 +1017,24 @@
   <data name="InvalidCodeTitle" xml:space="preserve">
     <value>Invalid Code</value>
   </data>
+  <data name="InvitationAccept_CommunicationError" xml:space="preserve">
+    <value>Communication error while attempting to join the lobby.</value>
+  </data>
+  <data name="InvitationAccept_DatabaseError" xml:space="preserve">
+    <value>Error accessing the database. Please try again later.</value>
+  </data>
+  <data name="InvitationAccept_NoInternet" xml:space="preserve">
+    <value>No internet connection detected to accept the invitation.</value>
+  </data>
+  <data name="InvitationAccept_ServerDown" xml:space="preserve">
+    <value>Could not connect to the server to join the lobby. It might be offline.</value>
+  </data>
+  <data name="InvitationAccept_ServerTimeout" xml:space="preserve">
+    <value>The server took too long to process the invitation. Please try again.</value>
+  </data>
+  <data name="InvitationAccept_UnexpectedError" xml:space="preserve">
+    <value>Unexpected error accepting invitation: {0}</value>
+  </data>
   <data name="InvitationMessage" xml:space="preserve">
     <value>{0} has invited you to a game. Do you want to join?</value>
   </data>
@@ -1199,6 +1217,18 @@
   </data>
   <data name="LobbyYouTag" xml:space="preserve">
     <value>(You)</value>
+  </data>
+  <data name="Lobby_ServerLost" xml:space="preserve">
+    <value>Connection to server lost or lobby no longer exists. Returning to menu.</value>
+  </data>
+  <data name="Lobby_Start_MinPlayers" xml:space="preserve">
+    <value>At least 2 players are required to start the match.</value>
+  </data>
+  <data name="Lobby_Start_NoConnection" xml:space="preserve">
+    <value>No connection to the server. Cannot start the match.</value>
+  </data>
+  <data name="Lobby_Start_ServerDown" xml:space="preserve">
+    <value>Error contacting the server. It might be offline.</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Log In</value>

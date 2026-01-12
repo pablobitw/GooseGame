@@ -128,6 +128,7 @@ namespace GameClient.Views
             LobbyServiceManager.Instance.PlayerKicked += OnPlayerKicked;
             LobbyServiceManager.Instance.GameStarted += OnGameStarted;
             LobbyServiceManager.Instance.LobbyDisbanded += OnLobbyDisbanded;
+            LobbyServiceManager.Instance.ConnectionLost += OnConnectionLost;
         }
 
         private void UnsubscribeFromLobbyEvents()
@@ -137,6 +138,21 @@ namespace GameClient.Views
             LobbyServiceManager.Instance.PlayerKicked -= OnPlayerKicked;
             LobbyServiceManager.Instance.GameStarted -= OnGameStarted;
             LobbyServiceManager.Instance.LobbyDisbanded -= OnLobbyDisbanded;
+            LobbyServiceManager.Instance.ConnectionLost -= OnConnectionLost;
+        }
+
+        private void OnConnectionLost()
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.Lobby_ServerLost,
+                    FontAwesomeIcon.Server,
+                    false,
+                    () => ExitLobby()
+                );
+            });
         }
 
         private void OnPlayerJoined(PlayerLobbyDto player)
@@ -210,28 +226,13 @@ namespace GameClient.Views
             {
                 var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
                 if (state != null)
+                {
                     UpdateLobbyUI(state);
+                }
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
             {
-                bool rejoined = await TryRejoinLobbyAsync();
-                if (rejoined)
-                {
-                    try
-                    {
-                        var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
-                        if (state != null)
-                            UpdateLobbyUI(state);
-                    }
-                    catch (Exception)
-                    {
-                        HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
-                    }
-                }
-                else
-                {
-                    HandleConnectionError(GameClient.Resources.Strings.Error_Communication);
-                }
+                HandleConnectionError(GameClient.Resources.Strings.Lobby_ServerLost);
             }
             catch (ObjectDisposedException) { }
             catch (Exception ex)
@@ -270,7 +271,7 @@ namespace GameClient.Views
         {
             string message = isHost && isLobbyCreated
                 ? GameClient.Resources.Strings.LobbyHostExitConfirm
-                : GameClient.Resources.Strings.LobbyGuestExitConfirm; 
+                : GameClient.Resources.Strings.LobbyGuestExitConfirm;
 
             if (string.IsNullOrEmpty(message)) message = "Are you sure you want to leave the lobby?";
 
@@ -407,7 +408,17 @@ namespace GameClient.Views
             {
                 var state = await LobbyServiceManager.Instance.GetLobbyStateAsync(lobbyCode);
 
-                if (state == null || state.Players.Length < MinPlayersToStart)
+                if (state == null)
+                {
+                    ShowOverlayDialog(
+                        GameClient.Resources.Strings.DialogErrorTitle,
+                        GameClient.Resources.Strings.Lobby_Start_NoConnection,
+                        FontAwesomeIcon.Wifi);
+                    ResetStartButton();
+                    return;
+                }
+
+                if (state.Players.Count() < MinPlayersToStart)
                 {
                     ShowOverlayDialog(GameClient.Resources.Strings.ImpossibleStartTitle, GameClient.Resources.Strings.MinPlayersRequired, FontAwesomeIcon.InfoCircle);
                     ResetStartButton();
@@ -424,48 +435,13 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is EndpointNotFoundException)
             {
-                bool rejoined = await TryRejoinLobbyAsync();
-                if (rejoined)
-                {
-                    try
-                    {
-                        bool successRetry = await LobbyServiceManager.Instance.StartGameAsync(lobbyCode);
-                        if (!successRetry)
-                        {
-                            ResetStartButton();
-                            ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.LobbyError_StartFailedRetry, FontAwesomeIcon.TimesCircle);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
-                        ResetStartButton();
-                    }
-                }
-                else
-                {
-                    ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Communication, FontAwesomeIcon.Wifi);
-                    ResetStartButton();
-                }
+                ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Lobby_Start_ServerDown, FontAwesomeIcon.Server);
+                ResetStartButton();
             }
             catch (Exception)
             {
                 ShowOverlayDialog(GameClient.Resources.Strings.DialogErrorTitle, GameClient.Resources.Strings.Error_Unknown, FontAwesomeIcon.Bug);
                 ResetStartButton();
-            }
-        }
-
-        private async Task<bool> TryRejoinLobbyAsync()
-        {
-            try
-            {
-                var request = new JoinLobbyRequest { Username = username, LobbyCode = lobbyCode };
-                var result = await LobbyServiceManager.Instance.JoinLobbyAsync(request);
-                return result.Success;
-            }
-            catch
-            {
-                return false;
             }
         }
 

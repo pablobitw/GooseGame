@@ -1026,6 +1026,24 @@
   <data name="InvalidCodeTitle" xml:space="preserve">
     <value>Código Inválido</value>
   </data>
+  <data name="InvitationAccept_CommunicationError" xml:space="preserve">
+    <value>Error de comunicación al intentar unirse a la sala.</value>
+  </data>
+  <data name="InvitationAccept_DatabaseError" xml:space="preserve">
+    <value>Error al acceder a la base de datos. Inténtalo más tarde.</value>
+  </data>
+  <data name="InvitationAccept_NoInternet" xml:space="preserve">
+    <value>No se detecta conexión a internet para aceptar la invitación.</value>
+  </data>
+  <data name="InvitationAccept_ServerDown" xml:space="preserve">
+    <value>No se pudo conectar con el servidor para unirse a la sala. Es posible que esté apagado.</value>
+  </data>
+  <data name="InvitationAccept_ServerTimeout" xml:space="preserve">
+    <value>El servidor tardó demasiado en procesar la invitación. Inténtalo de nuevo.</value>
+  </data>
+  <data name="InvitationAccept_UnexpectedError" xml:space="preserve">
+    <value>Error inesperado al aceptar la invitación: {0}</value>
+  </data>
   <data name="InvitationMessage" xml:space="preserve">
     <value>{0} te ha invitado a una partida. ¿Quieres unirte?</value>
   </data>
@@ -1208,6 +1226,15 @@
   </data>
   <data name="LobbyYouTag" xml:space="preserve">
     <value>(Tú)</value>
+  </data>
+  <data name="Lobby_ServerLost" xml:space="preserve">
+    <value>La conexión con el servidor se perdió o la sala ha dejado de existir. Volviendo al menú.</value>
+  </data>
+  <data name="Lobby_Start_NoConnection" xml:space="preserve">
+    <value>No hay conexión con el servidor. No se puede iniciar la partida.</value>
+  </data>
+  <data name="Lobby_Start_ServerDown" xml:space="preserve">
+    <value>Error al contactar al servidor. Es posible que esté apagado.</value>
   </data>
   <data name="LoginButton" xml:space="preserve">
     <value>Iniciar Sesion</value>

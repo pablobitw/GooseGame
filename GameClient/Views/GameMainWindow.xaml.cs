@@ -12,7 +12,7 @@ using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Net.NetworkInformation; 
+using System.Net.NetworkInformation;
 
 namespace GameClient
 {
@@ -70,7 +70,7 @@ namespace GameClient
             switch (errorType)
             {
                 case LobbyErrorType.DatabaseError:
-                    message = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                    message = GameClient.Resources.Strings.InvitationAccept_DatabaseError;
                     icon = FontAwesomeIcon.Database;
                     break;
                 case LobbyErrorType.ServerTimeout:
@@ -86,7 +86,7 @@ namespace GameClient
                     icon = FontAwesomeIcon.PlayCircle;
                     break;
                 case LobbyErrorType.GameNotFound:
-                    message = GameClient.Resources.Strings.LobbyError_NotFound; 
+                    message = GameClient.Resources.Strings.LobbyError_NotFound;
                     icon = FontAwesomeIcon.Search;
                     break;
                 case LobbyErrorType.PlayerAlreadyInGame:
@@ -150,18 +150,14 @@ namespace GameClient
             try
             {
                 UserSession.GetInstance().Logout();
-
-                // Abrir ventana de Login
                 AuthWindow authWindow = new AuthWindow();
                 authWindow.Show();
-
-                // Cerrar esta ventana principal
                 this.Close();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error during forced logout: " + ex.Message);
-                this.Close(); // Asegurar cierre
+                this.Close();
             }
         }
 
@@ -361,7 +357,7 @@ namespace GameClient
                             await client.LogoutAsync(_username);
                         }
                     }
-                    catch (Exception) { /*  */ }
+                    catch (Exception) { }
                 }
 
                 UserSession.GetInstance().Logout();
@@ -416,7 +412,7 @@ namespace GameClient
             {
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
-                    GameClient.Resources.Strings.Error_NoInternet,
+                    GameClient.Resources.Strings.InvitationAccept_NoInternet,
                     FontAwesomeIcon.Wifi);
                 return;
             }
@@ -442,25 +438,32 @@ namespace GameClient
                     HandleLobbyErrorWithOverlay(joinResult.ErrorType, joinResult.ErrorMessage);
                 }
             }
-            catch (CommunicationException)
+            catch (EndpointNotFoundException)
             {
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
-                    GameClient.Resources.Strings.ErrorInviteComm,
-                    FontAwesomeIcon.Wifi);
+                    GameClient.Resources.Strings.InvitationAccept_ServerDown,
+                    FontAwesomeIcon.Server);
             }
             catch (TimeoutException)
             {
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
-                    GameClient.Resources.Strings.ErrorInviteTimeout,
+                    GameClient.Resources.Strings.InvitationAccept_ServerTimeout,
                     FontAwesomeIcon.ClockOutline);
+            }
+            catch (CommunicationException)
+            {
+                ShowOverlayDialog(
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    GameClient.Resources.Strings.InvitationAccept_CommunicationError,
+                    FontAwesomeIcon.Wifi);
             }
             catch (Exception ex)
             {
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.DialogErrorTitle,
-                    string.Format(GameClient.Resources.Strings.UnexpectedErrorMessage, ex.Message),
+                    string.Format(GameClient.Resources.Strings.InvitationAccept_UnexpectedError, ex.Message),
                     FontAwesomeIcon.ExclamationTriangle);
             }
         }

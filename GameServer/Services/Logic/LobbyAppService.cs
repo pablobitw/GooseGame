@@ -62,11 +62,21 @@ namespace GameServer.Services.Logic
                 {
                     try
                     {
-                        notificationAction(client);
+                        var channel = (ICommunicationObject)client;
+                        if (channel.State == CommunicationState.Opened)
+                        {
+                            notificationAction(client);
+                        }
+                        else
+                        {
+                            Log.Warn($"Canal de {username} no está abierto. Estado: {channel.State}. Limpiando...");
+                            _connectionManager.UnregisterClient(username);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"Error notificando a {username}: {ex.Message}");
+                        Log.Warn($"Fallo crítico al notificar a {username}. Eliminando conexión: {ex.Message}");
+                        _connectionManager.UnregisterClient(username);
                     }
                 }
             }
@@ -186,97 +196,68 @@ namespace GameServer.Services.Logic
                 {
                     result.ErrorType = LobbyErrorType.UserNotFound;
                     result.ErrorMessage = "Usuario no encontrado";
+                    return result;
+                }
+
+                if (callback != null)
+                {
+                    _connectionManager.RegisterClient(request.Username, callback);
+                }
+
+                await CleanPlayerStateIfNeeded(player);
+
+                var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
+                if (game == null)
+                {
+                    result.ErrorType = LobbyErrorType.GameNotFound;
+                    result.ErrorMessage = "Partida no encontrada";
+                    return result;
+                }
+
+                var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
+
+                bool isAlreadyInGame = updatedPlayers.Any(p => p.Username == request.Username);
+
+                if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                {
+                    result.ErrorType = LobbyErrorType.GameStarted;
+                    result.ErrorMessage = "Partida ya iniciada";
+                }
+                else if (updatedPlayers.Count >= game.MaxPlayers && !isAlreadyInGame)
+                {
+                    result.ErrorType = LobbyErrorType.GameFull;
+                    result.ErrorMessage = "Partida llena";
                 }
                 else
                 {
-                    if (callback != null)
+                    if (!isAlreadyInGame)
                     {
-                        _connectionManager.RegisterClient(request.Username, callback);
+                        player.GameIdGame = game.IdGame;
+                        await _repository.SaveChangesAsync();
+                        updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                     }
 
-                    await CleanPlayerStateIfNeeded(player);
+                    Log.InfoFormat("Jugador '{0}' unido/reconectado al lobby {1}", request.Username, request.LobbyCode);
 
-                    if (player.GameIdGame != null)
+                    result.Success = true;
+                    result.BoardId = game.Board_idBoard;
+                    result.MaxPlayers = game.MaxPlayers;
+                    result.IsHost = (player.IdPlayer == game.HostPlayerID);
+                    result.IsPublic = game.IsPublic;
+                    result.PlayersInLobby = updatedPlayers.Select(p => new PlayerLobbyDto
                     {
-                        var existingGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
+                        Username = p.Username,
+                        IsHost = (p.IdPlayer == game.HostPlayerID)
+                    }).ToList();
 
-                        if (existingGame != null && existingGame.LobbyCode == request.LobbyCode)
-                        {
-                            Log.InfoFormat("Jugador '{0}' reconectando al lobby {1}", request.Username, request.LobbyCode);
+                    var usernamesToNotify = updatedPlayers
+                        .Where(p => p.Username != request.Username)
+                        .Select(p => p.Username)
+                        .ToList();
 
-                            result.Success = true;
-                            result.BoardId = existingGame.Board_idBoard;
-                            result.MaxPlayers = existingGame.MaxPlayers;
-                            result.IsHost = (player.IdPlayer == existingGame.HostPlayerID);
-                            result.IsPublic = existingGame.IsPublic;
+                    var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = result.IsHost };
 
-                            var currentPlayers = await _repository.GetPlayersInGameAsync(existingGame.IdGame);
-                            result.PlayersInLobby = currentPlayers.Select(p => new PlayerLobbyDto
-                            {
-                                Username = p.Username,
-                                IsHost = (p.IdPlayer == existingGame.HostPlayerID)
-                            }).ToList();
-
-                            result.ErrorType = LobbyErrorType.None;
-                        }
-                        else
-                        {
-                            result.ErrorType = LobbyErrorType.PlayerAlreadyInGame;
-                            result.ErrorMessage = "Ya estás en partida";
-                        }
-                    }
-                    else
-                    {
-                        var game = await _repository.GetGameByCodeAsync(request.LobbyCode);
-                        if (game == null)
-                        {
-                            result.ErrorType = LobbyErrorType.GameNotFound;
-                            result.ErrorMessage = "Partida no encontrada";
-                        }
-                        else if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
-                        {
-                            result.ErrorType = LobbyErrorType.GameStarted;
-                            result.ErrorMessage = "Partida ya iniciada";
-                        }
-                        else
-                        {
-                            var playersInLobby = await _repository.GetPlayersInGameAsync(game.IdGame);
-                            if (playersInLobby.Count >= game.MaxPlayers)
-                            {
-                                result.ErrorType = LobbyErrorType.GameFull;
-                                result.ErrorMessage = "Partida llena";
-                            }
-                            else
-                            {
-                                player.GameIdGame = game.IdGame;
-                                await _repository.SaveChangesAsync();
-
-                                Log.InfoFormat("Jugador '{0}' unido al lobby {1}", request.Username, request.LobbyCode);
-
-                                var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-
-                                result.Success = true;
-                                result.BoardId = game.Board_idBoard;
-                                result.MaxPlayers = game.MaxPlayers;
-                                result.IsHost = (player.IdPlayer == game.HostPlayerID);
-                                result.IsPublic = game.IsPublic;
-                                result.PlayersInLobby = updatedPlayers.Select(p => new PlayerLobbyDto
-                                {
-                                    Username = p.Username,
-                                    IsHost = (p.IdPlayer == game.HostPlayerID)
-                                }).ToList();
-                                result.ErrorType = LobbyErrorType.None;
-
-                                var usernamesToNotify = updatedPlayers
-                                    .Where(p => p.Username != request.Username)
-                                    .Select(p => p.Username)
-                                    .ToList();
-
-                                var newPlayerDto = new PlayerLobbyDto { Username = request.Username, IsHost = false };
-                                FireAndForgetNotification(usernamesToNotify, client => client.OnPlayerJoined(newPlayerDto));
-                            }
-                        }
-                    }
+                    _ = Task.Run(() => NotifyUsersSafe(usernamesToNotify, client => client.OnPlayerJoined(newPlayerDto)));
                 }
             }
             catch (Exception ex)

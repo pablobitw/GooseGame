@@ -2788,6 +2788,60 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al intentar unirse a la sala..
+        /// </summary>
+        public static string InvitationAccept_CommunicationError {
+            get {
+                return ResourceManager.GetString("InvitationAccept_CommunicationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al acceder a la base de datos. Inténtalo más tarde..
+        /// </summary>
+        public static string InvitationAccept_DatabaseError {
+            get {
+                return ResourceManager.GetString("InvitationAccept_DatabaseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se detecta conexión a internet para aceptar la invitación..
+        /// </summary>
+        public static string InvitationAccept_NoInternet {
+            get {
+                return ResourceManager.GetString("InvitationAccept_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo conectar con el servidor para unirse a la sala. Es posible que esté apagado..
+        /// </summary>
+        public static string InvitationAccept_ServerDown {
+            get {
+                return ResourceManager.GetString("InvitationAccept_ServerDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor tardó demasiado en procesar la invitación. Inténtalo de nuevo..
+        /// </summary>
+        public static string InvitationAccept_ServerTimeout {
+            get {
+                return ResourceManager.GetString("InvitationAccept_ServerTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error inesperado al aceptar la invitación: {0}.
+        /// </summary>
+        public static string InvitationAccept_UnexpectedError {
+            get {
+                return ResourceManager.GetString("InvitationAccept_UnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a {0} te ha invitado a una partida. ¿Quieres unirte?.
         /// </summary>
         public static string InvitationMessage {
@@ -3180,6 +3234,33 @@ namespace GameClient.Resources {
         public static string LoadingText {
             get {
                 return ResourceManager.GetString("LoadingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La conexión con el servidor se perdió o la sala ha dejado de existir. Volviendo al menú..
+        /// </summary>
+        public static string Lobby_ServerLost {
+            get {
+                return ResourceManager.GetString("Lobby_ServerLost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión con el servidor. No se puede iniciar la partida..
+        /// </summary>
+        public static string Lobby_Start_NoConnection {
+            get {
+                return ResourceManager.GetString("Lobby_Start_NoConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error al contactar al servidor. Es posible que esté apagado..
+        /// </summary>
+        public static string Lobby_Start_ServerDown {
+            get {
+                return ResourceManager.GetString("Lobby_Start_ServerDown", resourceCulture);
             }
         }
         
