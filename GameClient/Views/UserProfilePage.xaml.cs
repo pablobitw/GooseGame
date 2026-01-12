@@ -4,6 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net.NetworkInformation; 
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -76,18 +77,38 @@ namespace GameClient.Views
 
         private async Task LoadUserProfile()
         {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Global_Error_NoInternet);
+                return;
+            }
+
             var client = new UserProfileServiceClient();
             try
             {
                 var profile = await client.GetUserProfileAsync(userEmail);
                 if (profile == null)
                 {
-                    ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Database);
+                    ShowErrorMessage(GameClient.Resources.Strings.Profile_UserNotFound);
                     return;
                 }
                 UpdateProfileUI(profile);
                 LoadAvatar(profile.AvatarPath);
             }
+
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Profile_Ctx_Load") ?? "Error al cargar perfil.";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+                ShowErrorMessage($"{contextMsg}\n\nDetalle: {technicalReason}");
+            }
+
             catch (EndpointNotFoundException)
             {
                 ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
@@ -96,13 +117,9 @@ namespace GameClient.Views
             {
                 ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout);
             }
-            catch (FaultException)
-            {
-                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Database);
-            }
             catch (CommunicationException)
             {
-                ShowErrorMessage(GameClient.Resources.Strings.Login_Error_Communication);
+                ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication);
             }
             catch (Exception ex)
             {
@@ -212,6 +229,13 @@ namespace GameClient.Views
         private async void AddLinkPopup_LinkAdded(object sender, string url)
         {
             AddLinkPopup.Visibility = Visibility.Collapsed;
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Global_Error_NoInternet);
+                return;
+            }
+
             var client = new UserProfileServiceClient();
             try
             {
@@ -226,8 +250,32 @@ namespace GameClient.Views
                     ShowCustomDialog(GameClient.Resources.Strings.DialogWarningTitle, error, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
                 }
             }
-            catch (EndpointNotFoundException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown); }
-            catch (TimeoutException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); }
+
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Profile_Ctx_SocialAdd") ?? "Error al agregar enlace.";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+                ShowErrorMessage($"{contextMsg}{technicalReason}");
+            }
+
+            catch (EndpointNotFoundException) 
+            { 
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
+            }
+            catch (TimeoutException) 
+            { 
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); 
+            }
+            catch (CommunicationException) 
+            { 
+                ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication);
+            }
             catch (Exception ex)
             {
                 ShowErrorMessage(GameClient.Resources.Strings.ErrorTitle + ": " + ex.Message);
@@ -244,6 +292,12 @@ namespace GameClient.Views
             {
                 ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.Profile_Social_Delete, FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, true, async () =>
                 {
+                    if (!NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        ShowErrorMessage(GameClient.Resources.Strings.Global_Error_NoInternet);
+                        return;
+                    }
+
                     var client = new UserProfileServiceClient();
                     try
                     {
@@ -251,8 +305,36 @@ namespace GameClient.Views
                         if (success) await LoadUserProfile();
                         else ShowErrorMessage(GameClient.Resources.Strings.LinkDeleteError);
                     }
-                    catch (EndpointNotFoundException) { ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown); }
-                    catch (Exception ex) { ShowErrorMessage("Error: " + ex.Message); }
+
+                    catch (FaultException<ServiceFault> fault)
+                    {
+                        var resManager = GameClient.Resources.Strings.ResourceManager;
+                        string contextMsg = resManager.GetString("Profile_Ctx_SocialDelete") ?? "Error al eliminar enlace.";
+                        string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                        if (string.IsNullOrEmpty(technicalReason))
+                        {
+                            technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                        }
+                        ShowErrorMessage($"{contextMsg}\n\nDetalle: {technicalReason}");
+                    }
+        
+                    catch (EndpointNotFoundException) 
+                    { 
+                        ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
+                    }
+                    catch (TimeoutException)
+                    { 
+                        ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); 
+                    }
+                    catch (CommunicationException) 
+                    { 
+                        ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication); 
+                    }
+                    catch (Exception ex)
+                    { 
+                        ShowErrorMessage("Error: " + ex.Message); 
+                    }
                     finally
                     {
                         CloseClient(client);
@@ -268,7 +350,10 @@ namespace GameClient.Views
                 Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
                 e.Handled = true;
             }
-            catch { ShowErrorMessage("No se pudo abrir el enlace."); }
+            catch 
+            { 
+                ShowErrorMessage("No se pudo abrir el enlace."); 
+            }
         }
 
         private void ShowDeactivatePopup_Click(object sender, RoutedEventArgs e)

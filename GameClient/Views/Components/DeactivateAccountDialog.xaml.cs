@@ -1,4 +1,4 @@
-﻿using GameClient.UserProfileServiceReference;
+﻿using GameClient.UserProfileServiceReference; 
 using System;
 using System.Net.NetworkInformation;
 using System.ServiceModel;
@@ -93,6 +93,24 @@ namespace GameClient.Views.Components
                     ConfirmDeactivateButton.IsEnabled = true;
                 }
             }
+
+            catch (FaultException<ServiceFault> fault)
+            {
+                var resManager = GameClient.Resources.Strings.ResourceManager;
+                string contextMsg = resManager.GetString("Deactivate_Error_General") ?? "Error al desactivar.";
+                string technicalReason = resManager.GetString(fault.Detail.Code);
+
+                if (string.IsNullOrEmpty(technicalReason))
+                {
+                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
+                }
+
+                MessageBox.Show($"{contextMsg}\n\nDetalle: {technicalReason}",
+                                GameClient.Resources.Strings.DialogErrorTitle,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmDeactivateButton.IsEnabled = true;
+            }
+   
             catch (TimeoutException)
             {
                 ShowTranslatedMessageBox("Deactivate_Error_Timeout", "DialogErrorTitle", MessageBoxImage.Warning);
@@ -101,11 +119,6 @@ namespace GameClient.Views.Components
             catch (EndpointNotFoundException)
             {
                 ShowTranslatedMessageBox("Deactivate_Error_ServerDown", "DialogErrorTitle", MessageBoxImage.Error);
-                ConfirmDeactivateButton.IsEnabled = true;
-            }
-            catch (FaultException)
-            {
-                ShowTranslatedMessageBox("Deactivate_Error_Database", "DialogErrorTitle", MessageBoxImage.Error);
                 ConfirmDeactivateButton.IsEnabled = true;
             }
             catch (CommunicationException)

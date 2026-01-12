@@ -2572,6 +2572,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No hay conexión a internet..
+        /// </summary>
+        public static string Global_Error_NoInternet {
+            get {
+                return ResourceManager.GetString("Global_Error_NoInternet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se pudo conectar al servidor..
         /// </summary>
         public static string Global_Error_ServerDown {
@@ -3684,6 +3693,15 @@ namespace GameClient.Resources {
         public static string Profile_User_Limit {
             get {
                 return ResourceManager.GetString("Profile_User_Limit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Usuario no encontrado..
+        /// </summary>
+        public static string Profile_UserNotFound {
+            get {
+                return ResourceManager.GetString("Profile_UserNotFound", resourceCulture);
             }
         }
         

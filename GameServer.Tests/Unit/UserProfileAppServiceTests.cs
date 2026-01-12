@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using GameServer.DTOs.User;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Models;
 using GameServer.Repositories.Interfaces;
@@ -10,9 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -48,10 +49,21 @@ namespace GameServer.Tests.Unit
 
         private SqlException CreateSqlException()
         {
-            var collection = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
             var exception = FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-            FieldInfo errorsField = typeof(SqlException).GetField("_errors", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (errorsField != null) errorsField.SetValue(exception, collection);
+            var errors = FormatterServices.GetUninitializedObject(typeof(SqlErrorCollection)) as SqlErrorCollection;
+
+            // Inyectamos un error dummy para que ExceptionManager no truene al leer .Number
+            var error = FormatterServices.GetUninitializedObject(typeof(SqlError)) as SqlError;
+            var errorsListField = typeof(SqlErrorCollection).GetField("errors", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (errorsListField != null)
+            {
+                var list = new System.Collections.ArrayList { error };
+                errorsListField.SetValue(errors, list);
+            }
+
+            var errorsField = typeof(SqlException).GetField("_errors", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (errorsField != null) errorsField.SetValue(exception, errors);
+
             return exception;
         }
 
@@ -99,35 +111,31 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task GetUserProfileAsync_SqlException_ReturnsNull()
+        public async Task GetUserProfileAsync_SqlException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(CreateSqlException());
-            var result = await _service.GetUserProfileAsync(USER);
-            Assert.Null(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetUserProfileAsync(USER));
         }
 
         [Fact]
-        public async Task GetUserProfileAsync_EntityException_ReturnsNull()
+        public async Task GetUserProfileAsync_EntityException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new EntityException());
-            var result = await _service.GetUserProfileAsync(USER);
-            Assert.Null(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetUserProfileAsync(USER));
         }
 
         [Fact]
-        public async Task GetUserProfileAsync_TimeoutException_ReturnsNull()
+        public async Task GetUserProfileAsync_TimeoutException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new TimeoutException());
-            var result = await _service.GetUserProfileAsync(USER);
-            Assert.Null(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetUserProfileAsync(USER));
         }
 
         [Fact]
-        public async Task GetUserProfileAsync_GeneralException_ReturnsNull()
+        public async Task GetUserProfileAsync_GeneralException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.GetUserProfileAsync(USER);
-            Assert.Null(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.GetUserProfileAsync(USER));
         }
 
         [Fact]
@@ -163,11 +171,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task SendUsernameChangeCodeAsync_Exception_ReturnsFalse()
+        public async Task SendUsernameChangeCodeAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.SendUsernameChangeCodeAsync(USER);
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.SendUsernameChangeCodeAsync(USER));
         }
 
         [Fact]
@@ -249,19 +256,17 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task ChangeUsernameAsync_SqlException_ReturnsFatalError()
+        public async Task ChangeUsernameAsync_SqlException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(CreateSqlException());
-            var result = await _service.ChangeUsernameAsync(USER, "New", CODE);
-            Assert.Equal(UsernameChangeResult.FatalError, result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.ChangeUsernameAsync(USER, "New", CODE));
         }
 
         [Fact]
-        public async Task ChangeUsernameAsync_GeneralException_ReturnsFatalError()
+        public async Task ChangeUsernameAsync_GeneralException_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.ChangeUsernameAsync(USER, "New", CODE);
-            Assert.Equal(UsernameChangeResult.FatalError, result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.ChangeUsernameAsync(USER, "New", CODE));
         }
 
         [Fact]
@@ -286,11 +291,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task ChangeAvatarAsync_Exception_ReturnsFalse()
+        public async Task ChangeAvatarAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.ChangeAvatarAsync(USER, "img.png");
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.ChangeAvatarAsync(USER, "img.png"));
         }
 
         [Fact]
@@ -325,11 +329,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task SendPasswordChangeCodeAsync_Exception_ReturnsFalse()
+        public async Task SendPasswordChangeCodeAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.SendPasswordChangeCodeAsync(USER);
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.SendPasswordChangeCodeAsync(USER));
         }
 
         [Fact]
@@ -388,12 +391,11 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task ChangePasswordWithCodeAsync_Exception_ReturnsFalse()
+        public async Task ChangePasswordWithCodeAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
             var req = new ChangePasswordRequest();
-            var result = await _service.ChangePasswordWithCodeAsync(req);
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.ChangePasswordWithCodeAsync(req));
         }
 
         [Fact]
@@ -418,11 +420,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task UpdateLanguageAsync_Exception_ReturnsFalse()
+        public async Task UpdateLanguageAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.UpdateLanguageAsync(USER, "en");
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.UpdateLanguageAsync(USER, "en"));
         }
 
         [Fact]
@@ -464,11 +465,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task DeactivateAccountAsync_Exception_ReturnsFalse()
+        public async Task DeactivateAccountAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.DeactivateAccountAsync(new DeactivateAccountRequest { Username = USER });
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.DeactivateAccountAsync(new DeactivateAccountRequest { Username = USER }));
         }
 
         [Fact]
@@ -492,11 +492,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task AddSocialLinkAsync_Exception_ReturnsInternalError()
+        public async Task AddSocialLinkAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.AddSocialLinkAsync(USER, "url");
-            Assert.Equal("Ocurrió un error interno al guardar la red social.", result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.AddSocialLinkAsync(USER, "url"));
         }
 
         [Fact]
@@ -531,11 +530,10 @@ namespace GameServer.Tests.Unit
         }
 
         [Fact]
-        public async Task RemoveSocialLinkAsync_Exception_ReturnsFalse()
+        public async Task RemoveSocialLinkAsync_Exception_ThrowsFault()
         {
             _repoMock.Setup(r => r.GetPlayerWithDetailsAsync(USER)).ThrowsAsync(new Exception());
-            var result = await _service.RemoveSocialLinkAsync(USER, "url");
-            Assert.False(result);
+            await Assert.ThrowsAsync<FaultException<ServiceFault>>(() => _service.RemoveSocialLinkAsync(USER, "url"));
         }
     }
 }

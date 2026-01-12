@@ -520,6 +520,9 @@
     <None Include="Connected Services\UserProfileServiceReference\GameServer.DTOs.User.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\UserProfileServiceReference\GameServer.Faults.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Connected Services\UserProfileServiceReference\service.wsdl" />
     <None Include="Connected Services\UserProfileServiceReference\service.xsd">
       <SubType>Designer</SubType>

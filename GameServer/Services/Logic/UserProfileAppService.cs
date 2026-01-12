@@ -1,4 +1,5 @@
 ﻿using GameServer.DTOs.User;
+using GameServer.Faults;
 using GameServer.Helpers;
 using GameServer.Models;
 using GameServer.Repositories;
@@ -40,7 +41,7 @@ namespace GameServer.Services.Logic
 
         public async Task<UserProfileDto> GetUserProfileAsync(string identifier)
         {
-            UserProfileDto profile = null;
+            UserProfileDto result = null;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -53,7 +54,7 @@ namespace GameServer.Services.Logic
                         emailDisplay = player.Account.Email;
                     }
 
-                    profile = new UserProfileDto
+                    result = new UserProfileDto
                     {
                         Username = player.Username,
                         Email = emailDisplay,
@@ -70,7 +71,7 @@ namespace GameServer.Services.Logic
                     {
                         foreach (var link in player.PlayerSocialLinks)
                         {
-                            profile.SocialLinks.Add(new PlayerSocialLinkDto
+                            result.SocialLinks.Add(new PlayerSocialLinkDto
                             {
                                 SocialType = ((SocialType)link.SocialType).ToString(),
                                 Url = link.Url
@@ -83,29 +84,17 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Perfil no encontrado para: {0}", identifier);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL al obtener perfil.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error de Entity Framework al obtener perfil.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout al obtener perfil.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Fatal("Error general al obtener perfil.", ex);
+                Log.Error($"Error crítico al obtener perfil de {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return profile;
+            return result;
         }
 
         public async Task<bool> SendUsernameChangeCodeAsync(string identifier)
         {
-            bool isSent = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -120,33 +109,22 @@ namespace GameServer.Services.Logic
 
                     await _repository.SaveChangesAsync();
 
-                    isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
+                    bool isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
 
                     if (isSent) Log.InfoFormat("Código de cambio de usuario enviado a {0}", account.Email);
+                    result = isSent;
                 }
                 else
                 {
                     Log.WarnFormat("Solicitud de código inválida para: {0}", identifier);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL enviando código usuario.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF enviando código usuario.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout enviando código usuario.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error general enviando código de cambio de usuario.", ex);
+                Log.Error($"Error crítico enviando código de cambio de usuario a {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return isSent;
+            return result;
         }
 
         public async Task<UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode)
@@ -189,38 +167,23 @@ namespace GameServer.Services.Logic
 
                         await _repository.SaveChangesAsync();
                         _ = _emailService.SendUsernameChangedNotificationAsync(player.Account.Email, oldUsername, newUsername, player.Account.PreferredLanguage);
+
                         Log.InfoFormat("Usuario cambiado: '{0}' -> '{1}'", oldUsername, newUsername);
                         result = UsernameChangeResult.Success;
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL cambiando username.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF cambiando username.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout cambiando username.", ex);
-                result = UsernameChangeResult.FatalError;
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error inesperado al cambiar usuario para {identifier}.", ex);
-                result = UsernameChangeResult.FatalError;
+                Log.Error($"Error crítico al cambiar usuario para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
             return result;
         }
 
         public async Task<bool> ChangeAvatarAsync(string identifier, string avatarName)
         {
-            bool isSuccess = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -229,36 +192,24 @@ namespace GameServer.Services.Logic
                     player.Avatar = avatarName;
                     await _repository.SaveChangesAsync();
                     Log.InfoFormat("Avatar actualizado para {0}: {1}", identifier, avatarName);
-                    isSuccess = true;
+                    result = true;
                 }
                 else
                 {
                     Log.WarnFormat("Cambio de avatar fallido (Usuario no encontrado): {0}", identifier);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL cambiando avatar.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF cambiando avatar.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout cambiando avatar.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error cambiando avatar para {identifier}.", ex);
+                Log.Error($"Error crítico cambiando avatar para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return isSuccess;
+            return result;
         }
 
         public async Task<bool> SendPasswordChangeCodeAsync(string identifier)
         {
-            bool isSent = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -273,37 +224,26 @@ namespace GameServer.Services.Logic
 
                     await _repository.SaveChangesAsync();
 
-                    isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
+                    bool isSent = await _emailService.SendVerificationEmailAsync(account.Email, verifyCode, account.PreferredLanguage).ConfigureAwait(false);
                     if (isSent) Log.InfoFormat("Código de cambio de pass enviado a {0}", account.Email);
+                    result = isSent;
                 }
                 else
                 {
                     Log.WarnFormat("Solicitud inválida (Usuario no encontrado o es Invitado): {0}", identifier);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL enviando código pass.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF enviando código pass.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout enviando código pass.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error enviando código pass.", ex);
+                Log.Error($"Error crítico enviando código pass a {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return isSent;
+            return result;
         }
 
         public async Task<bool> ChangePasswordWithCodeAsync(ChangePasswordRequest request)
         {
-            bool isChanged = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(request.Email);
@@ -322,8 +262,9 @@ namespace GameServer.Services.Logic
 
                             await _repository.SaveChangesAsync();
                             _ = _emailService.SendPasswordChangedNotificationAsync(account.Email, player.Username, account.PreferredLanguage);
+
                             Log.InfoFormat("Contraseña cambiada exitosamente para {0}", request.Email);
-                            isChanged = true;
+                            result = true;
                         }
                         else
                         {
@@ -340,29 +281,17 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Intento de cambio de pass en cuenta inválida/invitado: {0}", request.Email);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL cambiando password con código.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF cambiando password con código.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout cambiando password con código.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error("Error cambiando password con código.", ex);
+                Log.Error($"Error crítico cambiando password con código para {request.Email}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return isChanged;
+            return result;
         }
 
         public async Task<bool> UpdateLanguageAsync(string identifier, string languageCode)
         {
-            bool isUpdated = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -375,35 +304,24 @@ namespace GameServer.Services.Logic
                     await _repository.SaveChangesAsync();
 
                     Log.InfoFormat("Idioma actualizado para {0} a {1}", identifier, shortCode);
-                    isUpdated = true;
+                    result = true;
                 }
                 else
                 {
                     Log.WarnFormat("Intento de cambio de idioma para usuario no encontrado: {0}", identifier);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL actualizando idioma.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF actualizando idioma.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout actualizando idioma.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error actualizando idioma para {identifier}", ex);
+                Log.Error($"Error crítico actualizando idioma para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return isUpdated;
+            return result;
         }
 
         public async Task<bool> DeactivateAccountAsync(DeactivateAccountRequest request)
         {
-            bool isDeactivated = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(request.Username);
@@ -416,7 +334,7 @@ namespace GameServer.Services.Logic
                         await _repository.SaveChangesAsync();
 
                         Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);
-                        isDeactivated = true;
+                        result = true;
                     }
                     else
                     {
@@ -428,34 +346,23 @@ namespace GameServer.Services.Logic
                     Log.WarnFormat("Intento de desactivar cuenta inexistente/invitado: {0}", request.Username);
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL desactivando cuenta.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF desactivando cuenta.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout desactivando cuenta.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error al desactivar cuenta de {request.Username}", ex);
+                Log.Error($"Error crítico al desactivar cuenta de {request.Username}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return isDeactivated;
+            return result;
         }
 
         public async Task<string> AddSocialLinkAsync(string identifier, string url)
         {
-            string errorMessage = "Ocurrió un error interno al guardar la red social.";
+            string result = null;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
                 if (player == null)
                 {
-                    errorMessage = "Usuario no encontrado.";
+                    result = "Usuario no encontrado.";
                 }
                 else
                 {
@@ -464,7 +371,7 @@ namespace GameServer.Services.Logic
                     if (!PlayerSocialLinkHelper.CanAddSocialLink(existingTypes, url, out SocialType newType, out string validationMsg))
                     {
                         Log.WarnFormat("Intento inválido de agregar red social para {0}: {1}", identifier, validationMsg);
-                        errorMessage = validationMsg;
+                        result = validationMsg;
                     }
                     else
                     {
@@ -477,34 +384,22 @@ namespace GameServer.Services.Logic
 
                         player.PlayerSocialLinks.Add(newLink);
                         await _repository.SaveChangesAsync();
+
                         Log.InfoFormat("Red social agregada para {0}: {1} ({2})", identifier, newType, url);
-                        errorMessage = null;
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL agregando social link.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF agregando social link.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout agregando social link.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error al agregar red social para {identifier}", ex);
+                Log.Error($"Error crítico al agregar red social para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-
-            return errorMessage;
+            return result;
         }
 
         public async Task<bool> RemoveSocialLinkAsync(string identifier, string urlToRemove)
         {
-            bool isRemoved = false;
+            bool result = false;
             try
             {
                 var player = await _repository.GetPlayerWithDetailsAsync(identifier);
@@ -517,7 +412,7 @@ namespace GameServer.Services.Logic
                         _repository.DeleteSocialLink(link);
                         await _repository.SaveChangesAsync();
                         Log.InfoFormat("Red social eliminada para {0}: {1}", identifier, urlToRemove);
-                        isRemoved = true;
+                        result = true;
                     }
                     else
                     {
@@ -525,23 +420,12 @@ namespace GameServer.Services.Logic
                     }
                 }
             }
-            catch (SqlException ex)
-            {
-                Log.Fatal("Error SQL eliminando social link.", ex);
-            }
-            catch (EntityException ex)
-            {
-                Log.Error("Error EF eliminando social link.", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                Log.Error("Timeout eliminando social link.", ex);
-            }
             catch (Exception ex)
             {
-                Log.Error($"Error al eliminar red social para {identifier}", ex);
+                Log.Error($"Error crítico al eliminar red social para {identifier}", ex);
+                throw ExceptionManager.Map(ex);
             }
-            return isRemoved;
+            return result;
         }
     }
 }

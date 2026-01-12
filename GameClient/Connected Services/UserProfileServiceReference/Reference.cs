@@ -247,6 +247,83 @@ namespace GameClient.UserProfileServiceReference {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
+    [System.SerializableAttribute()]
+    public partial class ServiceFault : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string CodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Code {
+            get {
+                return this.CodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.CodeField, value) != true)) {
+                    this.CodeField = value;
+                    this.RaisePropertyChanged("Code");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message {
+            get {
+                return this.MessageField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.MessageField, value) != true)) {
+                    this.MessageField = value;
+                    this.RaisePropertyChanged("Message");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="UsernameChangeResult", Namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User")]
     public enum UsernameChangeResult : int {
@@ -416,60 +493,70 @@ namespace GameClient.UserProfileServiceReference {
     public interface IUserProfileService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/GetUserProfile", ReplyAction="http://tempuri.org/IUserProfileService/GetUserProfileResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/GetUserProfileServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.UserProfileServiceReference.UserProfileDto GetUserProfile(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/GetUserProfile", ReplyAction="http://tempuri.org/IUserProfileService/GetUserProfileResponse")]
         System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UserProfileDto> GetUserProfileAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeUsername", ReplyAction="http://tempuri.org/IUserProfileService/ChangeUsernameResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/ChangeUsernameServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         GameClient.UserProfileServiceReference.UsernameChangeResult ChangeUsername(string identifier, string newUsername, string verificationCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeUsername", ReplyAction="http://tempuri.org/IUserProfileService/ChangeUsernameResponse")]
         System.Threading.Tasks.Task<GameClient.UserProfileServiceReference.UsernameChangeResult> ChangeUsernameAsync(string identifier, string newUsername, string verificationCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeAvatar", ReplyAction="http://tempuri.org/IUserProfileService/ChangeAvatarResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/ChangeAvatarServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool ChangeAvatar(string email, string avatarName);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangeAvatar", ReplyAction="http://tempuri.org/IUserProfileService/ChangeAvatarResponse")]
         System.Threading.Tasks.Task<bool> ChangeAvatarAsync(string email, string avatarName);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendPasswordChangeCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool SendPasswordChangeCode(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendPasswordChangeCodeResponse")]
         System.Threading.Tasks.Task<bool> SendPasswordChangeCodeAsync(string email);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode", ReplyAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool ChangePasswordWithCode(GameClient.UserProfileServiceReference.ChangePasswordRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode", ReplyAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse")]
         System.Threading.Tasks.Task<bool> ChangePasswordWithCodeAsync(GameClient.UserProfileServiceReference.ChangePasswordRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/DeactivateAccount", ReplyAction="http://tempuri.org/IUserProfileService/DeactivateAccountResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/DeactivateAccountServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool DeactivateAccount(GameClient.UserProfileServiceReference.DeactivateAccountRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/DeactivateAccount", ReplyAction="http://tempuri.org/IUserProfileService/DeactivateAccountResponse")]
         System.Threading.Tasks.Task<bool> DeactivateAccountAsync(GameClient.UserProfileServiceReference.DeactivateAccountRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool SendUsernameChangeCode(string identifier);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode", ReplyAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse")]
         System.Threading.Tasks.Task<bool> SendUsernameChangeCodeAsync(string identifier);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/UpdateLanguage", ReplyAction="http://tempuri.org/IUserProfileService/UpdateLanguageResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/UpdateLanguageServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool UpdateLanguage(string email, string languageCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/UpdateLanguage", ReplyAction="http://tempuri.org/IUserProfileService/UpdateLanguageResponse")]
         System.Threading.Tasks.Task<bool> UpdateLanguageAsync(string email, string languageCode);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/AddSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/AddSocialLinkResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/AddSocialLinkServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         string AddSocialLink(string identifier, string url);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/AddSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/AddSocialLinkResponse")]
         System.Threading.Tasks.Task<string> AddSocialLinkAsync(string identifier, string url);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/RemoveSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse")]
+        [System.ServiceModel.FaultContractAttribute(typeof(GameClient.UserProfileServiceReference.ServiceFault), Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkServiceFaultFault", Name="ServiceFault", Namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults")]
         bool RemoveSocialLink(string identifier, string url);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IUserProfileService/RemoveSocialLink", ReplyAction="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse")]

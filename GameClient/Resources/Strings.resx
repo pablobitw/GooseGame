@@ -954,6 +954,9 @@
   <data name="Global_Error_Communication" xml:space="preserve">
     <value>Error de comunicación con el servidor.</value>
   </data>
+  <data name="Global_Error_NoInternet" xml:space="preserve">
+    <value>No hay conexión a internet.</value>
+  </data>
   <data name="Global_Error_ServerDown" xml:space="preserve">
     <value>No se pudo conectar al servidor.</value>
   </data>
@@ -1328,6 +1331,9 @@
   </data>
   <data name="Profile_Social_Limit" xml:space="preserve">
     <value>Has alcanzado el límite de 3 redes sociales.</value>
+  </data>
+  <data name="Profile_UserNotFound" xml:space="preserve">
+    <value>Usuario no encontrado.</value>
   </data>
   <data name="Profile_User_Limit" xml:space="preserve">
     <value>Has alcanzado el límite de cambios de nombre.</value>

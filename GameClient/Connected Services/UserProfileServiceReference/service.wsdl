@@ -13,6 +13,7 @@
   <wsdl:types>
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import namespace="http://tempuri.org/" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.Faults" />
       <xsd:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/GameServer.DTOs.User" />
     </xsd:schema>
@@ -23,11 +24,17 @@
   <wsdl:message name="IUserProfileService_GetUserProfile_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetUserProfileResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_GetUserProfile_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q1="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q1:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IUserProfileService_ChangeUsername_InputMessage">
     <wsdl:part name="parameters" element="tns:ChangeUsername" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_ChangeUsername_OutputMessage">
     <wsdl:part name="parameters" element="tns:ChangeUsernameResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_ChangeUsername_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q2="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q2:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_ChangeAvatar_InputMessage">
     <wsdl:part name="parameters" element="tns:ChangeAvatar" />
@@ -35,11 +42,17 @@
   <wsdl:message name="IUserProfileService_ChangeAvatar_OutputMessage">
     <wsdl:part name="parameters" element="tns:ChangeAvatarResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_ChangeAvatar_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q3="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q3:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IUserProfileService_SendPasswordChangeCode_InputMessage">
     <wsdl:part name="parameters" element="tns:SendPasswordChangeCode" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_SendPasswordChangeCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:SendPasswordChangeCodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_SendPasswordChangeCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q4="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q4:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_ChangePasswordWithCode_InputMessage">
     <wsdl:part name="parameters" element="tns:ChangePasswordWithCode" />
@@ -47,11 +60,17 @@
   <wsdl:message name="IUserProfileService_ChangePasswordWithCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:ChangePasswordWithCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_ChangePasswordWithCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q5="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q5:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IUserProfileService_DeactivateAccount_InputMessage">
     <wsdl:part name="parameters" element="tns:DeactivateAccount" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_DeactivateAccount_OutputMessage">
     <wsdl:part name="parameters" element="tns:DeactivateAccountResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_DeactivateAccount_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q6="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q6:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_SendUsernameChangeCode_InputMessage">
     <wsdl:part name="parameters" element="tns:SendUsernameChangeCode" />
@@ -59,11 +78,17 @@
   <wsdl:message name="IUserProfileService_SendUsernameChangeCode_OutputMessage">
     <wsdl:part name="parameters" element="tns:SendUsernameChangeCodeResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_SendUsernameChangeCode_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q7="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q7:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IUserProfileService_UpdateLanguage_InputMessage">
     <wsdl:part name="parameters" element="tns:UpdateLanguage" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_UpdateLanguage_OutputMessage">
     <wsdl:part name="parameters" element="tns:UpdateLanguageResponse" />
+  </wsdl:message>
+  <wsdl:message name="IUserProfileService_UpdateLanguage_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q8="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q8:ServiceFault" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_AddSocialLink_InputMessage">
     <wsdl:part name="parameters" element="tns:AddSocialLink" />
@@ -71,52 +96,68 @@
   <wsdl:message name="IUserProfileService_AddSocialLink_OutputMessage">
     <wsdl:part name="parameters" element="tns:AddSocialLinkResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_AddSocialLink_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q9="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q9:ServiceFault" />
+  </wsdl:message>
   <wsdl:message name="IUserProfileService_RemoveSocialLink_InputMessage">
     <wsdl:part name="parameters" element="tns:RemoveSocialLink" />
   </wsdl:message>
   <wsdl:message name="IUserProfileService_RemoveSocialLink_OutputMessage">
     <wsdl:part name="parameters" element="tns:RemoveSocialLinkResponse" />
   </wsdl:message>
+  <wsdl:message name="IUserProfileService_RemoveSocialLink_ServiceFaultFault_FaultMessage">
+    <wsdl:part xmlns:q10="http://schemas.datacontract.org/2004/07/GameServer.Faults" name="detail" element="q10:ServiceFault" />
+  </wsdl:message>
   <wsdl:portType name="IUserProfileService">
     <wsdl:operation name="GetUserProfile">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfile" message="tns:IUserProfileService_GetUserProfile_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfileResponse" message="tns:IUserProfileService_GetUserProfile_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/GetUserProfileServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_GetUserProfile_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="ChangeUsername">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/ChangeUsername" message="tns:IUserProfileService_ChangeUsername_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/ChangeUsernameResponse" message="tns:IUserProfileService_ChangeUsername_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/ChangeUsernameServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_ChangeUsername_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="ChangeAvatar">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/ChangeAvatar" message="tns:IUserProfileService_ChangeAvatar_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/ChangeAvatarResponse" message="tns:IUserProfileService_ChangeAvatar_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/ChangeAvatarServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_ChangeAvatar_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="SendPasswordChangeCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCode" message="tns:IUserProfileService_SendPasswordChangeCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCodeResponse" message="tns:IUserProfileService_SendPasswordChangeCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/SendPasswordChangeCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_SendPasswordChangeCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="ChangePasswordWithCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCode" message="tns:IUserProfileService_ChangePasswordWithCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeResponse" message="tns:IUserProfileService_ChangePasswordWithCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/ChangePasswordWithCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_ChangePasswordWithCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="DeactivateAccount">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/DeactivateAccount" message="tns:IUserProfileService_DeactivateAccount_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/DeactivateAccountResponse" message="tns:IUserProfileService_DeactivateAccount_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/DeactivateAccountServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_DeactivateAccount_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="SendUsernameChangeCode">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCode" message="tns:IUserProfileService_SendUsernameChangeCode_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeResponse" message="tns:IUserProfileService_SendUsernameChangeCode_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/SendUsernameChangeCodeServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_SendUsernameChangeCode_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="UpdateLanguage">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguage" message="tns:IUserProfileService_UpdateLanguage_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguageResponse" message="tns:IUserProfileService_UpdateLanguage_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/UpdateLanguageServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_UpdateLanguage_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="AddSocialLink">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/AddSocialLink" message="tns:IUserProfileService_AddSocialLink_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/AddSocialLinkResponse" message="tns:IUserProfileService_AddSocialLink_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/AddSocialLinkServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_AddSocialLink_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
     <wsdl:operation name="RemoveSocialLink">
       <wsdl:input wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLink" message="tns:IUserProfileService_RemoveSocialLink_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkResponse" message="tns:IUserProfileService_RemoveSocialLink_OutputMessage" />
+      <wsdl:fault wsaw:Action="http://tempuri.org/IUserProfileService/RemoveSocialLinkServiceFaultFault" name="ServiceFaultFault" message="tns:IUserProfileService_RemoveSocialLink_ServiceFaultFault_FaultMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="NetTcpBinding_IUserProfileService" type="tns:IUserProfileService">
@@ -131,6 +172,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="ChangeUsername">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/ChangeUsername" style="document" />
@@ -140,6 +184,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="ChangeAvatar">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/ChangeAvatar" style="document" />
@@ -149,6 +196,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="SendPasswordChangeCode">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/SendPasswordChangeCode" style="document" />
@@ -158,6 +208,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="ChangePasswordWithCode">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/ChangePasswordWithCode" style="document" />
@@ -167,6 +220,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="DeactivateAccount">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/DeactivateAccount" style="document" />
@@ -176,6 +232,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="SendUsernameChangeCode">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/SendUsernameChangeCode" style="document" />
@@ -185,6 +244,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="UpdateLanguage">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/UpdateLanguage" style="document" />
@@ -194,6 +256,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="AddSocialLink">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/AddSocialLink" style="document" />
@@ -203,6 +268,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="RemoveSocialLink">
       <soap12:operation soapAction="http://tempuri.org/IUserProfileService/RemoveSocialLink" style="document" />
@@ -212,6 +280,9 @@
       <wsdl:output>
         <soap12:body use="literal" />
       </wsdl:output>
+      <wsdl:fault name="ServiceFaultFault">
+        <soap12:fault use="literal" name="ServiceFaultFault" namespace="" />
+      </wsdl:fault>
     </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="UserProfileService">
