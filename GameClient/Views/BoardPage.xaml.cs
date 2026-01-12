@@ -118,7 +118,7 @@ namespace GameClient.Views
         {
             StopTimers();
             UnsubscribeFromEvents();
-            CloseChatClient();
+            CloseChatClient(); 
             this.CommandBindings.Clear();
         }
 
@@ -168,16 +168,18 @@ namespace GameClient.Views
                     try
                     {
                         GameplayServiceManager.Instance.Dispose();
+                        CloseChatClientInternal();
                     }
                     catch { }
                 });
-
-                CloseChatClient();
 
                 var authWindow = new AuthWindow();
                 Window currentWindow = Window.GetWindow(this);
 
                 authWindow.Show();
+
+                if (Application.Current != null) Application.Current.MainWindow = authWindow;
+
                 currentWindow?.Close();
             });
         }
@@ -464,6 +466,7 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
+                // 
             }
             catch (Exception ex)
             {
@@ -514,6 +517,7 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
+                // 
             }
             catch (Exception ex)
             {
@@ -808,19 +812,22 @@ namespace GameClient.Views
 
         private void CloseChatClient()
         {
+      
+            Task.Run(() => CloseChatClientInternal());
+        }
+
+        private void CloseChatClientInternal()
+        {
             if (chatClient == null) return;
             var client = chatClient;
             chatClient = null;
 
-            Task.Run(() =>
+            try
             {
-                try
-                {
-                    if (client.State == CommunicationState.Opened) client.Close();
-                    else client.Abort();
-                }
-                catch { client.Abort(); }
-            });
+                if (client.State == CommunicationState.Opened) client.Close();
+                else client.Abort();
+            }
+            catch { client.Abort(); }
         }
 
         private async void AddFriendMenuItem_Click(object sender, RoutedEventArgs e)

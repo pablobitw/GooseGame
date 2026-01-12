@@ -59,7 +59,6 @@ namespace GameClient.Helpers
             {
                 var context = new InstanceContext(this);
                 _client = new GameplayServiceClient(context);
-
                 _client.InnerChannel.Faulted += OnChannelFaulted;
             }
             catch (Exception ex)
@@ -70,7 +69,7 @@ namespace GameClient.Helpers
 
         private void OnChannelFaulted(object sender, EventArgs e)
         {
-            HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_Communication));
+            HandleConnectionFailure(new CommunicationException("Channel Faulted"));
         }
 
         private GameplayServiceClient GetClient()
@@ -91,29 +90,10 @@ namespace GameClient.Helpers
             return _client;
         }
 
-        public void OnTurnChanged(GameStateDto newState)
-        {
-            Application.Current.Dispatcher.InvokeAsync(() =>
-                TurnChanged?.Invoke(newState));
-        }
-
-        public void OnGameFinished(string winner)
-        {
-            Application.Current.Dispatcher.InvokeAsync(() =>
-                GameFinished?.Invoke(winner));
-        }
-
-        public void OnPlayerKicked(string reason)
-        {
-            Application.Current.Dispatcher.InvokeAsync(() =>
-                PlayerKicked?.Invoke(reason));
-        }
-
-        public void OnVoteKickStarted(string targetUsername, string reason)
-        {
-            Application.Current.Dispatcher.InvokeAsync(() =>
-                VoteKickStarted?.Invoke(targetUsername, reason));
-        }
+        public void OnTurnChanged(GameStateDto newState) => Application.Current.Dispatcher.InvokeAsync(() => TurnChanged?.Invoke(newState));
+        public void OnGameFinished(string winner) => Application.Current.Dispatcher.InvokeAsync(() => GameFinished?.Invoke(winner));
+        public void OnPlayerKicked(string reason) => Application.Current.Dispatcher.InvokeAsync(() => PlayerKicked?.Invoke(reason));
+        public void OnVoteKickStarted(string targetUsername, string reason) => Application.Current.Dispatcher.InvokeAsync(() => VoteKickStarted?.Invoke(targetUsername, reason));
 
         public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
         {
@@ -157,23 +137,11 @@ namespace GameClient.Helpers
                 HandleBusinessFault(fault);
                 throw;
             }
-            catch (EndpointNotFoundException ex)
+            catch (Exception ex) when (ex is EndpointNotFoundException || ex is CommunicationException || ex is TimeoutException)
             {
+               
                 HandleConnectionFailure(ex);
                 throw;
-            }
-            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
-            {
-                try
-                {
-                    InitializeProxy();
-                    return await action(GetClient());
-                }
-                catch (Exception retryEx)
-                {
-                    HandleConnectionFailure(retryEx);
-                    throw;
-                }
             }
             catch (Exception ex)
             {
@@ -199,23 +167,10 @@ namespace GameClient.Helpers
                 HandleBusinessFault(fault);
                 throw;
             }
-            catch (EndpointNotFoundException ex)
+            catch (Exception ex) when (ex is EndpointNotFoundException || ex is CommunicationException || ex is TimeoutException)
             {
                 HandleConnectionFailure(ex);
                 throw;
-            }
-            catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException || ex is ObjectDisposedException)
-            {
-                try
-                {
-                    InitializeProxy();
-                    await action(GetClient());
-                }
-                catch (Exception retryEx)
-                {
-                    HandleConnectionFailure(retryEx);
-                    throw;
-                }
             }
             catch (Exception ex)
             {
@@ -255,6 +210,7 @@ namespace GameClient.Helpers
             {
                 _client.InnerChannel.Faulted -= OnChannelFaulted;
 
+               
                 if (!NetworkInterface.GetIsNetworkAvailable() || _client.State == CommunicationState.Faulted)
                 {
                     _client.Abort();
