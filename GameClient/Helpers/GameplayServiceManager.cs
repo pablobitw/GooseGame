@@ -2,6 +2,7 @@
 using System;
 using System.Net.NetworkInformation;
 using System.ServiceModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -18,6 +19,10 @@ namespace GameClient.Helpers
         private GameplayServiceClient _client;
         private string _currentUsername;
         private bool _disposed;
+
+        private int _connectionLostRaised;
+
+        public string LastConnectionErrorMessage { get; private set; } = string.Empty;
 
         public event Action<GameStateDto> TurnChanged;
         public event Action<string> GameFinished;
@@ -48,6 +53,8 @@ namespace GameClient.Helpers
         public void Initialize(string username)
         {
             _currentUsername = username;
+            LastConnectionErrorMessage = string.Empty;
+            Interlocked.Exchange(ref _connectionLostRaised, 0);
             InitializeProxy();
         }
 
@@ -69,13 +76,15 @@ namespace GameClient.Helpers
 
         private void OnChannelFaulted(object sender, EventArgs e)
         {
-            HandleConnectionFailure(new CommunicationException("Channel Faulted"));
+            HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_Communication));
         }
 
         private GameplayServiceClient GetClient()
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(nameof(GameplayServiceManager));
+            }
 
             if (_client == null ||
                 _client.State == CommunicationState.Closed ||
@@ -85,52 +94,52 @@ namespace GameClient.Helpers
             }
 
             if (_client == null)
+            {
                 throw new CommunicationException(GameClient.Resources.Strings.Error_Communication);
+            }
 
             return _client;
         }
 
-        public void OnTurnChanged(GameStateDto newState) => Application.Current.Dispatcher.InvokeAsync(() => TurnChanged?.Invoke(newState));
-        public void OnGameFinished(string winner) => Application.Current.Dispatcher.InvokeAsync(() => GameFinished?.Invoke(winner));
-        public void OnPlayerKicked(string reason) => Application.Current.Dispatcher.InvokeAsync(() => PlayerKicked?.Invoke(reason));
-        public void OnVoteKickStarted(string targetUsername, string reason) => Application.Current.Dispatcher.InvokeAsync(() => VoteKickStarted?.Invoke(targetUsername, reason));
+        public void OnTurnChanged(GameStateDto newState) =>
+            Application.Current.Dispatcher.InvokeAsync(() => TurnChanged?.Invoke(newState));
 
-        public Task<DiceRollDto> RollDiceAsync(GameplayRequest request)
-        {
-            return ExecuteAsync(c => c.RollDiceAsync(request));
-        }
+        public void OnGameFinished(string winner) =>
+            Application.Current.Dispatcher.InvokeAsync(() => GameFinished?.Invoke(winner));
 
-        public Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
-        {
-            return ExecuteAsync(c => c.GetGameStateAsync(request));
-        }
+        public void OnPlayerKicked(string reason) =>
+            Application.Current.Dispatcher.InvokeAsync(() => PlayerKicked?.Invoke(reason));
 
-        public Task<bool> LeaveGameAsync(GameplayRequest request)
-        {
-            return ExecuteAsync(c => c.LeaveGameAsync(request));
-        }
+        public void OnVoteKickStarted(string targetUsername, string reason) =>
+            Application.Current.Dispatcher.InvokeAsync(() => VoteKickStarted?.Invoke(targetUsername, reason));
 
-        public Task InitiateVoteKickAsync(VoteRequestDto request)
-        {
-            return ExecuteAsync(c => c.InitiateVoteKickAsync(request));
-        }
+        public Task<DiceRollDto> RollDiceAsync(GameplayRequest request) =>
+            ExecuteAsync(c => c.RollDiceAsync(request));
 
-        public Task CastVoteAsync(VoteResponseDto vote)
-        {
-            return ExecuteAsync(c => c.CastVoteAsync(vote));
-        }
+        public Task<GameStateDto> GetGameStateAsync(GameplayRequest request) =>
+            ExecuteAsync(c => c.GetGameStateAsync(request));
+
+        public Task<bool> LeaveGameAsync(GameplayRequest request) =>
+            ExecuteAsync(c => c.LeaveGameAsync(request));
+
+        public Task InitiateVoteKickAsync(VoteRequestDto request) =>
+            ExecuteAsync(c => c.InitiateVoteKickAsync(request));
+
+        public Task CastVoteAsync(VoteResponseDto vote) =>
+            ExecuteAsync(c => c.CastVoteAsync(vote));
 
         private async Task<T> ExecuteAsync<T>(Func<GameplayServiceClient, Task<T>> action)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_NoInternet));
-                throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+                var ex = new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+                HandleConnectionFailure(ex);
+                throw ex;
             }
 
             try
             {
-                return await action(GetClient());
+                return await action(GetClient()).ConfigureAwait(false);
             }
             catch (FaultException<ServiceFault> fault)
             {
@@ -139,7 +148,6 @@ namespace GameClient.Helpers
             }
             catch (Exception ex) when (ex is EndpointNotFoundException || ex is CommunicationException || ex is TimeoutException)
             {
-               
                 HandleConnectionFailure(ex);
                 throw;
             }
@@ -154,13 +162,14 @@ namespace GameClient.Helpers
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_NoInternet));
-                throw new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+                var ex = new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
+                HandleConnectionFailure(ex);
+                throw ex;
             }
 
             try
             {
-                await action(GetClient());
+                await action(GetClient()).ConfigureAwait(false);
             }
             catch (FaultException<ServiceFault> fault)
             {
@@ -192,8 +201,30 @@ namespace GameClient.Helpers
 
         private void HandleConnectionFailure(Exception ex)
         {
+            LastConnectionErrorMessage = ResolveConnectionErrorMessage(ex);
             InvalidateClient();
+
+            if (Interlocked.Exchange(ref _connectionLostRaised, 1) != 0)
+            {
+                return;
+            }
+
             Application.Current.Dispatcher.InvokeAsync(() => ConnectionLost?.Invoke());
+        }
+
+        private static string ResolveConnectionErrorMessage(Exception ex)
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return GameClient.Resources.Strings.Error_NoInternet;
+            }
+
+            if (ex is TimeoutException)
+            {
+                return GameClient.Resources.Strings.Gameplay_Error_Timeout;
+            }
+
+            return GameClient.Resources.Strings.Error_Communication;
         }
 
         private void InvalidateClient()
@@ -210,7 +241,6 @@ namespace GameClient.Helpers
             {
                 _client.InnerChannel.Faulted -= OnChannelFaulted;
 
-               
                 if (!NetworkInterface.GetIsNetworkAvailable() || _client.State == CommunicationState.Faulted)
                 {
                     _client.Abort();
@@ -218,9 +248,13 @@ namespace GameClient.Helpers
                 else
                 {
                     if (_client.State == CommunicationState.Opened)
+                    {
                         _client.Close();
+                    }
                     else
+                    {
                         _client.Abort();
+                    }
                 }
             }
             catch

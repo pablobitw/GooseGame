@@ -431,28 +431,56 @@ namespace GameClient.Views
         {
             Dispatcher.Invoke(() =>
             {
-                IsEnabled = false;
-                RollDiceButton.IsEnabled = false;
-                StopTimers();
+                if (_isGameOverHandled) return;
                 _isGameOverHandled = true;
 
-                UnsubscribeFromEvents();
-                CloseChatClient();
+                IsEnabled = false;
+                RollDiceButton.IsEnabled = false;
 
-                if (reason == "SafeZone_DatabaseError")
+                StopTimers();
+
+                try
+                {
+                    UnsubscribeFromEvents();
+                }
+                catch { }
+
+                try
+                {
+                    CloseChatClientInternal();
+                }
+                catch { }
+
+                try
+                {
+                    GameplayServiceManager.Instance.Dispose();
+                }
+                catch { }
+
+                if (string.Equals(reason, "SafeZone_DatabaseError", StringComparison.Ordinal))
+                {
                     reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
-                if (Window.GetWindow(this) is GameMainWindow mainWindow)
+                Window currentWindow = Window.GetWindow(this);
+                var authWindow = new AuthWindow();
+
+                if (Application.Current != null)
                 {
-                    var loginScreen = new AuthWindow();
-                    loginScreen.Show();
-                    mainWindow.Close();
+                    Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                    Application.Current.MainWindow = authWindow;
                 }
+
+                authWindow.Show();
+                authWindow.Activate();
+
+                currentWindow?.Close();
             });
         }
+
 
         private void OnVoteKickStarted(string targetUsername, string reason)
         {
