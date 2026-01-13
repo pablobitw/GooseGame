@@ -3742,7 +3742,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a ¡Cuidado! No tienes conexión a internet, trata de reconectarte lo mas pronto posible!.
+        ///   Busca una cadena traducida similar a  No tienes conexión a internet, reinicia tu aplicacion he inicia de nuevo.
         /// </summary>
         public static string NoInternetGameplay {
             get {

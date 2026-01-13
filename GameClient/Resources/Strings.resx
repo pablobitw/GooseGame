@@ -1345,7 +1345,7 @@
     <value>No hay amigos conectados.</value>
   </data>
   <data name="NoInternetGameplay" xml:space="preserve">
-    <value>¡Cuidado! No tienes conexión a internet, trata de reconectarte lo mas pronto posible!</value>
+    <value> No tienes conexión a internet, reinicia tu aplicacion he inicia de nuevo</value>
   </data>
   <data name="NoLabel" xml:space="preserve">
     <value>No</value>
