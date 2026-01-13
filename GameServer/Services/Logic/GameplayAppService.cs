@@ -11,6 +11,8 @@ using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
+using System.Data.SqlClient;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -52,6 +54,38 @@ namespace GameServer.Services.Logic
             _voteLogic = voteLogic ?? new VoteLogic(_repository, _sanctionFactory, _connectionManager);
 
             _gameEngine = new GooseBoardEngine();
+        }
+
+        public async Task NotifySystemFailureToAll(List<int> activeGameIds, string errorCode)
+        {
+            var usersToNotify = new HashSet<string>();
+
+            foreach (var gameId in activeGameIds)
+            {
+                try
+                {
+                    var players = await _repository.GetPlayersInGameAsync(gameId).ConfigureAwait(false);
+                    foreach (var p in players) usersToNotify.Add(p.Username);
+                }
+                catch
+                {
+                    Log.Warn($"No se pudo leer jugadores de partida {gameId} durante emergencia.");
+                }
+            }
+
+
+            foreach (var username in usersToNotify)
+            {
+                try
+                {
+                    var client = _connectionManager.GetGameplayClient(username);
+                    if (IsCallbackUsable(client))
+                    {
+                        client.OnPlayerKicked(errorCode);
+                    }
+                }
+                catch { }
+            }
         }
 
         private void EnsureMonitoringStarted(int gameId)
@@ -503,6 +537,10 @@ namespace GameServer.Services.Logic
             {
                 Log.Error($"Error en HandleDisconnection para {username}", ex);
             }
+            finally
+            {
+                ConnectionManager.RemoveUser(username);
+            }
         }
 
         private async Task ProcessLeavingPlayerStats(Player player)
@@ -754,7 +792,6 @@ namespace GameServer.Services.Logic
                         int nextPlayerIndex = (totalMoves - extraTurns) % sortedPlayers.Count;
                         var afkPlayer = sortedPlayers[nextPlayerIndex];
 
-                       
                         if (!IsUserOnline(afkPlayer.Username))
                         {
                             Log.Info($"[ProcessAfkTimeout] Jugador {afkPlayer.Username} desconectado. Ejecutando salida forzada.");
@@ -779,6 +816,10 @@ namespace GameServer.Services.Logic
                 catch (Exception ex)
                 {
                     Log.Error($"AFK Process Error {gameId}", ex);
+                    if (ex is EntityException || ex is SqlException || ex.InnerException is SqlException)
+                    {
+                        throw;
+                    }
                 }
                 finally
                 {

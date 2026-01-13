@@ -3,6 +3,9 @@ using GameServer.Services.Logic;
 using log4net;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data.Entity.Core;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +23,9 @@ namespace GameServer.Helpers
 
         private const int CheckIntervalMs = 1000;
         private const int TurnTimeLimitSeconds = 20;
+        private const int MaxConsecutiveErrors = 5;
 
+        private int _consecutiveErrors = 0;
         private bool _disposed;
 
         private GameManager()
@@ -103,7 +108,7 @@ namespace GameServer.Helpers
             }
         }
 
-        private static async Task ExecuteServerTimeout(int gameId)
+        private async Task ExecuteServerTimeout(int gameId)
         {
             try
             {
@@ -112,10 +117,43 @@ namespace GameServer.Helpers
                     var logicService = new GameplayAppService(repository);
                     await logicService.ProcessAfkTimeout(gameId);
                 }
+
+                Interlocked.Exchange(ref _consecutiveErrors, 0);
             }
             catch (Exception ex)
             {
                 Log.Error("[GameManager] Error al ejecutar timeout forzado en partida " + gameId, ex);
+
+                if (ex is EntityException || ex is SqlException || ex.InnerException is SqlException)
+                {
+                    int currentErrors = Interlocked.Increment(ref _consecutiveErrors);
+
+                    if (currentErrors >= MaxConsecutiveErrors)
+                    {
+                        Log.Fatal($"[GameManager] {currentErrors} fallos consecutivos de DB. DISPARANDO EMERGENCIA.");
+                        await TriggerServerEmergencyStop();
+                        Interlocked.Exchange(ref _consecutiveErrors, 0);
+                    }
+                }
+            }
+        }
+
+        private async Task TriggerServerEmergencyStop()
+        {
+            try
+            {
+                using (var repository = new GameplayRepository())
+                {
+                    var logicService = new GameplayAppService(repository);
+                    var activeGameIds = _activeGames.Keys.ToList();
+                    await logicService.NotifySystemFailureToAll(activeGameIds, "SafeZone_DatabaseError");
+                }
+
+                _activeGames.Clear();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[GameManager] Falló incluso la notificación de emergencia.", ex);
             }
         }
 
@@ -127,10 +165,7 @@ namespace GameServer.Helpers
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
-            {
-                return;
-            }
+            if (_disposed) return;
 
             if (disposing)
             {
