@@ -8,7 +8,6 @@ using GameServer.Services.Common;
 using log4net;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -38,6 +37,92 @@ namespace GameServer.Services.Logic
             _wcfContext = wcfContext ?? new WcfContextWrapper();
             _gameMonitor = gameMonitor ?? new GameMonitorWrapper();
             _codeGenerator = codeGenerator ?? new LobbyCodeGenerator();
+        }
+
+        private void HookDisconnectionEvents(string username, ILobbyServiceCallback callback)
+        {
+            if (callback is ICommunicationObject channel)
+            {
+                EventHandler handler = null;
+                handler = (sender, args) =>
+                {
+                    channel.Faulted -= handler;
+                    channel.Closed -= handler;
+                    Task.Run(async () => await HandleUnexpectedDisconnection(username));
+                };
+
+                channel.Faulted += handler;
+                channel.Closed += handler;
+            }
+        }
+
+        private async Task HandleUnexpectedDisconnection(string username)
+        {
+            Log.Info($"[Lobby] Detectada desconexión abrupta de {username}. Limpiando...");
+
+            using (var repo = new LobbyRepository())
+            {
+                var connectionMgr = new LobbyConnectionManagerWrapper();
+
+                try
+                {
+                    var player = await repo.GetPlayerByUsernameAsync(username);
+                    if (player != null && player.GameIdGame != null)
+                    {
+                        int gameId = player.GameIdGame.Value;
+                        var game = await repo.GetGameByIdAsync(gameId);
+
+                        if (game != null && game.HostPlayerID == player.IdPlayer)
+                        {
+                            var players = await repo.GetPlayersInGameAsync(gameId);
+                            var usernamesToNotify = players
+                                .Where(p => p.Username != username)
+                                .Select(p => p.Username)
+                                .ToList();
+
+                            NotifyUsersSafeInternal(usernamesToNotify, connectionMgr, client => client.OnLobbyDisbanded());
+
+                            repo.DeleteGameAndCleanDependencies(game);
+                            await repo.SaveChangesAsync();
+                        }
+                        else if (game != null)
+                        {
+                            player.GameIdGame = null;
+                            await repo.SaveChangesAsync();
+
+                            connectionMgr.UnregisterClient(username);
+
+                            var remainingPlayers = await repo.GetPlayersInGameAsync(gameId);
+                            var usernamesToNotify = remainingPlayers.Select(p => p.Username).ToList();
+
+                            NotifyUsersSafeInternal(usernamesToNotify, connectionMgr, client => client.OnPlayerLeft(username));
+                        }
+                    }
+
+                    connectionMgr.UnregisterClient(username);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error manejando desconexión de {username}", ex);
+                }
+            }
+        }
+
+        private void NotifyUsersSafeInternal(List<string> usernames, ILobbyConnectionManager connMgr, Action<ILobbyServiceCallback> action)
+        {
+            foreach (var u in usernames)
+            {
+                var c = connMgr.GetClient(u);
+                if (c != null)
+                {
+                    try
+                    {
+                        if (((ICommunicationObject)c).State == CommunicationState.Opened)
+                            action(c);
+                    }
+                    catch { connMgr.UnregisterClient(u); }
+                }
+            }
         }
 
         private void FireAndForgetNotification(List<string> usernames, Action<ILobbyServiceCallback> notificationAction)
@@ -146,6 +231,7 @@ namespace GameServer.Services.Logic
                         if (callback != null)
                         {
                             _connectionManager.RegisterClient(request.HostUsername, callback);
+                            HookDisconnectionEvents(request.HostUsername, callback);
                         }
 
                         await CleanPlayerStateIfNeeded(hostPlayer);
@@ -208,6 +294,7 @@ namespace GameServer.Services.Logic
                 if (callback != null)
                 {
                     _connectionManager.RegisterClient(request.Username, callback);
+                    HookDisconnectionEvents(request.Username, callback);
                 }
 
                 await CleanPlayerStateIfNeeded(player);
@@ -241,6 +328,8 @@ namespace GameServer.Services.Logic
                         await _repository.SaveChangesAsync();
                         updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                     }
+
+                    Log.InfoFormat("Jugador '{0}' unido/reconectado al lobby {1}", request.Username, request.LobbyCode);
 
                     result.Success = true;
                     result.BoardId = game.Board_idBoard;
