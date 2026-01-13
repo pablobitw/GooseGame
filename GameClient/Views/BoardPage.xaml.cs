@@ -174,9 +174,7 @@ namespace GameClient.Views
                 {
                     try
                     {
-                      
                         CloseChatClientInternal();
-
                         GameplayServiceManager.Instance.Dispose();
                     }
                     catch { }
@@ -863,8 +861,7 @@ namespace GameClient.Views
 
             try
             {
-                if (client.State == CommunicationState.Opened) client.Close();
-                else client.Abort();
+                client.Abort();
             }
             catch { client.Abort(); }
         }

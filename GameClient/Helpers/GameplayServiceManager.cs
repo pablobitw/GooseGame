@@ -60,7 +60,7 @@ namespace GameClient.Helpers
 
         private void InitializeProxy()
         {
-            CloseClient(); 
+            CloseClient();
 
             try
             {
@@ -202,7 +202,6 @@ namespace GameClient.Helpers
         private void HandleConnectionFailure(Exception ex)
         {
             LastConnectionErrorMessage = ResolveConnectionErrorMessage(ex);
-
             InvalidateClient();
 
             if (Interlocked.Exchange(ref _connectionLostRaised, 1) != 0)
@@ -241,26 +240,11 @@ namespace GameClient.Helpers
             try
             {
                 _client.InnerChannel.Faulted -= OnChannelFaulted;
-
-                if (_client.State == CommunicationState.Faulted || !NetworkInterface.GetIsNetworkAvailable())
-                {
-                    _client.Abort();
-                }
-                else
-                {
-                    try
-                    {
-                        _client.Close();
-                    }
-                    catch
-                    {
-                        _client.Abort();
-                    }
-                }
+                _client.Abort();
             }
             catch
             {
-                _client.Abort();
+                _client?.Abort();
             }
             finally
             {

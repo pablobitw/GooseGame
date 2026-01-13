@@ -19,6 +19,16 @@ namespace GameServer.Services.Logic
         private static readonly ILog Log = LogManager.GetLogger(typeof(AuthAppService));
         private const string DefaultAvatar = "pack://application:,,,/Assets/Avatar/default_avatar.png";
         private const int CodeExpirationMinutes = 15;
+        private const string DefaultLanguage = "es-MX";
+        private const int GuestUsernameLength = 6;
+        private const int InitialCoins = 0;
+        private const int InitialUsernameChanges = 0;
+        private const int InitialTickets = 0;
+        private const int InitialMatchStats = 0;
+        private const int VerificationCodeLength = 6;
+        private const int VerificationCodeModulo = 1000000;
+        private const int VerificationCodeByteSize = 4;
+        private const int BitConverterStartIndex = 0;
 
         private readonly IAuthRepository _repository;
         private readonly IEmailService _emailService;
@@ -43,27 +53,27 @@ namespace GameServer.Services.Logic
                 bool isTaken;
                 do
                 {
-                    guestName = string.Format("Guest_{0}", Guid.NewGuid().ToString().Substring(0, 6));
+                    guestName = string.Format("Guest_{0}", Guid.NewGuid().ToString().Substring(0, GuestUsernameLength));
                     isTaken = _repository.IsUsernameTaken(guestName);
                 } while (isTaken);
 
                 var newGuestPlayer = new Player
                 {
                     Username = guestName,
-                    Coins = 0,
+                    Coins = InitialCoins,
                     Avatar = DefaultAvatar,
-                    UsernameChangeCount = 0,
+                    UsernameChangeCount = InitialUsernameChanges,
                     IsGuest = true,
-                    TicketCommon = 0,
-                    TicketRare = 0,
-                    TicketEpic = 0,
-                    TicketLegendary = 0,
+                    TicketCommon = InitialTickets,
+                    TicketRare = InitialTickets,
+                    TicketEpic = InitialTickets,
+                    TicketLegendary = InitialTickets,
                     PlayerStat = new PlayerStat
                     {
-                        MatchesPlayed = 0,
-                        MatchesWon = 0,
-                        MatchesLost = 0,
-                        LuckyBoxOpened = 0
+                        MatchesPlayed = InitialMatchStats,
+                        MatchesWon = InitialMatchStats,
+                        MatchesLost = InitialMatchStats,
+                        LuckyBoxOpened = InitialMatchStats
                     }
                 };
 
@@ -71,7 +81,7 @@ namespace GameServer.Services.Logic
                 await _repository.SaveChangesAsync();
 
                 _connection.AddUser(guestName);
-                Log.InfoFormat("Guest created: {0}", guestName);
+                Log.InfoFormat("Guest creado: {0}", guestName);
 
                 result.Success = true;
                 result.Username = guestName;
@@ -79,7 +89,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error in LoginAsGuestAsync", ex);
+                Log.Error("Error en LoginAsGuestAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -110,7 +120,7 @@ namespace GameServer.Services.Logic
                 }
                 catch (Exception ex)
                 {
-                    Log.Fatal("Error in RegisterUserAsync", ex);
+                    Log.Fatal("Error en RegisterUserAsync", ex);
                     throw ExceptionManager.Map(ex);
                 }
             }
@@ -165,7 +175,7 @@ namespace GameServer.Services.Logic
             await _repository.SaveChangesAsync();
 
             bool emailSent = await _emailService.SendVerificationEmailAsync(player.Account.Email, newCode, player.Account.PreferredLanguage).ConfigureAwait(false);
-            if (!emailSent) Log.Warn($"Failed to resend verification email to {player.Username}");
+            if (!emailSent) Log.Warn($"Fallo al reenviar correo a {player.Username}");
 
             return RegistrationResult.EmailPendingVerification;
         }
@@ -179,7 +189,7 @@ namespace GameServer.Services.Logic
             await _repository.SaveChangesAsync();
 
             bool emailSent = await _emailService.SendVerificationEmailAsync(account.Email, newCode, account.PreferredLanguage).ConfigureAwait(false);
-            if (!emailSent) Log.Warn($"Failed to resend verification email to {account.Email}");
+            if (!emailSent) Log.Warn($"Fallo al reenviar mensaje a {account.Email}");
 
             return RegistrationResult.EmailPendingVerification;
         }
@@ -198,21 +208,21 @@ namespace GameServer.Services.Logic
                 AccountStatus = (int)AccountStatus.Pending,
                 VerificationCode = verifyCode,
                 CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes),
-                PreferredLanguage = request.PreferredLanguage ?? "es-MX"
+                PreferredLanguage = request.PreferredLanguage ?? DefaultLanguage
             };
 
             var newPlayer = new Player
             {
                 Username = request.Username,
-                Coins = 0,
+                Coins = InitialCoins,
                 Avatar = DefaultAvatar,
                 Account = newAccount,
                 PlayerStat = new PlayerStat(),
                 IsGuest = false,
-                TicketCommon = 0,
-                TicketRare = 0,
-                TicketEpic = 0,
-                TicketLegendary = 0
+                TicketCommon = InitialTickets,
+                TicketRare = InitialTickets,
+                TicketEpic = InitialTickets,
+                TicketLegendary = InitialTickets
             };
 
             try
@@ -223,14 +233,14 @@ namespace GameServer.Services.Logic
                 bool emailSent = await _emailService.SendVerificationEmailAsync(request.Email, verifyCode, newAccount.PreferredLanguage).ConfigureAwait(false);
                 if (!emailSent)
                 {
-                    Log.Warn($"User {request.Username} registered, but email failed to send.");
+                    Log.Warn($"User {request.Username} registrado pero no se envío el correo.");
                 }
 
                 result = RegistrationResult.Success;
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in CreateNewUser", ex);
+                Log.Fatal("Error en CreateNewUser", ex);
                 throw ExceptionManager.Map(ex);
             }
 
@@ -243,7 +253,7 @@ namespace GameServer.Services.Logic
             {
                 IsSuccess = false,
                 Message = "InvalidCredentials",
-                PreferredLanguage = "es-MX"
+                PreferredLanguage = DefaultLanguage
             };
 
             try
@@ -298,7 +308,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in LogInAsync", ex);
+                Log.Fatal("Error en LogInAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
 
@@ -332,7 +342,7 @@ namespace GameServer.Services.Logic
 
                 response.IsSuccess = true;
                 response.Message = "Success";
-                response.PreferredLanguage = player.Account.PreferredLanguage ?? "es-MX";
+                response.PreferredLanguage = player.Account.PreferredLanguage ?? DefaultLanguage;
             }
             return response;
         }
@@ -371,7 +381,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in VerifyAccount", ex);
+                Log.Fatal("Error en VerifyAccount", ex);
                 throw ExceptionManager.Map(ex);
             }
             return isVerified;
@@ -399,7 +409,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in RequestPasswordResetAsync", ex);
+                Log.Fatal("Error en RequestPasswordResetAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -414,7 +424,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in VerifyRecoveryCode", ex);
+                Log.Fatal("Error en VerifyRecoveryCode", ex);
                 throw ExceptionManager.Map(ex);
             }
             return isValid;
@@ -444,7 +454,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in UpdatePassword", ex);
+                Log.Fatal("Error en UpdatePassword", ex);
                 throw ExceptionManager.Map(ex);
             }
             return isUpdated;
@@ -468,7 +478,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in ResendVerificationCodeAsync", ex);
+                Log.Fatal("Error en ResendVerificationCodeAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -496,7 +506,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Fatal("Error in ChangeUserPasswordAsync", ex);
+                Log.Fatal("Error en ChangeUserPasswordAsync", ex);
                 throw ExceptionManager.Map(ex);
             }
             return result;
@@ -507,10 +517,10 @@ namespace GameServer.Services.Logic
             string code;
             using (var rng = new RNGCryptoServiceProvider())
             {
-                byte[] data = new byte[4];
+                byte[] data = new byte[VerificationCodeByteSize];
                 rng.GetBytes(data);
-                int value = BitConverter.ToInt32(data, 0);
-                code = Math.Abs(value % 1000000).ToString("D6");
+                int value = BitConverter.ToInt32(data, BitConverterStartIndex);
+                code = Math.Abs(value % VerificationCodeModulo).ToString($"D{VerificationCodeLength}");
             }
             return code;
         }

@@ -26,6 +26,14 @@ namespace GameServer.Services.Logic
         private static readonly ConcurrentDictionary<int, byte> MonitoredGames =
             new ConcurrentDictionary<int, byte>();
 
+        private const int MinimumPlayersToStartGame = 2;
+        private const int StartingPosition = 0;
+        private const int WinningPosition = 64;
+        private const int MaxAfkStrikes = 3;
+        private const int VictoryCoinsReward = 300;
+        private const int DefaultMaxTokensToProcess = 1000;
+        private const int DefaultGameLogLimit = 20;
+
         private readonly IGameplayRepository _repository;
         private readonly IGameplayRepositoryFactory _repoFactory;
         private readonly IGameplayConnectionManager _connectionManager;
@@ -71,7 +79,7 @@ namespace GameServer.Services.Logic
                 }
                 catch
                 {
-                    Log.Warn($"No se pudo leer jugadores de partida {gameId} durante emergencia.");
+                    Log.Warn($"No se pudo leer jugadores de partida {gameId} (DB caída).");
                 }
             }
 
@@ -101,7 +109,7 @@ namespace GameServer.Services.Logic
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"Fallo al notificar a {username}: {ex.Message}");
+                        Log.Warn($"Fallo al notificar emergencia a {username}: {ex.Message}");
                     }
                 }));
             }
@@ -121,7 +129,7 @@ namespace GameServer.Services.Logic
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn($"EnsureMonitoringStarted failed for {gameId}: {ex.Message}");
+                    Log.Warn($"{gameId}: {ex.Message}");
                 }
             }
         }
@@ -136,7 +144,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Warn($"StopMonitoringSafe failed for {gameId}: {ex.Message}");
+                Log.Warn($" {gameId}: {ex.Message}");
             }
             finally
             {
@@ -274,14 +282,14 @@ namespace GameServer.Services.Logic
                             catch (Exception ex)
                             {
                                 UnregisterGameplayClientSafe(username);
-                                Log.Warn($"Error broadcasting failure to {username}: {ex.Message}");
+                                Log.Warn($" {username}: {ex.Message}");
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error broadcasting game failure for game {gameId}", ex);
+                    Log.Error($" {gameId}", ex);
                 }
             });
         }
@@ -330,7 +338,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error in RollDice", ex);
+                Log.Error("Error en RollDice", ex);
                 if (gameIdForLock != 0)
                 {
                     BroadcastGameFailureSafe(gameIdForLock);
@@ -386,7 +394,7 @@ namespace GameServer.Services.Logic
         private async Task<DiceRollDto> ProcessNormalTurnAsync(Game game, Player player)
         {
             var lastMove = await _repository.GetLastMoveForPlayerAsync(game.IdGame, player.IdPlayer).ConfigureAwait(false);
-            int currentPos = lastMove?.FinalPosition ?? 0;
+            int currentPos = lastMove?.FinalPosition ?? StartingPosition;
 
             var (d1, d2) = _gameEngine.GenerateDiceRoll(currentPos);
             int total = d1 + d2;
@@ -502,7 +510,7 @@ namespace GameServer.Services.Logic
                         var allPlayers = await _repository.GetPlayersInGameAsync(game.IdGame).ConfigureAwait(false);
                         var remainingPlayers = allPlayers.Where(p => p.IdPlayer != player.IdPlayer).ToList();
 
-                        if (remainingPlayers.Count < 2)
+                        if (remainingPlayers.Count < MinimumPlayersToStartGame)
                         {
                             await FinishGameByAbandonment(game, remainingPlayers).ConfigureAwait(false);
                         }
@@ -518,7 +526,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error leaving game", ex);
+                Log.Error("Error saliendo del juego", ex);
                 throw ExceptionManager.Map(ex);
             }
             return false;
@@ -543,7 +551,7 @@ namespace GameServer.Services.Logic
 
                         var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame).ConfigureAwait(false);
 
-                        if (remainingPlayers.Count < 2)
+                        if (remainingPlayers.Count < MinimumPlayersToStartGame)
                         {
                             await FinishGameByAbandonment(game, remainingPlayers).ConfigureAwait(false);
                         }
@@ -591,7 +599,7 @@ namespace GameServer.Services.Logic
                 {
                     winnerStats.PlayerStat.MatchesPlayed++;
                     winnerStats.PlayerStat.MatchesWon++;
-                    winnerStats.Coins += 300;
+                    winnerStats.Coins += VictoryCoinsReward;
                 }
             }
             else
@@ -650,7 +658,7 @@ namespace GameServer.Services.Logic
             player.TurnsSkipped--;
             int turnNum = await _repository.GetMoveCountAsync(gameId).ConfigureAwait(false) + 1;
             var prevMove = await _repository.GetLastMoveForPlayerAsync(gameId, player.IdPlayer).ConfigureAwait(false);
-            int samePos = prevMove?.FinalPosition ?? 0;
+            int samePos = prevMove?.FinalPosition ?? StartingPosition;
 
             var skipMove = new MoveRecord
             {
@@ -683,7 +691,7 @@ namespace GameServer.Services.Logic
                 TurnNumber = turnNum,
                 ActionDescription = $"{player.Username} llegó a la meta!",
                 StartPosition = currentPos,
-                FinalPosition = 64
+                FinalPosition = WinningPosition
             };
 
             _repository.AddMove(move);
@@ -725,7 +733,7 @@ namespace GameServer.Services.Logic
             var currentTurnPlayer = sortedPlayers[nextPlayerIndex];
 
             var lastMove = await _repository.GetLastGlobalMoveAsync(gameId).ConfigureAwait(false);
-            var logs = await _repository.GetGameLogsAsync(gameId, 20).ConfigureAwait(false);
+            var logs = await _repository.GetGameLogsAsync(gameId, DefaultGameLogLimit).ConfigureAwait(false);
             var positions = await GetPlayerPositionsAsync(gameId, sortedPlayers, currentTurnPlayer.Username).ConfigureAwait(false);
 
             return new GameStateDto
@@ -752,7 +760,7 @@ namespace GameServer.Services.Logic
                     positions.Add(new PlayerPositionDto
                     {
                         Username = p.Username,
-                        CurrentTile = pLastMove?.FinalPosition ?? 0,
+                        CurrentTile = pLastMove?.FinalPosition ?? StartingPosition,
                         IsOnline = GameServer.Helpers.ConnectionManager.IsUserOnline(p.Username),
                         AvatarPath = p.Avatar,
                         IsMyTurn = (p.Username == currentTurnUsername)
@@ -770,7 +778,7 @@ namespace GameServer.Services.Logic
             {
                 if (p.IdPlayer == winnerId)
                 {
-                    p.Coins += 300;
+                    p.Coins += VictoryCoinsReward;
                     if (p.PlayerStat != null)
                     {
                         p.PlayerStat.MatchesWon++;
@@ -822,7 +830,7 @@ namespace GameServer.Services.Logic
 
                         int strikes = _stateManager.AddOrUpdateAfkStrike(afkPlayer.Username);
 
-                        if (strikes >= 3)
+                        if (strikes >= MaxAfkStrikes)
                         {
                             await HandleMaxAfkStrikes(gameId, afkPlayer).ConfigureAwait(false);
                         }
@@ -864,7 +872,7 @@ namespace GameServer.Services.Logic
         private async Task HandleAfkWarning(int gameId, Player afkPlayer, int strikes, int totalMoves)
         {
             var lastMove = await _repository.GetLastMoveForPlayerAsync(gameId, afkPlayer.IdPlayer).ConfigureAwait(false);
-            int pos = lastMove?.FinalPosition ?? 0;
+            int pos = lastMove?.FinalPosition ?? StartingPosition;
 
             _repository.AddMove(new MoveRecord
             {
@@ -873,7 +881,7 @@ namespace GameServer.Services.Logic
                 DiceOne = 0,
                 DiceTwo = 0,
                 TurnNumber = totalMoves + 1,
-                ActionDescription = $"AFK Warning ({strikes}/3)",
+                ActionDescription = $"AFK Warning ({strikes}/{MaxAfkStrikes})",
                 StartPosition = pos,
                 FinalPosition = pos
             });

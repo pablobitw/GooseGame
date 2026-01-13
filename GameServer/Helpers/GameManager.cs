@@ -23,10 +23,10 @@ namespace GameServer.Helpers
 
         private const int CheckIntervalMs = 1000;
         private const int TurnTimeLimitSeconds = 20;
-        private const int MaxConsecutiveErrors = 5;
 
-        private int _consecutiveErrors = 0;
         private bool _disposed;
+
+        private int _emergencyTriggered = 0;
 
         private GameManager()
         {
@@ -77,6 +77,12 @@ namespace GameServer.Helpers
 
             while (!token.IsCancellationRequested)
             {
+                if (_emergencyTriggered == 1)
+                {
+                    await Task.Delay(5000, token); 
+                    continue;
+                }
+
                 try
                 {
                     await CheckAllGamesAsync();
@@ -99,7 +105,8 @@ namespace GameServer.Helpers
             {
                 if (_activeGames.TryGetValue(gameId, out DateTime lastActivity) && (now - lastActivity).TotalSeconds > TurnTimeLimitSeconds)
                 {
-                    Log.Info("[GameManager] TIMEOUT detectado en partida " + gameId + ". Forzando cambio de turno...");
+                    if (_emergencyTriggered == 0)
+                        Log.Info("[GameManager] TIMEOUT detectado en partida " + gameId + ". Forzando cambio de turno...");
 
                     UpdateActivity(gameId);
 
@@ -117,8 +124,6 @@ namespace GameServer.Helpers
                     var logicService = new GameplayAppService(repository);
                     await logicService.ProcessAfkTimeout(gameId);
                 }
-
-                Interlocked.Exchange(ref _consecutiveErrors, 0);
             }
             catch (Exception ex)
             {
@@ -126,13 +131,10 @@ namespace GameServer.Helpers
 
                 if (ex is EntityException || ex is SqlException || ex.InnerException is SqlException)
                 {
-                    int currentErrors = Interlocked.Increment(ref _consecutiveErrors);
-
-                    if (currentErrors >= MaxConsecutiveErrors)
+                    if (Interlocked.Exchange(ref _emergencyTriggered, 1) == 0)
                     {
-                        Log.Fatal($"[GameManager] {currentErrors} fallos consecutivos de DB. DISPARANDO EMERGENCIA.");
+                        Log.Fatal("[GameManager] FALLO DE DB DETECTADO. EJECUTANDO PROTOCOLO DE EMERGENCIA INMEDIATO.");
                         await TriggerServerEmergencyStop();
-                        Interlocked.Exchange(ref _consecutiveErrors, 0);
                     }
                 }
             }
@@ -146,6 +148,7 @@ namespace GameServer.Helpers
                 {
                     var logicService = new GameplayAppService(repository);
                     var activeGameIds = _activeGames.Keys.ToList();
+
                     await logicService.NotifySystemFailureToAll(activeGameIds, "SafeZone_DatabaseError");
                 }
 
