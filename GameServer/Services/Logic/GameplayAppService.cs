@@ -445,32 +445,44 @@ namespace GameServer.Services.Logic
             return resultDto;
         }
 
-        public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
+         public async Task<GameStateDto> GetGameStateAsync(GameplayRequest request)
         {
             var gameState = new GameStateDto { Success = false };
             if (request == null) return gameState;
 
             try
             {
+                var player = await _repository.GetPlayerByUsernameAsync(request.Username).ConfigureAwait(false);
+
+                if (player != null && player.GameIdGame == null)
+                {
+                    gameState.Success = true; 
+                    gameState.IsKicked = true;
+                    gameState.ErrorType = GameplayErrorType.PlayerKicked;
+                    gameState.ErrorMessage = "ERROR_KICKED_AFK"; 
+                    return gameState;
+                }
+
                 var game = await _repository.GetGameByLobbyCodeAsync(request.LobbyCode).ConfigureAwait(false);
+
                 if (game == null)
                 {
                     gameState.ErrorType = GameplayErrorType.GameNotFound;
                     return gameState;
                 }
 
-                if (game.GameStatus == (int)GameStatus.InProgress)
-                {
-                    EnsureMonitoringStarted(game.IdGame);
-                }
-
-                var player = await _repository.GetPlayerByUsernameAsync(request.Username).ConfigureAwait(false);
                 if (player != null && player.GameIdGame != game.IdGame)
                 {
                     gameState.Success = true;
                     gameState.IsKicked = true;
                     gameState.ErrorType = GameplayErrorType.PlayerKicked;
+                    gameState.ErrorMessage = "ERROR_KICKED_GENERIC"; 
                     return gameState;
+                }
+
+                if (game.GameStatus == (int)GameStatus.InProgress)
+                {
+                    EnsureMonitoringStarted(game.IdGame);
                 }
 
                 if (game.GameStatus == (int)GameStatus.Finished)
@@ -487,7 +499,7 @@ namespace GameServer.Services.Logic
             }
             catch (Exception ex)
             {
-                Log.Error("Error GetGameState", ex);
+                Log.Error($"Error GetGameState para {request?.Username}", ex);
                 throw ExceptionManager.Map(ex);
             }
 

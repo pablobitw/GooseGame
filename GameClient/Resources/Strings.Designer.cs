@@ -2554,6 +2554,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Has sido expulsado de la partida por inactividad prolongada (AFK)..
+        /// </summary>
+        public static string Gameplay_Error_KickedAFK {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_KickedAFK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a &quot;¡Calma! Aún no es tu turno.&quot;.
         /// </summary>
         public static string Gameplay_Error_NotTurn {
@@ -5025,6 +5034,15 @@ namespace GameClient.Resources {
         public static string String3 {
             get {
                 return ResourceManager.GetString("String3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string String4 {
+            get {
+                return ResourceManager.GetString("String4", resourceCulture);
             }
         }
         

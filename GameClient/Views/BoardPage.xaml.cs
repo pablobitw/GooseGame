@@ -419,33 +419,44 @@ namespace GameClient.Views
 
                 IsEnabled = false;
                 RollDiceButton.IsEnabled = false;
-
                 StopTimers();
 
-                if (!string.IsNullOrEmpty(reason) && reason.Contains(DbErrorKey))
+                UnsubscribeFromEvents();
+
+                string messageToShow;
+
+                if (string.Equals(reason, "ERROR_KICKED_AFK", StringComparison.OrdinalIgnoreCase))
                 {
-                    reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                    messageToShow = GameClient.Resources.Strings.Gameplay_Error_KickedAFK;
                 }
-                else if (string.Equals(reason, AfkReason, StringComparison.OrdinalIgnoreCase))
+                else if (!string.IsNullOrEmpty(reason) && reason.Contains("SafeZone_DatabaseError"))
                 {
-                    reason = AfkKickMessage;
+                    messageToShow = GameClient.Resources.Strings.SafeZone_DatabaseError;
+                }
+                else
+                {
+                    messageToShow = !string.IsNullOrWhiteSpace(reason)
+                        ? reason
+                        : GameClient.Resources.Strings.Gameplay_Error_Kicked;
                 }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
 
-                MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-
+               
                 Task.Run(() =>
                 {
                     try
                     {
-                        CloseChatClientInternal();
+                        CloseChatClient(); 
                         GameplayServiceManager.Instance.Dispose();
                     }
-                    catch { }
+                    catch { 
+                        //
+                            }
                 });
+                
 
-                UnsubscribeFromEvents();
+                MessageBox.Show(messageToShow, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 Window currentWindow = Window.GetWindow(this);
                 var authWindow = new AuthWindow();
@@ -456,7 +467,6 @@ namespace GameClient.Views
                 }
 
                 authWindow.Show();
-                authWindow.Activate();
 
                 currentWindow?.Close();
             });
@@ -490,8 +500,21 @@ namespace GameClient.Views
 
                 if (state != null)
                 {
-                    if (state.Success) ProcessGameState(state);
-                    else HandleGameplayError(state.ErrorType, state.ErrorMessage);
+                   
+                    if (state.IsKicked)
+                    {
+                        OnPlayerKicked(state.ErrorMessage);
+                        return; 
+                    }
+
+                    if (state.Success)
+                    {
+                        ProcessGameState(state);
+                    }
+                    else
+                    {
+                        HandleGameplayError(state.ErrorType, state.ErrorMessage);
+                    }
                 }
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)

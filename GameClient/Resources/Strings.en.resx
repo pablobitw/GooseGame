@@ -939,6 +939,9 @@
   <data name="Gameplay_Error_Kicked" xml:space="preserve">
     <value>You have been kicked from the room.</value>
   </data>
+  <data name="Gameplay_Error_KickedAFK" xml:space="preserve">
+    <value>You have been kicked from the game due to prolonged inactivity (AFK).</value>
+  </data>
   <data name="Gameplay_Error_NotTurn" xml:space="preserve">
     <value>Easy there! It's not your turn yet.</value>
   </data>

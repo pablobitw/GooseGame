@@ -951,6 +951,9 @@
   <data name="Gameplay_Error_Kicked" xml:space="preserve">
     <value>"Has sido expulsado de la sala."</value>
   </data>
+  <data name="Gameplay_Error_KickedAFK" xml:space="preserve">
+    <value>Has sido expulsado de la partida por inactividad prolongada (AFK).</value>
+  </data>
   <data name="Gameplay_Error_NotTurn" xml:space="preserve">
     <value>"¡Calma! Aún no es tu turno."</value>
   </data>
@@ -1771,6 +1774,9 @@
     <value />
   </data>
   <data name="String3" xml:space="preserve">
+    <value />
+  </data>
+  <data name="String4" xml:space="preserve">
     <value />
   </data>
   <data name="SuccessTitle" xml:space="preserve">
