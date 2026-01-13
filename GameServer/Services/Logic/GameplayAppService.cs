@@ -77,7 +77,7 @@ namespace GameServer.Services.Logic
 
             if (!dbReadSuccess || usersToNotify.Count == 0)
             {
-                Log.Warn("La DB no responde. Usando lista de conexiones en memoria RAM para emergencias.");
+                Log.Warn("Usando lista de conexiones en memoria RAM para emergencias.");
                 var allConnectedUsers = ConnectionManager.GetAllActiveGameplayUsers();
                 foreach (var user in allConnectedUsers)
                 {
@@ -85,21 +85,28 @@ namespace GameServer.Services.Logic
                 }
             }
 
+            var tasks = new List<Task>();
+
             foreach (var username in usersToNotify)
             {
-                try
+                tasks.Add(Task.Run(() =>
                 {
-                    var client = _connectionManager.GetGameplayClient(username);
-                    if (IsCallbackUsable(client))
+                    try
                     {
-                        client.OnPlayerKicked(errorCode);
+                        var client = _connectionManager.GetGameplayClient(username);
+                        if (IsCallbackUsable(client))
+                        {
+                            client.OnPlayerKicked(errorCode);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn($"No se pudo notificar a {username} durante la emergencia: {ex.Message}");
-                }
+                    catch (Exception ex)
+                    {
+                        Log.Warn($"Fallo al notificar a {username}: {ex.Message}");
+                    }
+                }));
             }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         private void EnsureMonitoringStarted(int gameId)

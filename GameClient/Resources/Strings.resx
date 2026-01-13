@@ -1737,6 +1737,9 @@
   <data name="String2" xml:space="preserve">
     <value />
   </data>
+  <data name="String3" xml:space="preserve">
+    <value />
+  </data>
   <data name="SuccessTitle" xml:space="preserve">
     <value>Exitoso</value>
   </data>

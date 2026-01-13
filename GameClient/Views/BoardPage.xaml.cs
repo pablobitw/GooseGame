@@ -432,12 +432,17 @@ namespace GameClient.Views
 
                 StopTimers();
 
-                if (string.Equals(reason, "SafeZone_DatabaseError", StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(reason) && reason.Contains("SafeZone_DatabaseError"))
                 {
                     reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
                 }
+                else if (string.Equals(reason, "AFK", StringComparison.OrdinalIgnoreCase))
+                {
+                    reason = "Has sido expulsado por inactividad.";
+                }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
+
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 Task.Run(() =>
