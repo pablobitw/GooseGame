@@ -4480,7 +4480,7 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Nuestros servicios están teniendo problemas técnicos momentáneos. Por favor, intenta entrar más tarde..
+        ///   Busca una cadena traducida similar a Error la base de datos esta apagada o en mantenimiento. Por favor, intenta entrar más tarde..
         /// </summary>
         public static string SafeZone_DatabaseError {
             get {

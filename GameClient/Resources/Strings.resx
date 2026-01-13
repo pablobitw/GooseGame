@@ -1591,7 +1591,7 @@
     <value>¡Vaya! Se ha perdido la conexión con el servidor. Te hemos regresado al inicio para reconectar.</value>
   </data>
   <data name="SafeZone_DatabaseError" xml:space="preserve">
-    <value>Nuestros servicios están teniendo problemas técnicos momentáneos. Por favor, intenta entrar más tarde.</value>
+    <value>Error la base de datos esta apagada o en mantenimiento. Por favor, intenta entrar más tarde.</value>
   </data>
   <data name="SafeZone_Kicked" xml:space="preserve">
     <value>El anfitrión de la sala ha decidido expulsarte. Volverás al menú principal.</value>

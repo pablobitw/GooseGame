@@ -59,6 +59,7 @@ namespace GameServer.Services.Logic
         public async Task NotifySystemFailureToAll(List<int> activeGameIds, string errorCode)
         {
             var usersToNotify = new HashSet<string>();
+            bool dbReadSuccess = false;
 
             foreach (var gameId in activeGameIds)
             {
@@ -66,6 +67,7 @@ namespace GameServer.Services.Logic
                 {
                     var players = await _repository.GetPlayersInGameAsync(gameId).ConfigureAwait(false);
                     foreach (var p in players) usersToNotify.Add(p.Username);
+                    dbReadSuccess = true;
                 }
                 catch
                 {
@@ -73,6 +75,15 @@ namespace GameServer.Services.Logic
                 }
             }
 
+            if (!dbReadSuccess || usersToNotify.Count == 0)
+            {
+                Log.Warn("La DB no responde. Usando lista de conexiones en memoria RAM para emergencias.");
+                var allConnectedUsers = ConnectionManager.GetAllActiveGameplayUsers();
+                foreach (var user in allConnectedUsers)
+                {
+                    usersToNotify.Add(user);
+                }
+            }
 
             foreach (var username in usersToNotify)
             {
@@ -84,7 +95,10 @@ namespace GameServer.Services.Logic
                         client.OnPlayerKicked(errorCode);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log.Warn($"No se pudo notificar a {username} durante la emergencia: {ex.Message}");
+                }
             }
         }
 

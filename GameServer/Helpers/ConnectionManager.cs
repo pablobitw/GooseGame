@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq; 
 using System.ServiceModel;
 using GameServer.Interfaces;
 
@@ -84,7 +85,7 @@ namespace GameServer.Helpers
             lock (_locker)
             {
                 _lobbyCallbacks.Remove(username);
-                CheckAndRemoveIfOrphan(username); 
+                CheckAndRemoveIfOrphan(username);
             }
         }
 
@@ -102,7 +103,7 @@ namespace GameServer.Helpers
                 if (!IsCallbackAlive(cb))
                 {
                     _lobbyCallbacks.Remove(username);
-                    CheckAndRemoveIfOrphan(username); 
+                    CheckAndRemoveIfOrphan(username);
                     return null;
                 }
 
@@ -147,11 +148,19 @@ namespace GameServer.Helpers
                 if (!IsCallbackAlive(cb))
                 {
                     _gameplayCallbacks.Remove(username);
-                    CheckAndRemoveIfOrphan(username); 
+                    CheckAndRemoveIfOrphan(username);
                     return null;
                 }
 
                 return cb;
+            }
+        }
+
+        public static List<string> GetAllActiveGameplayUsers()
+        {
+            lock (_locker)
+            {
+                return _gameplayCallbacks.Keys.ToList();
             }
         }
 
