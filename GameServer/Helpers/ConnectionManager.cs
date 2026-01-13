@@ -84,6 +84,7 @@ namespace GameServer.Helpers
             lock (_locker)
             {
                 _lobbyCallbacks.Remove(username);
+                CheckAndRemoveIfOrphan(username); 
             }
         }
 
@@ -101,6 +102,7 @@ namespace GameServer.Helpers
                 if (!IsCallbackAlive(cb))
                 {
                     _lobbyCallbacks.Remove(username);
+                    CheckAndRemoveIfOrphan(username); 
                     return null;
                 }
 
@@ -127,6 +129,7 @@ namespace GameServer.Helpers
             lock (_locker)
             {
                 _gameplayCallbacks.Remove(username);
+                CheckAndRemoveIfOrphan(username);
             }
         }
 
@@ -144,10 +147,19 @@ namespace GameServer.Helpers
                 if (!IsCallbackAlive(cb))
                 {
                     _gameplayCallbacks.Remove(username);
+                    CheckAndRemoveIfOrphan(username); 
                     return null;
                 }
 
                 return cb;
+            }
+        }
+
+        private static void CheckAndRemoveIfOrphan(string username)
+        {
+            if (!_lobbyCallbacks.ContainsKey(username) && !_gameplayCallbacks.ContainsKey(username))
+            {
+                _activeUsers.Remove(username);
             }
         }
 

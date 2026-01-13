@@ -170,23 +170,19 @@ namespace GameClient.Views
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
 
-                try
+                Task.Run(() =>
                 {
-                    UnsubscribeFromEvents();
-                }
-                catch { }
+                    try
+                    {
+                      
+                        CloseChatClientInternal();
 
-                try
-                {
-                    CloseChatClientInternal();
-                }
-                catch { }
+                        GameplayServiceManager.Instance.Dispose();
+                    }
+                    catch { }
+                });
 
-                try
-                {
-                    GameplayServiceManager.Instance.Dispose();
-                }
-                catch { }
+                UnsubscribeFromEvents();
 
                 Window currentWindow = Window.GetWindow(this);
                 var authWindow = new AuthWindow();
@@ -436,24 +432,6 @@ namespace GameClient.Views
 
                 StopTimers();
 
-                try
-                {
-                    UnsubscribeFromEvents();
-                }
-                catch { }
-
-                try
-                {
-                    CloseChatClientInternal();
-                }
-                catch { }
-
-                try
-                {
-                    GameplayServiceManager.Instance.Dispose();
-                }
-                catch { }
-
                 if (string.Equals(reason, "SafeZone_DatabaseError", StringComparison.Ordinal))
                 {
                     reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
@@ -461,6 +439,18 @@ namespace GameClient.Views
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
                 MessageBox.Show(reason, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        CloseChatClientInternal();
+                        GameplayServiceManager.Instance.Dispose();
+                    }
+                    catch { }
+                });
+
+                UnsubscribeFromEvents();
 
                 Window currentWindow = Window.GetWindow(this);
                 var authWindow = new AuthWindow();
