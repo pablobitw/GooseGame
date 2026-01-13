@@ -150,39 +150,61 @@ namespace GameClient.Views
             }
         }
 
+        private bool isExitingToAuth = false;
+
         private void OnConnectionLost()
         {
             Dispatcher.InvokeAsync(() =>
             {
+                if (isExitingToAuth) return;
+                isExitingToAuth = true;
+
                 if (_isGameOverHandled) return;
                 _isGameOverHandled = true;
 
                 StopTimers();
 
-                MessageBox.Show(GameClient.Resources.Strings.Error_Communication,
-                                GameClient.Resources.Strings.DialogErrorTitle,
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    GameClient.Resources.Strings.Error_Communication,
+                    GameClient.Resources.Strings.DialogErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
 
-                Task.Run(() =>
+                try
                 {
-                    try
-                    {
-                        GameplayServiceManager.Instance.Dispose();
-                        CloseChatClientInternal();
-                    }
-                    catch { }
-                });
+                    UnsubscribeFromEvents();
+                }
+                catch { }
 
-                var authWindow = new AuthWindow();
+                try
+                {
+                    GameplayServiceManager.Instance.Dispose();
+                }
+                catch { }
+
+                try
+                {
+                    CloseChatClientInternal();
+                }
+                catch { }
+
                 Window currentWindow = Window.GetWindow(this);
 
-                authWindow.Show();
+                var authWindow = new AuthWindow();
 
-                if (Application.Current != null) Application.Current.MainWindow = authWindow;
+                if (Application.Current != null)
+                {
+                    Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                    Application.Current.MainWindow = authWindow;
+                }
+
+                authWindow.Show();
+                authWindow.Activate();
 
                 currentWindow?.Close();
             });
         }
+
 
         private void ConnectToChatService()
         {
