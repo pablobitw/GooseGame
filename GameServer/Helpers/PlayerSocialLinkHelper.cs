@@ -36,7 +36,7 @@ namespace GameServer.Helpers
 
             if (existingList.Count >= MAX_SOCIAL_LINKS)
             {
-                errorMessage = "You can only add up to 3 social links.";
+                errorMessage = "Solo puedes agregar 3 redes sociales.";
                 return false;
             }
 
@@ -48,7 +48,7 @@ namespace GameServer.Helpers
 
             if (existingList.Contains(detectedType))
             {
-                errorMessage = $"You already have a {detectedType} link.";
+                errorMessage = $"ya tienes un {detectedType} link.";
                 return false;
             }
 

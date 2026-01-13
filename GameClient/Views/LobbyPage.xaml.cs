@@ -14,6 +14,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace GameClient.Views
 {
@@ -21,14 +22,32 @@ namespace GameClient.Views
     {
         private const string ToggleActiveStyle = "LobbyToggleActiveStyle";
         private const string ToggleInactiveStyle = "LobbyToggleInactiveStyle";
-        private const int MinPlayersToStart = 2;
+
+        private const int MinPlayers = 2;
+        private const int MaxPlayers = 4;
+        private const int DefaultBoardId = 1;
+        private const int SecondaryBoardId = 2;
+
+        private const double OpacityEnabled = 1.0;
+        private const double OpacityDisabled = 0.5;
+        private const double OpacityDimmed = 0.6;
+
+        private const double FontSizeLarge = 22.0;
+        private const double IconSize = 30.0;
+        private const double IconMarginRight = 15.0;
+        private const double ItemPadding = 10.0;
+
+        private const int ClipboardFeedbackDelayMs = 2000;
+        private const int TabIndexLobbySettings = 1;
+
+        private readonly SolidColorBrush _userIconColor = new SolidColorBrush(Color.FromRgb(52, 138, 199));
 
         private bool isLobbyCreated;
         private bool isHost;
         private string username;
         private string lobbyCode;
-        private int playerCount = 4;
-        private int boardId = 1;
+        private int playerCount = MaxPlayers;
+        private int boardId = DefaultBoardId;
 
         private bool _isGameStarting;
         private LobbyChatController chatController;
@@ -46,12 +65,12 @@ namespace GameClient.Views
 
             SubscribeToLobbyEvents();
 
-            if (LobbyTabControl.Items.Count > 1)
-                (LobbyTabControl.Items[1] as TabItem).IsEnabled = false;
+            if (LobbyTabControl.Items.Count > TabIndexLobbySettings)
+                (LobbyTabControl.Items[TabIndexLobbySettings] as TabItem).IsEnabled = false;
 
             StartMatchButton.Content = GameClient.Resources.Strings.CreateLobbyButton;
             StartMatchButton.IsEnabled = true;
-            StartMatchButton.Opacity = 1.0;
+            StartMatchButton.Opacity = OpacityEnabled;
 
             Loaded += Page_Loaded;
             Unloaded += Page_Unloaded;
@@ -118,6 +137,11 @@ namespace GameClient.Views
                 NavigationCommands.BrowseBack,
                 (s, a) => a.Handled = true,
                 (s, a) => { a.CanExecute = true; a.Handled = true; }));
+            
+            if (!isHost) 
+            {
+                _ = RefreshLobbyState(); /////
+            }
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -287,8 +311,8 @@ namespace GameClient.Views
             boardId = board;
             PlayerCountBlock.Text = maxPlayers.ToString();
 
-            BoardTypeNormalButton.Style = (Style)FindResource(board == 1 ? ToggleActiveStyle : ToggleInactiveStyle);
-            BoardTypeSpecialButton.Style = (Style)FindResource(board == 2 ? ToggleActiveStyle : ToggleInactiveStyle);
+            BoardTypeNormalButton.Style = (Style)FindResource(board == DefaultBoardId ? ToggleActiveStyle : ToggleInactiveStyle);
+            BoardTypeSpecialButton.Style = (Style)FindResource(board == SecondaryBoardId ? ToggleActiveStyle : ToggleInactiveStyle);
 
             VisibilityPublicButton.Style = (Style)FindResource(isPublic ? ToggleActiveStyle : ToggleInactiveStyle);
             VisibilityPrivateButton.Style = (Style)FindResource(isPublic ? ToggleInactiveStyle : ToggleActiveStyle);
@@ -447,7 +471,7 @@ namespace GameClient.Views
                     return;
                 }
 
-                if (state.Players.Count() < MinPlayersToStart)
+                if (state.Players.Count() < MinPlayers)
                 {
                     ShowOverlayDialog(GameClient.Resources.Strings.ImpossibleStartTitle, GameClient.Resources.Strings.MinPlayersRequired, FontAwesomeIcon.InfoCircle);
                     ResetStartButton();
@@ -489,7 +513,7 @@ namespace GameClient.Views
             _isGameStarting = false;
             StartMatchButton.IsEnabled = true;
             StartMatchButton.Content = isLobbyCreated ? GameClient.Resources.Strings.StartGameButton : GameClient.Resources.Strings.CreateLobbyButton;
-            StartMatchButton.Opacity = 1.0;
+            StartMatchButton.Opacity = OpacityEnabled;
         }
 
         private void LockLobbySettings(string code)
@@ -499,10 +523,10 @@ namespace GameClient.Views
 
             StartMatchButton.Content = GameClient.Resources.Strings.StartGameButton;
             StartMatchButton.IsEnabled = false;
-            StartMatchButton.Opacity = 0.5;
+            StartMatchButton.Opacity = OpacityDisabled;
 
-            if (LobbyTabControl.Items.Count > 1)
-                (LobbyTabControl.Items[1] as TabItem).IsEnabled = true;
+            if (LobbyTabControl.Items.Count > TabIndexLobbySettings)
+                (LobbyTabControl.Items[TabIndexLobbySettings] as TabItem).IsEnabled = true;
 
             TitleBlock.Text = string.Format(GameClient.Resources.Strings.LobbyCodeTitle, code);
             CopyCodeButton.Visibility = Visibility.Visible;
@@ -537,10 +561,10 @@ namespace GameClient.Views
             if (!isHost || !isLobbyCreated || _isGameStarting)
                 return;
 
-            bool canStart = playersInLobby >= MinPlayersToStart;
+            bool canStart = playersInLobby >= MinPlayers;
 
             StartMatchButton.IsEnabled = canStart;
-            StartMatchButton.Opacity = canStart ? 1.0 : 0.5;
+            StartMatchButton.Opacity = canStart ? OpacityEnabled : OpacityDisabled;
 
             if (canStart)
             {
@@ -595,7 +619,7 @@ namespace GameClient.Views
             var textBlock = new TextBlock
             {
                 Text = player.Username,
-                FontSize = 22,
+                FontSize = FontSizeLarge,
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -613,28 +637,28 @@ namespace GameClient.Views
             var icon = new FontAwesome.WPF.FontAwesome
             {
                 Icon = FontAwesomeIcon.UserCircle,
-                Foreground = new SolidColorBrush(Color.FromRgb(52, 138, 199)),
-                Height = 30,
-                Width = 30,
-                Margin = new Thickness(0, 0, 15, 0)
+                Foreground = _userIconColor,
+                Height = IconSize,
+                Width = IconSize,
+                Margin = new Thickness(0, 0, IconMarginRight, 0)
             };
 
             var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
             stackPanel.Children.Add(icon);
             stackPanel.Children.Add(textBlock);
 
-            return new ListBoxItem { Content = stackPanel, Padding = new Thickness(10) };
+            return new ListBoxItem { Content = stackPanel, Padding = new Thickness(ItemPadding) };
         }
 
         private ListBoxItem CreateEmptySlotItem()
         {
-            var block = new TextBlock { Text = GameClient.Resources.Strings.EmptySlotText, FontSize = 22, Opacity = 0.6 };
-            var icon = new ImageAwesome { Icon = FontAwesomeIcon.HourglassStart, Height = 30, Width = 30 };
+            var block = new TextBlock { Text = GameClient.Resources.Strings.EmptySlotText, FontSize = FontSizeLarge, Opacity = OpacityDimmed };
+            var icon = new ImageAwesome { Icon = FontAwesomeIcon.HourglassStart, Height = IconSize, Width = IconSize };
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
             panel.Children.Add(icon);
             panel.Children.Add(block);
 
-            return new ListBoxItem { Content = panel, Padding = new Thickness(10) };
+            return new ListBoxItem { Content = panel, Padding = new Thickness(ItemPadding) };
         }
 
         private void ChatMessageTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -663,7 +687,7 @@ namespace GameClient.Views
         {
             Clipboard.SetText(lobbyCode);
             CopyIcon.Icon = FontAwesomeIcon.Check;
-            await Task.Delay(2000);
+            await Task.Delay(ClipboardFeedbackDelayMs);
             CopyIcon.Icon = FontAwesomeIcon.Copy;
         }
 
@@ -677,20 +701,20 @@ namespace GameClient.Views
 
         private void IncreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
-            if (playerCount < 4) { playerCount++; PlayerCountBlock.Text = playerCount.ToString(); }
+            if (playerCount < MaxPlayers) { playerCount++; PlayerCountBlock.Text = playerCount.ToString(); }
         }
         private void DecreasePlayersButton_Click(object sender, RoutedEventArgs e)
         {
-            if (playerCount > 2) { playerCount--; PlayerCountBlock.Text = playerCount.ToString(); }
+            if (playerCount > MinPlayers) { playerCount--; PlayerCountBlock.Text = playerCount.ToString(); }
         }
 
-        private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e) { SetBoard(1); }
-        private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e) { SetBoard(2); }
+        private void BoardTypeNormalButton_Click(object sender, RoutedEventArgs e) { SetBoard(DefaultBoardId); }
+        private void BoardTypeSpecialButton_Click(object sender, RoutedEventArgs e) { SetBoard(SecondaryBoardId); }
         private void SetBoard(int id)
         {
             boardId = id;
-            BoardTypeNormalButton.Style = (Style)FindResource(id == 1 ? ToggleActiveStyle : ToggleInactiveStyle);
-            BoardTypeSpecialButton.Style = (Style)FindResource(id == 2 ? ToggleActiveStyle : ToggleInactiveStyle);
+            BoardTypeNormalButton.Style = (Style)FindResource(id == DefaultBoardId ? ToggleActiveStyle : ToggleInactiveStyle);
+            BoardTypeSpecialButton.Style = (Style)FindResource(id == SecondaryBoardId ? ToggleActiveStyle : ToggleInactiveStyle);
         }
 
         private async void OpenInviteMenu_Click(object sender, RoutedEventArgs e)
@@ -725,12 +749,12 @@ namespace GameClient.Views
                 e.CancelCommand();
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    var sanitized = raw.Replace("\r", "").Replace("\n", "").Trim();
+                    var sanitized = raw.Replace("\r", string.Empty).Replace("\n", string.Empty).Trim();
                     if (sanitized.Length > ChatMessageTextBox.MaxLength)
                         sanitized = sanitized.Substring(0, ChatMessageTextBox.MaxLength);
                     ChatMessageTextBox.Text = sanitized;
                     ChatMessageTextBox.CaretIndex = ChatMessageTextBox.Text.Length;
-                }), System.Windows.Threading.DispatcherPriority.Background);
+                }), DispatcherPriority.Background);
             }
             else { e.CancelCommand(); }
         }

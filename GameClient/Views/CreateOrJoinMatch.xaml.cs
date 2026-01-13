@@ -9,7 +9,6 @@ namespace GameClient.Views
 {
     public partial class CreateOrJoinMatchPage : Page
     {
-        private const string ErrorTitle = "Error"; 
         private readonly string _username;
 
         public CreateOrJoinMatchPage(string username)
@@ -32,21 +31,29 @@ namespace GameClient.Views
             }
             catch (TimeoutException ex)
             {
-                MessageBox.Show($"Tiempo de espera agotado al crear el lobby: {ex.Message}", "Error de Tiempo", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_LobbyCreateTimeout, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_TimeoutTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de comunicación al crear el lobby: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_LobbyCreateError, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_ConnectionTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
         private void HandleGuestAccess()
         {
-            string message = "Crear partidas solo está disponible para usuarios registrados.\n\n" +
-                             "¿Te gustaría crear una cuenta ahora?\n" +
-                             "(Se cerrará tu sesión actual)";
-
-            var result = MessageBox.Show(message, "Modo Invitado", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            var result = MessageBox.Show(
+                GameClient.Resources.Strings.MatchMenu_GuestRestriction,
+                GameClient.Resources.Strings.MatchMenu_GuestTitle,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -66,11 +73,19 @@ namespace GameClient.Views
             }
             catch (TimeoutException ex)
             {
-                MessageBox.Show($"El servidor no responde: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_ServerNoResponse, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de conexión: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_ConnectionError, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -82,11 +97,19 @@ namespace GameClient.Views
             }
             catch (TimeoutException ex)
             {
-                MessageBox.Show($"El servidor no responde: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_ServerNoResponse, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
             catch (CommunicationException ex)
             {
-                MessageBox.Show($"Error de conexión: {ex.Message}", ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    string.Format(GameClient.Resources.Strings.MatchMenu_ConnectionError, ex.Message),
+                    GameClient.Resources.Strings.MatchMenu_ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

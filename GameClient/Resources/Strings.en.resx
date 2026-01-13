@@ -1275,6 +1275,33 @@
   <data name="Login_Title_Error" xml:space="preserve">
     <value>Login Error</value>
   </data>
+  <data name="MatchMenu_ConnectionError" xml:space="preserve">
+    <value>Connection error: {0}</value>
+  </data>
+  <data name="MatchMenu_ConnectionTitle" xml:space="preserve">
+    <value>Connection Error</value>
+  </data>
+  <data name="MatchMenu_ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="MatchMenu_GuestRestriction" xml:space="preserve">
+    <value>Creating matches is only available for registered users.\n\nWould you like to create an account now?\n(Your current session will be closed)</value>
+  </data>
+  <data name="MatchMenu_GuestTitle" xml:space="preserve">
+    <value>Guest Mode</value>
+  </data>
+  <data name="MatchMenu_LobbyCreateError" xml:space="preserve">
+    <value>Communication error creating lobby: {0}</value>
+  </data>
+  <data name="MatchMenu_LobbyCreateTimeout" xml:space="preserve">
+    <value>Lobby creation timed out: {0}</value>
+  </data>
+  <data name="MatchMenu_ServerNoResponse" xml:space="preserve">
+    <value>Server not responding: {0}</value>
+  </data>
+  <data name="MatchMenu_TimeoutTitle" xml:space="preserve">
+    <value>Timeout Error</value>
+  </data>
   <data name="MinPlayersRequired" xml:space="preserve">
     <value>At least 2 players are required.</value>
   </data>
@@ -1301,6 +1328,9 @@
   </data>
   <data name="NoFriendsOnline" xml:space="preserve">
     <value>No friends online.</value>
+  </data>
+  <data name="NoInternetGameplay" xml:space="preserve">
+    <value>Warning! You have no internet connection. Please try to reconnect as soon as possible!</value>
   </data>
   <data name="NoLabel" xml:space="preserve">
     <value>No</value>

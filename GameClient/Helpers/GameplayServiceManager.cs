@@ -107,8 +107,14 @@ namespace GameClient.Helpers
         public void OnGameFinished(string winner) =>
             Application.Current.Dispatcher.InvokeAsync(() => GameFinished?.Invoke(winner));
 
-        public void OnPlayerKicked(string reason) =>
+        public void OnPlayerKicked(string reason)
+        {
+            if (!string.IsNullOrEmpty(reason) && reason.Contains("SafeZone_DatabaseError"))
+            {
+                reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
+            }
             Application.Current.Dispatcher.InvokeAsync(() => PlayerKicked?.Invoke(reason));
+        }
 
         public void OnVoteKickStarted(string targetUsername, string reason) =>
             Application.Current.Dispatcher.InvokeAsync(() => VoteKickStarted?.Invoke(targetUsername, reason));
@@ -134,7 +140,7 @@ namespace GameClient.Helpers
             {
                 var ex = new CommunicationException(GameClient.Resources.Strings.Error_NoInternet);
                 HandleConnectionFailure(ex);
-                throw ex;
+                throw ex; 
             }
 
             try
@@ -202,7 +208,7 @@ namespace GameClient.Helpers
         private void HandleConnectionFailure(Exception ex)
         {
             LastConnectionErrorMessage = ResolveConnectionErrorMessage(ex);
-            InvalidateClient();
+
 
             if (Interlocked.Exchange(ref _connectionLostRaised, 1) != 0)
             {
@@ -210,6 +216,8 @@ namespace GameClient.Helpers
             }
 
             Application.Current.Dispatcher.InvokeAsync(() => ConnectionLost?.Invoke());
+
+            Task.Delay(5000).ContinueWith(_ => Interlocked.Exchange(ref _connectionLostRaised, 0));
         }
 
         private static string ResolveConnectionErrorMessage(Exception ex)

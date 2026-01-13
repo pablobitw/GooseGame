@@ -16,8 +16,14 @@ namespace GameServer.Services.Logic
     public class UserProfileAppService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(UserProfileAppService));
+
         private const int MaxUsernameChanges = 3;
         private const int CodeExpirationMinutes = 15;
+        private const int VerificationCodeMinValue = 100000;
+        private const int VerificationCodeMaxValue = 999999;
+        private const int DefaultStatisticsValue = 0;
+        private const int DeactivatedAccountStatus = 2;
+        private const int MaxLanguageCodeLength = 5;
 
         private readonly IUserProfileRepository _repository;
         private readonly IEmailService _emailService;
@@ -57,8 +63,8 @@ namespace GameServer.Services.Logic
                         Email = emailDisplay,
                         AvatarPath = player.Avatar,
                         Coins = player.Coins,
-                        MatchesPlayed = player.PlayerStat?.MatchesPlayed ?? 0,
-                        MatchesWon = player.PlayerStat?.MatchesWon ?? 0,
+                        MatchesPlayed = player.PlayerStat?.MatchesPlayed ?? DefaultStatisticsValue,
+                        MatchesWon = player.PlayerStat?.MatchesWon ?? DefaultStatisticsValue,
                         UsernameChangeCount = player.UsernameChangeCount,
                         PreferredLanguage = player.Account?.PreferredLanguage,
                         SocialLinks = new List<PlayerSocialLinkDto>()
@@ -99,7 +105,7 @@ namespace GameServer.Services.Logic
                 if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
-                    string verifyCode = _codeGenerator.Next(100000, 999999).ToString();
+                    string verifyCode = _codeGenerator.Next(VerificationCodeMinValue, VerificationCodeMaxValue).ToString();
 
                     account.VerificationCode = verifyCode;
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
@@ -214,7 +220,7 @@ namespace GameServer.Services.Logic
                 if (player != null && !player.IsGuest && player.Account != null)
                 {
                     var account = player.Account;
-                    string verifyCode = _codeGenerator.Next(100000, 999999).ToString();
+                    string verifyCode = _codeGenerator.Next(VerificationCodeMinValue, VerificationCodeMaxValue).ToString();
 
                     account.VerificationCode = verifyCode;
                     account.CodeExpiration = DateTime.Now.AddMinutes(CodeExpirationMinutes);
@@ -295,7 +301,7 @@ namespace GameServer.Services.Logic
 
                 if (player != null && player.Account != null)
                 {
-                    string shortCode = languageCode.Length > 5 ? languageCode.Substring(0, 5) : languageCode;
+                    string shortCode = languageCode.Length > MaxLanguageCodeLength ? languageCode.Substring(DefaultStatisticsValue, MaxLanguageCodeLength) : languageCode;
 
                     player.Account.PreferredLanguage = shortCode;
                     await _repository.SaveChangesAsync();
@@ -327,7 +333,7 @@ namespace GameServer.Services.Logic
                 {
                     if (_passwordHasher.Verify(request.Password, player.Account.PasswordHash))
                     {
-                        player.Account.AccountStatus = 2;
+                        player.Account.AccountStatus = DeactivatedAccountStatus;
                         await _repository.SaveChangesAsync();
 
                         Log.InfoFormat("Cuenta desactivada exitosamente: {0}", request.Username);

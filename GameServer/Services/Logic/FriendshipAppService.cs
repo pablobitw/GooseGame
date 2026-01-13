@@ -20,6 +20,9 @@ namespace GameServer.Services.Logic
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(FriendshipAppService));
 
+        private const int AcceptedFriendshipStatus = (int)FriendshipStatus.Accepted;
+        private const int PendingFriendshipStatus = (int)FriendshipStatus.Pending;
+
         private readonly IFriendshipRepository _repository;
         private readonly IFriendshipConnectionManager _connectionManager;
         private readonly IClientCallbackProvider _callbackProvider;
@@ -91,14 +94,14 @@ namespace GameServer.Services.Logic
 
                 if (existing != null)
                 {
-                    if (existing.FriendshipStatus == (int)FriendshipStatus.Accepted)
+                    if (existing.FriendshipStatus == AcceptedFriendshipStatus)
                     {
                         return FriendRequestResult.AlreadyFriends;
                     }
 
                     if (existing.PlayerIdPlayer == receiver.IdPlayer)
                     {
-                        existing.FriendshipStatus = (int)FriendshipStatus.Accepted;
+                        existing.FriendshipStatus = AcceptedFriendshipStatus;
                         await _repository.SaveChangesAsync();
 
                         _ = Task.Run(() => NotifyUserListUpdated(senderUsername));
@@ -114,7 +117,7 @@ namespace GameServer.Services.Logic
                 {
                     PlayerIdPlayer = sender.IdPlayer,
                     Player1_IdPlayer = receiver.IdPlayer,
-                    FriendshipStatus = (int)FriendshipStatus.Pending,
+                    FriendshipStatus = PendingFriendshipStatus,
                     RequestDate = DateTime.Now
                 };
 
@@ -151,7 +154,7 @@ namespace GameServer.Services.Logic
 
                 if (request.IsAccepted)
                 {
-                    friendship.FriendshipStatus = (int)FriendshipStatus.Accepted;
+                    friendship.FriendshipStatus = AcceptedFriendshipStatus;
                 }
                 else
                 {

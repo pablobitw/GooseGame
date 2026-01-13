@@ -1276,6 +1276,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error de conexión: {0}.
+        /// </summary>
+        public static string Error_de_conexión___0_ {
+            get {
+                return ResourceManager.GetString("Error de conexión: {0}", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Has sido expulsado de la sala..
         /// </summary>
         public static string Error_Kicked {
@@ -3562,6 +3571,87 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El servidor no responde: {0}.
+        /// </summary>
+        public static string MatchMenu_ConnectionError {
+            get {
+                return ResourceManager.GetString("MatchMenu_ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Conexión.
+        /// </summary>
+        public static string MatchMenu_ConnectionTitle {
+            get {
+                return ResourceManager.GetString("MatchMenu_ConnectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error.
+        /// </summary>
+        public static string MatchMenu_ErrorTitle {
+            get {
+                return ResourceManager.GetString("MatchMenu_ErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Crear partidas solo está disponible para usuarios registrados.\n\n¿Te gustaría crear una cuenta ahora?\n(Se cerrará tu sesión actual).
+        /// </summary>
+        public static string MatchMenu_GuestRestriction {
+            get {
+                return ResourceManager.GetString("MatchMenu_GuestRestriction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Modo Invitado.
+        /// </summary>
+        public static string MatchMenu_GuestTitle {
+            get {
+                return ResourceManager.GetString("MatchMenu_GuestTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de comunicación al crear el lobby: {0}.
+        /// </summary>
+        public static string MatchMenu_LobbyCreateError {
+            get {
+                return ResourceManager.GetString("MatchMenu_LobbyCreateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Tiempo de espera agotado al crear el lobby: {0}.
+        /// </summary>
+        public static string MatchMenu_LobbyCreateTimeout {
+            get {
+                return ResourceManager.GetString("MatchMenu_LobbyCreateTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El servidor no responde: {0}.
+        /// </summary>
+        public static string MatchMenu_ServerNoResponse {
+            get {
+                return ResourceManager.GetString("MatchMenu_ServerNoResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error de Tiempo.
+        /// </summary>
+        public static string MatchMenu_TimeoutTitle {
+            get {
+                return ResourceManager.GetString("MatchMenu_TimeoutTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Se necesitan al menos 2 jugadores..
         /// </summary>
         public static string MinPlayersRequired {
@@ -3639,6 +3729,15 @@ namespace GameClient.Resources {
         public static string NoFriendsOnline {
             get {
                 return ResourceManager.GetString("NoFriendsOnline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¡Cuidado! No tienes conexión a internet, trata de reconectarte lo mas pronto posible!.
+        /// </summary>
+        public static string NoInternetGameplay {
+            get {
+                return ResourceManager.GetString("NoInternetGameplay", resourceCulture);
             }
         }
         

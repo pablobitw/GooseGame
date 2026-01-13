@@ -513,6 +513,9 @@
   <data name="EnterRecoveryCodeInstruction" xml:space="preserve">
     <value>Instrucciones:</value>
   </data>
+  <data name="Error de conexión: {0}" xml:space="preserve">
+    <value>Error de conexión: {0}</value>
+  </data>
   <data name="ErrorAuthConnection" xml:space="preserve">
     <value>No se pudo conectar con el servidor de autenticación. Verifica tu conexión a internet.</value>
   </data>
@@ -1284,6 +1287,33 @@
   <data name="Login_Val_EmptyField" xml:space="preserve">
     <value>Debes llenar este campo para continuar.</value>
   </data>
+  <data name="MatchMenu_ConnectionError" xml:space="preserve">
+    <value>El servidor no responde: {0}</value>
+  </data>
+  <data name="MatchMenu_ConnectionTitle" xml:space="preserve">
+    <value>Error de Conexión</value>
+  </data>
+  <data name="MatchMenu_ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="MatchMenu_GuestRestriction" xml:space="preserve">
+    <value>Crear partidas solo está disponible para usuarios registrados.\n\n¿Te gustaría crear una cuenta ahora?\n(Se cerrará tu sesión actual)</value>
+  </data>
+  <data name="MatchMenu_GuestTitle" xml:space="preserve">
+    <value>Modo Invitado</value>
+  </data>
+  <data name="MatchMenu_LobbyCreateError" xml:space="preserve">
+    <value>Error de comunicación al crear el lobby: {0}</value>
+  </data>
+  <data name="MatchMenu_LobbyCreateTimeout" xml:space="preserve">
+    <value>Tiempo de espera agotado al crear el lobby: {0}</value>
+  </data>
+  <data name="MatchMenu_ServerNoResponse" xml:space="preserve">
+    <value>El servidor no responde: {0}</value>
+  </data>
+  <data name="MatchMenu_TimeoutTitle" xml:space="preserve">
+    <value>Error de Tiempo</value>
+  </data>
   <data name="MinPlayersRequired" xml:space="preserve">
     <value>Se necesitan al menos 2 jugadores.</value>
   </data>
@@ -1310,6 +1340,9 @@
   </data>
   <data name="NoFriendsOnline" xml:space="preserve">
     <value>No hay amigos conectados.</value>
+  </data>
+  <data name="NoInternetGameplay" xml:space="preserve">
+    <value>¡Cuidado! No tienes conexión a internet, trata de reconectarte lo mas pronto posible!</value>
   </data>
   <data name="NoLabel" xml:space="preserve">
     <value>No</value>

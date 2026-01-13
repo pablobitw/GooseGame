@@ -7,6 +7,7 @@ namespace GameClient.Views.Components
     public partial class AddSocialLinkDialog : UserControl
     {
         private const int MaxUsernameLength = 70;
+        private const int NoSelectionIndex = -1;
         private const string DefaultPrefix = "https://...";
 
         public event EventHandler DialogClosed;
@@ -20,7 +21,7 @@ namespace GameClient.Views.Components
         public void Reset()
         {
             UrlTextBox.Text = string.Empty;
-            SocialTypeComboBox.SelectedIndex = -1;
+            SocialTypeComboBox.SelectedIndex = NoSelectionIndex;
             PrefixTextBlock.Text = DefaultPrefix;
             HintText.Text = GameClient.Resources.Strings.SocialHintDefault;
 
@@ -61,7 +62,7 @@ namespace GameClient.Views.Components
         {
             string username = UrlTextBox.Text.Trim();
 
-            if (SocialTypeComboBox.SelectedIndex == -1)
+            if (SocialTypeComboBox.SelectedIndex == NoSelectionIndex)
             {
                 ShowWarning(GameClient.Resources.Strings.Social_Error_SelectPlatform);
                 return;

@@ -18,6 +18,15 @@ namespace GameClient
 {
     public partial class GameMainWindow : Window
     {
+        private const string AssetsDirectory = "Assets";
+        private const string BackgroundVideoFileName = "BACKGROUND_1.mp4";
+        private const string AutoBanTag = "[AUTO-BAN]";
+        private const string LoadingPlaceholder = "...";
+        private const string ErrorPlaceholder = "---";
+        private const string LogErrorPrefix = "[GameMainWindow] Error inicializando servicios: ";
+        private const int JoinLobbyDelayMs = 200;
+        private const double CancelColumnWidthStar = 1.0;
+
         private readonly string _username;
         private Action _onDialogConfirmAction;
         private bool _isExplicitLogout = false;
@@ -34,12 +43,13 @@ namespace GameClient
                 GameplayServiceManager.Instance.Initialize(_username);
 
                 FriendshipServiceManager.Instance.GameInvitationReceived += HandleInvitation;
+
                 LobbyServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
-                GameplayServiceManager.Instance.PlayerKicked += OnGlobalPlayerKicked;
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GameMainWindow] Error inicializando servicios: {ex.Message}");
+                Console.WriteLine($"{LogErrorPrefix}{ex.Message}");
             }
 
             this.Closing += GameMainWindow_Closing;
@@ -55,7 +65,7 @@ namespace GameClient
             DialogMessage.Text = message;
             DialogIcon.Icon = icon;
             DialogCancelBtn.Visibility = isConfirmation ? Visibility.Visible : Visibility.Collapsed;
-            DialogCancelColumn.Width = isConfirmation ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            DialogCancelColumn.Width = isConfirmation ? new GridLength(CancelColumnWidthStar, GridUnitType.Star) : new GridLength(0);
             DialogConfirmBtn.Content = isConfirmation ? GameClient.Resources.Strings.DialogConfirmBtn : GameClient.Resources.Strings.DialogOkBtn;
             DialogCancelBtn.Content = GameClient.Resources.Strings.DialogCancelBtn;
             _onDialogConfirmAction = onConfirm;
@@ -124,7 +134,7 @@ namespace GameClient
                     boardPage.StopTimers();
                 }
 
-                bool isBan = reason != null && reason.Contains("[AUTO-BAN]");
+                bool isBan = reason != null && reason.Contains(AutoBanTag);
 
                 ShowOverlayDialog(
                     GameClient.Resources.Strings.KickedTitle,
@@ -153,7 +163,7 @@ namespace GameClient
                 _isExplicitLogout = true;
                 UserSession.GetInstance().Logout();
                 AuthWindow authWindow = new AuthWindow();
-                Application.Current.MainWindow = authWindow; 
+                Application.Current.MainWindow = authWindow;
                 authWindow.Show();
                 this.Close();
             }
@@ -168,11 +178,11 @@ namespace GameClient
         {
             try
             {
-                CoinCountText.Text = "...";
+                CoinCountText.Text = LoadingPlaceholder;
 
                 if (!NetworkInterface.GetIsNetworkAvailable())
                 {
-                    CoinCountText.Text = "---";
+                    CoinCountText.Text = ErrorPlaceholder;
                     return;
                 }
 
@@ -188,19 +198,19 @@ namespace GameClient
             }
             catch (TimeoutException)
             {
-                CoinCountText.Text = "---";
+                CoinCountText.Text = ErrorPlaceholder;
             }
             catch (EndpointNotFoundException)
             {
-                CoinCountText.Text = "---";
+                CoinCountText.Text = ErrorPlaceholder;
             }
             catch (CommunicationException)
             {
-                CoinCountText.Text = "---";
+                CoinCountText.Text = ErrorPlaceholder;
             }
             catch (Exception)
             {
-                CoinCountText.Text = "---";
+                CoinCountText.Text = ErrorPlaceholder;
             }
         }
 
@@ -261,7 +271,7 @@ namespace GameClient
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string videoPath = Path.Combine(baseDir, "Assets", "BACKGROUND_1.mp4");
+                string videoPath = Path.Combine(baseDir, AssetsDirectory, BackgroundVideoFileName);
 
                 if (File.Exists(videoPath))
                 {
@@ -367,7 +377,6 @@ namespace GameClient
 
                 if (GameplayServiceManager.Instance != null)
                 {
-                    GameplayServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
                     GameplayServiceManager.Instance.Dispose();
                 }
 
@@ -460,7 +469,7 @@ namespace GameClient
 
                 if (joinResult.Success)
                 {
-                    await Task.Delay(200);
+                    await Task.Delay(JoinLobbyDelayMs);
                     MainMenuGrid.Visibility = Visibility.Collapsed;
                     MainFrame.Navigate(new LobbyPage(_username, code, joinResult));
                 }

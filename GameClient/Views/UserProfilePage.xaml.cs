@@ -4,7 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net.NetworkInformation; 
+using System.Net.NetworkInformation;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,14 +12,32 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using FontAwesome.WPF;
 
 namespace GameClient.Views
 {
     public partial class UserProfilePage : Page
     {
         private const int MaxUsernameChanges = 3;
+        private const int MaxSocialLinks = 3;
         private const string DefaultAvatarFile = "default_avatar.png";
-        private static readonly string AvatarFolder = Path.Combine("Assets", "Avatar");
+        private const string AssetsDirectory = "Assets";
+        private const string AvatarDirectory = "Avatar";
+
+        private const string InvalidSessionMessage = "Sesión inválida. Por favor inicia sesión nuevamente.";
+        private const string InvalidSessionLog = "Sesión inválida.";
+        private const string LinkOpenErrorMessage = "No se pudo abrir el enlace.";
+
+        private const string CtxLoadKey = "Profile_Ctx_Load";
+        private const string CtxAddKey = "Profile_Ctx_SocialAdd";
+        private const string CtxDeleteKey = "Profile_Ctx_SocialDelete";
+
+        private const string FallbackLoadMsg = "Error al cargar perfil.";
+        private const string FallbackAddMsg = "Error al agregar enlace.";
+        private const string FallbackDeleteMsg = "Error al eliminar enlace.";
+        private const string FallbackServerMsg = "Error del servidor.";
+
+        private static readonly string AvatarFolderPath = Path.Combine(AssetsDirectory, AvatarDirectory);
 
         private readonly string userEmail;
         private ObservableCollection<string> _socialLinks;
@@ -31,8 +49,8 @@ namespace GameClient.Views
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                ShowErrorMessage("Sesión inválida. Por favor inicia sesión nuevamente.");
-                Helpers.UserSession.GetInstance().HandleCatastrophicError("Sesión inválida.");
+                ShowErrorMessage(InvalidSessionMessage);
+                Helpers.UserSession.GetInstance().HandleCatastrophicError(InvalidSessionLog);
                 return;
             }
 
@@ -47,7 +65,7 @@ namespace GameClient.Views
             AddLinkPopup.LinkAdded += AddLinkPopup_LinkAdded;
         }
 
-        private void ShowCustomDialog(string title, string message, FontAwesome.WPF.FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
+        private void ShowCustomDialog(string title, string message, FontAwesomeIcon icon, bool isConfirmation = false, Action onConfirm = null)
         {
             DialogTitle.Text = title;
             DialogMessage.Text = message;
@@ -95,20 +113,10 @@ namespace GameClient.Views
                 UpdateProfileUI(profile);
                 LoadAvatar(profile.AvatarPath);
             }
-
             catch (FaultException<ServiceFault> fault)
             {
-                var resManager = GameClient.Resources.Strings.ResourceManager;
-                string contextMsg = resManager.GetString("Profile_Ctx_Load") ?? "Error al cargar perfil.";
-                string technicalReason = resManager.GetString(fault.Detail.Code);
-
-                if (string.IsNullOrEmpty(technicalReason))
-                {
-                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
-                }
-                ShowErrorMessage($"{contextMsg}\n\nDetalle: {technicalReason}");
+                HandleServiceFault(fault, CtxLoadKey, FallbackLoadMsg);
             }
-
             catch (EndpointNotFoundException)
             {
                 ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
@@ -184,7 +192,7 @@ namespace GameClient.Views
             string fileName = string.IsNullOrWhiteSpace(avatarName) ? DefaultAvatarFile : avatarName;
             try
             {
-                string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AvatarFolder, fileName);
+                string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AvatarFolderPath, fileName);
                 if (!File.Exists(fullPath)) return;
 
                 var bitmap = new BitmapImage();
@@ -215,9 +223,9 @@ namespace GameClient.Views
 
         private void AddSocialLinkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_socialLinks.Count >= 3)
+            if (_socialLinks.Count >= MaxSocialLinks)
             {
-                ShowCustomDialog(GameClient.Resources.Strings.SocialLimitTitle, GameClient.Resources.Strings.Profile_Social_Limit, FontAwesome.WPF.FontAwesomeIcon.InfoCircle);
+                ShowCustomDialog(GameClient.Resources.Strings.SocialLimitTitle, GameClient.Resources.Strings.Profile_Social_Limit, FontAwesomeIcon.InfoCircle);
                 return;
             }
             AddLinkPopup.Reset();
@@ -247,33 +255,23 @@ namespace GameClient.Views
                 }
                 else
                 {
-                    ShowCustomDialog(GameClient.Resources.Strings.DialogWarningTitle, error, FontAwesome.WPF.FontAwesomeIcon.ExclamationTriangle);
+                    ShowCustomDialog(GameClient.Resources.Strings.DialogWarningTitle, error, FontAwesomeIcon.ExclamationTriangle);
                 }
             }
-
             catch (FaultException<ServiceFault> fault)
             {
-                var resManager = GameClient.Resources.Strings.ResourceManager;
-                string contextMsg = resManager.GetString("Profile_Ctx_SocialAdd") ?? "Error al agregar enlace.";
-                string technicalReason = resManager.GetString(fault.Detail.Code);
-
-                if (string.IsNullOrEmpty(technicalReason))
-                {
-                    technicalReason = fault.Detail.Message ?? "Error del servidor.";
-                }
-                ShowErrorMessage($"{contextMsg}{technicalReason}");
+                HandleServiceFault(fault, CtxAddKey, FallbackAddMsg);
             }
-
-            catch (EndpointNotFoundException) 
-            { 
+            catch (EndpointNotFoundException)
+            {
                 ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
             }
-            catch (TimeoutException) 
-            { 
-                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); 
+            catch (TimeoutException)
+            {
+                ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout);
             }
-            catch (CommunicationException) 
-            { 
+            catch (CommunicationException)
+            {
                 ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication);
             }
             catch (Exception ex)
@@ -290,7 +288,7 @@ namespace GameClient.Views
         {
             if (sender is Button btn && btn.Tag is string urlToRemove)
             {
-                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.Profile_Social_Delete, FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, true, async () =>
+                ShowCustomDialog(GameClient.Resources.Strings.DialogConfirmTitle, GameClient.Resources.Strings.Profile_Social_Delete, FontAwesomeIcon.QuestionCircle, true, async () =>
                 {
                     if (!NetworkInterface.GetIsNetworkAvailable())
                     {
@@ -305,35 +303,25 @@ namespace GameClient.Views
                         if (success) await LoadUserProfile();
                         else ShowErrorMessage(GameClient.Resources.Strings.LinkDeleteError);
                     }
-
                     catch (FaultException<ServiceFault> fault)
                     {
-                        var resManager = GameClient.Resources.Strings.ResourceManager;
-                        string contextMsg = resManager.GetString("Profile_Ctx_SocialDelete") ?? "Error al eliminar enlace.";
-                        string technicalReason = resManager.GetString(fault.Detail.Code);
-
-                        if (string.IsNullOrEmpty(technicalReason))
-                        {
-                            technicalReason = fault.Detail.Message ?? "Error del servidor.";
-                        }
-                        ShowErrorMessage($"{contextMsg}\n\nDetalle: {technicalReason}");
+                        HandleServiceFault(fault, CtxDeleteKey, FallbackDeleteMsg);
                     }
-        
-                    catch (EndpointNotFoundException) 
-                    { 
+                    catch (EndpointNotFoundException)
+                    {
                         ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_ServerDown);
                     }
                     catch (TimeoutException)
-                    { 
-                        ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout); 
+                    {
+                        ShowErrorMessage(GameClient.Resources.Strings.Profile_Error_Timeout);
                     }
-                    catch (CommunicationException) 
-                    { 
-                        ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication); 
+                    catch (CommunicationException)
+                    {
+                        ShowErrorMessage(GameClient.Resources.Strings.Global_Error_Communication);
                     }
                     catch (Exception ex)
-                    { 
-                        ShowErrorMessage("Error: " + ex.Message); 
+                    {
+                        ShowErrorMessage("Error: " + ex.Message);
                     }
                     finally
                     {
@@ -343,6 +331,19 @@ namespace GameClient.Views
             }
         }
 
+        private void HandleServiceFault(FaultException<ServiceFault> fault, string contextKey, string fallbackMsg)
+        {
+            var resManager = GameClient.Resources.Strings.ResourceManager;
+            string contextMsg = resManager.GetString(contextKey) ?? fallbackMsg;
+            string technicalReason = resManager.GetString(fault.Detail.Code);
+
+            if (string.IsNullOrEmpty(technicalReason))
+            {
+                technicalReason = fault.Detail.Message ?? FallbackServerMsg;
+            }
+            ShowErrorMessage($"{contextMsg}\n\nDetalle: {technicalReason}");
+        }
+
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             try
@@ -350,9 +351,9 @@ namespace GameClient.Views
                 Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
                 e.Handled = true;
             }
-            catch 
-            { 
-                ShowErrorMessage("No se pudo abrir el enlace."); 
+            catch
+            {
+                ShowErrorMessage(LinkOpenErrorMessage);
             }
         }
 
@@ -368,7 +369,7 @@ namespace GameClient.Views
         private void DeactivateDialog_AccountDeactivated(object sender, EventArgs e)
         {
             DeactivateDialog.Visibility = Visibility.Collapsed;
-            ShowCustomDialog(GameClient.Resources.Strings.DeactivatedSuccessTitle, GameClient.Resources.Strings.Profile_Deactivate_Success, FontAwesome.WPF.FontAwesomeIcon.SignOut, false, () =>
+            ShowCustomDialog(GameClient.Resources.Strings.DeactivatedSuccessTitle, GameClient.Resources.Strings.Profile_Deactivate_Success, FontAwesomeIcon.SignOut, false, () =>
             {
                 var authWindow = new AuthWindow();
                 authWindow.Show();
@@ -376,7 +377,7 @@ namespace GameClient.Views
             });
         }
 
-        private void ShowErrorMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogErrorTitle, message, FontAwesome.WPF.FontAwesomeIcon.TimesCircle);
-        private void ShowSuccessMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogSuccessTitle, message, FontAwesome.WPF.FontAwesomeIcon.CheckCircle);
+        private void ShowErrorMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogErrorTitle, message, FontAwesomeIcon.TimesCircle);
+        private void ShowSuccessMessage(string message) => ShowCustomDialog(GameClient.Resources.Strings.DialogSuccessTitle, message, FontAwesomeIcon.CheckCircle);
     }
 }

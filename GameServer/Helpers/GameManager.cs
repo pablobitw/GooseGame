@@ -23,10 +23,13 @@ namespace GameServer.Helpers
 
         private const int CheckIntervalMs = 1000;
         private const int TurnTimeLimitSeconds = 20;
+        private const int EmergencyDelayMs = 5000;
+        private const int EmergencyNotTriggered = 0;
+        private const int EmergencyTriggered = 1;
 
         private bool _disposed;
 
-        private int _emergencyTriggered = 0;
+        private int _emergencyTriggered = EmergencyNotTriggered;
 
         private GameManager()
         {
@@ -77,9 +80,9 @@ namespace GameServer.Helpers
 
             while (!token.IsCancellationRequested)
             {
-                if (_emergencyTriggered == 1)
+                if (_emergencyTriggered == EmergencyTriggered)
                 {
-                    await Task.Delay(5000, token); 
+                    await Task.Delay(EmergencyDelayMs, token);
                     continue;
                 }
 
@@ -105,7 +108,7 @@ namespace GameServer.Helpers
             {
                 if (_activeGames.TryGetValue(gameId, out DateTime lastActivity) && (now - lastActivity).TotalSeconds > TurnTimeLimitSeconds)
                 {
-                    if (_emergencyTriggered == 0)
+                    if (_emergencyTriggered == EmergencyNotTriggered)
                         Log.Info("[GameManager] TIMEOUT detectado en partida " + gameId + ". Forzando cambio de turno...");
 
                     UpdateActivity(gameId);
@@ -131,7 +134,7 @@ namespace GameServer.Helpers
 
                 if (ex is EntityException || ex is SqlException || ex.InnerException is SqlException)
                 {
-                    if (Interlocked.Exchange(ref _emergencyTriggered, 1) == 0)
+                    if (Interlocked.Exchange(ref _emergencyTriggered, EmergencyTriggered) == EmergencyNotTriggered)
                     {
                         Log.Fatal("[GameManager] FALLO DE DB DETECTADO. EJECUTANDO PROTOCOLO DE EMERGENCIA INMEDIATO.");
                         await TriggerServerEmergencyStop();

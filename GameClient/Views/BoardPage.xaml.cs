@@ -26,11 +26,38 @@ namespace GameClient.Views
         private const double TokenSize = 40.0;
         private const double TokenOffset = 20.0;
         private const int AnimationDurationMs = 500;
+        private const int GameFinishedDelayMs = 1500;
+        private const int TimerIntervalSeconds = 1;
 
         private const double OpacityActive = 1.0;
         private const double OpacityInactive = 0.4;
         private const double OpacityDisabled = 0.5;
         private const double OpacitySemi = 0.6;
+
+        private const double ShadowDirection = 320.0;
+        private const double ShadowDepth = 4.0;
+        private const double ShadowOpacity = 0.5;
+
+        private const double ActiveBorderThickness = 3.0;
+        private const double InactiveBorderThickness = 0.0;
+
+        private const int PlayerIndexOne = 0;
+        private const int PlayerIndexTwo = 1;
+        private const int PlayerIndexThree = 2;
+        private const int PlayerIndexFour = 3;
+
+        private const string GuestPrefixEn = "guest";
+        private const string GuestPrefixEs = "Invitado";
+        private const string GeneralChatTarget = "General";
+        private const string SystemSender = "System";
+        private const string AfkReason = "AFK";
+        private const string DbErrorKey = "SafeZone_DatabaseError";
+        private const string ChatTabStyleKey = "ChatTabItemStyle";
+        private const string AfkKickMessage = "Has sido expulsado por inactividad.";
+
+        private const string DefaultAvatarPath = "pack://application:,,,/Assets/Avatar/default_avatar.png";
+        private const string NormalBoardPath = "/Assets/Boards/normal_board.png";
+        private const string SpecialBoardPath = "/Assets/Boards/special_board.png";
 
         private readonly string lobbyCode;
         private readonly int boardId;
@@ -52,8 +79,6 @@ namespace GameClient.Views
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
         private string _lastLogProcessed = string.Empty;
 
-        private bool isExitingToAuth = false;
-
         public BoardPage(string lobbyCode, int boardId, string username)
         {
             InitializeComponent();
@@ -63,7 +88,7 @@ namespace GameClient.Views
             this.boardId = boardId;
             this.currentUsername = username;
 
-            if (username.ToLower().StartsWith("guest") || username.Contains("Invitado"))
+            if (username.ToLower().StartsWith(GuestPrefixEn) || username.Contains(GuestPrefixEs))
             {
                 _isGuest = true;
             }
@@ -71,7 +96,7 @@ namespace GameClient.Views
             _turnSecondsRemaining = GameConfiguration.TurnDurationSeconds;
             _countdownValue = GameConfiguration.StartCountdownSeconds;
 
-            _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource("ChatTabItemStyle"));
+            _chatManager = new ChatUiManager(ChatTabControl, GeneralChatList, (Style)FindResource(ChatTabStyleKey));
 
             PauseMenu.ResumeRequested += (s, e) => PauseMenu.Visibility = Visibility.Collapsed;
             PauseMenu.QuitRequested += (s, e) => _ = QuitGameProcessAsync();
@@ -88,7 +113,7 @@ namespace GameClient.Views
 
             StartCountdown();
 
-            _turnCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _turnCountdownTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(TimerIntervalSeconds) };
             _turnCountdownTimer.Tick += TurnCountdown_Tick;
 
             this.Loaded += Page_Loaded;
@@ -156,46 +181,13 @@ namespace GameClient.Views
         {
             Dispatcher.InvokeAsync(() =>
             {
-                if (isExitingToAuth) return;
-                isExitingToAuth = true;
+                string message = GameClient.Resources.Strings.NoInternetGameplay;
+                string title = GameClient.Resources.Strings.DialogErrorTitle;
 
-                if (_isGameOverHandled) return;
-                _isGameOverHandled = true;
-
-                StopTimers();
-
-                MessageBox.Show(
-                    GameClient.Resources.Strings.Gameplay_Error_Communication,
-                    GameClient.Resources.Strings.DialogErrorTitle,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        CloseChatClientInternal();
-                        GameplayServiceManager.Instance.Dispose();
-                    }
-                    catch { }
-                });
-
-                UnsubscribeFromEvents();
-
-                Window currentWindow = Window.GetWindow(this);
-                var authWindow = new AuthWindow();
-
-                if (Application.Current != null)
-                {
-                    Application.Current.MainWindow = authWindow;
-                }
-
-                authWindow.Show();
-                authWindow.Activate();
-
-                currentWindow?.Close();
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             });
         }
+
 
         private void ConnectToChatService()
         {
@@ -213,7 +205,7 @@ namespace GameClient.Views
             catch (Exception)
             {
                 Dispatcher.InvokeAsync(() =>
-                    _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatConnectError, false, "General", currentUsername));
+                    _chatManager.AddMessage(SystemSender, GameClient.Resources.Strings.ChatConnectError, false, GeneralChatTarget, currentUsername));
             }
         }
 
@@ -240,7 +232,7 @@ namespace GameClient.Views
             {
                 try
                 {
-                    if (target == "General")
+                    if (target == GeneralChatTarget)
                     {
                         dto.IsPrivate = false;
                         chatClient.SendLobbyMessage(dto);
@@ -255,7 +247,7 @@ namespace GameClient.Views
                 catch (Exception)
                 {
                     Dispatcher.InvokeAsync(() =>
-                        _chatManager.AddMessage("System", GameClient.Resources.Strings.ChatErrorSend, false, target, currentUsername));
+                        _chatManager.AddMessage(SystemSender, GameClient.Resources.Strings.ChatErrorSend, false, target, currentUsername));
                 }
             });
         }
@@ -430,13 +422,13 @@ namespace GameClient.Views
 
                 StopTimers();
 
-                if (!string.IsNullOrEmpty(reason) && reason.Contains("SafeZone_DatabaseError"))
+                if (!string.IsNullOrEmpty(reason) && reason.Contains(DbErrorKey))
                 {
                     reason = GameClient.Resources.Strings.SafeZone_DatabaseError;
                 }
-                else if (string.Equals(reason, "AFK", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(reason, AfkReason, StringComparison.OrdinalIgnoreCase))
                 {
-                    reason = "Has sido expulsado por inactividad.";
+                    reason = AfkKickMessage;
                 }
 
                 string title = GameClient.Resources.Strings.KickedTitle ?? "Expulsado";
@@ -614,7 +606,7 @@ namespace GameClient.Views
             {
                 _turnCountdownTimer.Stop();
                 TurnTimerText.Text = GameClient.Resources.Strings.TimerExpired;
-                await Task.Delay(1500);
+                await Task.Delay(GameFinishedDelayMs);
                 await InitialStateLoad();
             }
         }
@@ -627,7 +619,7 @@ namespace GameClient.Views
             RollDiceButton.Opacity = OpacityDisabled;
 
             _startCountdownTimer = new DispatcherTimer();
-            _startCountdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _startCountdownTimer.Interval = TimeSpan.FromSeconds(TimerIntervalSeconds);
             _startCountdownTimer.Tick += Countdown_Tick;
             _startCountdownTimer.Start();
 
@@ -695,8 +687,8 @@ namespace GameClient.Views
         private void LoadBoardImage()
         {
             string imagePath = (boardId == GameConfiguration.NormalBoardId)
-                ? "/Assets/Boards/normal_board.png"
-                : "/Assets/Boards/special_board.png";
+                ? NormalBoardPath
+                : SpecialBoardPath;
             try
             {
                 BoardImage.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
@@ -737,7 +729,7 @@ namespace GameClient.Views
             var startPos = BoardDataHelper.GetTileLocation(0);
             Canvas.SetLeft(image, startPos.X - TokenOffset);
             Canvas.SetTop(image, startPos.Y - TokenOffset);
-            image.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, Direction = 320, ShadowDepth = 4, Opacity = 0.5 };
+            image.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, Direction = ShadowDirection, ShadowDepth = ShadowDepth, Opacity = ShadowOpacity };
             return image;
         }
 
@@ -785,10 +777,10 @@ namespace GameClient.Views
         {
             switch (index)
             {
-                case 0: return (Player1Avatar, Player1Name, Player1Panel);
-                case 1: return (Player2Avatar, Player2Name, Player2Panel);
-                case 2: return (Player3Avatar, Player3Name, Player3Panel);
-                case 3: return (Player4Avatar, Player4Name, Player4Panel);
+                case PlayerIndexOne: return (Player1Avatar, Player1Name, Player1Panel);
+                case PlayerIndexTwo: return (Player2Avatar, Player2Name, Player2Panel);
+                case PlayerIndexThree: return (Player3Avatar, Player3Name, Player3Panel);
+                case PlayerIndexFour: return (Player4Avatar, Player4Name, Player4Panel);
                 default: return (null, null, null);
             }
         }
@@ -801,7 +793,7 @@ namespace GameClient.Views
             if (_isGuest && controls.Panel.ContextMenu != null) controls.Panel.ContextMenu = null;
             LoadAvatarImage(controls.Avatar, player.AvatarPath);
             controls.Panel.BorderBrush = player.IsMyTurn ? Brushes.Gold : Brushes.Transparent;
-            controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? 3 : 0);
+            controls.Panel.BorderThickness = new Thickness(player.IsMyTurn ? ActiveBorderThickness : InactiveBorderThickness);
         }
 
         private static void LoadAvatarImage(ImageBrush brush, string avatarPath)
@@ -819,13 +811,13 @@ namespace GameClient.Views
             }
             catch (Exception)
             {
-                brush.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute));
+                brush.ImageSource = new BitmapImage(new Uri(DefaultAvatarPath, UriKind.Absolute));
             }
         }
 
         private static Uri GetAvatarUri(string path)
         {
-            if (string.IsNullOrWhiteSpace(path)) return new Uri("pack://application:,,,/Assets/Avatar/default_avatar.png", UriKind.Absolute);
+            if (string.IsNullOrWhiteSpace(path)) return new Uri(DefaultAvatarPath, UriKind.Absolute);
             if (path.StartsWith("pack://") || path.Contains("://")) return new Uri(path, UriKind.RelativeOrAbsolute);
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Avatar", path);
             if (File.Exists(fullPath)) return new Uri(fullPath, UriKind.Absolute);

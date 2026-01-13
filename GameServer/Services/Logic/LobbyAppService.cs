@@ -18,6 +18,19 @@ namespace GameServer.Services.Logic
     public class LobbyAppService : ILobbyService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LobbyAppService));
+
+        private const int MinimumPlayersAllowed = 2;
+        private const int MaximumPlayersAllowed = 4;
+        private const int WaitingForPlayersStatus = (int)GameStatus.WaitingForPlayers;
+        private const int InProgressStatus = (int)GameStatus.InProgress;
+        private const int FinishedStatus = (int)GameStatus.Finished;
+        private const int KickLimitForBan = 3;
+        private const int MinimumPlayersToStartGame = 2;
+        private const int MinimumPlayersForActiveGame = 2;
+        private const int NoPlayersRemaining = 0;
+        private const int SinglePlayerRemaining = 1;
+        private const int LobbyCodeLength = 5;
+
         private readonly ILobbyRepository _repository;
         private readonly ILobbyConnectionManager _connectionManager;
         private readonly IWcfContext _wcfContext;
@@ -172,7 +185,7 @@ namespace GameServer.Services.Logic
                 {
                     var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
 
-                    if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
+                    if (oldGame == null || oldGame.GameStatus == FinishedStatus)
                     {
                         player.GameIdGame = null;
                         await _repository.SaveChangesAsync();
@@ -180,7 +193,7 @@ namespace GameServer.Services.Logic
                     else
                     {
                         var playersInGame = await _repository.GetPlayersInGameAsync(oldGame.IdGame);
-                        if (playersInGame.Count <= 1 && playersInGame.Any(p => p.Username == player.Username))
+                        if (playersInGame.Count <= SinglePlayerRemaining && playersInGame.Any(p => p.Username == player.Username))
                         {
                             _repository.DeleteGameAndCleanDependencies(oldGame);
                             player.GameIdGame = null;
@@ -206,7 +219,7 @@ namespace GameServer.Services.Logic
                     result.ErrorMessage = "Datos inválidos.";
                     result.ErrorType = LobbyErrorType.InvalidData;
                 }
-                else if (request.Settings.MaxPlayers < 2 || request.Settings.MaxPlayers > 4)
+                else if (request.Settings.MaxPlayers < MinimumPlayersAllowed || request.Settings.MaxPlayers > MaximumPlayersAllowed)
                 {
                     result.ErrorMessage = "Jugadores entre 2 y 4.";
                     result.ErrorType = LobbyErrorType.InvalidData;
@@ -246,7 +259,7 @@ namespace GameServer.Services.Logic
                             string newLobbyCode = GenerateLobbyCode();
                             var newGame = new Game
                             {
-                                GameStatus = (int)GameStatus.WaitingForPlayers,
+                                GameStatus = WaitingForPlayersStatus,
                                 HostPlayerID = hostPlayer.IdPlayer,
                                 Board_idBoard = request.Settings.BoardId,
                                 IsPublic = request.Settings.IsPublic,
@@ -310,7 +323,7 @@ namespace GameServer.Services.Logic
                 var updatedPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
                 bool isAlreadyInGame = updatedPlayers.Any(p => p.Username == request.Username);
 
-                if (game.GameStatus != (int)GameStatus.WaitingForPlayers)
+                if (game.GameStatus != WaitingForPlayersStatus)
                 {
                     result.ErrorType = LobbyErrorType.GameStarted;
                     result.ErrorMessage = "Partida ya iniciada";
@@ -369,9 +382,9 @@ namespace GameServer.Services.Logic
                 if (game != null)
                 {
                     var players = await _repository.GetPlayersInGameAsync(game.IdGame);
-                    if (players.Count >= 2)
+                    if (players.Count >= MinimumPlayersToStartGame)
                     {
-                        game.GameStatus = (int)GameStatus.InProgress;
+                        game.GameStatus = InProgressStatus;
                         await _repository.SaveChangesAsync();
 
                         try
@@ -501,7 +514,7 @@ namespace GameServer.Services.Logic
                             if (target != null && target.GameIdGame == game.IdGame)
                             {
                                 target.KickCount++;
-                                bool isBanned = (target.KickCount >= 3);
+                                bool isBanned = (target.KickCount >= KickLimitForBan);
                                 if (isBanned) target.IsBanned = true;
 
                                 target.GameIdGame = null;
@@ -566,7 +579,7 @@ namespace GameServer.Services.Logic
                     var players = await _repository.GetPlayersInGameAsync(game.IdGame);
                     result = new LobbyStateDto
                     {
-                        IsGameStarted = (game.GameStatus == (int)GameStatus.InProgress),
+                        IsGameStarted = (game.GameStatus == InProgressStatus),
                         Players = players.Select(p => new PlayerLobbyDto
                         {
                             Username = p.Username,
@@ -630,14 +643,14 @@ namespace GameServer.Services.Logic
                 else
                 {
                     var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame);
-                    if (game.GameStatus == (int)GameStatus.InProgress && remainingPlayers.Count < 2)
+                    if (game.GameStatus == InProgressStatus && remainingPlayers.Count < MinimumPlayersForActiveGame)
                     {
-                        game.GameStatus = (int)GameStatus.Finished;
+                        game.GameStatus = FinishedStatus;
                         try { _gameMonitor.StopMonitoring(gameId); } catch { }
                         await _repository.SaveChangesAsync();
                         result = true;
                     }
-                    else if (game.GameStatus == (int)GameStatus.WaitingForPlayers && remainingPlayers.Count == 0)
+                    else if (game.GameStatus == WaitingForPlayersStatus && remainingPlayers.Count == NoPlayersRemaining)
                     {
                         _repository.DeleteGameAndCleanDependencies(game);
                         await _repository.SaveChangesAsync();
@@ -674,7 +687,7 @@ namespace GameServer.Services.Logic
             string code;
             do
             {
-                code = _codeGenerator.GenerateRandomString(5);
+                code = _codeGenerator.GenerateRandomString(LobbyCodeLength);
             }
             while (!_repository.IsLobbyCodeUnique(code));
             return code;

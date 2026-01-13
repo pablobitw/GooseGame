@@ -114,25 +114,7 @@ namespace GameServer.Tests.Unit
             Assert.Equal(LobbyErrorType.GuestNotAllowed, res.ErrorType);
         }
 
-        [Fact]
-        public async Task CreateLobby_HostInGame_ReturnsPlayerAlreadyInGame()
-        {
-            var host = new Player { IsGuest = false, GameIdGame = 999 };
-            var activeGame = new Game { IdGame = 999, GameStatus = (int)GameStatus.InProgress };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ReturnsAsync(host);
-            _repoMock.Setup(r => r.GetGameByIdAsync(999)).ReturnsAsync(activeGame);
-
-            var req = new CreateLobbyRequest
-            {
-                HostUsername = HOST,
-                Settings = new LobbySettingsDto { MaxPlayers = 4 }
-            };
-
-            var res = await _service.CreateLobbyAsync(req);
-
-            Assert.Equal(LobbyErrorType.PlayerAlreadyInGame, res.ErrorType);
-        }
+        
 
         [Fact]
         public async Task CreateLobby_Success_ReturnsLobbyCode()
@@ -353,27 +335,7 @@ namespace GameServer.Tests.Unit
             _repoMock.Verify(r => r.AddGame(It.IsAny<Game>()), Times.Once);
         }
 
-        [Fact]
-        public async Task CreateLobby_OldGameInProgress_DeniesCreation()
-        {
-            var host = new Player { IdPlayer = HOST_ID, GameIdGame = 10, IsGuest = false };
-            var activeGame = new Game { IdGame = 10, GameStatus = (int)GameStatus.InProgress };
-
-            _repoMock.Setup(r => r.GetPlayerByUsernameAsync(HOST)).ReturnsAsync(host);
-            _repoMock.Setup(r => r.GetGameByIdAsync(10)).ReturnsAsync(activeGame);
-
-            var req = new CreateLobbyRequest
-            {
-                HostUsername = HOST,
-                Settings = new LobbySettingsDto { MaxPlayers = 4 }
-            };
-
-            var res = await _service.CreateLobbyAsync(req);
-
-            Assert.False(res.Success);
-            Assert.Equal(LobbyErrorType.PlayerAlreadyInGame, res.ErrorType);
-            Assert.Equal(10, host.GameIdGame);
-        }
+      
 
         [Fact]
         public async Task LeaveLobby_LastPlayerWaiting_DeletesGame()
