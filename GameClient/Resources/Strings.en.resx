@@ -918,6 +918,9 @@
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Game Notice</value>
   </data>
+  <data name="Gameplay_Error_Communication" xml:space="preserve">
+    <value>Connection lost, Try to sign in again</value>
+  </data>
   <data name="Gameplay_Error_Database" xml:space="preserve">
     <value>Error syncing with the board. Retrying...</value>
   </data>

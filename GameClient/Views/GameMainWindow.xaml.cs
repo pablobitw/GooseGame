@@ -153,6 +153,7 @@ namespace GameClient
                 _isExplicitLogout = true;
                 UserSession.GetInstance().Logout();
                 AuthWindow authWindow = new AuthWindow();
+                Application.Current.MainWindow = authWindow; 
                 authWindow.Show();
                 this.Close();
             }
@@ -226,6 +227,7 @@ namespace GameClient
         private void ReturnToRegister()
         {
             AuthWindow authWindow = new AuthWindow();
+            Application.Current.MainWindow = authWindow;
             authWindow.Show();
             authWindow.NavigateToRegister();
             _isExplicitLogout = true;
@@ -336,50 +338,66 @@ namespace GameClient
 
         private async Task PerformLogoutAsync()
         {
+            DisposeServices();
+
+            if (NetworkInterface.GetIsNetworkAvailable())
+            {
+                try
+                {
+                    using (var client = new AuthServiceClient())
+                    {
+                        await client.LogoutAsync(_username);
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            UserSession.GetInstance().Logout();
+        }
+
+        private void DisposeServices()
+        {
             try
             {
                 if (LobbyServiceManager.Instance != null)
                 {
                     LobbyServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                    LobbyServiceManager.Instance.Dispose();
                 }
 
                 if (GameplayServiceManager.Instance != null)
                 {
                     GameplayServiceManager.Instance.PlayerKicked -= OnGlobalPlayerKicked;
+                    GameplayServiceManager.Instance.Dispose();
                 }
 
                 if (FriendshipServiceManager.Instance != null)
                 {
-                    try { FriendshipServiceManager.Instance.Disconnect(); } catch { }
+                    FriendshipServiceManager.Instance.Disconnect();
                 }
-
-                try { LobbyServiceManager.Instance.Dispose(); } catch { }
-                try { GameplayServiceManager.Instance.Dispose(); } catch { }
-
-                if (NetworkInterface.GetIsNetworkAvailable())
-                {
-                    try
-                    {
-                        using (var client = new AuthServiceClient())
-                        {
-                            await client.LogoutAsync(_username);
-                        }
-                    }
-                    catch (Exception) { }
-                }
-
-                UserSession.GetInstance().Logout();
             }
             catch { }
         }
 
         private async void GameMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (Application.Current.MainWindow != this)
+            {
+                DisposeServices();
+                return;
+            }
+
             if (!_isExplicitLogout)
             {
                 e.Cancel = true;
                 _isExplicitLogout = true;
-                await PerformLogoutAsync();
+
+                try
+                {
+                    await PerformLogoutAsync();
+                }
+                catch { }
+
                 Application.Current.Shutdown();
             }
         }

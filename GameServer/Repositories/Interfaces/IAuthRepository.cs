@@ -12,7 +12,7 @@ namespace GameServer.Repositories.Interfaces
         Task<Player> GetPlayerByUsernameAsync(string username);
         Task<Player> GetPlayerForLoginAsync(string usernameOrEmail);
         bool IsUsernameTaken(string username);
-
+        Task<Game> GetGameByIdAsync(int gameId);
         void SaveChanges();
         Task SaveChangesAsync();
         Task UpdatePlayerAsync(Player player);

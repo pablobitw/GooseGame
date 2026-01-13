@@ -2482,6 +2482,15 @@ namespace GameClient.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Se ha perdido la conexión con el Gameplay, vuelve a ingresar.
+        /// </summary>
+        public static string Gameplay_Error_Communication {
+            get {
+                return ResourceManager.GetString("Gameplay_Error_Communication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a &quot;Error al sincronizar con el tablero. Reintentando...&quot;.
         /// </summary>
         public static string Gameplay_Error_Database {

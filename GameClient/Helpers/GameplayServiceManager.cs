@@ -76,7 +76,7 @@ namespace GameClient.Helpers
 
         private void OnChannelFaulted(object sender, EventArgs e)
         {
-            HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Error_Communication));
+            HandleConnectionFailure(new CommunicationException(GameClient.Resources.Strings.Gameplay_Error_Communication));
         }
 
         private GameplayServiceClient GetClient()
@@ -95,7 +95,7 @@ namespace GameClient.Helpers
 
             if (_client == null)
             {
-                throw new CommunicationException(GameClient.Resources.Strings.Error_Communication);
+                throw new CommunicationException(GameClient.Resources.Strings.Gameplay_Error_Communication);
             }
 
             return _client;
@@ -224,7 +224,7 @@ namespace GameClient.Helpers
                 return GameClient.Resources.Strings.Gameplay_Error_Timeout;
             }
 
-            return GameClient.Resources.Strings.Error_Communication;
+            return GameClient.Resources.Strings.Gameplay_Error_Communication;
         }
 
         private void InvalidateClient()

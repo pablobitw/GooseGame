@@ -52,6 +52,8 @@ namespace GameClient.Views
         private Dictionary<string, UIElement> _playerTokens = new Dictionary<string, UIElement>();
         private string _lastLogProcessed = string.Empty;
 
+        private bool isExitingToAuth = false;
+
         public BoardPage(string lobbyCode, int boardId, string username)
         {
             InitializeComponent();
@@ -118,7 +120,7 @@ namespace GameClient.Views
         {
             StopTimers();
             UnsubscribeFromEvents();
-            CloseChatClient(); 
+            CloseChatClient();
             this.CommandBindings.Clear();
         }
 
@@ -150,8 +152,6 @@ namespace GameClient.Views
             }
         }
 
-        private bool isExitingToAuth = false;
-
         private void OnConnectionLost()
         {
             Dispatcher.InvokeAsync(() =>
@@ -165,7 +165,7 @@ namespace GameClient.Views
                 StopTimers();
 
                 MessageBox.Show(
-                    GameClient.Resources.Strings.Error_Communication,
+                    GameClient.Resources.Strings.Gameplay_Error_Communication,
                     GameClient.Resources.Strings.DialogErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -178,23 +178,21 @@ namespace GameClient.Views
 
                 try
                 {
-                    GameplayServiceManager.Instance.Dispose();
+                    CloseChatClientInternal();
                 }
                 catch { }
 
                 try
                 {
-                    CloseChatClientInternal();
+                    GameplayServiceManager.Instance.Dispose();
                 }
                 catch { }
 
                 Window currentWindow = Window.GetWindow(this);
-
                 var authWindow = new AuthWindow();
 
                 if (Application.Current != null)
                 {
-                    Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
                     Application.Current.MainWindow = authWindow;
                 }
 
@@ -204,7 +202,6 @@ namespace GameClient.Views
                 currentWindow?.Close();
             });
         }
-
 
         private void ConnectToChatService()
         {
@@ -470,7 +467,6 @@ namespace GameClient.Views
 
                 if (Application.Current != null)
                 {
-                    Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
                     Application.Current.MainWindow = authWindow;
                 }
 
@@ -480,7 +476,6 @@ namespace GameClient.Views
                 currentWindow?.Close();
             });
         }
-
 
         private void OnVoteKickStarted(string targetUsername, string reason)
         {
@@ -516,7 +511,7 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                // 
+                //
             }
             catch (Exception ex)
             {
@@ -567,7 +562,7 @@ namespace GameClient.Views
             }
             catch (Exception ex) when (ex is CommunicationException || ex is TimeoutException)
             {
-                // 
+                //
             }
             catch (Exception ex)
             {
@@ -862,7 +857,6 @@ namespace GameClient.Views
 
         private void CloseChatClient()
         {
-      
             Task.Run(() => CloseChatClientInternal());
         }
 

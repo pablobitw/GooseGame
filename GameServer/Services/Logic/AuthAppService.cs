@@ -278,8 +278,20 @@ namespace GameServer.Services.Logic
 
                         if (response.IsSuccess && player.GameIdGame != null)
                         {
-                            player.GameIdGame = null;
-                            await _repository.UpdatePlayerAsync(player);
+                            try
+                            {
+                                var existingGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
+                                if (existingGame == null || existingGame.GameStatus == (int)GameStatus.Finished)
+                                {
+                                    player.GameIdGame = null;
+                                    await _repository.UpdatePlayerAsync(player);
+                                }
+                            }
+                            catch
+                            {
+                                player.GameIdGame = null;
+                                await _repository.UpdatePlayerAsync(player);
+                            }
                         }
                     }
                 }

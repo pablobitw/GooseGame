@@ -86,10 +86,21 @@ namespace GameServer.Services.Logic
                 try
                 {
                     var oldGame = await _repository.GetGameByIdAsync(player.GameIdGame.Value);
+
                     if (oldGame == null || oldGame.GameStatus == (int)GameStatus.Finished)
                     {
                         player.GameIdGame = null;
                         await _repository.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var playersInGame = await _repository.GetPlayersInGameAsync(oldGame.IdGame);
+                        if (playersInGame.Count <= 1 && playersInGame.Any(p => p.Username == player.Username))
+                        {
+                            _repository.DeleteGameAndCleanDependencies(oldGame);
+                            player.GameIdGame = null;
+                            await _repository.SaveChangesAsync();
+                        }
                     }
                 }
                 catch (Exception ex)

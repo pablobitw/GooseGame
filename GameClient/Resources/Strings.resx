@@ -927,6 +927,9 @@
   <data name="GameplayWarningTitle" xml:space="preserve">
     <value>Aviso de Partida</value>
   </data>
+  <data name="Gameplay_Error_Communication" xml:space="preserve">
+    <value>Se ha perdido la conexión con el Gameplay, vuelve a ingresar</value>
+  </data>
   <data name="Gameplay_Error_Database" xml:space="preserve">
     <value>"Error al sincronizar con el tablero. Reintentando..."</value>
   </data>

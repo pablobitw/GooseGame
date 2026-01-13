@@ -469,6 +469,42 @@ namespace GameServer.Services.Logic
             return false;
         }
 
+        public async Task HandleDisconnection(int gameId, string username)
+        {
+            try
+            {
+                var game = await _repository.GetGameByIdAsync(gameId).ConfigureAwait(false);
+                if (game != null && game.GameStatus == (int)GameStatus.InProgress)
+                {
+                    var player = await _repository.GetPlayerByUsernameAsync(username).ConfigureAwait(false);
+                    if (player != null && player.GameIdGame == gameId)
+                    {
+                        Log.Info($"[HandleDisconnection] Procesando desconexión forzada de {username} en partida {gameId}");
+
+                        _voteLogic.CancelVote(game.IdGame);
+                        await ProcessLeavingPlayerStats(player).ConfigureAwait(false);
+
+                        await _repository.SaveChangesAsync().ConfigureAwait(false);
+
+                        var remainingPlayers = await _repository.GetPlayersInGameAsync(game.IdGame).ConfigureAwait(false);
+
+                        if (remainingPlayers.Count < 2)
+                        {
+                            await FinishGameByAbandonment(game, remainingPlayers).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            NotifyTurnUpdateSafe(game.IdGame);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error en HandleDisconnection para {username}", ex);
+            }
+        }
+
         private async Task ProcessLeavingPlayerStats(Player player)
         {
             var playerWithStats = await _repository.GetPlayerWithStatsByIdAsync(player.IdPlayer).ConfigureAwait(false);
@@ -717,6 +753,14 @@ namespace GameServer.Services.Logic
                         int extraTurns = await _repository.GetExtraTurnCountAsync(gameId).ConfigureAwait(false);
                         int nextPlayerIndex = (totalMoves - extraTurns) % sortedPlayers.Count;
                         var afkPlayer = sortedPlayers[nextPlayerIndex];
+
+                       
+                        if (!IsUserOnline(afkPlayer.Username))
+                        {
+                            Log.Info($"[ProcessAfkTimeout] Jugador {afkPlayer.Username} desconectado. Ejecutando salida forzada.");
+                            await HandleDisconnection(gameId, afkPlayer.Username).ConfigureAwait(false);
+                            return;
+                        }
 
                         int strikes = _stateManager.AddOrUpdateAfkStrike(afkPlayer.Username);
 

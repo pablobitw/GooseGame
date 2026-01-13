@@ -127,5 +127,9 @@ namespace GameServer.Repositories.Interfaces
             if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName);
         }
+        public async Task<Game> GetGameByIdAsync(int gameId)
+        {
+            return await _context.Games.FirstOrDefaultAsync(g => g.IdGame == gameId);
+        }
     }
 }
